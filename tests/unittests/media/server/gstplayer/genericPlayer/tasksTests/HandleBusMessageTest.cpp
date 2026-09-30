@@ -255,6 +255,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToNullMessage)
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::STOPPED));
+    EXPECT_CALL(*m_glibWrapper, gThreadPoolStopUnusedThreads());
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
     EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
     EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
@@ -263,6 +264,54 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToNullMessage)
                                                                     m_glibWrapper,      &m_message,
                                                                     m_flushWatcherMock};
     task.execute();
+
+    // both streams start with empty buffer lists in the fixture - confirm they stay empty
+    EXPECT_TRUE(m_context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].buffers.empty());
+    EXPECT_TRUE(m_context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].buffers.empty());
+}
+
+/**
+ * Test HandleBusMessage releases queued-but-unpushed sample buffers for every
+ * stream once the pipeline confirms it has reached GST_STATE_NULL.
+ */
+TEST_F(HandleBusMessageTest, shouldReleaseQueuedBuffersWhenStateChangedToNull)
+{
+    GstBuffer audioBuffer{};
+    GstBuffer videoBuffer1{};
+    GstBuffer videoBuffer2{};
+    m_context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].buffers.push_back(&audioBuffer);
+    m_context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].buffers.push_back(&videoBuffer1);
+    m_context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].buffers.push_back(&videoBuffer2);
+
+    GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
+    GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_STATE_CHANGED;
+    GstState oldState = GST_STATE_READY;
+    GstState newState = GST_STATE_NULL;
+    GstState pending = GST_STATE_VOID_PENDING;
+
+    EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
+        .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(1).WillRepeatedly(Return("Ready"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Null"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
+    EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
+    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::STOPPED));
+    EXPECT_CALL(*m_gstWrapper, gstBufferUnref(&audioBuffer));
+    EXPECT_CALL(*m_gstWrapper, gstBufferUnref(&videoBuffer1));
+    EXPECT_CALL(*m_gstWrapper, gstBufferUnref(&videoBuffer2));
+    EXPECT_CALL(*m_glibWrapper, gThreadPoolStopUnusedThreads());
+    EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
+    task.execute();
+
+    EXPECT_TRUE(m_context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].buffers.empty());
+    EXPECT_TRUE(m_context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].buffers.empty());
 }
 
 TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedMessage)

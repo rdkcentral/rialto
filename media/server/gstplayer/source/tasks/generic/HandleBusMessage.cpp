@@ -22,6 +22,7 @@
 #include "IGstGenericPlayerClient.h"
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
+#include <malloc.h>
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -72,6 +73,19 @@ void HandleBusMessage::execute() const
             case GST_STATE_NULL:
             {
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::STOPPED);
+                for (auto &elem : m_context.streamInfo)
+                {
+                    StreamInfo &streamInfo = elem.second;
+                    for (auto &buffer : streamInfo.buffers)
+                    {
+                        RIALTO_SERVER_LOG_WARN("USHA: NULL state: unref streamInfo.buffers and trim call");
+                        m_gstWrapper->gstBufferUnref(buffer);
+                    }
+                    streamInfo.buffers.clear();
+                }
+                m_glibWrapper->gThreadPoolStopUnusedThreads();
+                malloc_trim(0);
+
                 break;
             }
             case GST_STATE_PAUSED:
