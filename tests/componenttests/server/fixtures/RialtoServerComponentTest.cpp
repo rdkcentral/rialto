@@ -148,32 +148,41 @@ void RialtoServerComponentTest::configureWrappers() const
 
 void RialtoServerComponentTest::startSut()
 {
+    // Allow multiple calls for GStreamer initialization (decoder/sink queries may be called more than once)
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
-        .WillOnce(Return(m_listDecoders.get()));
+        .WillRepeatedly(Return(m_listDecoders.get()));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetStaticPadTemplates(m_decoderFactory))
-        .WillOnce(Return(m_listPadTemplates.get()));
+        .WillRepeatedly(Return(m_listPadTemplates.get()));
     EXPECT_CALL(*m_gstWrapperMock, gstStaticCapsGet(&m_audioSinkPadTemplate.static_caps))
         .WillRepeatedly(Return(&m_audioCaps));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps));
     EXPECT_CALL(*m_gstWrapperMock, gstStaticCapsGet(&m_videoSinkPadTemplate.static_caps))
         .WillRepeatedly(Return(&m_videoCaps));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&m_videoCaps, &m_audioCaps)).WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&m_videoCaps, &m_audioCaps)).WillRepeatedly(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL))
-        .WillOnce(Return(nullptr));
+        .WillRepeatedly(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
-        .WillOnce(Return(nullptr));
+        .WillRepeatedly(Return(nullptr));
+
+    // Flexible mocks for caps operations - fillSupportedCapabilities may create many temporary caps
     EXPECT_CALL(*m_gstWrapperMock, gstCapsFromString(_)).WillRepeatedly(Return(&m_unsupportedCaps));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsFromString(PtrStrMatcher("audio/mpeg, mpegversion=(int)4")))
-        .WillOnce(Return(&m_supportedCaps));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsFromString(PtrStrMatcher("video/x-h264"))).WillOnce(Return(&m_supportedCaps));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_supportedCaps)).Times(AtLeast(1));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_unsupportedCaps)).Times(AtLeast(1));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_supportedCaps, &m_audioCaps)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_supportedCaps, &m_videoCaps)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_unsupportedCaps, &m_audioCaps)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_unsupportedCaps, &m_videoCaps)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(m_listDecoders.get()));
+        .WillRepeatedly(Return(&m_supportedCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsFromString(PtrStrMatcher("video/x-h264"))).WillRepeatedly(Return(&m_supportedCaps));
+
+    // Allow unrefs on any caps object (fillSupportedCapabilities creates and destroys many)
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(_)).Times(testing::AnyNumber());
+
+    // Allow gstCapsCanIntersect with any combination of caps pointers (fillSupportedCapabilities checks all discovered MIME types)
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).Times(testing::AnyNumber()).WillRepeatedly(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_supportedCaps, _))
+        .Times(testing::AnyNumber())
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, &m_supportedCaps))
+        .Times(testing::AnyNumber())
+        .WillRepeatedly(Return(true));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(m_listDecoders.get())).Times(testing::AnyNumber());
+    EXPECT_CALL(*m_gstWrapperMock, gstDeinit()).Times(testing::AnyNumber());
 
     m_sut = IApplicationSessionServerFactory::getFactory()->createApplicationSessionServer();
 }

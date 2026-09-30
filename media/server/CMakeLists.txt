@@ -67,6 +67,7 @@ target_link_libraries(
         RialtoServerIpc
         RialtoServerMain
         RialtoServerService
+        RialtoServerManagerCommon
         protobuf::libprotobuf
 )
 

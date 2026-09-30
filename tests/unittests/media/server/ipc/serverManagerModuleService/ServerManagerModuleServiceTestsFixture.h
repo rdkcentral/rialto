@@ -48,6 +48,18 @@ public:
     void sessionServerManagerWillHandleRequestFailureWithInvalidController();
     void sessionServerManagerWillSetConfiguration(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerManagerWillSetConfigurationWithFd(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerManagerWillSetConfigurationWithCapabilities(
+        const firebolt::rialto::common::SessionServerState &state,
+        const firebolt::rialto::common::AudioDecoderCapabilities &audioCaps,
+        const firebolt::rialto::common::VideoDecoderCapabilities &videoCaps);
+    void sessionServerManagerWillSetConfigurationWithFdAndCapabilities(
+        const firebolt::rialto::common::SessionServerState &state,
+        const firebolt::rialto::common::AudioDecoderCapabilities &audioCaps,
+        const firebolt::rialto::common::VideoDecoderCapabilities &videoCaps);
+    void sessionServerManagerWillSetConfigurationWithAudioCapabilitiesAbsent(
+        const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerManagerWillSetConfigurationWithFdAndAudioCapabilitiesAbsent(
+        const firebolt::rialto::common::SessionServerState &state);
     void sessionServerManagerWillSetState(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerManagerWillSetLogLevels();
     void sessionServerManagerWillFailToSetConfiguration(const firebolt::rialto::common::SessionServerState &state);
@@ -58,6 +70,14 @@ public:
 
     void sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state);
     void sendSetConfigurationWithFd(const firebolt::rialto::common::SessionServerState &state);
+    void sendSetConfigurationWithCapabilities(const firebolt::rialto::common::SessionServerState &state,
+                                              const firebolt::rialto::common::AudioDecoderCapabilities &audioCaps,
+                                              const firebolt::rialto::common::VideoDecoderCapabilities &videoCaps);
+    void sendSetConfigurationWithFdAndCapabilities(const firebolt::rialto::common::SessionServerState &state,
+                                                   const firebolt::rialto::common::AudioDecoderCapabilities &audioCaps,
+                                                   const firebolt::rialto::common::VideoDecoderCapabilities &videoCaps);
+    void sendSetConfigurationWithoutAudioCapabilities(const firebolt::rialto::common::SessionServerState &state);
+    void sendSetConfigurationWithFdWithoutAudioCapabilities(const firebolt::rialto::common::SessionServerState &state);
     void sendSetState(const firebolt::rialto::common::SessionServerState &state);
     void sendSetLogLevels();
     void sendPing();

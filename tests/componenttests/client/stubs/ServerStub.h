@@ -22,6 +22,7 @@
 
 #include "ControlModuleStub.h"
 #include "IIpcServer.h"
+#include "MediaCapabilitiesModuleStub.h"
 #include "MediaKeysCapabilitiesModuleStub.h"
 #include "MediaKeysModuleStub.h"
 #include "MediaPipelineCapabilitiesModuleStub.h"
@@ -38,6 +39,7 @@ namespace firebolt::rialto::client::ct
 {
 class ServerStub : public ControlModuleStub,
                    public MediaPipelineModuleStub,
+                   public MediaCapabilitiesModuleStub,
                    public MediaKeysModuleStub,
                    public MediaKeysCapabilitiesModuleStub,
                    public MediaPipelineCapabilitiesModuleStub,
@@ -47,6 +49,7 @@ public:
     explicit ServerStub(
         const std::shared_ptr<::firebolt::rialto::ControlModule> &controlModuleMock,
         const std::shared_ptr<::firebolt::rialto::MediaPipelineModule> &mediaPipelineModuleMock,
+        const std::shared_ptr<::firebolt::rialto::MediaCapabilitiesModule> &mediaCapabilitiesModuleMock,
         const std::shared_ptr<::firebolt::rialto::MediaKeysModule> &mediaKeysModuleMock,
         const std::shared_ptr<::firebolt::rialto::MediaKeysCapabilitiesModule> &mediaKeysCapabilitiesModuleMock,
         const std::shared_ptr<::firebolt::rialto::MediaPipelineCapabilitiesModule> &mediaPipelineCapabilitiesModuleMock,

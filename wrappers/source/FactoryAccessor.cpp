@@ -28,6 +28,7 @@
 #include "RdkGstreamerUtilsWrapper.h"
 #include "TextTrackPluginWrapperFactory.h"
 #include "ThunderWrapper.h"
+#include "YamlCppWrapper.h"
 #endif // WRAPPERS_ENABLED
 
 namespace firebolt::rialto::wrappers
@@ -124,5 +125,16 @@ std::shared_ptr<IThunderWrapperFactory> &FactoryAccessor::thunderWrapperFactory(
     }
 #endif // WRAPPERS_ENABLED
     return m_thunderWrapperFactory;
+}
+
+std::shared_ptr<IYamlCppWrapperFactory> &FactoryAccessor::yamlCppWrapperFactory()
+{
+#ifdef WRAPPERS_ENABLED
+    if (!m_yamlCppWrapperFactory)
+    {
+        m_yamlCppWrapperFactory = std::make_shared<YamlCppWrapperFactory>();
+    }
+#endif // WRAPPERS_ENABLED
+    return m_yamlCppWrapperFactory;
 }
 } // namespace firebolt::rialto::wrappers

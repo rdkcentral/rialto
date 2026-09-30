@@ -65,10 +65,13 @@ MediaPipelineCapabilities::MediaPipelineCapabilities(const std::shared_ptr<IGstC
     : m_kGstCapabilitiesFactory{gstCapabilitiesFactory}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
+    // Create GstCapabilities immediately in constructor.
+    // Note: preloaded capabilities are managed by MediaPipelineService (setPreloadedCapabilities) and are independent
+    // of MediaPipelineCapabilities construction.
     m_gstCapabilities = m_kGstCapabilitiesFactory->createGstCapabilities();
     if (!m_gstCapabilities)
     {
+        RIALTO_SERVER_LOG_ERROR("Gstreamer capabilities could not be created");
         throw std::runtime_error("Gstreamer capabilities could not be created");
     }
 }
