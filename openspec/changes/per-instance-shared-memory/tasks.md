@@ -96,3 +96,4 @@
 - [x] 11.3 Serialize media-pipeline and WebAudio creation-response completion with client-disconnect cleanup so transferred descriptors remain valid.
 - [x] 11.4 Add deterministic creation/disconnect concurrency tests for both media pipelines and WebAudio players.
 - [x] 11.5 Prove queued shared-memory readers consume the current source region before requesting another clear-and-fill cycle.
+- [x] 11.6 Recheck active state under media-pipeline and WebAudio admission locks so inactive cleanup cannot race a late instance insertion.

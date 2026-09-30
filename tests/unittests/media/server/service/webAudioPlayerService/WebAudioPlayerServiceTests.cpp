@@ -26,6 +26,13 @@ TEST_F(WebAudioPlayerServiceTests, shouldFailToCreateWebAudioPlayerInInactiveSta
     createWebAudioPlayerShouldFail();
 }
 
+TEST_F(WebAudioPlayerServiceTests, shouldFailToCreateWebAudioPlayerWhenServiceBecomesInactiveDuringAdmission)
+{
+    createWebAudioPlayerService();
+    playbackServiceWillBecomeInactive();
+    createWebAudioPlayerShouldFail();
+}
+
 TEST_F(WebAudioPlayerServiceTests, shouldFailToCreateWebAudioPlayerWhenMaxPlaybackWebAudioPlayersIsReached)
 {
     createWebAudioPlayerService();

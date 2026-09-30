@@ -129,6 +129,7 @@ public:
     void mediaPipelineFactoryWillReturnNullptr();
 
     void playbackServiceWillReturnActive();
+    void playbackServiceWillBecomeInactive();
     void playbackServiceWillReturnInactive();
     void playbackServiceWillReturnMaxPlaybacks(int maxPlaybacks);
     void playbackServiceWillReturnSharedMemoryBuffer();

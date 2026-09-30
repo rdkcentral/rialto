@@ -180,7 +180,12 @@ void WebAudioPlayerServiceTests::webAudioPlayerFactoryWillReturnNullptr()
 
 void WebAudioPlayerServiceTests::playbackServiceWillReturnActive()
 {
-    EXPECT_CALL(m_playbackServiceMock, isActive()).WillOnce(Return(true)).RetiresOnSaturation();
+    EXPECT_CALL(m_playbackServiceMock, isActive()).Times(2).WillRepeatedly(Return(true)).RetiresOnSaturation();
+}
+
+void WebAudioPlayerServiceTests::playbackServiceWillBecomeInactive()
+{
+    EXPECT_CALL(m_playbackServiceMock, isActive()).WillOnce(Return(true)).WillOnce(Return(false)).RetiresOnSaturation();
 }
 
 void WebAudioPlayerServiceTests::playbackServiceWillReturnInactive()

@@ -76,6 +76,11 @@ bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IM
 
     {
         std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+        if (!m_playbackService.isActive())
+        {
+            RIALTO_SERVER_LOG_ERROR("Skip to create session with id: %d - Session Server in Inactive state", sessionId);
+            return false;
+        }
         if (m_mediaPipelines.size() == static_cast<size_t>(m_playbackService.getMaxPlaybacks()))
         {
             RIALTO_SERVER_LOG_ERROR("Unable to create a session with id: %d. Max session number reached.", sessionId);

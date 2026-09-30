@@ -126,6 +126,12 @@ The system SHALL NOT allocate playback transport shared memory merely because th
 - **THEN** each per-instance mapping and descriptor is released through normal instance ownership
 - **THEN** no application-global playback buffer remains to reset
 
+#### Scenario: Instance creation overlaps inactive transition
+- **WHEN** a media-pipeline or WebAudio-player creation request observes the active state before inactive cleanup begins
+- **THEN** the server rechecks the active state while holding the instance admission lock
+- **THEN** creation fails without allocating or publishing an instance if the server has become inactive
+- **THEN** inactive cleanup cannot be followed by insertion of a late instance
+
 ### Requirement: Admission limits remain independent of allocation layout
 The system SHALL continue enforcing maximum media-pipeline and WebAudio-player counts while using those limits only for admission and not for sizing a shared object.
 

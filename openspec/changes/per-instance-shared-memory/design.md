@@ -120,6 +120,7 @@ This policy avoids maintaining two ownership models and prevents an old client f
 - A descriptor and mapping are never published to another instance.
 - Destroying one instance cannot alter offsets, capacity, or mapping validity for another instance.
 - Inactive transition and IPC disconnect destroy every owned instance before server shutdown proceeds.
+- Instance creation rechecks active state under its admission lock so inactive cleanup cannot be followed by a late insertion.
 - No media request may be emitted until the server instance owns a valid mapped buffer and creation has completed.
 - Creation-response completion retains the owning instance and descriptor against overlapping client-disconnect cleanup.
 - GStreamer consumers and queued readers stop before their instance mapping is released.
