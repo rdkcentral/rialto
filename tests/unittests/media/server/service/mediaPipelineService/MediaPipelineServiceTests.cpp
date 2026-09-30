@@ -31,6 +31,13 @@ TEST_F(MediaPipelineServiceTests, shouldFailToCreateSessionInInactiveState)
     createSessionShouldFail();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToCreateSessionWhenServiceBecomesInactiveDuringAdmission)
+{
+    createMediaPipelineShouldSuccess();
+    playbackServiceWillBecomeInactive();
+    createSessionShouldFail();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldFailToCreateSessionWhenMaxPlaybackSessionsIsReached)
 {
     createMediaPipelineShouldSuccess();

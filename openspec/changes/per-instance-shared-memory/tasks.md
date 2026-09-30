@@ -88,3 +88,12 @@
 - [x] 10.4 Prove RialtoServer death makes surviving client instances release mappings, clear pending users, and reject writes.
 - [x] 10.5 Prove ServerManager restart requires newly created instances with fresh memfd identities before data resumes and rejects stale IDs, handles, mappings, and requests.
 - [x] 10.6 Prove terminating both processes leaves no persistent shared-memory artifact and a replacement server can admit instances normally.
+
+## 11. Concurrency Hardening
+
+- [x] 11.1 Stop media-pipeline and WebAudio GStreamer consumers before releasing their instance mappings, with destruction-order regression coverage.
+- [x] 11.2 Make timer callback state safe when callback processing releases or replaces its timer, with unit and Valgrind coverage.
+- [x] 11.3 Serialize media-pipeline and WebAudio creation-response completion with client-disconnect cleanup so transferred descriptors remain valid.
+- [x] 11.4 Add deterministic creation/disconnect concurrency tests for both media pipelines and WebAudio players.
+- [x] 11.5 Prove queued shared-memory readers consume the current source region before requesting another clear-and-fill cycle.
+- [x] 11.6 Recheck active state under media-pipeline and WebAudio admission locks so inactive cleanup cannot race a late instance insertion.

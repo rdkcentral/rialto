@@ -63,6 +63,7 @@ public:
     void webAudioPlayerFactoryWillReturnNullptr();
 
     void playbackServiceWillReturnActive();
+    void playbackServiceWillBecomeInactive();
     void playbackServiceWillReturnInactive();
     void playbackServiceWillReturnMaxWebAudioPlayers(int maxWebAudioPlayers);
     void playbackServiceWillReturnSharedMemoryBuffer();
