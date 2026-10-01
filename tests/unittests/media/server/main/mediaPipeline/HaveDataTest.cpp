@@ -19,6 +19,7 @@
 
 #include "MediaPipelineTestBase.h"
 
+using ::testing::_;
 using ::testing::A;
 using ::testing::ByMove;
 using ::testing::Ref;
@@ -348,8 +349,9 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataFailureDueTo
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(&data));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(firebolt::rialto::MediaSourceType::VIDEO)).WillOnce(Return(offset));
-    EXPECT_CALL(*m_dataReaderFactoryMock,
-                createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset, m_kNumFrames, m_kIsBufferFull))
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getMaxDataLen(_)).WillOnce(Return(7 * 1024 * 1024));
+    EXPECT_CALL(*m_dataReaderFactoryMock, createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset, _,
+                                                           m_kNumFrames, m_kIsBufferFull))
         .WillOnce(Return(dataReader));
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::FAILURE));
     EXPECT_FALSE(m_mediaPipeline->haveData(status, m_kNumFrames, m_kNeedDataRequestId));
@@ -370,8 +372,9 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccess)
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(&data));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(firebolt::rialto::MediaSourceType::VIDEO)).WillOnce(Return(offset));
-    EXPECT_CALL(*m_dataReaderFactoryMock,
-                createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset, m_kNumFrames, m_kIsBufferFull))
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getMaxDataLen(_)).WillOnce(Return(7 * 1024 * 1024));
+    EXPECT_CALL(*m_dataReaderFactoryMock, createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset, _,
+                                                           m_kNumFrames, m_kIsBufferFull))
         .WillOnce(Return(dataReader));
     EXPECT_CALL(*m_gstPlayerMock, attachSamples(dataReader));
     EXPECT_TRUE(m_mediaPipeline->haveData(status, m_kNumFrames, m_kNeedDataRequestId));
@@ -392,8 +395,9 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithS
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(&data));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(firebolt::rialto::MediaSourceType::VIDEO)).WillOnce(Return(offset));
-    EXPECT_CALL(*m_dataReaderFactoryMock,
-                createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset, m_kNumFrames, m_kIsBufferFull))
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getMaxDataLen(_)).WillOnce(Return(7 * 1024 * 1024));
+    EXPECT_CALL(*m_dataReaderFactoryMock, createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset, _,
+                                                           m_kNumFrames, m_kIsBufferFull))
         .WillOnce(Return(dataReader));
     EXPECT_CALL(*m_gstPlayerMock, attachSamples(dataReader));
     EXPECT_TRUE(m_mediaPipeline->haveData(status, m_kNumFrames, m_kNeedDataRequestId));
@@ -416,7 +420,8 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest,
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(&data));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(firebolt::rialto::MediaSourceType::VIDEO)).WillOnce(Return(offset));
-    EXPECT_CALL(*m_dataReaderFactoryMock, createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset,
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getMaxDataLen(_)).WillOnce(Return(7 * 1024 * 1024));
+    EXPECT_CALL(*m_dataReaderFactoryMock, createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset, _,
                                                            m_kNumFrames, kBufferIsNotFull))
         .WillOnce(Return(dataReader));
     EXPECT_CALL(*m_gstPlayerMock, attachSamples(dataReader));
@@ -438,8 +443,9 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataAudioSuccess
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(&data));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(firebolt::rialto::MediaSourceType::AUDIO)).WillOnce(Return(offset));
-    EXPECT_CALL(*m_dataReaderFactoryMock,
-                createDataReader(firebolt::rialto::MediaSourceType::AUDIO, &data, offset, m_kNumFrames, m_kIsBufferFull))
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getMaxDataLen(_)).WillOnce(Return(7 * 1024 * 1024));
+    EXPECT_CALL(*m_dataReaderFactoryMock, createDataReader(firebolt::rialto::MediaSourceType::AUDIO, &data, offset, _,
+                                                           m_kNumFrames, m_kIsBufferFull))
         .WillOnce(Return(dataReader));
     EXPECT_CALL(*m_gstPlayerMock, attachSamples(dataReader));
     EXPECT_TRUE(m_mediaPipeline->haveData(status, m_kNumFrames, m_kNeedDataRequestId));
@@ -460,8 +466,9 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithE
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(&data));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(firebolt::rialto::MediaSourceType::VIDEO)).WillOnce(Return(offset));
-    EXPECT_CALL(*m_dataReaderFactoryMock,
-                createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset, m_kNumFrames, m_kIsBufferFull))
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getMaxDataLen(_)).WillOnce(Return(7 * 1024 * 1024));
+    EXPECT_CALL(*m_dataReaderFactoryMock, createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset, _,
+                                                           m_kNumFrames, m_kIsBufferFull))
         .WillOnce(Return(dataReader));
     EXPECT_CALL(*m_gstPlayerMock, attachSamples(dataReader));
     EXPECT_CALL(*m_gstPlayerMock, setEos(firebolt::rialto::MediaSourceType::VIDEO));

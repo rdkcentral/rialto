@@ -20,8 +20,12 @@
 #include "ActionTraits.h"
 #include "ConfigureAction.h"
 #include "ExpectMessage.h"
+#include "IMediaFrameWriter.h"
 #include "MediaPipelineTest.h"
 #include "MessageBuilders.h"
+#include "SegmentBuilder.h"
+#include "metadata.pb.h"
+#include <cstring>
 
 namespace
 {
@@ -52,6 +56,44 @@ public:
         EXPECT_EQ(receivedNeedData->source_id(), needData->source_id());
         EXPECT_EQ(receivedNeedData->frame_count(), kTestFrameCount);
         needData = receivedNeedData;
+    }
+
+    void prepareAudioPipeline()
+    {
+        createSession();
+        gstPlayerWillBeCreated();
+        load();
+        audioSourceWillBeAttached();
+        attachAudioSource();
+        sourceWillBeSetup();
+        setupSource();
+        willSetupAndAddSource(&m_audioAppSrc);
+        willFinishSetupAndAddSource();
+        indicateAllSourcesAttached({&m_audioAppSrc});
+    }
+
+    std::shared_ptr<MediaPlayerShmInfo> getAudioShmInfo() const
+    {
+        return std::make_shared<MediaPlayerShmInfo>(
+            MediaPlayerShmInfo{m_lastAudioNeedData->shm_info().max_metadata_bytes(),
+                               m_lastAudioNeedData->shm_info().metadata_offset(),
+                               m_lastAudioNeedData->shm_info().media_data_offset(),
+                               m_lastAudioNeedData->shm_info().max_media_bytes()});
+    }
+
+    void sendAudioHaveData()
+    {
+        auto haveDataReq{createHaveDataRequest(m_sessionId, 1, m_lastAudioNeedData->request_id())};
+        ConfigureAction<HaveData>(m_clientStub).send(haveDataReq).expectSuccess();
+    }
+
+    void destroyPipeline()
+    {
+        removeSource(m_audioSourceId);
+        willStop();
+        stop();
+        gstPlayerWillBeDestructed();
+        destroySession();
     }
 };
 /*
@@ -178,5 +220,44 @@ TEST_F(HaveDataFailureTest, HaveDataError)
     // Step 16: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
+}
+
+TEST_F(HaveDataFailureTest, RejectsMetadataBeyondSharedMemoryRegion)
+{
+    prepareAudioPipeline();
+    auto shmInfo{getAudioShmInfo()};
+    auto writer{common::IMediaFrameWriterFactory::getFactory()->createFrameWriter(m_shmHandle.getShm(), shmInfo)};
+    auto segment{SegmentBuilder().basicAudioSegment(m_audioSourceId)()};
+    ASSERT_EQ(writer->writeFrame(segment), AddSegmentStatus::OK);
+
+    const std::uint32_t kOversizedMetadata{shmInfo->maxMediaBytes + 1};
+    std::memcpy(m_shmHandle.getShm() + shmInfo->mediaDataOffset, &kOversizedMetadata, sizeof(kOversizedMetadata));
+
+    sendAudioHaveData();
+    destroyPipeline();
+}
+
+TEST_F(HaveDataFailureTest, RejectsPayloadBeyondSharedMemoryRegion)
+{
+    prepareAudioPipeline();
+    auto shmInfo{getAudioShmInfo()};
+    auto writer{common::IMediaFrameWriterFactory::getFactory()->createFrameWriter(m_shmHandle.getShm(), shmInfo)};
+    auto segment{SegmentBuilder().basicAudioSegment(m_audioSourceId)()};
+    ASSERT_EQ(writer->writeFrame(segment), AddSegmentStatus::OK);
+
+    auto *metadataStart{m_shmHandle.getShm() + shmInfo->mediaDataOffset};
+    std::uint32_t metadataSize{0};
+    std::memcpy(&metadataSize, metadataStart, sizeof(metadataSize));
+    MediaSegmentMetadata metadata;
+    ASSERT_TRUE(metadata.ParseFromArray(metadataStart + sizeof(metadataSize), metadataSize));
+    metadata.set_length(shmInfo->maxMediaBytes + 1);
+    std::string serializedMetadata;
+    ASSERT_TRUE(metadata.SerializeToString(&serializedMetadata));
+    metadataSize = serializedMetadata.size();
+    std::memcpy(metadataStart, &metadataSize, sizeof(metadataSize));
+    std::memcpy(metadataStart + sizeof(metadataSize), serializedMetadata.data(), metadataSize);
+
+    sendAudioHaveData();
+    destroyPipeline();
 }
 } // namespace firebolt::rialto::server::ct

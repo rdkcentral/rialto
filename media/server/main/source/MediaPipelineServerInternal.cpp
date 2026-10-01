@@ -810,7 +810,8 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         const bool kIsBufferFull = kMaxNumFrames == numFrames || status == MediaSourceStatus::NO_SPACE_FOR_SAMPLES ||
                                    status == MediaSourceStatus::EOS;
         std::shared_ptr<IDataReader> dataReader =
-            m_dataReaderFactory->createDataReader(mediaSourceType, buffer, regionOffset, numFrames, kIsBufferFull);
+            m_dataReaderFactory->createDataReader(mediaSourceType, buffer, regionOffset,
+                                                  m_shmBuffer->getMaxDataLen(mediaSourceType), numFrames, kIsBufferFull);
         if (!dataReader)
         {
             RIALTO_SERVER_LOG_ERROR("Metadata version not supported for %s request id: %u",

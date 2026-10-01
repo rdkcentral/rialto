@@ -35,7 +35,7 @@ TEST_F(DataReaderFactoryTests, shouldFailToCreateDataReaderForUnknownVersion)
     constexpr bool kIsBufferFull{true};
     std::uint32_t version{23};
     std::uint8_t *data{reinterpret_cast<std::uint8_t *>(&version)};
-    auto reader = m_sut.createDataReader(kMediaSourceType, data, 0, kNumFrames, kIsBufferFull);
+    auto reader = m_sut.createDataReader(kMediaSourceType, data, 0, 10000, kNumFrames, kIsBufferFull);
     ASSERT_EQ(nullptr, reader);
 }
 
@@ -46,7 +46,7 @@ TEST_F(DataReaderFactoryTests, shouldCreateDataReaderV1)
     constexpr bool kIsBufferFull{true};
     std::uint32_t version{1};
     std::uint8_t *data{reinterpret_cast<std::uint8_t *>(&version)};
-    auto reader = m_sut.createDataReader(kMediaSourceType, data, 0, kNumFrames, kIsBufferFull);
+    auto reader = m_sut.createDataReader(kMediaSourceType, data, 0, 10000, kNumFrames, kIsBufferFull);
     ASSERT_NE(nullptr, reader);
     const firebolt::rialto::server::DataReaderV1 *v1Reader =
         dynamic_cast<const firebolt::rialto::server::DataReaderV1 *>(reader.get());
@@ -60,7 +60,7 @@ TEST_F(DataReaderFactoryTests, shouldCreateDataReaderV2)
     constexpr bool kIsBufferFull{true};
     std::uint32_t version{2};
     std::uint8_t *data{reinterpret_cast<std::uint8_t *>(&version)};
-    auto reader = m_sut.createDataReader(kMediaSourceType, data, 0, kNumFrames, kIsBufferFull);
+    auto reader = m_sut.createDataReader(kMediaSourceType, data, 0, 10000, kNumFrames, kIsBufferFull);
     ASSERT_NE(nullptr, reader);
     const firebolt::rialto::server::DataReaderV2 *v2Reader =
         dynamic_cast<const firebolt::rialto::server::DataReaderV2 *>(reader.get());

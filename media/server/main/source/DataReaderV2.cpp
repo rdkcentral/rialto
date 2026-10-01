@@ -22,6 +22,8 @@
 #include "ShmCommon.h"
 #include "TypeConverters.h"
 #include "metadata.pb.h"
+#include <cstring>
+#include <limits>
 
 namespace
 {
@@ -203,9 +205,9 @@ createSegment(const firebolt::rialto::MediaSegmentMetadata &metadata, const fire
 namespace firebolt::rialto::server
 {
 DataReaderV2::DataReaderV2(const MediaSourceType &mediaSourceType, std::uint8_t *buffer, std::uint32_t dataOffset,
-                           std::uint32_t numFrames, bool isBufferFull)
-    : m_mediaSourceType{mediaSourceType}, m_buffer{buffer}, m_dataOffset{dataOffset}, m_numFrames{numFrames},
-      m_isBufferFull{isBufferFull}
+                           std::uint32_t dataSize, std::uint32_t numFrames, bool isBufferFull)
+    : m_mediaSourceType{mediaSourceType}, m_buffer{buffer}, m_dataOffset{dataOffset}, m_dataSize{dataSize},
+      m_numFrames{numFrames}, m_isBufferFull{isBufferFull}
 {
     RIALTO_SERVER_LOG_DEBUG("Detected Metadata in Version 2. Media source type: %s",
                             common::convertMediaSourceType(m_mediaSourceType));
@@ -215,12 +217,25 @@ IMediaPipeline::MediaSegmentVector DataReaderV2::readData() const
 {
     IMediaPipeline::MediaSegmentVector mediaSegments;
     uint8_t *currentReadPosition{m_buffer + m_dataOffset};
+    std::uint32_t remainingSize{m_dataSize};
     for (auto i = 0U; i < m_numFrames; ++i)
     {
-        std::uint32_t *metadataSize{reinterpret_cast<uint32_t *>(currentReadPosition)};
-        currentReadPosition += sizeof(uint32_t);
+        if (remainingSize < sizeof(std::uint32_t))
+        {
+            RIALTO_SERVER_LOG_ERROR("Insufficient space for metadata size");
+            return IMediaPipeline::MediaSegmentVector{};
+        }
+        std::uint32_t metadataSize{0};
+        std::memcpy(&metadataSize, currentReadPosition, sizeof(metadataSize));
+        currentReadPosition += sizeof(metadataSize);
+        remainingSize -= sizeof(metadataSize);
+        if (metadataSize > remainingSize || metadataSize > std::numeric_limits<int>::max())
+        {
+            RIALTO_SERVER_LOG_ERROR("Metadata size exceeds available data");
+            return IMediaPipeline::MediaSegmentVector{};
+        }
         MediaSegmentMetadata metadata;
-        if (!metadata.ParseFromArray(currentReadPosition, *metadataSize))
+        if (!metadata.ParseFromArray(currentReadPosition, static_cast<int>(metadataSize)))
         {
             RIALTO_SERVER_LOG_ERROR("Metadata parsing failed!");
             return IMediaPipeline::MediaSegmentVector{};
@@ -231,9 +246,16 @@ IMediaPipeline::MediaSegmentVector DataReaderV2::readData() const
             RIALTO_SERVER_LOG_ERROR("Segment parsing failed!");
             return IMediaPipeline::MediaSegmentVector{};
         }
-        currentReadPosition += *metadataSize;
+        currentReadPosition += metadataSize;
+        remainingSize -= metadataSize;
+        if (metadata.length() > remainingSize)
+        {
+            RIALTO_SERVER_LOG_ERROR("Media data size exceeds available data");
+            return IMediaPipeline::MediaSegmentVector{};
+        }
         newSegment->setData(metadata.length(), currentReadPosition);
         currentReadPosition += metadata.length();
+        remainingSize -= metadata.length();
         mediaSegments.emplace_back(std::move(newSegment));
     }
     return mediaSegments;
