@@ -18,17 +18,29 @@
  */
 
 #include "GstWrapper.h"
+#include <ctime>
 #include <fstream>
+#include <iomanip>
 #include <string>
 #include <sys/syscall.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 void debugLog(const std::string& message)
 {
     static std::ofstream logFile("/opt/logs/rialto_debug.log", std::ios::app);
 
-    logFile << "(fz-dbg)tid:" << syscall(SYS_gettid)
-            << " " << message << std::endl;
+    // Get timestamp with microsecond precision
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
+    struct tm tm_info;
+    localtime_r(&tv.tv_sec, &tm_info);  // Thread-safe version
+    char timeBuffer[64];
+    strftime(timeBuffer, sizeof(timeBuffer), "%Y-%m-%d %H:%M:%S", &tm_info);
+
+    logFile << "[" << timeBuffer << "." << std::setfill('0') << std::setw(6) << tv.tv_usec
+            << " PID:" << getpid() << " TID:" << syscall(SYS_gettid) << "] "
+            << message << std::endl;
 
     logFile.flush();
 }
