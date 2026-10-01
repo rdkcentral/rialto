@@ -43,6 +43,28 @@ void Stop::execute() const
     {
         streamInfo.second.isDataNeeded = false;
     }
+
+    // TEMPORARY INSTRUMENTATION (CPESP-10589) - measure stale queued buffers at stop. Do not merge.
+    {
+        gsize totalBytes{0};
+        size_t totalCount{0};
+        for (const auto &elem : m_context.streamInfo)
+        {
+            gsize streamBytes{0};
+            for (GstBuffer *buffer : elem.second.buffers)
+            {
+                streamBytes += gst_buffer_get_size(buffer);
+            }
+            totalBytes += streamBytes;
+            totalCount += elem.second.buffers.size();
+            RIALTO_SERVER_LOG_MIL("USHA: MEMSTAT: sourceType=%d count=%zu bytes=%" G_GSIZE_FORMAT " isDataNeeded=%d",
+                                  static_cast<int>(elem.first), elem.second.buffers.size(), streamBytes,
+                                  static_cast<int>(elem.second.isDataNeeded));
+        }
+        RIALTO_SERVER_LOG_MIL("MEMSTAT: TOTAL streams=%zu count=%zu bytes=%" G_GSIZE_FORMAT, m_context.streamInfo.size(),
+                              totalCount, totalBytes);
+    }
+
     RIALTO_SERVER_LOG_MIL("State change to NULL requested");
 }
 } // namespace firebolt::rialto::server::tasks::generic
