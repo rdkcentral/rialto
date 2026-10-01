@@ -181,6 +181,35 @@ SetupElement::SetupElement(GenericPlayerContext &context,
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_player{player}, m_element{element}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetupElement");
+
+    // Property setting has to happen immediately
+    if (isVideoParser(*m_gstWrapper, m_element))
+    {
+        RIALTO_SERVER_LOG_INFO("Setting syncmode-streaming to 1 on video parser (immediate)");
+        bool streamSyncModePending{false};
+        streamSyncModePending = m_context.pendingStreamSyncMode.find(MediaSourceType::VIDEO) !=
+                                m_context.pendingStreamSyncMode.end();
+        if (streamSyncModePending)
+        {
+            m_player.setStreamSyncMode(MediaSourceType::VIDEO);
+        }
+    }
+    else if (isAudioDecoder(*m_gstWrapper, m_element))
+    {
+        bool streamSyncModePending{false};
+        bool bufferingLimitPending{false};
+        streamSyncModePending = m_context.pendingStreamSyncMode.find(MediaSourceType::AUDIO) !=
+                                m_context.pendingStreamSyncMode.end();
+        bufferingLimitPending = m_context.pendingBufferingLimit.has_value();
+        if (streamSyncModePending)
+        {
+            m_player.setStreamSyncMode(MediaSourceType::AUDIO);
+        }
+        if (bufferingLimitPending)
+        {
+            m_player.setBufferingLimit();
+        }
+    }
 }
 
 SetupElement::~SetupElement()
@@ -394,14 +423,20 @@ void SetupElement::execute() const
         {
             m_player.setSyncOff();
         }
-        if (m_context.pendingStreamSyncMode.find(MediaSourceType::AUDIO) != m_context.pendingStreamSyncMode.end())
+        bool streamSyncModePending{false};
+        bool bufferingLimitPending{false};
+        streamSyncModePending = m_context.pendingStreamSyncMode.find(MediaSourceType::AUDIO) !=
+                                m_context.pendingStreamSyncMode.end();
+        bufferingLimitPending = m_context.pendingBufferingLimit.has_value();
+        if (streamSyncModePending)
         {
             m_player.setStreamSyncMode(MediaSourceType::AUDIO);
         }
-        if (m_context.pendingBufferingLimit.has_value())
+        if (bufferingLimitPending)
         {
             m_player.setBufferingLimit();
         }
+
         if (m_context.isLive &&
             m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_element), "enable-rate-correction"))
         {
@@ -422,7 +457,10 @@ void SetupElement::execute() const
     }
     else if (isVideoParser(*m_gstWrapper, m_element))
     {
-        if (m_context.pendingStreamSyncMode.find(MediaSourceType::VIDEO) != m_context.pendingStreamSyncMode.end())
+        bool streamSyncModePending{false};
+        streamSyncModePending = m_context.pendingStreamSyncMode.find(MediaSourceType::VIDEO) !=
+                                m_context.pendingStreamSyncMode.end();
+        if (streamSyncModePending)
         {
             m_player.setStreamSyncMode(MediaSourceType::VIDEO);
         }

@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_SERVICE_MEDIA_PIPELINE_SERVICE_H_
 
 #include "IDecryptionService.h"
+#include "IMediaCapabilitiesServerInternal.h"
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "IMediaPipelineService.h"
@@ -33,6 +34,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <queue>
 #include <string>
 #include <thread>
@@ -46,7 +48,9 @@ public:
     MediaPipelineService(IPlaybackService &playbackService,
                          std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
                          std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-                         IDecryptionService &decryptionService, IPrivateMetricsService &metricsService);
+                         IDecryptionService &decryptionService, IPrivateMetricsService &metricsService,
+                         std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory>
+                             &&mediaCapabilitiesFactory = nullptr);
     ~MediaPipelineService() override;
     MediaPipelineService(const MediaPipelineService &) = delete;
     MediaPipelineService(MediaPipelineService &&) = delete;
@@ -108,11 +112,16 @@ public:
     void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) override;
 
     void clearMediaPipelines();
+    common::AudioDecoderCapabilities getSupportedAudioCapabilities() override;
+    common::VideoDecoderCapabilities getSupportedVideoCapabilities() override;
+    void setPreloadedCapabilities(const std::optional<common::AudioDecoderCapabilities> &audioCaps,
+                                  const std::optional<common::VideoDecoderCapabilities> &videoCaps) override;
 
 private:
     IPlaybackService &m_playbackService;
     std::shared_ptr<IMediaPipelineServerInternalFactory> m_mediaPipelineFactory;
-    std::shared_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
+    std::unique_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
+    std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternal> m_mediaCapabilities;
     IDecryptionService &m_decryptionService;
     IPrivateMetricsService &m_metricsService;
     std::map<int, std::unique_ptr<IMediaPipelineServerInternal>> m_mediaPipelines;

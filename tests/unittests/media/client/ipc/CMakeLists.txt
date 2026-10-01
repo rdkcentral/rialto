@@ -63,6 +63,9 @@ add_gtests (
         # MediaPipelineCapabilitiesIpc tests
         mediaPipelineCapabilitiesIpc/MediaPipelineCapabilitiesIpcTest.cpp
 
+        # MediaCapabilitiesIpc tests
+        mediaCapabilitiesIpc/MediaCapabilitiesIpcTest.cpp
+
         # ControlIpc tests
         controlIpc/base/ControlIpcTestBase.cpp
         controlIpc/CreateTest.cpp
