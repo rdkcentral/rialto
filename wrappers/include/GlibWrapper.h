@@ -148,6 +148,40 @@ public:
     }
 
     void gThreadPoolSetMaxIdleTime(guint interval) const override { g_thread_pool_set_max_idle_time(interval); }
+
+    GMainContext *gMainContextNew() const override { return g_main_context_new(); }
+
+    void gMainContextUnref(GMainContext *context) const override { g_main_context_unref(context); }
+
+    void gMainContextPushThreadDefault(GMainContext *context) const override
+    {
+        g_main_context_push_thread_default(context);
+    }
+
+    void gMainContextPopThreadDefault(GMainContext *context) const override
+    {
+        g_main_context_pop_thread_default(context);
+    }
+
+    GMainLoop *gMainLoopNew(GMainContext *context, gboolean isRunning) const override
+    {
+        return g_main_loop_new(context, isRunning);
+    }
+
+    void gMainLoopRun(GMainLoop *loop) const override { g_main_loop_run(loop); }
+
+    void gMainLoopQuit(GMainLoop *loop) const override { g_main_loop_quit(loop); }
+
+    void gMainLoopUnref(GMainLoop *loop) const override { g_main_loop_unref(loop); }
+
+    void gSourceSetCallback(GSource *source, GSourceFunc func, gpointer data, GDestroyNotify notify) const override
+    {
+        g_source_set_callback(source, func, data, notify);
+    }
+
+    guint gSourceAttach(GSource *source, GMainContext *context) const override { return g_source_attach(source, context); }
+
+    void gSourceUnref(GSource *source) const override { g_source_unref(source); }
 };
 
 }; // namespace firebolt::rialto::wrappers

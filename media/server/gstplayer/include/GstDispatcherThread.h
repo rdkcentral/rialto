@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_GST_DISPATCHER_THREAD_H_
 #define FIREBOLT_RIALTO_SERVER_GST_DISPATCHER_THREAD_H_
 
+#include "IGlibWrapper.h"
 #include "IGstDispatcherThread.h"
 #include <atomic>
 #include <gst/gst.h>
@@ -35,7 +36,8 @@ public:
     std::unique_ptr<IGstDispatcherThread>
     createGstDispatcherThread(IGstDispatcherThreadClient &client, GstElement *pipeline,
                               const std::shared_ptr<IFlushOnPrerollController> &flushOnPrerollController,
-                              const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const override;
+                              const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                              const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper) const override;
 };
 
 class GstDispatcherThread : public IGstDispatcherThread
@@ -43,16 +45,27 @@ class GstDispatcherThread : public IGstDispatcherThread
 public:
     GstDispatcherThread(IGstDispatcherThreadClient &client, GstElement *pipeline,
                         const std::shared_ptr<IFlushOnPrerollController> &flushOnPrerollController,
-                        const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper);
+                        const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                        const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper);
     ~GstDispatcherThread() override;
 
 private:
     /**
-     * @brief For handling gst bus messages in Gstreamer dispatcher thread
-     *
-     * @param[in] pipeline : The pipeline
+     * @brief Runs the GMainLoop that drives the bus watch. Runs on m_gstBusDispatcherThread.
      */
-    void gstBusEventHandler(GstElement *pipeline);
+    void gstBusEventHandler();
+
+    /**
+     * @brief For handling gst bus messages, invoked by the bus watch on m_gstBusDispatcherThread.
+     *
+     * @param[in] message : The message popped from the bus.
+     */
+    void handleMessage(GstMessage *message);
+
+    /**
+     * @brief GSourceFunc-compatible trampoline registered as the bus watch's callback.
+     */
+    static gboolean onBusMessage(GstBus *bus, GstMessage *message, gpointer userData);
 
 private:
     /**
@@ -71,15 +84,37 @@ private:
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
 
     /**
-     * @brief Flag used to check, if task thread is active
+     * @brief The glib wrapper object.
+     */
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
+
+    /**
+     * @brief Flag used to check, if the dispatcher should keep running.
      */
     std::atomic<bool> m_isGstreamerDispatcherActive;
+
+    /**
+     * @brief The pipeline being watched, used to identify pipeline-scoped messages.
+     */
+    GstElement *m_pipeline;
 
     /**
      * @brief Thread for handling gst bus callbacks
      */
     std::thread m_gstBusDispatcherThread;
+
+    /**
+     * @brief Private main context the bus watch is attached to. Only touched on the constructing thread
+     *        and m_gstBusDispatcherThread; null if construction failed to obtain a bus.
+     */
+    GMainContext *m_mainContext{nullptr};
+
+    /**
+     * @brief The main loop that drives the bus watch.
+     */
+    GMainLoop *m_mainLoop{nullptr};
 };
 } // namespace firebolt::rialto::server
 
 #endif // FIREBOLT_RIALTO_SERVER_GST_DISPATCHER_THREAD_H_
+
