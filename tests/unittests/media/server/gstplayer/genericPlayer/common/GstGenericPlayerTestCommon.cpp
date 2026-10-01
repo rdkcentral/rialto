@@ -202,7 +202,7 @@ void GstGenericPlayerTestCommon::expectCheckPlaySink()
 
 void GstGenericPlayerTestCommon::expectSetMessageCallback()
 {
-    EXPECT_CALL(m_gstDispatcherThreadFactoryMock, createGstDispatcherThread(_, _, _, _))
+    EXPECT_CALL(m_gstDispatcherThreadFactoryMock, createGstDispatcherThread(_, _, _, _, _))
         .WillOnce(Return(ByMove(std::move(gstDispatcherThread))));
 }
 

@@ -36,6 +36,18 @@ public:
     MOCK_METHOD(GType, gTypeFromName, (const gchar *name), (override));
     MOCK_METHOD(GFlagsValue *, gFlagsGetValueByNick, (GFlagsClass * flags_class, const gchar *nick), (override));
     MOCK_METHOD(void, gObjectUnref, (gpointer object), (override));
+    MOCK_METHOD(GMainContext *, gMainContextNew, (), (const, override));
+    MOCK_METHOD(void, gMainContextUnref, (GMainContext * context), (const, override));
+    MOCK_METHOD(void, gMainContextPushThreadDefault, (GMainContext * context), (const, override));
+    MOCK_METHOD(void, gMainContextPopThreadDefault, (GMainContext * context), (const, override));
+    MOCK_METHOD(GMainLoop *, gMainLoopNew, (GMainContext * context, gboolean isRunning), (const, override));
+    MOCK_METHOD(void, gMainLoopRun, (GMainLoop * loop), (const, override));
+    MOCK_METHOD(void, gMainLoopQuit, (GMainLoop * loop), (const, override));
+    MOCK_METHOD(void, gMainLoopUnref, (GMainLoop * loop), (const, override));
+    MOCK_METHOD(void, gSourceSetCallback, (GSource * source, GSourceFunc func, gpointer data, GDestroyNotify notify),
+                (const, override));
+    MOCK_METHOD(guint, gSourceAttach, (GSource * source, GMainContext *context), (const, override));
+    MOCK_METHOD(void, gSourceUnref, (GSource * source), (const, override));
     MOCK_METHOD(gulong, gSignalConnect,
                 (gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data), (override));
     MOCK_METHOD(void, gFree, (gpointer mem), (const, override));
