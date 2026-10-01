@@ -40,6 +40,7 @@ add_compile_options(
     -fno-omit-frame-pointer
     -fasynchronous-unwind-tables
     -funwind-tables
+    -fno-dwarf2-cfi-asm
 )
 
 # -marm is valid only for 32-bit ARM/AArch32 targets. It is not applicable
