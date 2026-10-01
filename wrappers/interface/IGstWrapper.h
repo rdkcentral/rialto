@@ -650,6 +650,24 @@ public:
     virtual GstMessage *gstBusTimedPopFiltered(GstBus *bus, GstClockTime timeout, GstMessageType types) = 0;
 
     /**
+     * @brief Creates a GSource that watches the bus, dispatching a callback for every message received.
+     *
+     * @param[in] bus : bus to watch
+     *
+     * @retval a newly allocated GSource, transfer-full (caller owns the returned reference).
+     */
+    virtual GSource *gstBusCreateWatch(GstBus *bus) = 0;
+
+    /**
+     * @brief Increases the refcount of the message.
+     *
+     * @param[in] msg : a GstMessage.
+     *
+     * @retval the same message, for convenience.
+     */
+    virtual GstMessage *gstMessageRef(GstMessage *msg) = 0;
+
+    /**
      * @brief Gets a message fromt the bus
      *
      * @param[in] bin       : top-level pipeline

@@ -19,86 +19,118 @@
 
 #include "GstDispatcherThread.h"
 #include "FlushOnPrerollControllerMock.h"
-#include "GenericPlayerTaskFactoryMock.h"
+#include "GlibWrapperMock.h"
 #include "GstDispatcherThreadClientMock.h"
 #include "GstWrapperMock.h"
-#include "PlayerTaskMock.h"
-#include "WorkerThreadFactoryMock.h"
-#include "WorkerThreadMock.h"
-#include <condition_variable>
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 #include <memory>
-#include <mutex>
 
 using namespace firebolt::rialto::server;
 using namespace firebolt::rialto::wrappers;
 
 using ::testing::_;
-using ::testing::ByMove;
 using ::testing::DoAll;
-using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 
+namespace
+{
+// GSource is a public (partially-opaque) glib struct, but GMainContext/GMainLoop are fully opaque -
+// their addresses are only ever compared, never dereferenced, so fake sentinel pointers are safe here.
+GMainContext *const kMainContext = reinterpret_cast<GMainContext *>(0x1);
+GMainLoop *const kMainLoop = reinterpret_cast<GMainLoop *>(0x2);
+} // namespace
+
 class GstDispatcherThreadTest : public ::testing::Test
 {
 protected:
     GstElement m_pipeline{};
+    GstBus m_bus{};
+    GSource m_busSource{};
+    GstMessage m_message{};
+
     StrictMock<firebolt::rialto::server::GstDispatcherThreadClientMock> m_client;
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock{std::make_shared<StrictMock<GstWrapperMock>>()};
-    std::unique_ptr<IGenericPlayerTaskFactory> m_taskFactory{std::make_unique<StrictMock<GenericPlayerTaskFactoryMock>>()};
-    StrictMock<GenericPlayerTaskFactoryMock> &m_taskFactoryMock{
-        dynamic_cast<StrictMock<GenericPlayerTaskFactoryMock> &>(*m_taskFactory)};
-    std::unique_ptr<IWorkerThreadFactory> workerThreadFactory{std::make_unique<StrictMock<WorkerThreadFactoryMock>>()};
-    StrictMock<WorkerThreadFactoryMock> &m_workerThreadFactoryMock{
-        dynamic_cast<StrictMock<WorkerThreadFactoryMock> &>(*workerThreadFactory)};
-    std::unique_ptr<IWorkerThread> workerThread{std::make_unique<StrictMock<WorkerThreadMock>>()};
-    StrictMock<WorkerThreadMock> &m_workerThreadMock{dynamic_cast<StrictMock<WorkerThreadMock> &>(*workerThread)};
+    std::shared_ptr<StrictMock<GlibWrapperMock>> m_glibWrapperMock{std::make_shared<StrictMock<GlibWrapperMock>>()};
     std::shared_ptr<StrictMock<FlushOnPrerollControllerMock>> m_flushOnPrerollControllerMock{
         std::make_shared<StrictMock<FlushOnPrerollControllerMock>>()};
 
-    std::mutex m_dispatcherThreadMutex;
-    std::condition_variable m_dispatcherThreadCond;
-    bool m_dispatcherThreadDone{false};
-    GstBus m_bus{};
-    GstMessage m_message{};
+    GSourceFunc m_capturedFunc{nullptr};
+    gpointer m_capturedUserData{nullptr};
+
+    // Sets up the expectations for construction (bus watch wiring + the loop thread) and returns the sut.
+    std::unique_ptr<GstDispatcherThread> createSut()
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
+        EXPECT_CALL(*m_glibWrapperMock, gMainContextNew()).WillOnce(Return(kMainContext));
+        EXPECT_CALL(*m_glibWrapperMock, gMainLoopNew(kMainContext, FALSE)).WillOnce(Return(kMainLoop));
+        EXPECT_CALL(*m_gstWrapperMock, gstBusCreateWatch(&m_bus)).WillOnce(Return(&m_busSource));
+        EXPECT_CALL(*m_glibWrapperMock, gSourceSetCallback(&m_busSource, _, _, nullptr))
+            .WillOnce(Invoke(
+                [this](GSource *, GSourceFunc func, gpointer data, GDestroyNotify)
+                {
+                    m_capturedFunc = func;
+                    m_capturedUserData = data;
+                }));
+        EXPECT_CALL(*m_glibWrapperMock, gSourceAttach(&m_busSource, kMainContext)).WillOnce(Return(1));
+        EXPECT_CALL(*m_glibWrapperMock, gSourceUnref(&m_busSource));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
+
+        EXPECT_CALL(*m_glibWrapperMock, gMainContextPushThreadDefault(kMainContext));
+        EXPECT_CALL(*m_glibWrapperMock, gMainLoopRun(kMainLoop));
+        EXPECT_CALL(*m_glibWrapperMock, gMainContextPopThreadDefault(kMainContext));
+
+        auto sut = std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_flushOnPrerollControllerMock,
+                                                          m_gstWrapperMock, m_glibWrapperMock);
+        EXPECT_TRUE(m_capturedFunc);
+        return sut;
+    }
+
+    // Invokes the captured GSourceFunc as GStreamer's bus-watch dispatch would, i.e. as a GstBusFunc.
+    gboolean triggerBusMessage(GstMessage *message)
+    {
+        auto busFunc = reinterpret_cast<gboolean (*)(GstBus *, GstMessage *, gpointer)>(m_capturedFunc);
+        return busFunc(&m_bus, message, m_capturedUserData);
+    }
+
+    // Expects the graceful-shutdown teardown (destructor) calls, common to every test.
+    void expectDestruction()
+    {
+        EXPECT_CALL(*m_glibWrapperMock, gMainLoopUnref(kMainLoop));
+        EXPECT_CALL(*m_glibWrapperMock, gMainContextUnref(kMainContext));
+    }
 };
 
 /**
- * Test when gstBusTimedPopFiltered exits with timeout
+ * Test that construction wires up a GMainLoop-based bus watch and that destruction tears it down,
+ * with no message ever having been received.
  */
-TEST_F(GstDispatcherThreadTest, PollTimeout)
+TEST_F(GstDispatcherThreadTest, ConstructionAndDestructionWireUpAndTearDownTheMainLoop)
 {
+    auto sut = createSut();
+
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    expectDestruction();
+    sut.reset();
+}
+
+/**
+ * Test that a message of a type never requested from the bus is dropped without notifying the client.
+ */
+TEST_F(GstDispatcherThreadTest, UnfilteredMessageTypeIsIgnored)
+{
+    auto sut = createSut();
+
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
-    GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_ERROR;
-    EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
-    {
-        InSequence seq;
-        EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(nullptr));
-        EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
-        EXPECT_CALL(m_client, handleBusMessage(_));
-    }
+    GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_BUFFERING;
+    EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(&m_message));
 
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
-        .WillOnce(Invoke(
-            [this](gpointer bus)
-            {
-                std::unique_lock<std::mutex> lock(m_dispatcherThreadMutex);
-                m_dispatcherThreadDone = true;
-                m_dispatcherThreadCond.notify_all();
-            }));
-
-    auto sut =
-        std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_flushOnPrerollControllerMock, m_gstWrapperMock);
-
-    // wait for dispatcher thread
-    std::unique_lock<std::mutex> dispatcherLock(m_dispatcherThreadMutex);
-    bool status = m_dispatcherThreadCond.wait_for(dispatcherLock, std::chrono::milliseconds(200),
-                                                  [this]() { return m_dispatcherThreadDone; });
-    EXPECT_TRUE(status);
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    expectDestruction();
+    sut.reset();
 }
 
 /**
@@ -106,6 +138,8 @@ TEST_F(GstDispatcherThreadTest, PollTimeout)
  */
 TEST_F(GstDispatcherThreadTest, StateChangedToPaused)
 {
+    auto sut = createSut();
+
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_STATE_CHANGED;
 
@@ -113,42 +147,17 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPaused)
     GstState newState = GST_STATE_PAUSED;
     GstState pending = GST_STATE_VOID_PENDING;
 
-    GstMessage messageError = {};
-    GST_MESSAGE_SRC(&messageError) = GST_OBJECT(&m_pipeline);
-    GST_MESSAGE_TYPE(&messageError) = GST_MESSAGE_ERROR;
-
-    EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
-
     EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
-
-    {
-        InSequence seq;
-        EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
-        EXPECT_CALL(m_client, handleBusMessage(_));
-
-        // Signal error to stop the thread
-        EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&messageError));
-        EXPECT_CALL(m_client, handleBusMessage(_));
-    }
     EXPECT_CALL(*m_flushOnPrerollControllerMock, stateReached(GST_STATE_PAUSED));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
-        .WillOnce(Invoke(
-            [this](gpointer bus)
-            {
-                std::unique_lock<std::mutex> lock(m_dispatcherThreadMutex);
-                m_dispatcherThreadDone = true;
-                m_dispatcherThreadCond.notify_all();
-            }));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageRef(&m_message)).WillOnce(Return(&m_message));
+    EXPECT_CALL(m_client, handleBusMessage(&m_message));
 
-    auto sut =
-        std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_flushOnPrerollControllerMock, m_gstWrapperMock);
+    EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(&m_message));
 
-    // wait for dispatcher thread
-    std::unique_lock<std::mutex> dispatcherLock(m_dispatcherThreadMutex);
-    bool status = m_dispatcherThreadCond.wait_for(dispatcherLock, std::chrono::milliseconds(200),
-                                                  [this]() { return m_dispatcherThreadDone; });
-    EXPECT_TRUE(status);
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    expectDestruction();
+    sut.reset();
 }
 
 /**
@@ -156,56 +165,62 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPaused)
  */
 TEST_F(GstDispatcherThreadTest, StateChangedToPlaying)
 {
+    auto sut = createSut();
+
+    GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
+    GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_STATE_CHANGED;
+
+    GstState oldState = GST_STATE_PAUSED;
+    GstState newState = GST_STATE_PLAYING;
+    GstState pending = GST_STATE_VOID_PENDING;
+
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(&m_message, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+    EXPECT_CALL(*m_flushOnPrerollControllerMock, stateReached(GST_STATE_PLAYING));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageRef(&m_message)).WillOnce(Return(&m_message));
+    EXPECT_CALL(m_client, handleBusMessage(&m_message));
+
+    EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(&m_message));
+
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    expectDestruction();
+    sut.reset();
+}
+
+/**
+ * Test that a GST_MESSAGE_STATE_CHANGED message (to GST_STATE_PAUSED, pending PAUSED) is handled correctly.
+ */
+TEST_F(GstDispatcherThreadTest, StateChangedToPrerolling)
+{
+    auto sut = createSut();
+
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_STATE_CHANGED;
 
     GstState oldState = GST_STATE_READY;
-    GstState newState = GST_STATE_PLAYING;
-    GstState pending = GST_STATE_VOID_PENDING;
-
-    GstMessage messageError = {};
-    GST_MESSAGE_SRC(&messageError) = GST_OBJECT(&m_pipeline);
-    GST_MESSAGE_TYPE(&messageError) = GST_MESSAGE_ERROR;
-
-    EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
+    GstState newState = GST_STATE_PAUSED;
+    GstState pending = GST_STATE_PAUSED;
 
     EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+    EXPECT_CALL(*m_flushOnPrerollControllerMock, setPrerolling());
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageRef(&m_message)).WillOnce(Return(&m_message));
+    EXPECT_CALL(m_client, handleBusMessage(&m_message));
 
-    {
-        InSequence seq;
-        EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
-        EXPECT_CALL(m_client, handleBusMessage(_));
+    EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(&m_message));
 
-        // Signal error to stop the thread
-        EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&messageError));
-        EXPECT_CALL(m_client, handleBusMessage(_));
-    }
-    EXPECT_CALL(*m_flushOnPrerollControllerMock, stateReached(GST_STATE_PLAYING));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
-        .WillOnce(Invoke(
-            [this](gpointer bus)
-            {
-                std::unique_lock<std::mutex> lock(m_dispatcherThreadMutex);
-                m_dispatcherThreadDone = true;
-                m_dispatcherThreadCond.notify_all();
-            }));
-
-    auto sut =
-        std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_flushOnPrerollControllerMock, m_gstWrapperMock);
-
-    // wait for dispatcher thread
-    std::unique_lock<std::mutex> dispatcherLock(m_dispatcherThreadMutex);
-    bool status = m_dispatcherThreadCond.wait_for(dispatcherLock, std::chrono::milliseconds(200),
-                                                  [this]() { return m_dispatcherThreadDone; });
-    EXPECT_TRUE(status);
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    expectDestruction();
+    sut.reset();
 }
 
 /**
- * Test that a GST_MESSAGE_STATE_CHANGED message is handled correctly.
+ * Test that a GST_MESSAGE_STATE_CHANGED message (to GST_STATE_NULL) stops the dispatcher.
  */
 TEST_F(GstDispatcherThreadTest, StateChangedToStop)
 {
+    auto sut = createSut();
+
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_STATE_CHANGED;
 
@@ -215,148 +230,90 @@ TEST_F(GstDispatcherThreadTest, StateChangedToStop)
 
     EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
-    EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
-    EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
-    EXPECT_CALL(m_client, handleBusMessage(_));
     EXPECT_CALL(*m_flushOnPrerollControllerMock, reset());
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
-        .WillOnce(Invoke(
-            [this](gpointer bus)
-            {
-                std::unique_lock<std::mutex> lock(m_dispatcherThreadMutex);
-                m_dispatcherThreadDone = true;
-                m_dispatcherThreadCond.notify_all();
-            }));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageRef(&m_message)).WillOnce(Return(&m_message));
+    EXPECT_CALL(m_client, handleBusMessage(&m_message));
+    // Reaching GST_STATE_NULL quits the loop immediately, from within the callback itself.
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
 
-    auto sut =
-        std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_flushOnPrerollControllerMock, m_gstWrapperMock);
+    EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(&m_message));
 
-    // wait for dispatcher thread
-    std::unique_lock<std::mutex> dispatcherLock(m_dispatcherThreadMutex);
-    bool status = m_dispatcherThreadCond.wait_for(dispatcherLock, std::chrono::milliseconds(200),
-                                                  [this]() { return m_dispatcherThreadDone; });
-    EXPECT_TRUE(status);
+    // Destructor calls gMainLoopQuit again unconditionally; safe/idempotent on a real GMainLoop.
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    expectDestruction();
+    sut.reset();
 }
 
 /**
- * Test that a GST_MESSAGE_STATE_CHANGED message (to GST_STATE_PAUSED, pending PAUSED) is handled correctly.
- */
-TEST_F(GstDispatcherThreadTest, StateChangedToPrerolling)
-{
-    GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
-    GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_STATE_CHANGED;
-
-    GstState oldState = GST_STATE_READY;
-    GstState newState = GST_STATE_PAUSED;
-    GstState pending = GST_STATE_PAUSED;
-
-    GstMessage messageError = {};
-    GST_MESSAGE_SRC(&messageError) = GST_OBJECT(&m_pipeline);
-    GST_MESSAGE_TYPE(&messageError) = GST_MESSAGE_ERROR;
-
-    EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
-
-    EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(&m_message, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
-
-    {
-        InSequence seq;
-        EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
-        EXPECT_CALL(m_client, handleBusMessage(_));
-
-        // Signal error to stop the thread
-        EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&messageError));
-        EXPECT_CALL(m_client, handleBusMessage(_));
-    }
-    EXPECT_CALL(*m_flushOnPrerollControllerMock, setPrerolling());
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
-        .WillOnce(Invoke(
-            [this](gpointer bus)
-            {
-                std::unique_lock<std::mutex> lock(m_dispatcherThreadMutex);
-                m_dispatcherThreadDone = true;
-                m_dispatcherThreadCond.notify_all();
-            }));
-
-    auto sut =
-        std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_flushOnPrerollControllerMock, m_gstWrapperMock);
-
-    // wait for dispatcher thread
-    std::unique_lock<std::mutex> dispatcherLock(m_dispatcherThreadMutex);
-    bool status = m_dispatcherThreadCond.wait_for(dispatcherLock, std::chrono::milliseconds(200),
-                                                  [this]() { return m_dispatcherThreadDone; });
-    EXPECT_TRUE(status);
-}
-
-/**
- * Test that a GST_MESSAGE_ERROR message is handled correctly.
+ * Test that a GST_MESSAGE_ERROR message is handled correctly and stops the dispatcher.
  */
 TEST_F(GstDispatcherThreadTest, Error)
 {
+    auto sut = createSut();
+
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_ERROR;
-    EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
-    EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
-    EXPECT_CALL(m_client, handleBusMessage(_));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
-        .WillOnce(Invoke(
-            [this](gpointer bus)
-            {
-                std::unique_lock<std::mutex> lock(m_dispatcherThreadMutex);
-                m_dispatcherThreadDone = true;
-                m_dispatcherThreadCond.notify_all();
-            }));
 
-    auto sut =
-        std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_flushOnPrerollControllerMock, m_gstWrapperMock);
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageRef(&m_message)).WillOnce(Return(&m_message));
+    EXPECT_CALL(m_client, handleBusMessage(&m_message));
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
 
-    // wait for dispatcher thread
-    std::unique_lock<std::mutex> dispatcherLock(m_dispatcherThreadMutex);
-    bool status = m_dispatcherThreadCond.wait_for(dispatcherLock, std::chrono::milliseconds(200),
-                                                  [this]() { return m_dispatcherThreadDone; });
-    EXPECT_TRUE(status);
+    EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(&m_message));
+
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    expectDestruction();
+    sut.reset();
 }
 
 /**
- * Test that a GST_MESSAGE_STATE_CHANGED message is not handled for non-pipeline object.
+ * Test that a GST_MESSAGE_STATE_CHANGED message is not handled for a non-pipeline object.
  */
 TEST_F(GstDispatcherThreadTest, StateChangedToPausedNonPipeline)
 {
+    auto sut = createSut();
+
     GstElement someElement{};
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&someElement);
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_STATE_CHANGED;
 
-    GstMessage messageError = {};
-    GST_MESSAGE_SRC(&messageError) = GST_OBJECT(&m_pipeline);
-    GST_MESSAGE_TYPE(&messageError) = GST_MESSAGE_ERROR;
+    EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(&m_message));
 
-    EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
-
-    {
-        InSequence seq;
-        EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
-        EXPECT_CALL(*m_gstWrapperMock, gstMessageUnref(&m_message));
-
-        // Signal error to stop the thread
-        EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&messageError));
-        EXPECT_CALL(m_client, handleBusMessage(_));
-    }
-
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
-        .WillOnce(Invoke(
-            [this](gpointer bus)
-            {
-                std::unique_lock<std::mutex> lock(m_dispatcherThreadMutex);
-                m_dispatcherThreadDone = true;
-                m_dispatcherThreadCond.notify_all();
-            }));
-
-    auto sut =
-        std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_flushOnPrerollControllerMock, m_gstWrapperMock);
-
-    // wait for dispatcher thread
-    std::unique_lock<std::mutex> dispatcherLock(m_dispatcherThreadMutex);
-    bool status = m_dispatcherThreadCond.wait_for(dispatcherLock, std::chrono::milliseconds(200),
-                                                  [this]() { return m_dispatcherThreadDone; });
-    EXPECT_TRUE(status);
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    expectDestruction();
+    sut.reset();
 }
+
+/**
+ * Test that a GST_MESSAGE_QOS message from a non-pipeline object is still forwarded to the client.
+ */
+TEST_F(GstDispatcherThreadTest, QosFromNonPipelineObjectIsForwarded)
+{
+    auto sut = createSut();
+
+    GstElement someElement{};
+    GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&someElement);
+    GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_QOS;
+
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageRef(&m_message)).WillOnce(Return(&m_message));
+    EXPECT_CALL(m_client, handleBusMessage(&m_message));
+
+    EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(&m_message));
+
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    expectDestruction();
+    sut.reset();
+}
+
+/**
+ * Test that construction is aborted gracefully (no thread, no main loop) if the bus can't be obtained.
+ */
+TEST_F(GstDispatcherThreadTest, FailsGracefullyWhenBusUnavailable)
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(nullptr));
+
+    auto sut = std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_flushOnPrerollControllerMock,
+                                                      m_gstWrapperMock, m_glibWrapperMock);
+    // No gMainLoopQuit/Unref/ContextUnref expected: destructor must no-op when construction failed early.
+    sut.reset();
+}
+
