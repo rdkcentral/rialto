@@ -19,6 +19,7 @@
 
 #include "DataReaderV2.h"
 #include "IMediaFrameWriter.h"
+#include <cstring>
 #include <gtest/gtest.h>
 
 using firebolt::rialto::AddSegmentStatus;
@@ -295,9 +296,10 @@ class DataReaderV2Tests : public testing::Test
 protected:
     DataReaderV2Tests() = default;
 
-    std::unique_ptr<IMediaPipeline::MediaSegment> readData(const firebolt::rialto::MediaSourceType &sourceType)
+    std::unique_ptr<IMediaPipeline::MediaSegment> readData(const firebolt::rialto::MediaSourceType &sourceType,
+                                                           std::uint32_t dataSize = kDataSize)
     {
-        m_sut = std::make_unique<DataReaderV2>(sourceType, m_shm, kMetaDataSize, kNumFrames, kIsBufferFull);
+        m_sut = std::make_unique<DataReaderV2>(sourceType, m_shm, kMetaDataSize, dataSize, kNumFrames, kIsBufferFull);
         EXPECT_EQ(m_sut->isBufferFull(), kIsBufferFull);
         auto result = m_sut->readData();
         if (result.size() != 1)
@@ -323,6 +325,18 @@ protected:
         m_shm[17] = 'I';
         m_shm[18] = 'S';
         m_shm[19] = 'E';
+    }
+
+    void setMetadataSize(std::uint32_t metadataSize)
+    {
+        std::memcpy(m_shm + kMetaDataSize, &metadataSize, sizeof(metadataSize));
+    }
+
+    std::uint32_t getMetadataSize() const
+    {
+        std::uint32_t metadataSize{0};
+        std::memcpy(&metadataSize, m_shm + kMetaDataSize, sizeof(metadataSize));
+        return metadataSize;
     }
 
 private:
@@ -436,6 +450,32 @@ TEST_F(DataReaderV2Tests, shouldReturnEmptyVectorWhenMetadataParsingFails)
     writeBuffer(inputSegment);
     doSomeMessInMemory();
     auto resultSegment = readData(kAudioMediaSourceType);
+    EXPECT_FALSE(resultSegment);
+}
+
+TEST_F(DataReaderV2Tests, shouldReturnEmptyVectorWhenMetadataSizePrefixIsTruncated)
+{
+    auto resultSegment = readData(kAudioMediaSourceType, sizeof(std::uint32_t) - 1);
+    EXPECT_FALSE(resultSegment);
+}
+
+TEST_F(DataReaderV2Tests, shouldReturnEmptyVectorWhenMetadataExceedsAvailableData)
+{
+    auto inputSegment = Build().basicAudioSegment()();
+    writeBuffer(inputSegment);
+    const std::uint32_t kOversizedMetadata{kDataSize};
+    setMetadataSize(kOversizedMetadata);
+    auto resultSegment = readData(kAudioMediaSourceType);
+    EXPECT_FALSE(resultSegment);
+}
+
+TEST_F(DataReaderV2Tests, shouldReturnEmptyVectorWhenMediaPayloadExceedsAvailableData)
+{
+    auto inputSegment = Build().basicAudioSegment()();
+    writeBuffer(inputSegment);
+    const std::uint32_t kMetadataSize{getMetadataSize()};
+    const auto kTruncatedSize{sizeof(kMetadataSize) + kMetadataSize + kMediaData.size() - 1};
+    auto resultSegment = readData(kAudioMediaSourceType, kTruncatedSize);
     EXPECT_FALSE(resultSegment);
 }
 

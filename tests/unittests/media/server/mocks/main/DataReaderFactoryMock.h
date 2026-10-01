@@ -31,7 +31,8 @@ class DataReaderFactoryMock : public IDataReaderFactory
 {
 public:
     MOCK_METHOD(std::shared_ptr<IDataReader>, createDataReader,
-                (const MediaSourceType &, std::uint8_t *, std::uint32_t, std::uint32_t, bool), (const, override));
+                (const MediaSourceType &, std::uint8_t *, std::uint32_t, std::uint32_t, std::uint32_t, bool),
+                (const, override));
 };
 } // namespace firebolt::rialto::server
 
