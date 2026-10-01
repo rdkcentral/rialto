@@ -353,6 +353,92 @@ public:
      *
      */
     virtual void gThreadPoolSetMaxIdleTime(guint interval) const = 0;
+
+    /**
+     * @brief Creates a new GMainContext, not tied to the global-default context.
+     *
+     * @retval a newly allocated GMainContext.
+     */
+    virtual GMainContext *gMainContextNew() const = 0;
+
+    /**
+     * @brief Decreases the reference count of a GMainContext, freeing it once it reaches zero.
+     *
+     * @param[in] context : the GMainContext to unref.
+     */
+    virtual void gMainContextUnref(GMainContext *context) const = 0;
+
+    /**
+     * @brief Makes context the thread-default GMainContext for the calling thread.
+     *
+     * @param[in] context : the GMainContext to push.
+     */
+    virtual void gMainContextPushThreadDefault(GMainContext *context) const = 0;
+
+    /**
+     * @brief Reverses the effect of a previous gMainContextPushThreadDefault call.
+     *
+     * @param[in] context : the GMainContext to pop.
+     */
+    virtual void gMainContextPopThreadDefault(GMainContext *context) const = 0;
+
+    /**
+     * @brief Creates a new GMainLoop for the given context.
+     *
+     * @param[in] context   : the GMainContext to run the loop on, or NULL for the global-default one.
+     * @param[in] isRunning : set to TRUE to indicate that the loop is already running.
+     *
+     * @retval a newly allocated GMainLoop.
+     */
+    virtual GMainLoop *gMainLoopNew(GMainContext *context, gboolean isRunning) const = 0;
+
+    /**
+     * @brief Runs a main loop until gMainLoopQuit is called. Blocks the calling thread.
+     *
+     * @param[in] loop : the GMainLoop to run.
+     */
+    virtual void gMainLoopRun(GMainLoop *loop) const = 0;
+
+    /**
+     * @brief Stops a running GMainLoop. Safe to call from any thread, including from within a loop callback.
+     *
+     * @param[in] loop : the GMainLoop to quit.
+     */
+    virtual void gMainLoopQuit(GMainLoop *loop) const = 0;
+
+    /**
+     * @brief Decreases the reference count of a GMainLoop, freeing it once it reaches zero.
+     *
+     * @param[in] loop : the GMainLoop to unref.
+     */
+    virtual void gMainLoopUnref(GMainLoop *loop) const = 0;
+
+    /**
+     * @brief Sets the callback to be invoked when the source's dispatch function runs.
+     *
+     * @param[in] source   : the GSource to set the callback on.
+     * @param[in] func     : the callback function.
+     * @param[in] data     : data to pass to the callback.
+     * @param[in] notify   : called when data becomes unused, or NULL.
+     */
+    virtual void gSourceSetCallback(GSource *source, GSourceFunc func, gpointer data, GDestroyNotify notify) const = 0;
+
+    /**
+     * @brief Adds a GSource to a context so that it will be executed within that context.
+     *
+     * @param[in] source  : the GSource to attach.
+     * @param[in] context : the GMainContext to attach to, or NULL for the global-default one.
+     *
+     * @retval the source's ID within context.
+     */
+    virtual guint gSourceAttach(GSource *source, GMainContext *context) const = 0;
+
+    /**
+     * @brief Decreases the reference count of a GSource, freeing it once it reaches zero.
+     *
+     * @param[in] source : the GSource to unref.
+     */
+    virtual void gSourceUnref(GSource *source) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers
