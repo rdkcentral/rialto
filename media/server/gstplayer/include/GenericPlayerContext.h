@@ -283,6 +283,14 @@ struct GenericPlayerContext
     std::atomic<int64_t> streamPosition{-1};
 
     /**
+     * @brief Last playback info values sent to the client to avoid redundant IPC payloads while preserving the
+     *        periodic 32ms delivery cadence. The values are updated from the same worker thread that emits the events.
+     */
+    std::atomic<int64_t> lastPlaybackInfoPosition{-1};
+    std::atomic<double> lastPlaybackInfoVolume{-1.0};
+    std::atomic<bool> lastPlaybackInfoSet{false};
+
+    /**
      * @brief Flag used to check if the stream is live
      *        This is a workaround for Broadcom decoder issue with audio cuts during playback rate change.
      */
