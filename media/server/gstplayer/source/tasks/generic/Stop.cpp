@@ -38,11 +38,14 @@ void Stop::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing Stop");
     m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
+    RIALTO_SERVER_LOG_MIL("USHA: m_player.changePipelineState(GST_STATE_NULL)");
     m_player.changePipelineState(GST_STATE_NULL);
     for (auto &streamInfo : m_context.streamInfo)
     {
         streamInfo.second.isDataNeeded = false;
+        RIALTO_SERVER_LOG_MIL("USHA: streamInfo.second.isDataNeeded = false");
     }
+    RIALTO_SERVER_LOG_MIL("USHA: Checking on Stop() call");
 
     // TEMPORARY INSTRUMENTATION (CPESP-10589) - measure stale queued buffers at stop. Do not merge.
     {
