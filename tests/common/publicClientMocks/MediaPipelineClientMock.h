@@ -48,6 +48,8 @@ public:
     MOCK_METHOD(void, notifyBufferUnderflow, (int32_t sourceId), (override));
     MOCK_METHOD(void, notifyFirstFrameReceived, (int32_t sourceId), (override));
     MOCK_METHOD(void, notifyPlaybackError, (int32_t sourceId, PlaybackError error), (override));
+    MOCK_METHOD(void, notifyHaveDataError,
+                (uint32_t requestId, HaveDataErrorCode errorCode, const std::string &message), (override));
     MOCK_METHOD(void, notifySourceFlushed, (int32_t sourceId), (override));
     MOCK_METHOD(void, notifyPlaybackInfo, (const PlaybackInfo &playbackInfo), (override));
 };

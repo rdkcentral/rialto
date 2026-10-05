@@ -47,6 +47,7 @@ public:
     void notifyBufferUnderflow(int32_t sourceId) override;
     void notifyFirstFrameReceived(int32_t sourceId) override;
     void notifyPlaybackError(int32_t sourceId, PlaybackError error) override;
+    void notifyHaveDataError(uint32_t requestId, HaveDataErrorCode errorCode, const std::string &message) override;
     void notifySourceFlushed(int32_t sourceId) override;
     void notifyPlaybackInfo(const PlaybackInfo &playbackInfo) override;
 

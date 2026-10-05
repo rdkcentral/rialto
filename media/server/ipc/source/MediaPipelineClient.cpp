@@ -133,6 +133,34 @@ firebolt::rialto::PlaybackErrorEvent_PlaybackError convertPlaybackError(const fi
     }
     return firebolt::rialto::PlaybackErrorEvent_PlaybackError_UNKNOWN;
 }
+
+firebolt::rialto::HaveDataError_ErrorCode convertHaveDataErrorCode(const firebolt::rialto::HaveDataErrorCode &errorCode)
+{
+    switch (errorCode)
+    {
+    case firebolt::rialto::HaveDataErrorCode::OK:
+    {
+        return firebolt::rialto::HaveDataError_ErrorCode_OK;
+    }
+    case firebolt::rialto::HaveDataErrorCode::NO_SPACE_FOR_SAMPLES:
+    {
+        return firebolt::rialto::HaveDataError_ErrorCode_NO_SPACE_FOR_SAMPLES;
+    }
+    case firebolt::rialto::HaveDataErrorCode::UNKNOWN_REQUEST_ID:
+    {
+        return firebolt::rialto::HaveDataError_ErrorCode_UNKNOWN_REQUEST_ID;
+    }
+    case firebolt::rialto::HaveDataErrorCode::INVALID_STATUS:
+    {
+        return firebolt::rialto::HaveDataError_ErrorCode_INVALID_STATUS;
+    }
+    case firebolt::rialto::HaveDataErrorCode::SERVER_ERROR:
+    {
+        return firebolt::rialto::HaveDataError_ErrorCode_SERVER_ERROR;
+    }
+    }
+    return firebolt::rialto::HaveDataError_ErrorCode_SERVER_ERROR;
+}
 } // namespace
 
 namespace firebolt::rialto::server::ipc
@@ -274,6 +302,22 @@ void MediaPipelineClient::notifySourceFlushed(int32_t sourceId)
     auto event = std::make_shared<firebolt::rialto::SourceFlushedEvent>();
     event->set_session_id(m_sessionId);
     event->set_source_id(sourceId);
+
+    m_ipcClient->sendEvent(event);
+}
+
+void MediaPipelineClient::notifyHaveDataError(uint32_t requestId, HaveDataErrorCode errorCode, const std::string &message)
+{
+    RIALTO_SERVER_LOG_DEBUG("Sending HaveDataErrorEvent...");
+
+    auto event = std::make_shared<firebolt::rialto::HaveDataErrorEvent>();
+    event->set_session_id(m_sessionId);
+    event->set_request_id(requestId);
+    event->set_error(convertHaveDataErrorCode(errorCode));
+    if (!message.empty())
+    {
+        event->set_message(message);
+    }
 
     m_ipcClient->sendEvent(event);
 }

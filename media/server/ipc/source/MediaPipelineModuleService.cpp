@@ -622,6 +622,30 @@ void MediaPipelineModuleService::setPosition(::google::protobuf::RpcController *
     done->Run();
 }
 
+void MediaPipelineModuleService::postHaveDataErrorEvent(::google::protobuf::RpcController *controller, int32_t sessionId,
+                                                        uint32_t requestId,
+                                                        ::firebolt::rialto::HaveDataError_ErrorCode errorCode,
+                                                        const std::string &message)
+{
+    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+    if (!ipcController)
+    {
+        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        return;
+    }
+
+    auto event = std::make_shared<firebolt::rialto::HaveDataErrorEvent>();
+    event->set_session_id(sessionId);
+    event->set_request_id(requestId);
+    event->set_error(errorCode);
+    if (!message.empty())
+    {
+        event->set_message(message);
+    }
+
+    ipcController->getClient()->sendEvent(event);
+}
+
 void MediaPipelineModuleService::haveData(::google::protobuf::RpcController *controller,
                                           const ::firebolt::rialto::HaveDataRequest *request,
                                           ::firebolt::rialto::HaveDataResponse *response,
@@ -632,7 +656,8 @@ void MediaPipelineModuleService::haveData(::google::protobuf::RpcController *con
     if (!m_mediaPipelineService.haveData(request->session_id(), status, request->num_frames(), request->request_id()))
     {
         RIALTO_SERVER_LOG_ERROR("Have data failed");
-        controller->SetFailed("Operation failed");
+        postHaveDataErrorEvent(controller, request->session_id(), request->request_id(),
+                               firebolt::rialto::HaveDataError_ErrorCode_SERVER_ERROR, "Have data failed");
     }
     done->Run();
 }

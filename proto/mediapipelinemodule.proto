@@ -405,7 +405,28 @@ message HaveDataRequest {
     optional uint32 num_frames = 3;
     optional uint32 request_id = 4;
 }
+// Retained for wire/ABI backward compatibility: haveData is now fire-and-forget, so this is never populated.
 message HaveDataResponse {
+}
+
+/**
+ * @brief Failure detail for a haveData() call, reported asynchronously via HaveDataErrorEvent.
+ *
+ * @param request_id        The id of the failed request, matching the NeedMediaDataEvent that triggered it.
+ * @param error             The reason the request could not be processed.
+ * @param message           Optional human readable description of the failure.
+ */
+message HaveDataError {
+    optional uint32 request_id = 1;
+    enum ErrorCode {
+        OK = 0;
+        NO_SPACE_FOR_SAMPLES = 1;
+        UNKNOWN_REQUEST_ID = 2;
+        INVALID_STATUS = 3;
+        SERVER_ERROR = 4;
+    }
+    optional ErrorCode error = 2;
+    optional string message = 3;
 }
 
 /**
@@ -956,6 +977,23 @@ message NeedMediaDataEvent {
 }
 
 /**
+ * @brief Event sent by the server when a haveData() call could not be processed.
+ *
+ * @param session_id        The id of the A/V session the request was for.
+ * @param request_id        The id of the failed request.
+ * @param error             The reason the request could not be processed.
+ * @param message           Optional human readable description of the failure.
+ *
+ * haveData() is fire-and-forget, so failures are reported back through this event instead of a response.
+ */
+message HaveDataErrorEvent {
+    optional int32 session_id = 1 [default = -1];
+    optional uint32 request_id = 2;
+    optional HaveDataError.ErrorCode error = 3;
+    optional string message = 4;
+}
+
+/**
  * @brief Event sent by the server when a QOS message has been raised.
  *
  * @param session_id        The id of the A/V session the request is for.
@@ -1187,6 +1225,7 @@ service MediaPipelineModule {
      * @see HaveDataRequest
      */
     rpc haveData(HaveDataRequest) returns (HaveDataResponse) {
+        option (firebolt.rialto.no_reply) = true; //Makes it fire-and-forget; client won't block waiting for response.
     }
 
     /**

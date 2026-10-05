@@ -234,6 +234,13 @@ private:
     void onPlaybackError(const std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> &event);
 
     /**
+     * @brief Handler for a have data error notification from the server.
+     *
+     * @param[in] event : The have data error event structure.
+     */
+    void onHaveDataError(const std::shared_ptr<firebolt::rialto::HaveDataErrorEvent> &event);
+
+    /**
      * @brief Handler for a source flushed notification from the server.
      *
      * @param[in] event : The source flushed event structure.

@@ -171,6 +171,10 @@ public:
                          ::google::protobuf::Closure *done) override;
 
 private:
+    // haveData is fire-and-forget, so failures are reported to the client as an event rather than an rpc failure.
+    void postHaveDataErrorEvent(::google::protobuf::RpcController *controller, int32_t sessionId, uint32_t requestId,
+                                ::firebolt::rialto::HaveDataError_ErrorCode errorCode, const std::string &message);
+
     service::IMediaPipelineService &m_mediaPipelineService;
     std::map<std::shared_ptr<::firebolt::rialto::ipc::IClient>, std::set<int>> m_clientSessions;
 };

@@ -172,6 +172,13 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         return false;
     m_eventTags.push_back(eventTag);
 
+    eventTag = ipcChannel->subscribe<firebolt::rialto::HaveDataErrorEvent>(
+        [this](const std::shared_ptr<firebolt::rialto::HaveDataErrorEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onHaveDataError, this, event); });
+    if (eventTag < 0)
+        return false;
+    m_eventTags.push_back(eventTag);
+
     eventTag = ipcChannel->subscribe<firebolt::rialto::SourceFlushedEvent>(
         [this](const std::shared_ptr<firebolt::rialto::SourceFlushedEvent> &event)
         { m_eventThread->add(&MediaPipelineIpc::onSourceFlushed, this, event); });
@@ -469,7 +476,7 @@ bool MediaPipelineIpc::haveData(MediaSourceStatus status, uint32_t numFrames, ui
     m_mediaPipelineStub->haveData(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
-    blockingClosure->wait();
+    // blockingClosure->wait(); //Remove Blocking Pattern
 
     // check the result
     if (ipcController->Failed())
@@ -1636,6 +1643,41 @@ void MediaPipelineIpc::onPlaybackError(const std::shared_ptr<firebolt::rialto::P
         }
 
         m_mediaPipelineIpcClient->notifyPlaybackError(event->source_id(), playbackError);
+    }
+}
+
+void MediaPipelineIpc::onHaveDataError(const std::shared_ptr<firebolt::rialto::HaveDataErrorEvent> &event)
+{
+    // Ignore event if not for this session
+    if (event->session_id() == m_sessionId)
+    {
+        RIALTO_CLIENT_LOG_ERROR("haveData failed: request_id=%u, error=%d, message=%s", event->request_id(),
+                                static_cast<int>(event->error()), event->message().c_str());
+
+        HaveDataErrorCode errorCode = HaveDataErrorCode::SERVER_ERROR;
+        switch (event->error())
+        {
+        case firebolt::rialto::HaveDataError_ErrorCode_OK:
+            errorCode = HaveDataErrorCode::OK;
+            break;
+        case firebolt::rialto::HaveDataError_ErrorCode_NO_SPACE_FOR_SAMPLES:
+            errorCode = HaveDataErrorCode::NO_SPACE_FOR_SAMPLES;
+            break;
+        case firebolt::rialto::HaveDataError_ErrorCode_UNKNOWN_REQUEST_ID:
+            errorCode = HaveDataErrorCode::UNKNOWN_REQUEST_ID;
+            break;
+        case firebolt::rialto::HaveDataError_ErrorCode_INVALID_STATUS:
+            errorCode = HaveDataErrorCode::INVALID_STATUS;
+            break;
+        case firebolt::rialto::HaveDataError_ErrorCode_SERVER_ERROR:
+            errorCode = HaveDataErrorCode::SERVER_ERROR;
+            break;
+        default:
+            RIALTO_CLIENT_LOG_WARN("Received unknown have data error");
+            break;
+        }
+
+        m_mediaPipelineIpcClient->notifyHaveDataError(event->request_id(), errorCode);
     }
 }
 

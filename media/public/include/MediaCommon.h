@@ -459,6 +459,20 @@ enum class PlaybackError
 };
 
 /**
+ * @brief Reason a haveData() request could not be processed by the server.
+ *
+ * haveData() is fire-and-forget, so failures are reported asynchronously instead of in a response.
+ */
+enum class HaveDataErrorCode
+{
+    OK,
+    NO_SPACE_FOR_SAMPLES, /* Server could not copy data from the shared buffer. */
+    UNKNOWN_REQUEST_ID,   /* The request id did not match an outstanding need data request. */
+    INVALID_STATUS,       /* The media source status supplied was not valid for the session. */
+    SERVER_ERROR          /* The server failed to process the request. */
+};
+
+/**
  * @brief Ease type for audio volume changes.
  */
 enum class EaseType

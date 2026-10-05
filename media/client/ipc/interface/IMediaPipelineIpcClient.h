@@ -116,6 +116,16 @@ public:
     virtual void notifyPlaybackError(int32_t sourceId, PlaybackError error) = 0;
 
     /**
+     * @brief Notifies the client that a haveData request could not be processed by the server.
+     *
+     * haveData is fire-and-forget, so failures are reported through this notification.
+     *
+     * @param[in] requestId : The id of the failed request.
+     * @param[in] errorCode : The reason the request could not be processed.
+     */
+    virtual void notifyHaveDataError(uint32_t requestId, HaveDataErrorCode errorCode) = 0;
+
+    /**
      * @brief Notifies the client that the source has been flushed.
      *
      * Notification shall be sent whenever a flush procedure is finished.

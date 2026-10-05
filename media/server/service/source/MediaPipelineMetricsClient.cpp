@@ -82,6 +82,11 @@ void MediaPipelineMetricsClient::notifyPlaybackError(int32_t sourceId, PlaybackE
 {
     m_client->notifyPlaybackError(sourceId, error);
 }
+void MediaPipelineMetricsClient::notifyHaveDataError(uint32_t requestId, HaveDataErrorCode errorCode,
+                                                     const std::string &message)
+{
+    m_client->notifyHaveDataError(requestId, errorCode, message);
+}
 void MediaPipelineMetricsClient::notifySourceFlushed(int32_t sourceId)
 {
     m_client->notifySourceFlushed(sourceId);
