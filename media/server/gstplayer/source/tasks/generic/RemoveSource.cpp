@@ -40,9 +40,14 @@ RemoveSource::~RemoveSource()
 void RemoveSource::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing RemoveSource for %s source", common::convertMediaSourceType(m_type));
+    if (MediaSourceType::SUBTITLE == m_type)
+    {
+        removeSubtitleSource();
+        return;
+    }
     if (MediaSourceType::AUDIO != m_type)
     {
-        RIALTO_SERVER_LOG_DEBUG("RemoveSource not supported for type != AUDIO");
+        RIALTO_SERVER_LOG_DEBUG("RemoveSource not supported for type != AUDIO and != SUBTITLE");
         return;
     }
     m_context.audioSourceRemoved = true;
@@ -64,6 +69,36 @@ void RemoveSource::execute() const
     streamInfo.buffers.clear();
     streamInfo.isDataNeeded = false;
     streamInfo.isNeedDataPending = false;
+    m_context.initialPositions.erase(streamInfo.appSrc);
+
+    // Reset Eos info
+    m_context.endOfStreamInfo.erase(m_type);
+    m_context.eosNotified = false;
+
+    RIALTO_SERVER_LOG_MIL("%s source removed", common::convertMediaSourceType(m_type));
+}
+
+void RemoveSource::removeSubtitleSource() const
+{
+    // The subtitle appsrc and the text track sink are kept, so that the source can be reattached with a different
+    // format. Only the state of the removed source is cleared here.
+    // Active data requests and the need data pending flag are not touched: this task runs on the worker thread, after
+    // the new source may already be attached and requested for data. Data request for the reattached source is
+    // handled in AttachSource.
+    auto sourceElem = m_context.streamInfo.find(m_type);
+    if (sourceElem == m_context.streamInfo.end())
+    {
+        RIALTO_SERVER_LOG_WARN("Failed to remove source - streamInfo not found");
+        return;
+    }
+    m_context.subtitleSourceRemoved = true;
+
+    StreamInfo &streamInfo = sourceElem->second;
+    for (auto &buffer : streamInfo.buffers)
+    {
+        m_gstWrapper->gstBufferUnref(buffer);
+    }
+    streamInfo.buffers.clear();
     m_context.initialPositions.erase(streamInfo.appSrc);
 
     // Reset Eos info

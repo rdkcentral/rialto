@@ -132,6 +132,7 @@ bool TextTrackSession::sendData(const std::string &data, int64_t displayOffsetMs
 
 bool TextTrackSession::setSessionWebVTTSelection()
 {
+    dissociateVideoDecoder();
     m_dataType = ITextTrackAccessor::DataType::WebVTT;
     m_ccService = std::optional<std::string>();
     return m_textTrackAccessor->setSessionWebVTTSelection(m_sessionId);
@@ -139,6 +140,7 @@ bool TextTrackSession::setSessionWebVTTSelection()
 
 bool TextTrackSession::setSessionTTMLSelection()
 {
+    dissociateVideoDecoder();
     m_dataType = ITextTrackAccessor::DataType::TTML;
     m_ccService = std::optional<std::string>();
     return m_textTrackAccessor->setSessionTTMLSelection(m_sessionId);
@@ -162,5 +164,16 @@ bool TextTrackSession::associateVideoDecoder(gpointer decoderIdPtr)
 bool TextTrackSession::isClosedCaptions() const
 {
     return m_dataType == ITextTrackAccessor::DataType::CC;
+}
+
+void TextTrackSession::dissociateVideoDecoder()
+{
+    // Selecting a different data type in TextTrack does not stop the CC extraction from the video decoder, so when
+    // switching away from ClosedCaptions it has to be stopped explicitly (empty handle dissociates the decoder)
+    if (m_videoDecoderId.has_value())
+    {
+        m_textTrackAccessor->associateVideoDecoder(m_sessionId, "");
+        m_videoDecoderId.reset();
+    }
 }
 } // namespace firebolt::rialto::server

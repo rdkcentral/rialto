@@ -295,6 +295,19 @@ bool TextTrackAccessor::resetSession(uint32_t sessionId)
 bool TextTrackAccessor::associateVideoDecoder(uint32_t sessionId, const std::string &videoDecoder)
 {
     uint32_t result = m_textTrackWrapper->associateVideoDecoder(sessionId, videoDecoder);
+    if (videoDecoder.empty())
+    {
+        // Empty video decoder handle dissociates the currently associated video decoder
+        if (m_thunderWrapper->isSuccessful(result))
+        {
+            RIALTO_SERVER_LOG_MIL("Dissociating video decoder from session %u was successful", sessionId);
+            return true;
+        }
+        RIALTO_SERVER_LOG_WARN("Failed to dissociate video decoder from session %u; error %s", sessionId,
+                               m_thunderWrapper->errorToString(result));
+        return false;
+    }
+
     if (m_thunderWrapper->isSuccessful(result))
     {
         RIALTO_SERVER_LOG_MIL("Associating video decoder '%s' with session %u was successful", videoDecoder.c_str(),

@@ -52,6 +52,8 @@ public:
     bool isClosedCaptions() const override;
 
 private:
+    void dissociateVideoDecoder();
+
     std::shared_ptr<ITextTrackAccessor> m_textTrackAccessor;
     ITextTrackAccessor::DataType m_dataType{ITextTrackAccessor::DataType::UNKNOWN};
     uint32_t m_sessionId{0};

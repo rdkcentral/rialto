@@ -63,6 +63,10 @@ void AttachSource::execute() const
     {
         reattachAudioSource();
     }
+    else if (m_attachedSource->getType() == MediaSourceType::SUBTITLE)
+    {
+        reattachSubtitleSource();
+    }
     else
     {
         RIALTO_SERVER_LOG_ERROR("cannot update caps");
@@ -124,5 +128,50 @@ void AttachSource::reattachAudioSource() const
     m_player.notifyNeedMediaData(MediaSourceType::AUDIO);
 
     RIALTO_SERVER_LOG_MIL("Audio source reattached");
+}
+
+void AttachSource::reattachSubtitleSource() const
+{
+    // The subtitle appsrc and the text track sink are kept for the whole pipeline lifetime. When the client attaches
+    // a subtitle source with a different format (e.g. CC -> TTML), update the appsrc caps. Appsrc sends the new caps
+    // downstream with the next buffer and the text track sink switches the TextTrack session to the new data type.
+    GstCaps *caps = createCapsFromMediaSource(m_gstWrapper, m_glibWrapper, m_attachedSource);
+    if (!caps)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create caps from media source");
+        return;
+    }
+    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[MediaSourceType::SUBTITLE].appSrc)};
+    GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
+    if (oldCaps && m_gstWrapper->gstCapsIsEqual(caps, oldCaps))
+    {
+        RIALTO_SERVER_LOG_MIL("Subtitle source reattached, caps unchanged");
+    }
+    else
+    {
+        gchar *capsStr = m_gstWrapper->gstCapsToString(caps);
+        RIALTO_SERVER_LOG_MIL("Updating Subtitle appsrc caps to %s", capsStr);
+        m_glibWrapper->gFree(capsStr);
+
+        m_gstWrapper->gstAppSrcSetCaps(appSrc, caps);
+    }
+
+    if (oldCaps)
+        m_gstWrapper->gstCapsUnref(oldCaps);
+    m_gstWrapper->gstCapsUnref(caps);
+
+    if (m_context.subtitleSourceRemoved)
+    {
+        m_context.subtitleSourceRemoved = false;
+        // Data requests were blocked while the source was removed. Request data for the reattached source, unless
+        // a request is already pending - only one request per source can be active, as each request clears the
+        // shared memory partition of the source.
+        StreamInfo &streamInfo = m_context.streamInfo[MediaSourceType::SUBTITLE];
+        if (!streamInfo.isNeedDataPending)
+        {
+            streamInfo.isDataNeeded = true;
+            m_player.notifyNeedMediaData(MediaSourceType::SUBTITLE);
+        }
+    }
 }
 } // namespace firebolt::rialto::server::tasks::generic

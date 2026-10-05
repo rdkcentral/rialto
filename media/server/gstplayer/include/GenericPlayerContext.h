@@ -214,6 +214,13 @@ struct GenericPlayerContext
     bool audioSourceRemoved{false};
 
     /**
+     * @brief Flag used to check, if subtitle source has been recently removed
+     *
+     * Flag can be used only in worker thread
+     */
+    bool subtitleSourceRemoved{false};
+
+    /**
      * @brief Audio elements of gst pipeline.
      *
      * Attribute can be used only in worker thread

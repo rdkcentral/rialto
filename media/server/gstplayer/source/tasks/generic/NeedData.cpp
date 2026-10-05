@@ -64,6 +64,11 @@ void NeedData::execute() const
                     RIALTO_SERVER_LOG_DEBUG("Audio source is removed, no need to request data");
                     break;
                 }
+                if (sourceType == MediaSourceType::SUBTITLE && m_context.subtitleSourceRemoved)
+                {
+                    RIALTO_SERVER_LOG_DEBUG("Subtitle source is removed, no need to request data");
+                    break;
+                }
                 elem.second.isNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(sourceType);
             }
             break;
