@@ -148,17 +148,26 @@ void MainThread::enqueueTask(uint32_t clientId, Task task)
     m_taskQueueCv.notify_one();
 }
 
+void MainThread::enqueueTaskAndWait(uint32_t clientId, Task task, const char* taskClass)
+{
+    fprintf(stderr, "bvanav-dbg: enqueueTaskAndWait from %s - tid: %d\n", taskClass, gettid());
+    enqueueTaskAndWait(clientId, task);
+}
+
 void MainThread::enqueueTaskAndWait(uint32_t clientId, Task task)
 {
+    RDKPerf* make_unique_perf = new RDKPerf("enqueueTaskAndWait_make_unique");
     std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
     newTask->clientId = clientId;
     newTask->task = task;
     newTask->mutex = std::make_unique<std::mutex>();
     newTask->cv = std::make_unique<std::condition_variable>();
+    delete make_unique_perf;
 
     {
         std::unique_lock<std::mutex> lockTask(*(newTask->mutex));
         {
+            RDKPerf perf("enqueueTaskAndWait_queue_push");
             std::unique_lock<std::mutex> lockQueue(m_taskQueueMutex);
             m_taskQueue.push_back(newTask);
         }

@@ -137,7 +137,7 @@ MediaKeysServerInternal::MediaKeysServerInternal(
         }
     };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     if (!result)
     {
         throw std::runtime_error("MediaKeys construction failed");
@@ -155,7 +155,7 @@ MediaKeysServerInternal::~MediaKeysServerInternal()
         m_mainThread->unregisterClient(m_mainThreadClientId);
     };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId)
@@ -165,7 +165,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::selectKeyId(int32_t keySessionId, c
     MediaKeyErrorStatus status;
     auto task = [&]() { status = selectKeyIdInternal(keySessionId, keyId); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return status;
 }
 
@@ -195,7 +195,7 @@ bool MediaKeysServerInternal::containsKey(int32_t keySessionId, const std::vecto
     bool result{false};
     auto task = [&]() { result = containsKeyInternal(keySessionId, keyId); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return result;
 }
 
@@ -220,7 +220,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::createKeySession(KeySessionType ses
     MediaKeyErrorStatus status;
     auto task = [&]() { status = createKeySessionInternal(sessionType, client, isLDL, keySessionId); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return status;
 }
 
@@ -251,7 +251,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::generateRequest(int32_t keySessionI
     MediaKeyErrorStatus status;
     auto task = [&]() { status = generateRequestInternal(keySessionId, initDataType, initData); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return status;
 }
 
@@ -281,7 +281,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::loadSession(int32_t keySessionId)
     MediaKeyErrorStatus status;
     auto task = [&]() { status = loadSessionInternal(keySessionId); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return status;
 }
 
@@ -310,7 +310,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::updateSession(int32_t keySessionId,
     MediaKeyErrorStatus status;
     auto task = [&]() { status = updateSessionInternal(keySessionId, responseData); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return status;
 }
 
@@ -340,7 +340,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::setDrmHeader(int32_t keySessionId, 
     MediaKeyErrorStatus status;
     auto task = [&]() { status = setDrmHeaderInternal(keySessionId, requestData); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return status;
 }
 
@@ -371,7 +371,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::closeKeySession(int32_t keySessionI
     MediaKeyErrorStatus status;
     auto task = [&]() { status = closeKeySessionInternal(keySessionId); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return status;
 }
 
@@ -400,7 +400,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::removeKeySession(int32_t keySession
     MediaKeyErrorStatus status;
     auto task = [&]() { status = removeKeySessionInternal(keySessionId); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return status;
 }
 
@@ -429,7 +429,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::deleteDrmStore()
     MediaKeyErrorStatus status;
     auto task = [&]() { status = m_ocdmSystem->deleteSecureStore(); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return status;
 }
 
@@ -440,7 +440,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::deleteKeyStore()
     MediaKeyErrorStatus status;
     auto task = [&]() { status = m_ocdmSystem->deleteKeyStore(); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return status;
 }
 
@@ -451,7 +451,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getDrmStoreHash(std::vector<unsigne
     drmStoreHash.resize(kHashSize);
     MediaKeyErrorStatus status;
     auto task = [&]() { status = m_ocdmSystem->getSecureStoreHash(&drmStoreHash[0], kHashSize); };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return status;
 }
 
@@ -462,7 +462,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getKeyStoreHash(std::vector<unsigne
     keyStoreHash.resize(kHashSize);
     MediaKeyErrorStatus status;
     auto task = [&]() { status = m_ocdmSystem->getKeyStoreHash(&keyStoreHash[0], kHashSize); };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return status;
 }
 
@@ -473,7 +473,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getLdlSessionsLimit(uint32_t &ldlLi
     MediaKeyErrorStatus status;
     auto task = [&]() { status = m_ocdmSystem->getLdlSessionsLimit(&ldlLimit); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return status;
 }
 
@@ -484,7 +484,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getLastDrmError(int32_t keySessionI
     MediaKeyErrorStatus status;
     auto task = [&]() { status = getLastDrmErrorInternal(keySessionId, errorCode); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return status;
 }
 
@@ -511,7 +511,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getDrmTime(uint64_t &drmTime)
     MediaKeyErrorStatus status;
     auto task = [&]() { status = m_ocdmSystem->getDrmTime(&drmTime); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return status;
 }
 
@@ -522,7 +522,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionId(int32_t keySessi
     MediaKeyErrorStatus status;
     auto task = [&]() { status = getCdmKeySessionIdInternal(keySessionId, cdmKeySessionId); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return status;
 }
 
@@ -533,7 +533,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::releaseKeySession(int32_t keySessio
     MediaKeyErrorStatus status;
     auto task = [&]() { status = releaseKeySessionInternal(keySessionId); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
     return status;
 }
 
@@ -576,7 +576,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
     MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
 
     auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
 
     return status;
 }
@@ -612,7 +612,7 @@ void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbea
     RIALTO_SERVER_LOG_DEBUG("entry:");
     auto task = [&]() { heartbeatHandler.reset(); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uint8_t> &buffer)
@@ -627,7 +627,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
     for (int attempts = 0; bufferLength <= kMaxBufferLength; ++attempts)
     {
         auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(bufferLength, buffer); };
-        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaKeysServerInternal");
 
         if (status != MediaKeyErrorStatus::BUFFER_TOO_SMALL)
         {

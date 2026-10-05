@@ -163,7 +163,7 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
         }
     };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     if (!result)
     {
         throw std::runtime_error("MediaPipelineServerInternal construction failed");
@@ -191,7 +191,7 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
         m_shmBuffer.reset();
         m_mainThread->unregisterClient(m_mainThreadClientId);
     };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
 }
 
 bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive)
@@ -201,7 +201,7 @@ bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeTy
     bool result;
     auto task = [&]() { result = loadInternal(type, mimeType, url, isLive); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -237,7 +237,7 @@ bool MediaPipelineServerInternal::attachSource(const std::unique_ptr<MediaSource
     bool result;
     auto task = [&]() { result = attachSourceInternal(source); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -283,7 +283,7 @@ bool MediaPipelineServerInternal::removeSource(int32_t id)
     bool result;
     auto task = [&]() { result = removeSourceInternal(id); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -320,7 +320,7 @@ bool MediaPipelineServerInternal::allSourcesAttached()
     bool result;
     auto task = [&]() { result = allSourcesAttachedInternal(); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -350,7 +350,7 @@ bool MediaPipelineServerInternal::play(bool &async)
     bool result;
     auto task = [&]() { result = playInternal(async); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -373,7 +373,7 @@ bool MediaPipelineServerInternal::pause()
     bool result;
     auto task = [&]() { result = pauseInternal(); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -396,7 +396,7 @@ bool MediaPipelineServerInternal::stop()
     bool result;
     auto task = [&]() { result = stopInternal(); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -419,7 +419,7 @@ bool MediaPipelineServerInternal::setPlaybackRate(double rate)
     bool result;
     auto task = [&]() { result = setPlaybackRateInternal(rate); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -448,7 +448,7 @@ bool MediaPipelineServerInternal::setPosition(int64_t position)
     bool result;
     auto task = [&]() { result = setPositionInternal(position); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -494,7 +494,7 @@ bool MediaPipelineServerInternal::getStats(int32_t sourceId, uint64_t &renderedF
     bool result;
     auto task = [&]() { result = getStatsInternal(sourceId, renderedFrames, droppedFrames); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -522,7 +522,7 @@ bool MediaPipelineServerInternal::setImmediateOutput(int32_t sourceId, bool imme
     bool result;
     auto task = [&]() { result = setImmediateOutputInternal(sourceId, immediateOutput); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -552,7 +552,7 @@ bool MediaPipelineServerInternal::getImmediateOutput(int32_t sourceId, bool &imm
     bool result;
     auto task = [&]() { result = getImmediateOutputInternal(sourceId, immediateOutput); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -580,7 +580,7 @@ bool MediaPipelineServerInternal::setVideoWindow(uint32_t x, uint32_t y, uint32_
     bool result;
     auto task = [&]() { result = setVideoWindowInternal(x, y, width, height); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -603,7 +603,7 @@ bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t ne
     bool result;
     auto task = [&]() { result = haveDataInternal(status, needDataRequestId); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -681,7 +681,7 @@ bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t nu
     bool result;
     auto task = [&]() { result = haveDataInternal(status, numFrames, needDataRequestId); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -781,7 +781,7 @@ void MediaPipelineServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&hear
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     auto task = [&]() { pingInternal(std::move(heartbeatHandler)); };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
 }
 
 void MediaPipelineServerInternal::pingInternal(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
@@ -803,7 +803,7 @@ bool MediaPipelineServerInternal::renderFrame()
     bool result;
     auto task = [&]() { result = renderFrameInternal(); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -827,7 +827,7 @@ bool MediaPipelineServerInternal::setVolume(double targetVolume, uint32_t volume
     bool result;
     auto task = [&]() { result = setVolumeInternal(targetVolume, volumeDuration, easeType); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -854,7 +854,7 @@ bool MediaPipelineServerInternal::getVolume(double &currentVolume)
         bool result;
         auto task = [&]() { result = getVolumeInternal(currentVolume); };
 
-        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
         return result;
     }
     std::shared_lock lock{m_getPropertyMutex};
@@ -880,7 +880,7 @@ bool MediaPipelineServerInternal::setMute(std::int32_t sourceId, bool mute)
     bool result;
     auto task = [&]() { result = setMuteInternal(sourceId, mute); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -914,7 +914,7 @@ bool MediaPipelineServerInternal::getMute(std::int32_t sourceId, bool &mute)
     bool result;
     auto task = [&]() { result = getMuteInternal(sourceId, mute); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -946,7 +946,7 @@ bool MediaPipelineServerInternal::setTextTrackIdentifier(const std::string &text
     bool result;
     auto task = [&]() { result = setTextTrackIdentifierInternal(textTrackIdentifier); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -972,7 +972,7 @@ bool MediaPipelineServerInternal::getTextTrackIdentifier(std::string &textTrackI
     bool result;
     auto task = [&]() { result = getTextTrackIdentifierInternal(textTrackIdentifier); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -996,7 +996,7 @@ bool MediaPipelineServerInternal::flush(int32_t sourceId, bool resetTime, bool &
     bool result;
     auto task = [&]() { result = flushInternal(sourceId, resetTime, async); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -1007,7 +1007,7 @@ bool MediaPipelineServerInternal::setLowLatency(bool lowLatency)
     bool result;
     auto task = [&]() { result = setLowLatencyInternal(lowLatency); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -1032,7 +1032,7 @@ bool MediaPipelineServerInternal::setSync(bool sync)
     bool result;
     auto task = [&]() { result = setSyncInternal(sync); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -1055,7 +1055,7 @@ bool MediaPipelineServerInternal::getSync(bool &sync)
     bool result;
     auto task = [&]() { result = getSyncInternal(sync); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -1078,7 +1078,7 @@ bool MediaPipelineServerInternal::setSyncOff(bool syncOff)
     bool result;
     auto task = [&]() { result = setSyncOffInternal(syncOff); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -1101,7 +1101,7 @@ bool MediaPipelineServerInternal::setStreamSyncMode(int32_t sourceId, int32_t st
     bool result;
     auto task = [&]() { result = setStreamSyncModeInternal(sourceId, streamSyncMode); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -1133,7 +1133,7 @@ bool MediaPipelineServerInternal::getStreamSyncMode(int32_t &streamSyncMode)
     bool result;
     auto task = [&]() { result = getStreamSyncModeInternal(streamSyncMode); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -1186,7 +1186,7 @@ bool MediaPipelineServerInternal::setSourcePosition(int32_t sourceId, int64_t po
     bool result;
     auto task = [&]() { result = setSourcePositionInternal(sourceId, position, resetTime, appliedRate, stopPosition); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -1225,7 +1225,7 @@ bool MediaPipelineServerInternal::setSubtitleOffset(int32_t sourceId, int64_t po
     bool result;
     auto task = [&]() { result = setSubtitleOffsetInternal(sourceId, position); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -1256,7 +1256,7 @@ bool MediaPipelineServerInternal::processAudioGap(int64_t position, uint32_t dur
     bool result;
     auto task = [&]() { result = processAudioGapInternal(position, duration, discontinuityGap, audioAac); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -1277,7 +1277,7 @@ bool MediaPipelineServerInternal::setBufferingLimit(uint32_t limitBufferingMs)
     bool result;
     auto task = [&]() { result = setBufferingLimitInternal(limitBufferingMs); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -1297,7 +1297,7 @@ bool MediaPipelineServerInternal::getBufferingLimit(uint32_t &limitBufferingMs)
     bool result;
     auto task = [&]() { result = getBufferingLimitInternal(limitBufferingMs); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -1316,7 +1316,7 @@ bool MediaPipelineServerInternal::setUseBuffering(bool useBuffering)
     bool result;
     auto task = [&]() { result = setUseBufferingInternal(useBuffering); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -1336,7 +1336,7 @@ bool MediaPipelineServerInternal::getUseBuffering(bool &useBuffering)
     bool result;
     auto task = [&]() { result = getUseBufferingInternal(useBuffering); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -1355,7 +1355,7 @@ bool MediaPipelineServerInternal::switchSource(const std::unique_ptr<MediaSource
     bool result;
     auto task = [&]() { result = switchSourceInternal(source); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return result;
 }
 
@@ -1378,7 +1378,7 @@ AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataReques
     AddSegmentStatus status{AddSegmentStatus::ERROR};
     auto task = [&]() { status = addSegmentInternal(needDataRequestId, mediaSegment); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
     return status;
 }
 
@@ -1433,7 +1433,7 @@ bool MediaPipelineServerInternal::notifyNeedMediaData(MediaSourceType mediaSourc
         }
     };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
 
     return result;
 }
@@ -1481,7 +1481,7 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataWithDelay(MediaSourceType m
 
     auto task = [&]() { result = notifyNeedMediaDataWithDelayInternal(mediaSourceType); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "MediaPipelineServerInternal");
 
     return result;
 }

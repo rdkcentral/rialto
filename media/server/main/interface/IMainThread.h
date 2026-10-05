@@ -103,6 +103,7 @@ public:
      * @param[in]  task     : Task to queue.
      */
     virtual void enqueueTaskAndWait(uint32_t clientId, Task task) = 0;
+    virtual void enqueueTaskAndWait(uint32_t clientId, Task task, const char* taskClass) = 0;
 
     /**
      * @brief Enqueue a priority task on the main thread and wait for it to finish before returning.

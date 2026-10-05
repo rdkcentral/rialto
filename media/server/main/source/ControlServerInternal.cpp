@@ -113,7 +113,7 @@ void ControlServerInternal::ack(int32_t ackId)
         }
         m_heartbeatHandler.reset();
     };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "ControlServerInternal");
 }
 
 void ControlServerInternal::setApplicationState(const ApplicationState &state)
@@ -125,7 +125,7 @@ void ControlServerInternal::setApplicationState(const ApplicationState &state)
         if (m_client)
             m_client->notifyApplicationState(state);
     };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "ControlServerInternal");
 }
 
 void ControlServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
@@ -152,7 +152,7 @@ void ControlServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatH
             m_heartbeatHandler = std::move(heartbeatHandler);
         }
     };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task, "ControlServerInternal");
 }
 
 bool ControlServerInternal::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)

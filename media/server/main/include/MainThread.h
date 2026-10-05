@@ -31,6 +31,9 @@
 #include <string>
 #include <thread>
 
+#include <unistd.h>
+#include "rdk_perf.h"
+
 namespace firebolt::rialto::server
 {
 /**
@@ -70,6 +73,7 @@ public:
 
     void enqueueTask(uint32_t clientId, Task task) override;
     void enqueueTaskAndWait(uint32_t clientId, Task task) override;
+    void enqueueTaskAndWait(uint32_t clientId, Task task, const char* taskClass) override;
     void enqueuePriorityTaskAndWait(uint32_t clientId, Task task) override;
 
 private:
