@@ -1,0 +1,198 @@
+From 75bc9b33a3d8ca052d79b12965473662cff88e9a Mon Sep 17 00:00:00 2001
+From: Marcin Wojciechowski
+ <105790697+skywojciechowskim@users.noreply.github.com>
+Date: Fri, 7 Aug 2026 13:32:24 +0200
+Subject: [PATCH]   RDKEMW-21391: Max-time and max-buffers usage in appsrc
+ queue (#579)
+
+RDKEMW-21391: Max-time and max-buffers usage in appsrc queue
+
+Reason for change: Max-time and max-buffers property used instead of
+max-bytes if available in appsrc queue size setting
+Test Procedure: https://ccp.sys.comcast.net/browse/RDKEMW-21929
+---
+ media/server/gstplayer/source/GstSrc.cpp      | 26 +++++-
+ .../server/fixtures/MediaPipelineTest.cpp     |  8 ++
+ .../mediaPipeline/DualVideoPlaybackTest.cpp   |  6 ++
+ .../server/gstplayer/rialtoSrc/AppSrcTest.cpp | 83 +++++++++++++++++++
+ 4 files changed, 119 insertions(+), 4 deletions(-)
+
+diff --git a/media/server/gstplayer/source/GstSrc.cpp b/media/server/gstplayer/source/GstSrc.cpp
+index c544fa04a..ebcc369aa 100644
+--- a/media/server/gstplayer/source/GstSrc.cpp
++++ b/media/server/gstplayer/source/GstSrc.cpp
+@@ -403,15 +403,33 @@ void GstSrc::setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement
+         {{firebolt::rialto::MediaSourceType::VIDEO, 8 * 1024 * 1024},
+          {firebolt::rialto::MediaSourceType::AUDIO, 512 * 1024},
+          {firebolt::rialto::MediaSourceType::SUBTITLE, 256 * 1024}};
++    GstAppSrc *appSrc = GST_APP_SRC(streamInfo.appSrc);
+ 
+-    auto sizeIt = queueSize.find(type);
+-    if (sizeIt != queueSize.end())
++    if (firebolt::rialto::MediaSourceType::SUBTITLE != type &&
++        m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(appSrc), "max-time"))
+     {
+-        m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(streamInfo.appSrc), sizeIt->second);
++        RIALTO_SERVER_LOG_DEBUG("Setting max-time property on appsrc to 1 second");
++        constexpr GstClockTime kMaxBufferingTime{1 * GST_SECOND};
++        m_glibWrapper->gObjectSet(appSrc, "max-time", kMaxBufferingTime, nullptr);
++    }
++    else if (firebolt::rialto::MediaSourceType::SUBTITLE != type &&
++             m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(appSrc), "max-buffers"))
++    {
++        RIALTO_SERVER_LOG_DEBUG("Setting max-buffers property on appsrc to 250");
++        m_glibWrapper->gObjectSet(appSrc, "max-buffers", 250, nullptr);
+     }
+     else
+     {
+-        GST_WARNING_OBJECT(source, "Could not find max-bytes value for appsrc");
++        auto sizeIt = queueSize.find(type);
++        if (sizeIt != queueSize.end())
++        {
++            RIALTO_SERVER_LOG_DEBUG("Setting max-bytes property on appsrc to %u", sizeIt->second);
++            m_gstWrapper->gstAppSrcSetMaxBytes(appSrc, sizeIt->second);
++        }
++        else
++        {
++            GST_WARNING_OBJECT(source, "Could not find max-bytes value for appsrc");
++        }
+     }
+ 
+     m_gstWrapper->gstAppSrcSetStreamType(GST_APP_SRC(streamInfo.appSrc), GST_APP_STREAM_TYPE_SEEKABLE);
+diff --git a/tests/componenttests/server/fixtures/MediaPipelineTest.cpp b/tests/componenttests/server/fixtures/MediaPipelineTest.cpp
+index 94dc56ab3..6348695f7 100644
+--- a/tests/componenttests/server/fixtures/MediaPipelineTest.cpp
++++ b/tests/componenttests/server/fixtures/MediaPipelineTest.cpp
+@@ -186,6 +186,14 @@ void MediaPipelineTest::willSetupAndAddSource(GstAppSrc *appSrc)
+     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), StrEq("stream-type")));
+     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), StrEq("min-percent")));
+     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), StrEq("handle-segment-change")));
++    EXPECT_CALL(*m_glibWrapperMock,
++                gObjectClassFindProperty(G_OBJECT_GET_CLASS(GST_APP_SRC(appSrc)), StrEq("max-time")))
++        .WillOnce(Return(nullptr))
++        .RetiresOnSaturation();
++    EXPECT_CALL(*m_glibWrapperMock,
++                gObjectClassFindProperty(G_OBJECT_GET_CLASS(GST_APP_SRC(appSrc)), StrEq("max-buffers")))
++        .WillOnce(Return(nullptr))
++        .RetiresOnSaturation();
+     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(appSrc, kMaxBytes));
+     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetStreamType(appSrc, GST_APP_STREAM_TYPE_SEEKABLE));
+     EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_sourceName.data())).RetiresOnSaturation();
+diff --git a/tests/componenttests/server/tests/mediaPipeline/DualVideoPlaybackTest.cpp b/tests/componenttests/server/tests/mediaPipeline/DualVideoPlaybackTest.cpp
+index ffa32cada..001babeae 100644
+--- a/tests/componenttests/server/tests/mediaPipeline/DualVideoPlaybackTest.cpp
++++ b/tests/componenttests/server/tests/mediaPipeline/DualVideoPlaybackTest.cpp
+@@ -170,6 +170,12 @@ class DualVideoPlaybackTest : public MediaPipelineTest
+         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("min-percent")));
+         EXPECT_CALL(*m_glibWrapperMock,
+                     gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("handle-segment-change")));
++        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(GST_APP_SRC(&m_secondaryVideoAppSrc)),
++                                                                 StrEq("max-time")))
++            .WillOnce(Return(nullptr));
++        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(GST_APP_SRC(&m_secondaryVideoAppSrc)),
++                                                                 StrEq("max-buffers")))
++            .WillOnce(Return(nullptr));
+         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(&m_secondaryVideoAppSrc, (8 * 1024 * 1024)));
+         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetStreamType(&m_secondaryVideoAppSrc, GST_APP_STREAM_TYPE_SEEKABLE));
+         EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_sourceName.data())).RetiresOnSaturation();
+diff --git a/tests/unittests/media/server/gstplayer/rialtoSrc/AppSrcTest.cpp b/tests/unittests/media/server/gstplayer/rialtoSrc/AppSrcTest.cpp
+index 0e35d1e07..737c78f69 100644
+--- a/tests/unittests/media/server/gstplayer/rialtoSrc/AppSrcTest.cpp
++++ b/tests/unittests/media/server/gstplayer/rialtoSrc/AppSrcTest.cpp
+@@ -114,6 +114,12 @@ class RialtoServerAppSrcGstSrcTest : public ::testing::Test
+ 
+         EXPECT_CALL(*m_gstWrapperMock,
+                     gstAppSrcSetCallbacks(GST_APP_SRC(m_streamInfo.appSrc), &m_callbacks, this, nullptr));
++        EXPECT_CALL(*m_glibWrapperMock,
++                    gObjectClassFindProperty(G_OBJECT_GET_CLASS(GST_APP_SRC(m_streamInfo.appSrc)), StrEq("max-time")))
++            .WillOnce(Return(nullptr));
++        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(GST_APP_SRC(m_streamInfo.appSrc)),
++                                                                 StrEq("max-buffers")))
++            .WillOnce(Return(nullptr));
+         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(GST_APP_SRC(m_streamInfo.appSrc), max));
+         EXPECT_CALL(*m_gstWrapperMock,
+                     gstAppSrcSetStreamType(GST_APP_SRC(m_streamInfo.appSrc), GST_APP_STREAM_TYPE_SEEKABLE));
+@@ -231,6 +237,83 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideo)
+                                 this, MediaSourceType::VIDEO);
+ }
+ 
++/**
++ * Test that GstSrc can add and setup a video source with max-time property set on appsrc
++ */
++TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithMaxTimeSet)
++{
++    GParamSpec paramSpec{};
++    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(m_streamInfo.appSrc))).WillOnce(Return(&m_dummyCaps));
++    EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_dummyCaps, 0)).WillOnce(Return(&m_dummyStructure));
++    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h264"))).WillOnce(Return(false));
++    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h265"))).WillOnce(Return(false));
++    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_dummyCaps));
++
++    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("block")));
++    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("format")));
++    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("stream-type")));
++    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("min-percent")));
++    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("handle-segment-change")));
++
++    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCallbacks(GST_APP_SRC(m_streamInfo.appSrc), &m_callbacks, this, nullptr));
++    EXPECT_CALL(*m_glibWrapperMock,
++                gObjectClassFindProperty(G_OBJECT_GET_CLASS(GST_APP_SRC(m_streamInfo.appSrc)), StrEq("max-time")))
++        .WillOnce(Return(&paramSpec));
++    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("max-time")));
++    EXPECT_CALL(*m_gstWrapperMock,
++                gstAppSrcSetStreamType(GST_APP_SRC(m_streamInfo.appSrc), GST_APP_STREAM_TYPE_SEEKABLE));
++
++    expectBin(m_streamInfo.appSrc);
++    expectSyncElement(m_streamInfo.appSrc);
++    expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
++    expectLinkPayloader(&m_decryptor);
++    expectLinkQueue(&m_payloader);
++    expectSetupPad(&m_queue);
++
++    m_gstSrc->setupAndAddAppSrc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
++                                this, MediaSourceType::VIDEO);
++}
++
++/**
++ * Test that GstSrc can add and setup a video source with max-buffers property set on appsrc
++ */
++TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithMaxBuffersSet)
++{
++    GParamSpec paramSpec{};
++    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(m_streamInfo.appSrc))).WillOnce(Return(&m_dummyCaps));
++    EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_dummyCaps, 0)).WillOnce(Return(&m_dummyStructure));
++    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h264"))).WillOnce(Return(false));
++    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h265"))).WillOnce(Return(false));
++    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_dummyCaps));
++
++    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("block")));
++    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("format")));
++    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("stream-type")));
++    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("min-percent")));
++    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("handle-segment-change")));
++
++    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCallbacks(GST_APP_SRC(m_streamInfo.appSrc), &m_callbacks, this, nullptr));
++    EXPECT_CALL(*m_glibWrapperMock,
++                gObjectClassFindProperty(G_OBJECT_GET_CLASS(GST_APP_SRC(m_streamInfo.appSrc)), StrEq("max-time")))
++        .WillOnce(Return(nullptr));
++    EXPECT_CALL(*m_glibWrapperMock,
++                gObjectClassFindProperty(G_OBJECT_GET_CLASS(GST_APP_SRC(m_streamInfo.appSrc)), StrEq("max-buffers")))
++        .WillOnce(Return(&paramSpec));
++    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("max-buffers")));
++    EXPECT_CALL(*m_gstWrapperMock,
++                gstAppSrcSetStreamType(GST_APP_SRC(m_streamInfo.appSrc), GST_APP_STREAM_TYPE_SEEKABLE));
++
++    expectBin(m_streamInfo.appSrc);
++    expectSyncElement(m_streamInfo.appSrc);
++    expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
++    expectLinkPayloader(&m_decryptor);
++    expectLinkQueue(&m_payloader);
++    expectSetupPad(&m_queue);
++
++    m_gstSrc->setupAndAddAppSrc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
++                                this, MediaSourceType::VIDEO);
++}
++
+ /**
+  * Test that GstSrc can add and setup a video source with no stream-format set.
+  */
