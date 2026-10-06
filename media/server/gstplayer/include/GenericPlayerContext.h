@@ -25,6 +25,7 @@
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ITimer.h"
 #include "MediaCommon.h"
+#include <atomic>
 #include <gst/gst.h>
 #include <list>
 #include <map>

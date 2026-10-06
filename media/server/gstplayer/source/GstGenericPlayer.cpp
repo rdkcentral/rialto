@@ -487,6 +487,12 @@ void GstGenericPlayer::setSourceFlushed(const MediaSourceType &mediaSourceType)
 
 void GstGenericPlayer::notifyPlaybackInfo()
 {
+    static std::atomic_bool logged{false};
+    if (!logged.exchange(true))
+    {
+        RIALTO_SERVER_LOG_WARN("RDKEMW-15487 experiment: notifyPlaybackInfo disabled; no PlaybackInfo IPC will be sent");
+    }
+#if 0 // Temporary YTS experiment: restore this block after the device test.
     PlaybackInfo info;
     getPosition(info.currentPosition);
     getVolume(info.volume);
@@ -509,6 +515,7 @@ void GstGenericPlayer::notifyPlaybackInfo()
     {
         m_gstPlayerClient->notifyPlaybackInfo(info);
     }
+#endif
 }
 
 GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)

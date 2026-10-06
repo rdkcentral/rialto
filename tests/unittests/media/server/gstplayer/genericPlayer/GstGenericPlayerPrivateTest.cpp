@@ -190,23 +190,7 @@ protected:
 
     void willNotifyPlaybackInfo()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).WillOnce(Return());
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).WillOnce(Return(GST_STATE_PLAYING));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
-        EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).WillOnce(Return());
-        EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
-            .WillOnce(Invoke(
-                [&](GstElement *element, GstFormat format, gint64 *cur)
-                {
-                    *cur = kPosition;
-                    return TRUE;
-                }));
-
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kAudioSinkStr), _)).Times(1);
-        EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR))
-            .WillOnce(Return(kVolume));
-
-        EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(kPlaybackInfo));
+        EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(_)).Times(0);
     }
 };
 
