@@ -28,6 +28,7 @@ void MediaPipelineTestBase::SetUp() // NOLINT(build/function_format)
     m_mediaPipelineIpcFactoryMock = std::make_shared<StrictMock<MediaPipelineIpcFactoryMock>>();
     m_mediaFrameWriterFactoryMock = std::make_shared<StrictMock<MediaFrameWriterFactoryMock>>();
     m_clientControllerMock = std::make_shared<StrictMock<ClientControllerMock>>();
+    m_sharedMemoryHandleMock = std::make_shared<StrictMock<SharedMemoryHandleMock>>();
 }
 
 void MediaPipelineTestBase::TearDown() // NOLINT(build/function_format)
@@ -55,6 +56,9 @@ void MediaPipelineTestBase::createMediaPipeline()
                                                                       m_mediaPipelineIpcFactoryMock,
                                                                       m_mediaFrameWriterFactoryMock,
                                                                       *m_clientControllerMock));
+    // MediaPipeline caches the shared memory handle when it is notified of the RUNNING state,
+    // instead of querying IClientController on every addSegment() call.
+    EXPECT_CALL(*m_clientControllerMock, getSharedMemoryHandle()).WillOnce(Return(m_sharedMemoryHandleMock));
     m_mediaPipeline->notifyApplicationState(ApplicationState::RUNNING);
     EXPECT_NE(m_mediaPipeline, nullptr);
 }
@@ -84,4 +88,10 @@ void MediaPipelineTestBase::needData(int32_t sourceId, size_t frameCount, uint32
         .RetiresOnSaturation();
 
     m_mediaPipelineCallback->notifyNeedMediaData(sourceId, frameCount, requestId, shmInfo);
+}
+
+void MediaPipelineTestBase::updateSharedMemoryHandle(const std::shared_ptr<ISharedMemoryHandle> &handle)
+{
+    EXPECT_CALL(*m_clientControllerMock, getSharedMemoryHandle()).WillOnce(Return(handle));
+    m_mediaPipeline->notifyApplicationState(ApplicationState::RUNNING);
 }

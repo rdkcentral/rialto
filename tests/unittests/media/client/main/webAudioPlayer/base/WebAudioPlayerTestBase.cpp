@@ -27,6 +27,7 @@ void WebAudioPlayerTestBase::SetUp() // NOLINT(build/function_format)
     m_webAudioPlayerClientMock = std::make_shared<StrictMock<WebAudioPlayerClientMock>>();
     m_webAudioPlayerIpcFactoryMock = std::make_shared<StrictMock<WebAudioPlayerIpcFactoryMock>>();
     m_clientControllerMock = std::make_shared<StrictMock<ClientControllerMock>>();
+    m_sharedMemoryHandleMock = std::make_shared<StrictMock<SharedMemoryHandleMock>>();
 
     // Init pcm config
     m_config->pcm.rate = 1;
@@ -60,6 +61,9 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
                                                                         m_priority, m_config,
                                                                         m_webAudioPlayerIpcFactoryMock,
                                                                         *m_clientControllerMock));
+    // WebAudioPlayer caches the shared memory handle when it is notified of the RUNNING state,
+    // instead of querying IClientController on every writeBuffer() call.
+    EXPECT_CALL(*m_clientControllerMock, getSharedMemoryHandle()).WillOnce(Return(m_sharedMemoryHandleMock));
     m_webAudioPlayer->notifyApplicationState(ApplicationState::RUNNING);
 
     // Save a raw pointer here same as above
@@ -71,4 +75,10 @@ void WebAudioPlayerTestBase::destroyWebAudioPlayer()
 {
     m_webAudioPlayer.reset();
     m_webAudioPlayerCallback = nullptr;
+}
+
+void WebAudioPlayerTestBase::updateSharedMemoryHandle(const std::shared_ptr<ISharedMemoryHandle> &handle)
+{
+    EXPECT_CALL(*m_clientControllerMock, getSharedMemoryHandle()).WillOnce(Return(handle));
+    m_webAudioPlayer->notifyApplicationState(ApplicationState::RUNNING);
 }

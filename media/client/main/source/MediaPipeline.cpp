@@ -421,7 +421,11 @@ AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std
     }
 
     std::shared_ptr<NeedDataRequest> needDataRequest = needDataRequestIt->second;
-    std::shared_ptr<ISharedMemoryHandle> shmHandle = m_clientController.getSharedMemoryHandle();
+    std::shared_ptr<ISharedMemoryHandle> shmHandle;
+    {
+        std::lock_guard<std::mutex> shmLock{m_shmMutex};
+        shmHandle = m_shmHandle;
+    }
     if (nullptr == shmHandle || nullptr == shmHandle->getShm())
     {
         RIALTO_CLIENT_LOG_ERROR("Shared buffer no longer valid");
@@ -839,13 +843,25 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
 void MediaPipeline::notifyApplicationState(ApplicationState state)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
-    m_currentAppState = state;
-    if (ApplicationState::RUNNING != state)
     {
-        // If shared memory in use, wait for it to finish before returning
-        m_needDataRequestMap.clear();
+        std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
+        m_currentAppState = state;
+        if (ApplicationState::RUNNING != state)
+        {
+            // If shared memory in use, wait for it to finish before returning
+            m_needDataRequestMap.clear();
+        }
     }
+
+    // Refresh the cached shared memory handle only on state transitions, so addSegment()
+    // can read it lock-cheaply instead of querying IClientController on every segment.
+    std::shared_ptr<ISharedMemoryHandle> shmHandle;
+    if (ApplicationState::RUNNING == state)
+    {
+        shmHandle = m_clientController.getSharedMemoryHandle();
+    }
+    std::lock_guard<std::mutex> shmLock{m_shmMutex};
+    m_shmHandle = shmHandle;
 }
 
 void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)

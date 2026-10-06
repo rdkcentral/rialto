@@ -98,6 +98,9 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerProxy)
     EXPECT_CALL(*m_clientControllerMock, registerClient(_, _))
         .WillOnce(DoAll(SetArgReferee<1>(ApplicationState::RUNNING), Return(true)));
     EXPECT_CALL(*m_clientControllerMock, unregisterClient(_)).WillOnce(Return(true));
+    // WebAudioPlayer caches the shared memory handle when notified of the RUNNING state,
+    // which happens as soon as the proxy registers it with the (already-RUNNING) ClientController.
+    EXPECT_CALL(*m_clientControllerMock, getSharedMemoryHandle()).WillOnce(Return(m_sharedMemoryHandleMock));
 
     std::shared_ptr<IWebAudioPlayerAndIControlClient> webAudioPlayer;
     webAudioPlayer = std::make_shared<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType, m_priority, m_config,

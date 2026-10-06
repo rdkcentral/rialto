@@ -22,6 +22,7 @@
 
 #include "IClientController.h"
 #include "IControlClient.h"
+#include "ISharedMemoryHandle.h"
 #include "IWebAudioPlayer.h"
 #include "IWebAudioPlayerIpc.h"
 #include "IWebAudioPlayerIpcClient.h"
@@ -158,6 +159,17 @@ protected:
      * @brief The current application state.
      */
     std::atomic<ApplicationState> m_currentAppState;
+
+    /**
+     * @brief Guards m_shmHandle only.
+     */
+    std::mutex m_shmHandleMutex;
+
+    /**
+     * @brief The shared memory handle, cached on application state change so that
+     * writeBuffer() does not have to query IClientController on every write.
+     */
+    std::shared_ptr<ISharedMemoryHandle> m_shmHandle;
 };
 
 }; // namespace firebolt::rialto::client

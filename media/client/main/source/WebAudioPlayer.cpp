@@ -216,7 +216,11 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
         return false;
     }
 
-    std::shared_ptr<ISharedMemoryHandle> shmHandle = m_clientController.getSharedMemoryHandle();
+    std::shared_ptr<ISharedMemoryHandle> shmHandle;
+    {
+        std::lock_guard<std::mutex> lock{m_shmHandleMutex};
+        shmHandle = m_shmHandle;
+    }
     if (nullptr == shmHandle || nullptr == shmHandle->getShm())
     {
         RIALTO_CLIENT_LOG_ERROR("Shared buffer no longer valid");
@@ -275,6 +279,16 @@ void WebAudioPlayer::notifyState(WebAudioPlayerState state)
 void WebAudioPlayer::notifyApplicationState(ApplicationState state)
 {
     m_currentAppState = state;
+
+    // Refresh the cached shared memory handle only on state transitions, so writeBuffer()
+    // can read it lock-cheaply instead of querying IClientController on every write.
+    std::shared_ptr<ISharedMemoryHandle> shmHandle;
+    if (ApplicationState::RUNNING == state)
+    {
+        shmHandle = m_clientController.getSharedMemoryHandle();
+    }
+    std::lock_guard<std::mutex> lock{m_shmHandleMutex};
+    m_shmHandle = shmHandle;
 }
 
 }; // namespace firebolt::rialto::client
