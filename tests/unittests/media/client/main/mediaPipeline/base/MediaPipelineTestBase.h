@@ -27,6 +27,7 @@
 #include "MediaPipelineClientMock.h"
 #include "MediaPipelineIpcFactoryMock.h"
 #include "MediaPipelineIpcMock.h"
+#include "SharedMemoryHandleMock.h"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -61,6 +62,7 @@ protected:
     StrictMock<MediaPipelineIpcMock> *m_mediaPipelineIpcMock = nullptr;
     std::shared_ptr<StrictMock<MediaFrameWriterFactoryMock>> m_mediaFrameWriterFactoryMock;
     std::shared_ptr<StrictMock<ClientControllerMock>> m_clientControllerMock;
+    std::shared_ptr<StrictMock<SharedMemoryHandleMock>> m_sharedMemoryHandleMock;
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock;
 
     // MediaPipeline object
@@ -74,6 +76,13 @@ protected:
     void setNetworkState(NetworkState state);
     void needData(int32_t sourceId, size_t frameCount, uint32_t requestId,
                   const std::shared_ptr<MediaPlayerShmInfo> &shmInfo);
+
+    /**
+     * @brief Simulates IClientController delivering a (possibly null) shared memory handle,
+     * e.g. to test addSegment()'s handling of an unavailable buffer, without changing
+     * the MediaPipeline's application state or clearing pending need data requests.
+     */
+    void updateSharedMemoryHandle(const std::shared_ptr<firebolt::rialto::client::ISharedMemoryHandle> &handle);
 };
 
 #endif // MEDIA_PIPELINE_TEST_BASE_H_

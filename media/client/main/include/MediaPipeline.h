@@ -26,6 +26,7 @@
 #include "IMediaFrameWriter.h"
 #include "IMediaPipeline.h"
 #include "IMediaPipelineIpc.h"
+#include "ISharedMemoryHandle.h"
 #include <atomic>
 #include <condition_variable>
 #include <map>
@@ -258,9 +259,15 @@ protected:
     std::shared_ptr<common::IMediaFrameWriterFactory> m_mediaFrameWriterFactory;
 
     /**
-     * @brief The shared memory mutex.
+     * @brief The shared memory mutex. Guards m_shmHandle only.
      */
     std::mutex m_shmMutex;
+
+    /**
+     * @brief The shared memory handle, cached on application state change so that
+     * addSegment() does not have to query IClientController on every segment.
+     */
+    std::shared_ptr<ISharedMemoryHandle> m_shmHandle;
 
     /**
      * @brief The current state of the MediaPipeline.
