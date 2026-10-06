@@ -630,7 +630,6 @@ void MediaPipelineModuleService::haveData(::google::protobuf::RpcController *con
     if (!m_mediaPipelineService.haveData(request->session_id(), status, request->num_frames(), request->request_id()))
     {
         RIALTO_SERVER_LOG_ERROR("Have data failed");
-        controller->SetFailed("Operation failed");
     }
     done->Run();
 }

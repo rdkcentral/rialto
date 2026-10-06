@@ -21,6 +21,7 @@ syntax = "proto2";
 
 import "google/protobuf/descriptor.proto";
 import "rialtocommon.proto";
+import "rialtoipc.proto";
 
 package firebolt.rialto;
 
@@ -1108,6 +1109,7 @@ service MediaPipelineModule {
      * @see HaveDataRequest
      */
     rpc haveData(HaveDataRequest) returns (HaveDataResponse) {
+        option (rialto.ipc.no_reply) = true;
     }
 
     /**
