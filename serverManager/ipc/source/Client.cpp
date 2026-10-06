@@ -217,7 +217,8 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
                                      const std::string &socketName, const std::string &clientDisplayName,
                                      const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                      const unsigned int socketPermissions, const std::string &socketOwner,
-                                     const std::string &socketGroup, const std::string &appName) const
+                                     const std::string &socketGroup, const std::string &appName,
+                                     uint32_t playbackInfoTimerMs) const
 {
     if (!m_ipcLoop || !m_serviceStub)
     {
@@ -235,6 +236,12 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     request.set_socketowner(socketOwner);
     request.set_socketgroup(socketGroup);
     request.set_appname(appName);
+    if (playbackInfoTimerMs != 0)
+    {
+        request.set_playbackinfotimerms(playbackInfoTimerMs);
+        RIALTO_SERVER_MANAGER_LOG_INFO("Sending playbackInfoTimerMs=%u in SetConfiguration (socketName) for serverId: %d",
+                                       playbackInfoTimerMs, m_serverId);
+    }
     *(request.mutable_loglevels()) = getCurrentLogLevels();
     request.set_initialsessionserverstate(convert(initialState));
     auto ipcController = m_ipcLoop->createRpcController();
@@ -255,7 +262,7 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
 bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState, int socketFd,
                                      const std::string &clientDisplayName,
                                      const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
-                                     const std::string &appName) const
+                                     const std::string &appName, uint32_t playbackInfoTimerMs) const
 {
     if (!m_ipcLoop || !m_serviceStub)
     {
@@ -270,6 +277,12 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     request.mutable_resources()->set_maxplaybacks(maxResource.maxPlaybacks);
     request.mutable_resources()->set_maxwebaudioplayers(maxResource.maxWebAudioPlayers);
     request.set_appname(appName);
+    if (playbackInfoTimerMs != 0)
+    {
+        request.set_playbackinfotimerms(playbackInfoTimerMs);
+        RIALTO_SERVER_MANAGER_LOG_INFO("Sending playbackInfoTimerMs=%u in SetConfiguration (socketFd) for serverId: %d",
+                                       playbackInfoTimerMs, m_serverId);
+    }
     *(request.mutable_loglevels()) = getCurrentLogLevels();
     request.set_initialsessionserverstate(convert(initialState));
     auto ipcController = m_ipcLoop->createRpcController();
