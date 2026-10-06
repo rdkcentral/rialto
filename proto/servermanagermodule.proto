@@ -100,6 +100,9 @@ message SetConfigurationRequest {
     optional string appName = 9;
     optional int32 sessionManagementSocketFd = 10 [(firebolt.rialto.ipc.field_is_fd) = true, default = -1];
     optional uint32 subtitleClockResyncInterval = 11;
+    // Interval (in ms) at which the RialtoServer should emit PlaybackInfo updates.
+    // Sourced from firebolt::rialto::common::AppConfig::playbackInfoTimerMs.
+    optional uint32 playbackInfoTimerMs = 12;
 }
 message SetConfigurationResponse {
 }

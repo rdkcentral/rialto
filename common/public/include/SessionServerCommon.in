@@ -70,6 +70,16 @@ struct AppConfig
      * "/tmp/bar" In all cases the name can be retrieved with getAppConnectionInfo()
      */
     std::string clientDisplayName; /**< Socket name that Rialto client should connect to */
+    /*
+     * @brief Interval (in milliseconds) at which the RialtoServer should emit PlaybackInfo updates.
+     *
+     * This value is hardcoded in entservices-appmanagers and passed through to RialtoSessionServer,
+     * where it is picked up by GstGenericPlayer to drive the playback-info timer.
+     *
+     * Future enhancement: This will be made configurable per-app via widget config.xml after
+     * confirming CPU usage improvements via testing.
+     */
+    uint32_t playbackInfoTimerMs{0};
 };
 
 /**

@@ -319,6 +319,15 @@ struct GenericPlayerContext
      * @brief Current position of the stream in nanoseconds.
      */
     std::atomic<int64_t> streamPosition{-1};
+
+    /**
+     * @brief Last PlaybackInfo values that were actually sent to the client.
+     *
+     * Used by notifyPlaybackInfo() to avoid pushing duplicate IPC notifications when neither the
+     * current position nor the volume has changed since the previous tick of the playback-info timer.
+     * This keeps playback semantics untouched while reducing IPC/CPU churn on embedded devices.
+     */
+    std::optional<PlaybackInfo> lastReportedPlaybackInfo;
 };
 } // namespace firebolt::rialto::server
 

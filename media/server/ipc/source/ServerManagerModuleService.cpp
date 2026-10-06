@@ -22,6 +22,8 @@
 #include "ISessionServerManager.h"
 #include "RialtoServerLogging.h"
 #include <IIpcController.h>
+#include <cstdlib>
+#include <string>
 
 namespace
 {
@@ -96,6 +98,17 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
     common::MaxResourceCapabilitites maxResource{request->resources().maxplaybacks(),
                                                  request->resources().maxwebaudioplayers()};
     const auto kClientDisplayName = request->has_clientdisplayname() ? request->clientdisplayname() : "";
+    // Make the per-session PlaybackInfo timer interval available to GstGenericPlayer via an environment
+    // variable. GstGenericPlayer reads RIALTO_PLAYBACK_INFO_TIMER_MS during timer initialization.
+    // This value is set from firebolt::rialto::common::AppConfig::playbackInfoTimerMs, which is
+    // hardcoded in entservices-appmanagers.
+    if (request->has_playbackinfotimerms() && request->playbackinfotimerms() > 0)
+    {
+        const std::string kPlaybackInfoTimerMsStr{std::to_string(request->playbackinfotimerms())};
+        setenv("RIALTO_PLAYBACK_INFO_TIMER_MS", kPlaybackInfoTimerMsStr.c_str(), 1);
+        RIALTO_SERVER_LOG_INFO("PlaybackInfo timer configured to %u ms via AppConfig",
+                                request->playbackinfotimerms());
+    }
     bool success{true};
     if (request->has_sessionmanagementsocketfd())
     {

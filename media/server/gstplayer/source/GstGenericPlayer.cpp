@@ -572,6 +572,20 @@ void GstGenericPlayer::notifyPlaybackInfo()
     {
         getVolume(info.volume);
     }
+
+    // Avoid pushing duplicate PlaybackInfo notifications. When the pipeline is paused (or in slow
+    // periods between position samples) the timer still fires every N ms, but the queried position
+    // and volume often match the last values we already pushed. Repeating the same IPC event in
+    // that case burns CPU on both the server side (serialisation, IPC) and the client side
+    // (deserialisation + downstream listeners) without delivering any new information. This check
+    // does not change playback semantics - it only elides redundant notifications.
+    if (m_context.lastReportedPlaybackInfo.has_value() &&
+        m_context.lastReportedPlaybackInfo->currentPosition == info.currentPosition &&
+        m_context.lastReportedPlaybackInfo->volume == info.volume)
+    {
+        return;
+    }
+    m_context.lastReportedPlaybackInfo = info;
     m_gstPlayerClient->notifyPlaybackInfo(info);
 }
 
@@ -2475,7 +2489,23 @@ void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
 
 void GstGenericPlayer::startNotifyPlaybackInfoTimer()
 {
-    static constexpr std::chrono::milliseconds kPlaybackInfoTimerMs{32};
+    // Read the PlaybackInfo timer interval from the RIALTO_PLAYBACK_INFO_TIMER_MS environment variable,
+    // which is set during session initialization from firebolt::rialto::common::AppConfig::playbackInfoTimerMs.
+    // This value is hardcoded (32ms) in entservices-appmanagers and flows through to here via the
+    // RialtoSessionServer initialization.
+    // Default fallback is 32ms if not set.
+    std::chrono::milliseconds playbackInfoTimerMs{32};
+    if (const auto kEnvValue = std::getenv("RIALTO_PLAYBACK_INFO_TIMER_MS"))
+    {
+        char *endPtr = nullptr;
+        errno = 0;
+        const long parsed = std::strtol(kEnvValue, &endPtr, 10);
+        if (endPtr != kEnvValue && *endPtr == '\0' && errno == 0 && parsed > 0)
+        {
+             playbackInfoTimerMs = std::chrono::milliseconds{static_cast<long>(parsed)};
+        }
+    }
+
     if (m_playbackInfoTimer && m_playbackInfoTimer->isActive())
     {
         return;
@@ -2484,7 +2514,7 @@ void GstGenericPlayer::startNotifyPlaybackInfoTimer()
     notifyPlaybackInfo();
 
     const auto kNotifyPlaybackInfo = [this]() { notifyPlaybackInfo(); };
-    m_playbackInfoTimer = m_timerFactory->createTimer(kPlaybackInfoTimerMs, kNotifyPlaybackInfo,
+    m_playbackInfoTimer = m_timerFactory->createTimer(playbackInfoTimerMs, kNotifyPlaybackInfo,
                                                       firebolt::rialto::common::TimerType::PERIODIC);
 }
 
