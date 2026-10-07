@@ -25,6 +25,8 @@
 #include <sys/syscall.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <thread>
+#include<chrono>
 
 void debugLog(const std::string& message)
 {
@@ -34,7 +36,8 @@ void debugLog(const std::string& message)
     struct timeval tv;
     gettimeofday(&tv, nullptr);
     struct tm tm_info;
-    localtime_r(&tv.tv_sec, &tm_info);  // Thread-safe version
+   // localtime_r(&tv.tv_sec, &tm_info);  Thread-safe version
+    gmtime_r(&tv.tv_sec, &tm_info);  // UTC instead of local time
     char timeBuffer[64];
     strftime(timeBuffer, sizeof(timeBuffer), "%Y-%m-%d %H:%M:%S", &tm_info);
 
@@ -53,6 +56,7 @@ std::shared_ptr<IGstWrapper> GstWrapperFactory::getGstWrapper()
     if (!gstWrapper)
     {   
         debugLog("creating GstWrapper instance");
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));  // force window open for repro only
         try
         {
             debugLog("inside try block of GstWrapperFactory::getGstWrapper");
