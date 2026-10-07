@@ -123,6 +123,8 @@ public:
 
     void gErrorFree(GError *error) const override { g_error_free(error); }
 
+    void gThreadPoolStopUnusedThreads() const override { g_thread_pool_stop_unused_threads(); }
+
     const gchar *gTypeName(GType type) const override { return g_type_name(type); }
 
     int gStrcmp0(const char *str1, const char *str2) const override { return g_strcmp0(str1, str2); }

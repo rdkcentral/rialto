@@ -270,6 +270,11 @@ public:
     virtual void gErrorFree(GError *error) const = 0;
 
     /**
+     * @brief Stops all currently unused threads in glib's global thread pool.
+     */
+    virtual void gThreadPoolStopUnusedThreads() const = 0;
+
+    /**
      * @brief Gets the name of the given type.
      *
      * @param[in] type : type id.
