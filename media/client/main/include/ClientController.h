@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_CLIENT_CLIENT_CONTROLLER_H_
 
 #include <list>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -47,6 +48,8 @@ public:
     ~ClientController() override;
 
     std::shared_ptr<ISharedMemoryHandle> getSharedMemoryHandle() override;
+    int subscribeSharedMemoryHandle(SharedMemoryHandleObserver observer) override;
+    void unsubscribeSharedMemoryHandle(int token) override;
     bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) override;
     bool unregisterClient(std::weak_ptr<IControlClient> client) override;
 
@@ -82,6 +85,11 @@ private:
      *
      */
     void changeStateAndNotifyClients(ApplicationState state);
+
+    /**
+     * @brief Forwards the current shared memory handle to subscribed observers.
+     */
+    void notifySharedMemoryHandleObservers();
 
     /**
      * @brief Gets the monotonic timestamp in milliseconds.
@@ -143,6 +151,16 @@ private:
      * @brief List of clients to notify.
      */
     std::list<std::weak_ptr<IControlClient>> m_clients;
+
+    /**
+     * @brief Registered shared memory handle observers, keyed by subscription token.
+     */
+    std::map<int, SharedMemoryHandleObserver> m_shmObservers;
+
+    /**
+     * @brief Next token to hand out from subscribeSharedMemoryHandle().
+     */
+    int m_nextShmObserverToken{0};
 };
 } // namespace firebolt::rialto::client
 

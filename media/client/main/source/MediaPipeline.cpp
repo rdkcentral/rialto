@@ -194,12 +194,20 @@ MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const V
     {
         throw std::runtime_error("Media player ipc could not be created");
     }
+
+    m_shmHandleObserverId = m_clientController.subscribeSharedMemoryHandle(
+        [this](const std::shared_ptr<ISharedMemoryHandle> &handle)
+        {
+            std::lock_guard<std::mutex> lock{m_shmMutex};
+            m_shmHandle = handle;
+        });
 }
 
 MediaPipeline::~MediaPipeline()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
+    m_clientController.unsubscribeSharedMemoryHandle(m_shmHandleObserverId);
     m_mediaPipelineIpc.reset();
 }
 
@@ -421,7 +429,11 @@ AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std
     }
 
     std::shared_ptr<NeedDataRequest> needDataRequest = needDataRequestIt->second;
-    std::shared_ptr<ISharedMemoryHandle> shmHandle = m_clientController.getSharedMemoryHandle();
+    std::shared_ptr<ISharedMemoryHandle> shmHandle;
+    {
+        std::lock_guard<std::mutex> shmLock{m_shmMutex};
+        shmHandle = m_shmHandle;
+    }
     if (nullptr == shmHandle || nullptr == shmHandle->getShm())
     {
         RIALTO_CLIENT_LOG_ERROR("Shared buffer no longer valid");

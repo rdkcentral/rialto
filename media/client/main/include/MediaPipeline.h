@@ -258,9 +258,19 @@ protected:
     std::shared_ptr<common::IMediaFrameWriterFactory> m_mediaFrameWriterFactory;
 
     /**
-     * @brief The shared memory mutex.
+     * @brief The shared memory mutex. Guards m_shmHandle.
      */
     std::mutex m_shmMutex;
+
+    /**
+     * @brief Cached shared memory handle, refreshed by the subscribeSharedMemoryHandle() observer.
+     */
+    std::shared_ptr<ISharedMemoryHandle> m_shmHandle;
+
+    /**
+     * @brief Token for the shared memory handle observer subscription.
+     */
+    int m_shmHandleObserverId{-1};
 
     /**
      * @brief The current state of the MediaPipeline.

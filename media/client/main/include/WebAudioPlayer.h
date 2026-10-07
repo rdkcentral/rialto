@@ -150,6 +150,21 @@ protected:
     std::mutex m_bufLock;
 
     /**
+     * @brief Guards m_shmHandle.
+     */
+    std::mutex m_shmHandleMutex;
+
+    /**
+     * @brief Cached shared memory handle, refreshed by the subscribeSharedMemoryHandle() observer.
+     */
+    std::shared_ptr<ISharedMemoryHandle> m_shmHandle;
+
+    /**
+     * @brief Token for the shared memory handle observer subscription.
+     */
+    int m_shmHandleObserverId{-1};
+
+    /**
      * @brief The bytes per frame for this audio playback.
      */
     uint32_t m_bytesPerFrame;
