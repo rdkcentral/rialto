@@ -39,7 +39,10 @@ if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 13.0)
 endif()
 
 # By default set link time optimisation, can affect compilation performance
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
+add_compile_options(-g3 -marm -mapcs-frame -fno-omit-frame-pointer)
+
+add_link_options(-g)
 
 option(RIALTO_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" ON)
 option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" ON)
