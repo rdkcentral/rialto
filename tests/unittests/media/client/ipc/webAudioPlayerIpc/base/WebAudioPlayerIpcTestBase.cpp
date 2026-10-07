@@ -75,6 +75,15 @@ void WebAudioPlayerIpcTestBase::expectUnsubscribeEvents()
 
 void WebAudioPlayerIpcTestBase::destroyWebAudioPlayerIpc()
 {
+    if (m_channelDetached)
+    {
+        // A failed api call has already detached the channel, so the web audio player is not destroyed
+        // on the server
+        m_webAudioPlayerIpc.reset();
+        EXPECT_EQ(m_webAudioPlayerIpc, nullptr);
+        return;
+    }
+
     expectIpcApiCallSuccess();
     expectUnsubscribeEvents();
 

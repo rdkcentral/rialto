@@ -71,10 +71,6 @@ TEST_F(RialtoClientMediaKeysIpcGetDrmStoreHashTest, ChannelDisconnected)
     expectUnsubscribeEvents();
 
     EXPECT_EQ(m_mediaKeysIpc->getDrmStoreHash(drmStoreHash), MediaKeyErrorStatus::FAIL);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**

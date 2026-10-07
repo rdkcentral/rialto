@@ -238,7 +238,7 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, DestructorChannelDisconnected)
     createMediaPipelineIpc();
 
     /* destroy media player */
-    expectIpcApiCallDisconnected();
+    expectIpcApiCallSkippedDisconnected();
     expectUnsubscribeEvents();
 
     m_mediaPipelineIpc.reset();
