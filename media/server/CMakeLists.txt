@@ -22,6 +22,16 @@ set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
+if(FDO_MODE_GENERATE)
+    add_compile_options(-fprofile-generate=/opt/rialtoserver-fdo-profiles -fprofile-correction)
+    add_link_options(-fprofile-generate=/opt/rialtoserver-fdo-profiles -fprofile-correction)
+endif()
+
+if(FDO_MODE_USE)
+    add_compile_options(-fprofile-use=${FDO_PROFILE_DIR} -fprofile-correction -Wno-error=missing-profile)
+    add_link_options(-fprofile-use=${FDO_PROFILE_DIR} -fprofile-correction -Wno-error=missing-profile)
+endif()
+
 add_subdirectory(common)
 add_subdirectory(gstplayer)
 add_subdirectory(main)

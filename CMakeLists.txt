@@ -225,6 +225,15 @@ if( NATIVE_BUILD )
     )
 endif()
 
+if(FDO_PROFILE_MODE STREQUAL "generate")
+	set(FDO_MODE_GENERATE ON)
+elseif(FDO_PROFILE_MODE STREQUAL "use")
+	set(FDO_MODE_USE ON)
+	set(FDO_PROFILE_DIR "${FDO_PROFILE_DIR}" CACHE PATH "Directory containing PGO profiles")
+else()
+	message(STATUS "Invalid FDO_PROFILE_MODE=${FDO_PROFILE_MODE}")
+endif()
+
 # Include the new IPC library components
 add_subdirectory( ipc )
 
