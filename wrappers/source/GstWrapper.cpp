@@ -65,18 +65,18 @@ std::shared_ptr<IGstWrapper> GstWrapperFactory::getGstWrapper()
         if (myArrivalNumber == 1)
         {
             auto waitStart = std::chrono::steady_clock::now();
+            // hot-spin (no yield) so the wake-up isn't delayed by scheduler tick granularity
             while (raceArrivals.load() < 2 &&
                    std::chrono::steady_clock::now() - waitStart < std::chrono::milliseconds(50))
             {
-                std::this_thread::yield();
             }
         }
-        // --- end repro-only barrier ---
+        // --- end repro-only barrier: nothing but make_shared runs immediately after release ---
 
         try
         {
-            debugLog("inside try block of GstWrapperFactory::getGstWrapper");
             gstWrapper = std::make_shared<GstWrapper>();
+            debugLog("inside try block of GstWrapperFactory::getGstWrapper");
         }
         catch (const std::exception &e)
         {
