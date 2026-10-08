@@ -18,6 +18,7 @@
  */
 
 #include "GstWrapper.h"
+#include <atomic>
 #include <ctime>
 #include <fstream>
 #include <iomanip>
@@ -56,7 +57,22 @@ std::shared_ptr<IGstWrapper> GstWrapperFactory::getGstWrapper()
     if (!gstWrapper)
     {   
         debugLog("creating GstWrapper instance");
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));  // force window open for repro only
+
+        // --- repro-only barrier: hold whichever thread arrives first until a second thread
+        // also arrives (or 50ms elapses), so both threads call make_shared back-to-back ---
+        static std::atomic<int> raceArrivals{0};
+        int myArrivalNumber = ++raceArrivals;
+        if (myArrivalNumber == 1)
+        {
+            auto waitStart = std::chrono::steady_clock::now();
+            while (raceArrivals.load() < 2 &&
+                   std::chrono::steady_clock::now() - waitStart < std::chrono::milliseconds(50))
+            {
+                std::this_thread::yield();
+            }
+        }
+        // --- end repro-only barrier ---
+
         try
         {
             debugLog("inside try block of GstWrapperFactory::getGstWrapper");
