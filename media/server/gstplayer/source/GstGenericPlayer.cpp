@@ -49,6 +49,10 @@ namespace
  */
 constexpr std::chrono::milliseconds kPositionReportTimerMs{250};
 constexpr std::chrono::seconds kSubtitleClockResyncInterval{10};
+/**
+ * @brief Maximum time of holding video data after audio flush, when audio data reaching the segment start is not pushed.
+ */
+constexpr std::chrono::milliseconds kVideoHoldTimeoutMs{1500};
 
 bool operator==(const firebolt::rialto::server::SegmentData &lhs, const firebolt::rialto::server::SegmentData &rhs)
 {
@@ -324,6 +328,12 @@ void GstGenericPlayer::termPipeline()
     }
 
     m_finishSourceSetupTimer.reset();
+
+    if (m_videoHoldTimer && m_videoHoldTimer->isActive())
+    {
+        m_videoHoldTimer->cancel();
+    }
+    m_videoHoldTimer.reset();
 
     clearAudioFirstFrameFallbackProbe();
     stopNotifyPlaybackInfoTimer();
@@ -1373,7 +1383,7 @@ void GstGenericPlayer::notifyNeedMediaData(const MediaSourceType mediaSource)
         streamInfo.isNeedDataPending = false;
 
         // Send new NeedMediaData if we still need it
-        if (m_gstPlayerClient && streamInfo.isDataNeeded)
+        if (m_gstPlayerClient && streamInfo.isDataNeeded && !isVideoDataHeld(mediaSource, streamInfo))
         {
             streamInfo.isNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(mediaSource);
         }
@@ -1393,7 +1403,7 @@ void GstGenericPlayer::notifyNeedMediaDataWithDelay(const MediaSourceType mediaS
         streamInfo.isNeedDataPending = false;
 
         // Schedule new NeedMediaData if we still need it
-        if (m_gstPlayerClient && streamInfo.isDataNeeded)
+        if (m_gstPlayerClient && streamInfo.isDataNeeded && !isVideoDataHeld(mediaSource, streamInfo))
         {
             streamInfo.isNeedDataPending = m_gstPlayerClient->notifyNeedMediaDataWithDelay(mediaSource);
         }
@@ -1415,6 +1425,18 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
             return;
         }
 
+        if (firebolt::rialto::MediaSourceType::VIDEO == mediaType && m_context.isVideoHeldUntilAudio)
+        {
+            if (!m_context.isVideoHoldExpired)
+            {
+                RIALTO_SERVER_LOG_DEBUG("Holding video data until audio data is pushed");
+                return;
+            }
+            RIALTO_SERVER_LOG_WARN("Audio data not pushed in time, releasing held video data");
+            m_context.isVideoHeldUntilAudio = false;
+        }
+
+        int64_t lastAudioSampleEnd{-1};
         if (firebolt::rialto::MediaSourceType::SUBTITLE == mediaType)
         {
             setTextTrackPositionIfRequired(streamInfo.appSrc);
@@ -1428,6 +1450,11 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
             // This needs to be done before gstAppSrcPushBuffer() is
             // called because it can free the memory
             m_context.lastAudioSampleTimestamps = static_cast<int64_t>(GST_BUFFER_PTS(streamInfo.buffers.back()));
+            lastAudioSampleEnd = m_context.lastAudioSampleTimestamps;
+            if (GST_BUFFER_DURATION_IS_VALID(streamInfo.buffers.back()))
+            {
+                lastAudioSampleEnd += static_cast<int64_t>(GST_BUFFER_DURATION(streamInfo.buffers.back()));
+            }
         }
 
         for (GstBuffer *buffer : streamInfo.buffers)
@@ -1453,6 +1480,13 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
         if (eosInfoIt != m_context.endOfStreamInfo.end() && eosInfoIt->second == EosState::PENDING)
         {
             setEos(mediaType);
+        }
+
+        // Audio data reaching the segment start is in the pipeline - video preroll can be completed
+        if (firebolt::rialto::MediaSourceType::AUDIO == mediaType && m_context.isVideoHeldUntilAudio &&
+            lastAudioSampleEnd >= m_context.audioGstSegmentPosition)
+        {
+            releaseVideoHold();
         }
     }
 }
@@ -1864,6 +1898,67 @@ void GstGenericPlayer::clearAudioFirstFrameFallbackProbeState()
     {
         m_gstWrapper->gstObjectUnref(pad);
     }
+}
+
+void GstGenericPlayer::holdVideoUntilAudio()
+{
+    auto videoIt = m_context.streamInfo.find(MediaSourceType::VIDEO);
+    if (videoIt == m_context.streamInfo.end() || m_context.audioSourceRemoved)
+    {
+        return;
+    }
+
+    RIALTO_SERVER_LOG_MIL("Holding video data until audio data is pushed");
+    m_context.isVideoHeldUntilAudio = true;
+    m_context.isVideoHoldExpired = false;
+
+    if (m_videoHoldTimer && m_videoHoldTimer->isActive())
+    {
+        m_videoHoldTimer->cancel();
+    }
+    GstAppSrc *videoSrc{GST_APP_SRC(videoIt->second.appSrc)};
+    m_videoHoldTimer = m_timerFactory->createTimer(kVideoHoldTimeoutMs,
+                                                   [this, videoSrc]()
+                                                   {
+                                                       m_context.isVideoHoldExpired = true;
+                                                       if (m_workerThread)
+                                                       {
+                                                           // NeedData attaches held video data and requests more
+                                                           m_workerThread->enqueueTask(
+                                                               m_taskFactory->createNeedData(m_context, *this, videoSrc));
+                                                       }
+                                                   });
+}
+
+void GstGenericPlayer::releaseVideoHold()
+{
+    if (!m_context.isVideoHeldUntilAudio)
+    {
+        return;
+    }
+
+    RIALTO_SERVER_LOG_MIL("Releasing held video data");
+    m_context.isVideoHeldUntilAudio = false;
+    if (m_videoHoldTimer && m_videoHoldTimer->isActive())
+    {
+        m_videoHoldTimer->cancel();
+    }
+
+    auto videoIt = m_context.streamInfo.find(MediaSourceType::VIDEO);
+    if (videoIt != m_context.streamInfo.end())
+    {
+        attachData(MediaSourceType::VIDEO);
+        if (!videoIt->second.isNeedDataPending)
+        {
+            notifyNeedMediaData(MediaSourceType::VIDEO);
+        }
+    }
+}
+
+bool GstGenericPlayer::isVideoDataHeld(const MediaSourceType mediaSource, const StreamInfo &streamInfo) const
+{
+    // Don't request more video data, when the video data is already held
+    return MediaSourceType::VIDEO == mediaSource && m_context.isVideoHeldUntilAudio && !streamInfo.buffers.empty();
 }
 
 void GstGenericPlayer::scheduleAllSourcesAttached()

@@ -91,6 +91,16 @@ public:
     virtual void clearAudioFirstFrameFallbackProbeState() = 0;
 
     /**
+     * @brief Holds video data until audio data reaching the segment start is pushed. Called by the worker thread.
+     */
+    virtual void holdVideoUntilAudio() = 0;
+
+    /**
+     * @brief Releases video data held by holdVideoUntilAudio(). Called by the worker thread.
+     */
+    virtual void releaseVideoHold() = 0;
+
+    /**
      * @brief Schedules all sources attached task. Called by the worker thread.
      */
     virtual void scheduleAllSourcesAttached() = 0;

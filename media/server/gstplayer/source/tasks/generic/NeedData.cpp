@@ -64,6 +64,12 @@ void NeedData::execute() const
                     RIALTO_SERVER_LOG_DEBUG("Audio source is removed, no need to request data");
                     break;
                 }
+                if (sourceType == MediaSourceType::VIDEO && m_context.isVideoHeldUntilAudio &&
+                    !elem.second.buffers.empty())
+                {
+                    RIALTO_SERVER_LOG_DEBUG("Video data is held until audio data is pushed, no need to request data");
+                    break;
+                }
                 elem.second.isNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(sourceType);
             }
             break;

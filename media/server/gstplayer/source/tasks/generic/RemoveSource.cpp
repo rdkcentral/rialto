@@ -48,6 +48,7 @@ void RemoveSource::execute() const
     m_player.clearAudioFirstFrameFallbackProbe();
     m_context.firstAudioFrameReceived = false;
     m_context.audioSourceRemoved = true;
+    m_player.releaseVideoHold();
     if (m_gstPlayerClient)
     {
         m_gstPlayerClient->invalidateActiveRequests(m_type);

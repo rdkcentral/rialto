@@ -161,6 +161,8 @@ private:
     void setAudioFirstFrameFallbackProbe(GstPad *pad, gulong id) override;
     void clearAudioFirstFrameFallbackProbe() override;
     void clearAudioFirstFrameFallbackProbeState() override;
+    void holdVideoUntilAudio() override;
+    void releaseVideoHold() override;
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
     bool setImmediateOutput() override;
@@ -221,6 +223,17 @@ private:
      * @retval Value of the flag or 0 on error.
      */
     unsigned getGstPlayFlag(const char *nick);
+
+    /**
+     * @brief Checks if new data should not be requested for the source, because video data is held until audio
+     *        data is pushed. Called by the worker thread.
+     *
+     * @param[in] mediaSource : The media source type.
+     * @param[in] streamInfo  : The stream info of the source.
+     *
+     * @retval true if video data is held.
+     */
+    bool isVideoDataHeld(const MediaSourceType mediaSource, const StreamInfo &streamInfo) const;
 
     /**
      * @brief Callback on source-setup. Called by the Gstreamer thread
@@ -493,6 +506,13 @@ private:
      * Variable can be used only in worker thread
      */
     std::unique_ptr<firebolt::rialto::common::ITimer> m_subtitleClockResyncTimer{nullptr};
+
+    /**
+     * @brief Timer limiting the time of holding video data until audio data is pushed
+     *
+     * Variable can be used only in worker thread
+     */
+    std::unique_ptr<firebolt::rialto::common::ITimer> m_videoHoldTimer{nullptr};
 
     /**
      * @brief The GstGenericPlayer task factory

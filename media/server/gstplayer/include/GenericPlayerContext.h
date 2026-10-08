@@ -319,6 +319,18 @@ struct GenericPlayerContext
      * @brief Current position of the stream in nanoseconds.
      */
     std::atomic<int64_t> streamPosition{-1};
+
+    /**
+     * @brief Flag used to hold video data after audio flush, until audio data reaching the segment start is pushed.
+     *        Used only for not async audio sinks, which do not hold the preroll, to prevent the pipeline from
+     *        starting the playback without audio.
+     */
+    bool isVideoHeldUntilAudio{false};
+
+    /**
+     * @brief Flag set by the timer, when holding of the video data expired.
+     */
+    std::atomic<bool> isVideoHoldExpired{false};
 };
 } // namespace firebolt::rialto::server
 

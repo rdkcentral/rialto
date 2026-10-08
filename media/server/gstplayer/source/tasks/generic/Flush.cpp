@@ -102,6 +102,12 @@ void Flush::execute() const
         {
             m_context.flushOnPrerollController->setFlushing(m_type);
         }
+        else if (MediaSourceType::AUDIO == m_type && m_resetTime)
+        {
+            // Not async audio sink does not hold the preroll, so hold video data until audio data is pushed,
+            // to prevent the pipeline from starting the playback without audio.
+            m_player.holdVideoUntilAudio();
+        }
     }
     else
     {

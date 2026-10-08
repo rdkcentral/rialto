@@ -44,6 +44,12 @@ void Eos::execute() const
 
     m_player.cancelUnderflow(m_type);
 
+    if (MediaSourceType::AUDIO == m_type)
+    {
+        // No more audio data will come, video data can't be held anymore
+        m_player.releaseVideoHold();
+    }
+
     auto elem = m_context.streamInfo.find(m_type);
     if (elem == m_context.streamInfo.end())
     {
