@@ -254,6 +254,8 @@ void SetupElement::execute() const
         // remains in the playing state. This causes problems with the synchronization of gst element and rialto
         // ultimately hangs waiting for pipeline termination.
         m_glibWrapper->gObjectSet(m_element, "disable-xrun", TRUE, nullptr);
+
+        m_glibWrapper->gObjectSet(m_element, "async", TRUE, nullptr);
     }
     else if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "brcmaudiosink"))
     {
