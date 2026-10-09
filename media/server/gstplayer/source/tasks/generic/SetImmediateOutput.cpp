@@ -23,13 +23,9 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetImmediateOutput::SetImmediateOutput(GenericPlayerContext &context,
-                                       const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                                       const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-                                       IGstGenericPlayerPrivate &player, const MediaSourceType &type,
-                                       bool immediateOutput)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_player(player), m_type{type},
-      m_immediateOutput{immediateOutput}
+SetImmediateOutput::SetImmediateOutput(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                       const MediaSourceType &type, bool immediateOutput)
+    : m_context{context}, m_player(player), m_type{type}, m_immediateOutput{immediateOutput}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetImmediateOutput");
 }
@@ -43,32 +39,23 @@ void SetImmediateOutput::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetImmediateOutput for %s source", common::convertMediaSourceType(m_type));
 
-    m_context.pendingLowLatencyForAudioDecoder = m_immediateOutput;
-    m_context.pendingLowLatencyForAudioSink = m_immediateOutput;
+    if (m_type == MediaSourceType::AUDIO)
+    {
+        m_context.pendingLowLatencyForAudioDecoder = m_immediateOutput;
+        m_context.pendingLowLatencyForAudioSink = m_immediateOutput;
 
-    GstElement *decoder = m_player.getDecoder(MediaSourceType::AUDIO);
-    GstElement *sink = m_player.getSink(MediaSourceType::AUDIO);
-    if (decoder)
-    {
-        m_gstWrapper->gstObjectUnref(decoder);
-        m_player.setLowLatencyAudioDecoder();
+        if (m_context.pipeline)
+        {
+            m_player.setLowLatencyAudioDecoder();
+            m_player.setLowLatencyAudioSink();
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_DEBUG("Pending immediate-output: pipeline is NULL");
+            return;
+        }
     }
-    else
-    {
-        RIALTO_SERVER_LOG_DEBUG("Pending immediate-output: audio decoder is NULL");
-    }
-
-    if (sink)
-    {
-        m_gstWrapper->gstObjectUnref(sink);
-        m_player.setLowLatencyAudioSink();
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_DEBUG("Pending immediate-output: audio sink is NULL");
-    }
-
-    if (m_type == MediaSourceType::VIDEO)
+    else if (m_type == MediaSourceType::VIDEO)
     {
         m_context.pendingImmediateOutputForVideo = m_immediateOutput;
         if (m_context.pipeline)
@@ -77,8 +64,7 @@ void SetImmediateOutput::execute() const
         }
         return;
     }
-
-    if (m_type != MediaSourceType::AUDIO)
+    else
     {
         RIALTO_SERVER_LOG_ERROR("SetImmediateOutput not currently supported for source type %s",
                                 common::convertMediaSourceType(m_type));

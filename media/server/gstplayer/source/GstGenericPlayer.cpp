@@ -708,7 +708,7 @@ void GstGenericPlayer::notifyPlaybackInfo()
     m_gstPlayerClient->notifyPlaybackInfo(info);
 }
 
-GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType) const
+GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
 {
     GstIterator *it = m_gstWrapper->gstBinIterateRecurse(GST_BIN(m_context.pipeline));
     GValue item = G_VALUE_INIT;
@@ -2202,7 +2202,7 @@ bool GstGenericPlayer::setLowLatencyAudioDecoder()
             bool lowLatencyAudioDecoder{m_context.pendingLowLatencyForAudioDecoder.value()};
             RIALTO_SERVER_LOG_DEBUG("Set low latency properties on audio decoder to %s", lowLatencyAudioDecoder ? "TRUE" : "FALSE");
 
-            const auto setDecoderBoolPropertyIfExists = [&](const char *property, bool value, bool ret)
+            const auto setDecoderBoolPropertyIfExists = [&](const char *property, bool value, bool &ret)
             {
                 if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), property))
                 {
@@ -2215,7 +2215,7 @@ bool GstGenericPlayer::setLowLatencyAudioDecoder()
                 }
             };
 
-            const auto setDecoderIntPropertyIfExists = [&](const char *property, gint value, bool ret)
+            const auto setDecoderIntPropertyIfExists = [&](const char *property, gint value, bool &ret)
             {
                 if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), property))
                 {
@@ -2250,13 +2250,13 @@ bool GstGenericPlayer::setLowLatencyAudioSink()
     bool result{true};
     if (m_context.pendingLowLatencyForAudioSink.has_value())
     {
-        GstElement *sink{getSink(MediaSourceType::VIDEO)};
+        GstElement *sink{getSink(MediaSourceType::AUDIO)};
         if (sink)
         {
             bool lowLatencyAudioSink{m_context.pendingLowLatencyForAudioSink.value()};
             RIALTO_SERVER_LOG_DEBUG("Set low latency properties on audio sink to %s", lowLatencyAudioSink ? "TRUE" : "FALSE");
 
-            const auto setSinkBoolPropertyIfExists = [&](const char *property, bool value, bool ret)
+            const auto setSinkBoolPropertyIfExists = [&](const char *property, bool value, bool &ret)
             {
                 if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), property))
                 {
@@ -2269,7 +2269,7 @@ bool GstGenericPlayer::setLowLatencyAudioSink()
                 }
             };
 
-            const auto setSinkIntPropertyIfExists = [&](const char *property, gint value, bool ret)
+            const auto setSinkIntPropertyIfExists = [&](const char *property, gint value, bool &ret)
             {
                 if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), property))
                 {

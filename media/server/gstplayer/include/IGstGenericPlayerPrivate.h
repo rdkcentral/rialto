@@ -337,15 +337,6 @@ public:
     virtual GstElement *getSink(const MediaSourceType &mediaSourceType) const = 0;
 
     /**
-     * @brief Gets the decoder element for source type.
-     *
-     * @param[in] mediaSourceType : the source type to obtain the decoder for
-     *
-     * @retval The decoder, NULL if not found. Please call getObjectUnref() if it's non-null
-     */
-    virtual GstElement *getDecoder(const MediaSourceType &mediaSourceType) const = 0;
-
-    /**
      * @brief Reattaches source (or switches it)
      *
      * @param[in] source          : The new media source

@@ -78,6 +78,8 @@ public:
     void mediaPipelineServiceWillFailToGetDuration();
     void mediaPipelineServiceWillSetImmediateOutput();
     void mediaPipelineServiceWillFailToSetImmediateOutput();
+    void mediaPipelineServiceWillSetImmediateOutputForVideoOnly(int sessionId, int32_t sourceId);
+    void mediaPipelineServiceWillSetImmediateOutputForVideoOnly(int sessionId, int32_t sourceId, bool immediateOutput);
     void mediaPipelineServiceWillGetImmediateOutput();
     void mediaPipelineServiceWillFailToGetImmediateOutput();
     void mediaPipelineServiceWillSetReportDecodeErrors();
@@ -144,6 +146,8 @@ public:
     void sendDestroySessionRequestAndReceiveResponse();
     void sendLoadRequestAndReceiveResponse();
     void sendAttachSourceRequestAndReceiveResponse();
+    void sendAttachSourceRequestAndReceiveResponse(int sessionId, firebolt::rialto::MediaSourceType sourceType,
+                                                   int32_t sourceId);
     void sendAttachVideoSourceRequestAndReceiveResponse();
     void sendAttachDolbySourceRequestAndReceiveResponse();
     void sendAttachSubtitleSourceRequestAndReceiveResponse();
@@ -160,6 +164,8 @@ public:
     void sendGetDurationRequestAndReceiveResponse();
     void sendGetDurationRequestAndReceiveResponseWithoutDurationMatch();
     void sendSetImmediateOutputRequestAndReceiveResponse();
+    void sendSetImmediateOutputRequestAndReceiveResponse(int sessionId, int32_t sourceId);
+    void sendSetImmediateOutputRequestAndReceiveResponse(int sessionId, int32_t sourceId, bool immediateOutput);
     void sendSetImmediateOutputRequestAndReceiveFail();
     void sendGetImmediateOutputRequestAndReceiveResponse();
     void sendGetImmediateOutputRequestAndReceiveFail();
