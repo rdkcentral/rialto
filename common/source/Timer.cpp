@@ -129,9 +129,9 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
     }
     else
     {
-	m_timerId = g_timeout_add(
+        m_timerId = g_timeout_add(
             static_cast<guint>(timeout.count()),
-	    [](gpointer data) -> gboolean
+            [](gpointer data) -> gboolean
             {
                 auto callback = CommonTimerLoop::instance().getTimerCallback(static_cast<Timer *>(data));
                 if (callback)
@@ -139,7 +139,7 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
                     callback();
                     CommonTimerLoop::instance().removeTimerCallback(static_cast<Timer *>(data));
                 }
-		return G_SOURCE_REMOVE;
+                return G_SOURCE_REMOVE;
             },
             this);
     }
