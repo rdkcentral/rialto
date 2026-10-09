@@ -44,6 +44,8 @@ public:
     MOCK_METHOD(void, scheduleAllSourcesAttached, (), (override));
     MOCK_METHOD(bool, setVideoSinkRectangle, (), (override));
     MOCK_METHOD(bool, setImmediateOutput, (), (override));
+    MOCK_METHOD(bool, setLowLatencyAudioDecoder, (), (override));
+    MOCK_METHOD(bool, setLowLatencyAudioSink, (), (override));
     MOCK_METHOD(bool, setReportDecodeErrors, (), (override));
     MOCK_METHOD(bool, setLowLatency, (), (override));
     MOCK_METHOD(bool, setSync, (), (override));
@@ -84,6 +86,7 @@ public:
     MOCK_METHOD(void, startSubtitleClockResyncTimer, (), (override));
     MOCK_METHOD(void, stopSubtitleClockResyncTimer, (), (override));
     MOCK_METHOD(bool, hasSourceType, (const MediaSourceType &mediaSourceType), (const, override));
+    MOCK_METHOD(GstElement *, getDecoder, (const MediaSourceType &mediaSourceType), (const, override));
     MOCK_METHOD(void, notifyPlaybackInfo, (), (override));
 };
 } // namespace firebolt::rialto::server
