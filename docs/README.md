@@ -64,7 +64,7 @@ classDef VL stroke:#808080,fill:#F2F2F2,stroke-width:2px
 
 ## Design
 
-Rialto is designed around strict process isolation. The `RialtoClient` library runs inside the containerised application and translates every media operation into a protobuf RPC call sent over a Unix domain socket. The `RialtoServer` process runs outside any container, holds access to GStreamer and DRM resources, and executes those operations on behalf of the client. This split ensures that hardware handles, DRM contexts, and GStreamer pipelines remain contained within the trusted server process.
+Rialto is designed around strict process isolation. The `RialtoClient` library runs inside the containerised application and translates media control operations into protobuf RPC calls sent over a Unix domain socket; encoded media segments use the shared-memory data path described below. The `RialtoServer` process runs outside any container, holds access to GStreamer and DRM resources, and executes those operations on behalf of the client. This split ensures that hardware handles, DRM contexts, and GStreamer pipelines remain contained within the trusted server process.
 
 The IPC layer is purpose-built to meet Rialto's specific requirements: per-connection client identity (pid/uid), in-band file descriptor passing for sharing memory buffer descriptors, and first-class asynchronous event delivery from server to client. The protobuf service definitions in `proto/` describe all RPC methods and events for the media pipeline, DRM, web audio, control, and server manager channels.
 
@@ -428,10 +428,16 @@ Rialto accesses the platform media subsystem directly through the following wrap
 
 Log levels for all Rialto components can be changed at runtime without restarting any process:
 
-```bash
-# Via IServerManagerService API (called by the application manager integration)
-setLogLevels(defaultLogLevels, clientLogLevels, sessionServerLogLevels,
-             ipcLogLevels, serverManagerLogLevels, commonLogLevels)
+```cpp
+// Via IServerManagerService API (called by the application manager integration)
+LoggingLevels logLevels;
+logLevels.defaultLoggingLevel = LoggingLevel::DEBUG;
+logLevels.clientLoggingLevel = LoggingLevel::DEBUG;
+logLevels.sessionServerLoggingLevel = LoggingLevel::DEBUG;
+logLevels.ipcLoggingLevel = LoggingLevel::DEBUG;
+logLevels.serverManagerLoggingLevel = LoggingLevel::DEBUG;
+logLevels.commonLoggingLevel = LoggingLevel::DEBUG;
+serverManagerService->setLogLevels(logLevels);
 ```
 
 ### Configuration Persistence
