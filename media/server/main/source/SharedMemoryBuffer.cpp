@@ -109,11 +109,21 @@ const char *toString(const firebolt::rialto::server::ISharedMemoryBuffer::MediaP
 
 void releasePages(std::uint8_t *data, std::uint32_t length)
 {
-    const std::uintptr_t kPageSize{static_cast<std::uintptr_t>(sysconf(_SC_PAGESIZE))};
+    const auto kPageSize{sysconf(_SC_PAGESIZE)};
+    if (kPageSize <= 0)
+    {
+        RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to get the page size, shm pages not released");
+        return;
+    }
+    const std::uintptr_t kPage{static_cast<std::uintptr_t>(kPageSize)};
     const std::uintptr_t kStart{reinterpret_cast<std::uintptr_t>(data)};
-    const std::uintptr_t kBegin{(kStart + kPageSize - 1) / kPageSize * kPageSize};
-    const std::uintptr_t kEnd{(kStart + length) / kPageSize * kPageSize};
-    if ((kEnd > kBegin) && (madvise(reinterpret_cast<void *>(kBegin), kEnd - kBegin, MADV_REMOVE) != 0))
+    const std::uintptr_t kBegin{(kStart + kPage - 1) / kPage * kPage};
+    const std::uintptr_t kEnd{(kStart + length) / kPage * kPage};
+    if (kEnd <= kBegin)
+    {
+        return;
+    }
+    if (madvise(reinterpret_cast<void *>(kBegin), kEnd - kBegin, MADV_REMOVE) != 0)
     {
         RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to release shm pages");
     }

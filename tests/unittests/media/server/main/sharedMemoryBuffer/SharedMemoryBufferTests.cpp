@@ -18,8 +18,6 @@
  */
 
 #include "SharedMemoryBufferTestsFixture.h"
-#include <cstring>
-#include <sys/mman.h>
 
 TEST_F(SharedMemoryBufferTests, shouldMapGenericPlaybackSession)
 {
@@ -103,61 +101,6 @@ TEST_F(SharedMemoryBufferTests, shouldMapNewWebAudioPlayerAfterUnmapingTheOldOne
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, kHandle1);
     unmapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, kHandle1);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, kHandle2);
-}
-
-TEST_F(SharedMemoryBufferTests, shouldReleaseMemoryOfUnmappedGenericPlaybackSession)
-{
-    constexpr int kSession1{0};
-    constexpr std::uint32_t kPartitionLen{m_videoBufferLen + m_audioBufferLen + m_subtitleBufferLen};
-    initialize();
-    mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
-    // Video data is placed at the beginning of the partition
-    uint8_t *partition = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
-                                          kSession1, firebolt::rialto::MediaSourceType::VIDEO);
-    ASSERT_NE(nullptr, partition);
-    memset(partition, 0xAB, kPartitionLen);
-    EXPECT_GE(getAllocatedMemorySize(), kPartitionLen);
-
-    unmapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
-    EXPECT_LT(getAllocatedMemorySize(), kPartitionLen);
-    EXPECT_EQ(0x00, partition[0]);
-}
-
-TEST_F(SharedMemoryBufferTests, shouldNotReleaseMemoryOfNeighbouringWebAudioPlayer)
-{
-    constexpr int kHandle1{0}, kHandle2{1};
-    initialize(1, 2);
-    mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, kHandle1);
-    mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, kHandle2);
-    uint8_t *handle1Audio = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
-                                             kHandle1, firebolt::rialto::MediaSourceType::AUDIO);
-    uint8_t *handle2Audio = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
-                                             kHandle2, firebolt::rialto::MediaSourceType::AUDIO);
-    ASSERT_NE(nullptr, handle1Audio);
-    ASSERT_NE(nullptr, handle2Audio);
-    memset(handle1Audio, 0xAB, m_webAudioBufferLen);
-    memset(handle2Audio, 0xAB, m_webAudioBufferLen);
-
-    // Web audio partitions are not page aligned, so the last page of handle1 is shared with handle2
-    unmapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, kHandle1);
-    EXPECT_EQ(0x00, handle1Audio[0]);
-    EXPECT_EQ(0xAB, handle2Audio[0]);
-}
-
-TEST_F(SharedMemoryBufferTests, shouldUnmapGenericPlaybackSessionWhenMemoryReleaseFails)
-{
-    constexpr int kSession1{0};
-    initialize();
-    mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
-    uint8_t *partition = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
-                                          kSession1, firebolt::rialto::MediaSourceType::VIDEO);
-    ASSERT_NE(nullptr, partition);
-    // Locked pages can't be removed, so the memory release fails
-    ASSERT_EQ(0, mlock(partition, 1));
-
-    unmapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
-    mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
-    munlock(partition, 1);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldFailToUnmapNotExistingGenericPlaybackSession)

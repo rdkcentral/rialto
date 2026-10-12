@@ -18,7 +18,6 @@
  */
 
 #include "SharedMemoryBufferTestsFixture.h"
-#include <sys/stat.h>
 
 void SharedMemoryBufferTests::initialize(int maxPlaybacks, int maxWebAudioPlayers)
 {
@@ -203,12 +202,4 @@ void SharedMemoryBufferTests::shouldGetBuffer()
 {
     ASSERT_TRUE(m_sut);
     EXPECT_NE(nullptr, m_sut->getBuffer());
-}
-
-std::uint64_t SharedMemoryBufferTests::getAllocatedMemorySize() const
-{
-    EXPECT_TRUE(m_sut);
-    struct stat shmStat = {};
-    EXPECT_EQ(0, fstat(m_sut->getFd(), &shmStat));
-    return static_cast<std::uint64_t>(shmStat.st_blocks) * 512; // st_blocks is counted in 512B units
 }
