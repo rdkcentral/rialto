@@ -151,27 +151,17 @@ std::unique_ptr<ITimer> TimerFactory::createTimer(const std::chrono::millisecond
 }
 
 Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback, TimerType timerType)
-    : m_active{true}, m_timeout{timeout}, m_callback{callback}
 {
-    m_thread = std::thread(
-        [this, timerType]()
-        {
-            do
+    CommonTimerLoop::instance().storeTimerCallback(this, callback);
+    GSource *source = g_timeout_source_new(static_cast<guint>(timeout.count()));
+    if (timerType == TimerType::PERIODIC)
+    {
+        //m_timerId = g_timeout_add(
+            //static_cast<guint>(timeout.count()),
+	g_source_set_callback(
+            source,
+            [](gpointer data) -> gboolean
             {
-<<<<<<< HEAD
-                std::unique_lock<std::mutex> lock{m_mutex};
-                if (!m_cv.wait_for(lock, m_timeout, [this]() { return !m_active; }))
-                {
-                    if (m_active && m_callback)
-                    {
-                        lock.unlock();
-                        m_callback();
-                    }
-                }
-            } while (timerType == TimerType::PERIODIC && m_active);
-            m_active = false;
-        });
-=======
                 //auto callback = CommonTimerLoop::instance().getTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
 		auto *timer = static_cast<firebolt::rialto::common::Timer *>(data);
                 auto callback = CommonTimerLoop::instance().getTimerCallback(timer);
@@ -212,7 +202,6 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
     // Keep our own ref alongside the context's so cancel() can still destroy it by pointer later.
     g_source_attach(source, CommonTimerLoop::instance().context());
     m_source = source;
->>>>>>> a3a9f9ea (RDKEMW-24084: Single thread timer)
 }
 
 Timer::~Timer()
@@ -222,22 +211,21 @@ Timer::~Timer()
 
 void Timer::cancel()
 {
-    m_active = false;
-
-    if (std::this_thread::get_id() != m_thread.get_id() && m_thread.joinable())
+    CommonTimerLoop::instance().removeTimerCallback(this);
+    //if (m_timerId != 0)
+    GSource *source = m_source.exchange(nullptr);
+    if (source)
     {
-        m_cv.notify_one();
-        m_thread.join();
+        //g_source_remove(m_timerId);
+        //m_timerId = 0;
+	g_source_destroy(source);
+        g_source_unref(source);
     }
 }
 
 bool Timer::isActive() const
 {
-<<<<<<< HEAD
-    return m_active;
-=======
     //return CommonTimerLoop::instance().getTimerCallback(this) != nullptr;
     return CommonTimerLoop::instance().hasTimerCallback(this);
->>>>>>> a3a9f9ea (RDKEMW-24084: Single thread timer)
 }
 } // namespace firebolt::rialto::common
