@@ -74,6 +74,7 @@ public:
     void shouldGetFd();
     void shouldGetSize();
     void shouldGetBuffer();
+    std::uint64_t getAllocatedMemorySize() const;
 
 private:
     std::shared_ptr<firebolt::rialto::server::ISharedMemoryBuffer> m_sut;
