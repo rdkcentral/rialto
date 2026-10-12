@@ -123,6 +123,8 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
                     timerCallback();
                     return CommonTimerLoop::instance().getTimerCallback(static_cast<Timer *>(data)) ? TRUE : FALSE;
                 }
+                // No callback found, remove stale entry if any before stopping the source
+                CommonTimerLoop::instance().removeTimerCallback(static_cast<Timer *>(data));
                 return FALSE;
             },
             this);
@@ -137,8 +139,8 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
                 if (timerCallback)
                 {
                     timerCallback();
-                    CommonTimerLoop::instance().removeTimerCallback(static_cast<Timer *>(data));
                 }
+                CommonTimerLoop::instance().removeTimerCallback(static_cast<Timer *>(data));
                 return G_SOURCE_REMOVE;
             },
             this);
