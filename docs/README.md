@@ -56,7 +56,7 @@ classDef VL stroke:#808080,fill:#F2F2F2,stroke-width:2px
 - **EME / DRM Key Management**: Exposes `IMediaKeys` for managing Encrypted Media Extension (EME) key sessions, including key generation, licence updates, session persistence, DRM store management, and cipher mode configuration (CENC, CBC1, CENS, CBCS).
 - **Web Audio Playback**: Exposes `IWebAudioPlayer` for mixing PCM audio streams into the current audio output, with priority-based resource allocation for platforms with a limited number of concurrent audio mixers.
 - **Shared Memory Data Channel**: Provides a shared memory buffer whose file descriptor is passed from server to client via the `GetSharedMemory` control RPC, allowing media segment data to be transferred without redundant data copies across process boundaries.
-- **Container Lifecycle Management**: `RialtoServerManager` spawns and manages one `RialtoServer` process per application, applies resource limits (maximum simultaneous playback sessions and web audio players), manages session server states (UNINITIALIZED, INACTIVE, ACTIVE, NOT_RUNNING, ERROR), and performs periodic health checks via a ping/ack protocol.
+- **Container Lifecycle Management**: `RialtoServerManager` spawns and manages one `RialtoServer` process per application, applies resource limits (maximum simultaneous playback sessions and web audio players), manages session server states (UNINITIALIZED, INACTIVE, ACTIVE, NOT_RUNNING, SUSPENDED, ERROR), and performs periodic health checks via a ping/ack protocol.
 - **Capability Discovery**: Exposes `IMediaPipelineCapabilities` and `IMediaKeysCapabilities` for querying supported MIME types and DRM key systems at runtime.
 - **Subtitle and Text Track Support**: When the platform provides a text track plugin, Rialto attaches a dedicated GStreamer text track sink and manages subtitle rendering through a `TextTrackAccessor`.
 
@@ -186,13 +186,13 @@ sequenceDiagram
 
 #### Runtime State Changes
 
-During normal operation, the server manager sends periodic `PingRequest` messages to each `RialtoServer`. The server aggregates acknowledgements from its internal session objects and responds with an `AckEvent`. If the configured number of consecutive unanswered pings (`numOfPingsBeforeRecovery`) is exceeded, the server manager triggers recovery for that server instance.
+During normal operation, the server manager sends periodic `PingRequest` messages to each `RialtoServer`. The server aggregates acknowledgements from its internal session objects and responds with an `AckEvent`. If the configured number of consecutive failed health checks (including timeouts and unsuccessful acknowledgements, `numOfPingsBeforeRecovery`) is reached, the server manager triggers recovery for that server instance.
 
 **State Change Triggers:**
 
 - Application manager calls `changeSessionServerState(appId, INACTIVE)` to suspend an active session; the server manager sends a `SetState` RPC to the corresponding `RialtoServer`, which transitions its services to inactive, releasing active decoder resources.
 - Application manager calls `changeSessionServerState(appId, NOT_RUNNING)` to terminate a session; the server manager signals the `RialtoServer` to shut down cleanly.
-- A `StateChangedEvent(ERROR)` from `RialtoServer` indicates an unrecoverable server-side failure; the server manager notifies the registered `IStateObserver` and may restart the server process.
+- A `StateChangedEvent(ERROR)` from `RialtoServer` indicates a server-side failure; the server manager notifies the registered `IStateObserver` and may recover or restart the server process.
 
 **Context Switching Scenarios:**
 
@@ -230,7 +230,7 @@ sequenceDiagram
 
 The following shows the data path for an MSE playback session from client API call to GStreamer data injection.
 
-The client writes encoded media data into the shared memory buffer at the offset indicated by `shmInfo` in the `notifyNeedMediaData` callback, then calls `addSegment()` to notify the server. The server reads the data from shared memory and pushes it into the GStreamer source element on the `WorkerThread`, completing the cycle without any additional data copy over the socket.
+The application supplies encoded media segments to `addSegment()`; RialtoClient's internal frame writer copies them into the mapped shared-memory partition using the request metadata retained internally. The client then calls `haveData()` to notify the server, which reads the frames and pushes them into GStreamer without sending the media payload over the socket.
 
 ```mermaid
 sequenceDiagram
@@ -333,7 +333,8 @@ sequenceDiagram
     App->>RC: IMediaPipeline::play()
     RC->>IPC: PlayRequest (session_id)
     IPC->>RS: Deserialise PlayRequest
-    RS->>RS: Enqueue play task on WorkerThread
+    RS->>RS: Enqueue play operation on MainThread
+    RS->>RS: MainThread posts GStreamer task to WorkerThread
     RS->>RS: gst_element_set_state(PLAYING)
     RS-->>IPC: PlayResponse
     IPC-->>RC: Deserialise PlayResponse
@@ -356,8 +357,8 @@ sequenceDiagram
     participant App as Application
 
     GST->>GstDisp: GST_MESSAGE_EOS
-    GstDisp->>RS: Notify EOS state
-    RS->>RS: Enqueue EOS task on MainThread
+    GstDisp->>RS: Enqueue HandleBusMessage on WorkerThread
+    RS->>RS: WorkerThread enqueues EOS notification on MainThread
     RS->>RC: PlaybackStateChangeEvent(END_OF_STREAM)
     RC->>App: IMediaPipelineClient::notifyPlaybackState(END_OF_STREAM)
 ```
@@ -387,12 +388,12 @@ Rialto accesses the platform media subsystem directly through the following wrap
 
 ### Key Implementation Logic
 
-- **State / Lifecycle Management**: Session server state (UNINITIALIZED, INACTIVE, ACTIVE, NOT_RUNNING, ERROR) is tracked in the `RialtoServerManager`. On the server side, the `IPlaybackService` interface exposes `switchToActive()` and `switchToInactive()` to change service availability. Playback state (IDLE, PLAYING, PAUSED, SEEKING, SEEK_DONE, STOPPED, END_OF_STREAM, FAILURE) is managed within `GstGenericPlayer` and propagated via the `GstDispatcherThread`.
+- **State / Lifecycle Management**: Session server state (UNINITIALIZED, INACTIVE, ACTIVE, NOT_RUNNING, SUSPENDED, ERROR) is tracked in the `RialtoServerManager`. On the server side, the `IPlaybackService` interface exposes `switchToActive()` and `switchToInactive()` to change service availability. Playback state (IDLE, PLAYING, PAUSED, SEEKING, SEEK_DONE, STOPPED, END_OF_STREAM, FAILURE) is managed within `GstGenericPlayer` and propagated via the `GstDispatcherThread`.
   - State transition logic: `serverManager/service/source/`, `media/server/service/source/`
 
 - **Event Processing**: GStreamer bus messages are polled by `GstDispatcherThread` in a loop and dispatched to `IGstDispatcherThreadClient` callbacks implemented by `GstGenericPlayer`. The player then enqueues corresponding state or notification events onto the `MainThread` for serialised processing and IPC dispatch. Need-data requests originate from the `GstSrc` element's need-data signal, also handled on the `WorkerThread`.
 
-- **Error Handling Strategy**: GStreamer errors received as `GST_MESSAGE_ERROR` are translated into a `PlaybackState::FAILURE` notification to the client. OpenCDM errors are mapped to `MediaKeyErrorStatus` values (OK, FAIL, BAD_SESSION_ID, NOT_SUPPORTED, INVALID_STATE, BUFFER_TOO_SMALL, OUTPUT_RESTRICTED) returned synchronously from `IMediaKeys` methods. IPC-level failures result in the client receiving a failure response or a disconnect notification.
+- **Error Handling Strategy**: GStreamer errors received as `GST_MESSAGE_ERROR` are translated into a `PlaybackState::FAILURE` notification to the client. OpenCDM errors are mapped to `MediaKeyErrorStatus` values (OK, FAIL, BAD_SESSION_ID, NOT_SUPPORTED, INVALID_STATE, INTERFACE_NOT_IMPLEMENTED, BUFFER_TOO_SMALL, OUTPUT_RESTRICTED) returned synchronously from `IMediaKeys` methods. IPC-level failures result in the client receiving a failure response or a disconnect notification.
 
 - **Logging & Diagnostics**: All Rialto components use `RIALTO_LOG_*` macros defined in `logging/include/RialtoLogging.h`. Log output is per-component (CLIENT, SERVER, IPC, SERVER_MANAGER, COMMON) and per-level (FATAL, ERROR, WARNING, MILESTONE, INFO, DEBUG). Log levels can be reconfigured at runtime via the `setLogLevels()` API on `IServerManagerService`. A custom `ILogHandler` can be registered to redirect server manager logs to an external sink.
   - RDK Logger component names: `RIALTO_COMPONENT_CLIENT`, `RIALTO_COMPONENT_SERVER`, `RIALTO_COMPONENT_IPC`, `RIALTO_COMPONENT_SERVER_MANAGER`, `RIALTO_COMPONENT_COMMON`.
@@ -403,25 +404,25 @@ Rialto accesses the platform media subsystem directly through the following wrap
 
 ### Key Configuration Files
 
-| Configuration File                                   | Purpose                                                                                                                                                                             | Override Mechanism                                                                               |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `/etc/rialto-config.json` (compiled-in default path) | Provides server manager runtime parameters: server binary path, environment variables, timeouts, socket permissions, pre-loaded server count, health-check interval, and log levels | On debug builds, a per-field override file at the configured `overrides` path is read and merged |
+| Configuration File                                   | Purpose                                                                                                                                                                                          | Override Mechanism                                                                                                  |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `/etc/rialto-config.json` and `/etc/rialto-soc.json` | Base and SoC-specific server manager runtime parameters: server binary path, environment variables, timeouts, socket permissions, pre-loaded server count, health-check interval, and log levels | Files are read in order; the SoC file and, on debug builds, the configured override file can replace earlier values |
 
 ### Key Configuration Parameters
 
-| Parameter                      | Type   | Default                                                                                                      | Description                                                                                                           |
-| ------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| `sessionServerPath`            | string | `/usr/bin/RialtoServer`                                                                                      | Path to the `RialtoServer` executable spawned for each application                                                    |
-| `startupTimeoutMs`             | int    | `0`                                                                                                          | Maximum milliseconds to wait for a `RialtoServer` to become ready (0 = no timeout)                                    |
-| `healthcheckIntervalInSeconds` | int    | `5`                                                                                                          | Interval in seconds between server health-check pings                                                                 |
-| `socketPermissions`            | int    | `666`                                                                                                        | Chmod-style permissions (e.g. 666) converted to a mode (e.g. 0666) and applied to the client-facing IPC socket file   |
-| `socketOwner`                  | string | `""`                                                                                                         | User name applied via `chown` to the client-facing IPC socket file                                                    |
-| `socketGroup`                  | string | `""`                                                                                                         | Group name applied via `chown` to the client-facing IPC socket file                                                   |
-| `numOfPreloadedServers`        | int    | `0`                                                                                                          | Number of `RialtoServer` processes to pre-launch at startup to reduce application connect latency                     |
-| `numOfPingsBeforeRecovery`     | int    | `3`                                                                                                          | Number of consecutive unanswered health-check pings before the server manager triggers recovery for a server instance |
-| `logLevel`                     | uint   | `3`                                                                                                          | Default log level bitmask for all Rialto components at startup                                                        |
-| `environmentVariables`         | list   | `XDG_RUNTIME_DIR=/tmp`, `GST_REGISTRY=/tmp/rialto-server-gstreamer-cache.bin`, `WESTEROS_SINK_USE_ESSRMGR=1` | Environment variables set for every spawned `RialtoServer` process                                                    |
-| `extraEnvVariables`            | list   | `""`                                                                                                         | Additional environment variables merged into the server environment                                                   |
+| Parameter                      | Type   | Default                                                                                                      | Description                                                                                                                                                         |
+| ------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sessionServerPath`            | string | `/usr/bin/RialtoServer`                                                                                      | Path to the `RialtoServer` executable spawned for each application                                                                                                  |
+| `startupTimeoutMs`             | int    | `0`                                                                                                          | Maximum milliseconds to wait for a `RialtoServer` to become ready (0 = no timeout)                                                                                  |
+| `healthcheckIntervalInSeconds` | int    | `5`                                                                                                          | Interval in seconds between server health-check pings                                                                                                               |
+| `socketPermissions`            | int    | `666`                                                                                                        | Chmod-style permissions (e.g. 666) converted to a mode (e.g. 0666) and applied to the client-facing IPC socket file                                                 |
+| `socketOwner`                  | string | `""`                                                                                                         | User name applied via `chown` to the client-facing IPC socket file                                                                                                  |
+| `socketGroup`                  | string | `""`                                                                                                         | Group name applied via `chown` to the client-facing IPC socket file                                                                                                 |
+| `numOfPreloadedServers`        | int    | `0`                                                                                                          | Number of `RialtoServer` processes to pre-launch at startup to reduce application connect latency                                                                   |
+| `numOfPingsBeforeRecovery`     | int    | `3`                                                                                                          | Number of consecutive failed health checks (including timeouts and unsuccessful acknowledgements) before the server manager triggers recovery for a server instance |
+| `logLevel`                     | uint   | `3`                                                                                                          | Default numeric logging level (0 = FATAL through 5 = DEBUG) applied to all Rialto components at startup                                                             |
+| `environmentVariables`         | list   | `XDG_RUNTIME_DIR=/tmp`, `GST_REGISTRY=/tmp/rialto-server-gstreamer-cache.bin`, `WESTEROS_SINK_USE_ESSRMGR=1` | Environment variables set for every spawned `RialtoServer` process                                                                                                  |
+| `extraEnvVariables`            | list   | `[]`                                                                                                         | Additional environment variables merged into the server environment                                                                                                 |
 
 ### Runtime Configuration
 
