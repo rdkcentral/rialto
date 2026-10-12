@@ -40,10 +40,10 @@ public:
         m_activeTimers[timer] = callback;
     }
 
-    void removeTimerCallback(const firebolt::rialto::common::Timer *timer)
+    bool removeTimerCallback(const firebolt::rialto::common::Timer *timer)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_activeTimers.erase(timer);
+        return m_activeTimers.erase(timer) > 0;
     }
 
     std::function<void()> getTimerCallback(const firebolt::rialto::common::Timer *timer)
@@ -126,14 +126,10 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
                     {
                         return TRUE;
                     }
+                    return FALSE;
                 }
-                else
-                {
-                    // No callback found, remove stale entry if any before stopping the source
-                    CommonTimerLoop::instance().removeTimerCallback(timer);
-                }
-                // Source is being removed by GLib now, so drop the now-stale id to avoid cancel() reusing it later
-                timer->m_timerId = 0;
+                // No callback found, remove stale entry if any before stopping the source
+                CommonTimerLoop::instance().removeTimerCallback(timer);
                 return FALSE;
             },
             this);
@@ -151,7 +147,6 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
                     timerCallback();
                 }
                 CommonTimerLoop::instance().removeTimerCallback(timer);
-                timer->m_timerId = 0;
                 return G_SOURCE_REMOVE;
             },
             this);
@@ -165,11 +160,13 @@ Timer::~Timer()
 
 void Timer::cancel()
 {
-    CommonTimerLoop::instance().removeTimerCallback(this);
-    guint id = m_timerId.exchange(0);
-    if (id != 0)
+    if (CommonTimerLoop::instance().removeTimerCallback(this))
     {
-        g_source_remove(id);
+        guint id = m_timerId.exchange(0);
+        if (id != 0)
+        {
+            g_source_remove(id);
+        }
     }
 }
 
