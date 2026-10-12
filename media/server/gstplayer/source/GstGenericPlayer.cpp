@@ -2214,7 +2214,7 @@ bool GstGenericPlayer::setErmContext()
 
 void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
 {
-    static constexpr std::chrono::milliseconds kPlaybackInfoTimerMs{32};
+    // static constexpr std::chrono::milliseconds kPlaybackInfoTimerMs{32};
     if (m_positionReportingAndCheckAudioUnderflowTimer && m_positionReportingAndCheckAudioUnderflowTimer->isActive())
     {
         return;
@@ -2234,9 +2234,11 @@ void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
 
     notifyPlaybackInfo();
 
-    m_playbackInfoTimer =
-        m_timerFactory
-            ->createTimer(kPlaybackInfoTimerMs, [this]() { notifyPlaybackInfo(); }, firebolt::rialto::common::TimerType::PERIODIC);
+    RIALTO_SERVER_LOG_DEBUG("Naveen for YTS - Periodic playback info timer is disabled");
+    // m_playbackInfoTimer =
+    //     m_timerFactory
+    //         ->createTimer(kPlaybackInfoTimerMs, [this]() { notifyPlaybackInfo(); },
+    //                       firebolt::rialto::common::TimerType::PERIODIC);
 }
 
 void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
