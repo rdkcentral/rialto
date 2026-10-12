@@ -46,10 +46,12 @@ public:
     {
         std::unique_lock<std::mutex> lock(m_mutex);
         m_activeTimers.erase(timer);
-        if (std::this_thread::get_id() != m_loopThreadId)
+        if (std::this_thread::get_id() != m_thread.get_id())
         {
-            m_dispatchFinished.wait(lock, [this, timer]()
-                                     { return m_dispatchingTimers.find(timer) == m_dispatchingTimers.end(); });
+            while (m_dispatchingTimers.find(timer) != m_dispatchingTimers.end())
+            {
+                m_dispatchFinished.wait(lock);
+            }
         }
     }
 
@@ -86,12 +88,7 @@ private:
     CommonTimerLoop()
     {
         m_loop = g_main_loop_new(nullptr, FALSE);
-        m_thread = std::thread(
-            [this]()
-            {
-                m_loopThreadId = std::this_thread::get_id();
-                g_main_loop_run(m_loop);
-            });
+        m_thread = std::thread([this]() { g_main_loop_run(m_loop); });
     }
 
     ~CommonTimerLoop()
@@ -106,7 +103,6 @@ private:
 
     GMainLoop *m_loop;
     std::thread m_thread;
-    std::thread::id m_loopThreadId;
     std::mutex m_mutex;
     std::condition_variable m_dispatchFinished;
     std::unordered_map<const firebolt::rialto::common::Timer *, std::function<void()>> m_activeTimers;
