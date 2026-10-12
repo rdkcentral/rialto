@@ -73,6 +73,13 @@ public:
         return it != m_activeTimers.end() ? it->second : nullptr;
     }
 
+    // Distinct from getTimerCallback(): an empty std::function is still a registered timer.
+    bool hasTimerCallback(const firebolt::rialto::common::Timer *timer)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_activeTimers.find(timer) != m_activeTimers.end();
+    }
+
     // Timer sources must attach here, not to the global-default context, so they only ever
     // dispatch on m_thread.
     GMainContext *context() const { return m_context; }
@@ -155,13 +162,17 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
             source,
             [](gpointer data) -> gboolean
             {
-                auto callback = CommonTimerLoop::instance().getTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
+                //auto callback = CommonTimerLoop::instance().getTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
+		auto *timer = static_cast<firebolt::rialto::common::Timer *>(data);
+                auto callback = CommonTimerLoop::instance().getTimerCallback(timer);
                 if (callback)
                 {
                     callback();
-                    return CommonTimerLoop::instance().getTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data)) ? TRUE : FALSE;
+                    //return CommonTimerLoop::instance().getTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data)) ? TRUE : FALSE;
+
                 }
-                return FALSE;
+                //return FALSE;
+		return CommonTimerLoop::instance().hasTimerCallback(timer) ? TRUE : FALSE;
             },
             this, nullptr);
     }
@@ -174,12 +185,15 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
             source,
             [](gpointer data) -> gboolean
             {
-                auto callback = CommonTimerLoop::instance().getTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
+                //auto callback = CommonTimerLoop::instance().getTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
+		auto *timer = static_cast<firebolt::rialto::common::Timer *>(data);
+                auto callback = CommonTimerLoop::instance().getTimerCallback(timer);
                 if (callback)
                 {
                     callback();
-                    CommonTimerLoop::instance().removeTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
+                    //CommonTimerLoop::instance().removeTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
                 }
+		CommonTimerLoop::instance().removeTimerCallback(timer);
                 return FALSE;
             },
             this, nullptr);
@@ -211,6 +225,7 @@ void Timer::cancel()
 
 bool Timer::isActive() const
 {
-    return CommonTimerLoop::instance().getTimerCallback(this) != nullptr;
+    //return CommonTimerLoop::instance().getTimerCallback(this) != nullptr;
+    return CommonTimerLoop::instance().hasTimerCallback(this);
 }
 } // namespace firebolt::rialto::common
