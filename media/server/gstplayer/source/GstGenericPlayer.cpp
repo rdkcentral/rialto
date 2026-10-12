@@ -2227,7 +2227,9 @@ bool GstGenericPlayer::setLowLatencyAudioDecoder()
                 }
             };
 
-            const std::string decoderName{GST_ELEMENT_NAME(decoder)};
+            GstElementFactory *factory = m_gstWrapper->gstElementGetFactory(decoder);
+            const std::string decoderName = std::string(m_gstWrapper->gstPluginFeatureGetName(factory));
+
             if (m_glibWrapper->gStrHasPrefix(decoderName.c_str(), "brcmaudiodecoder"))
             {
                 setDecoderBoolPropertyIfExists("sync-off", lowLatencyAudioDecoder, result);
@@ -2281,7 +2283,9 @@ bool GstGenericPlayer::setLowLatencyAudioSink()
                 }
             };
 
-            const std::string sinkName{GST_ELEMENT_NAME(sink)};
+            GstElementFactory *factory = m_gstWrapper->gstElementGetFactory(sink);
+            const std::string sinkName = std::string(m_gstWrapper->gstPluginFeatureGetName(factory));
+
             if (m_glibWrapper->gStrHasPrefix(sinkName.c_str(), "brcmaudiosink"))
             {
                 setSinkBoolPropertyIfExists("low-latency", lowLatencyAudioSink, result);
