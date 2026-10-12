@@ -25,6 +25,7 @@
 #include <atomic>
 #include <glib.h>
 #include <memory>
+#include <mutex>
 #include <thread>
 
 namespace firebolt::rialto::common
@@ -60,6 +61,7 @@ public:
 
 private:
     std::atomic<guint> m_timerId{0};
+    std::mutex m_callbackMutex;
 };
 } // namespace firebolt::rialto::common
 
