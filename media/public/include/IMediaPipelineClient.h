@@ -219,7 +219,9 @@ public:
     /**
      * @brief Notifies the client about the current playback state
      *
-     * Notification shall be sent every 32ms after reaching the PLAYING state.
+     * Notifications are sent periodically after reaching the PLAYING state.
+     * The notification interval is configured through AppConfig::playbackInfoTimerMs.
+     * If no interval is configured, the default interval is 32ms.
      *
      * @param[in] playbackInfo : The current playback information.
      */

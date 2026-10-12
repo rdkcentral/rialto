@@ -206,7 +206,8 @@ void SessionServerAppManager::handleRestartServer(int serverId)
     const std::string kAppName{kSessionServer->getAppName()};
     const firebolt::rialto::common::SessionServerState kState{kSessionServer->getExpectedState()};
     const firebolt::rialto::common::AppConfig kAppConfig{kSessionServer->getSessionManagementSocketName(),
-                                                         kSessionServer->getClientDisplayName()};
+                                                         kSessionServer->getClientDisplayName(),
+                                                         ksessionServer->getPlaybackInfoTimerMs()};
     std::unique_ptr<firebolt::rialto::ipc::INamedSocket> namedSocket{std::move(kSessionServer->releaseNamedSocket())};
     if (firebolt::rialto::common::SessionServerState::INACTIVE != kState &&
         firebolt::rialto::common::SessionServerState::ACTIVE != kState)
@@ -492,7 +493,7 @@ bool SessionServerAppManager::configureSessionServerWithSocketName(const std::un
                                                                           kSessionServer->getMaxWebAudioPlayers()};
     if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketName,
                                                   kClientDisplayName, kMaxResource, kSocketPermissions, kSocketOwner,
-                                                  kSocketGroup, kAppName))
+                                                  kSocketGroup, kAppName, kSessionServer->getPlaybackInfoTimerMs()))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
                                         kSessionServer->getServerId());
@@ -513,7 +514,7 @@ bool SessionServerAppManager::configureSessionServerWithSocketFd(const std::uniq
     const firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kSessionServer->getMaxPlaybackSessions(),
                                                                           kSessionServer->getMaxWebAudioPlayers()};
     if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketFd,
-                                                  kClientDisplayName, kMaxResource, kAppName))
+                                                  kClientDisplayName, kMaxResource, kAppName, kSessionServer->getPlaybackInfoTimerMs()))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
                                         kSessionServer->getServerId());
