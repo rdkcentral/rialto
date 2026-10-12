@@ -61,7 +61,7 @@ public:
 
 private:
     std::atomic<guint> m_timerId{0};
-    std::mutex m_callbackMutex;
+    std::shared_ptr<std::mutex> m_callbackMutex{std::make_shared<std::mutex>()};
 };
 } // namespace firebolt::rialto::common
 
