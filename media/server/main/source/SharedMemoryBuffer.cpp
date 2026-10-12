@@ -107,15 +107,22 @@ const char *toString(const firebolt::rialto::server::ISharedMemoryBuffer::MediaP
     return "UNKNOWN";
 }
 
-void releasePages(std::uint8_t *data, std::uint32_t length)
+void releasePages(std::uint8_t *buffer, std::uint32_t offset, std::uint32_t length)
 {
-    const std::uintptr_t kPageSize{static_cast<std::uintptr_t>(sysconf(_SC_PAGESIZE))};
-    const std::uintptr_t kStart{reinterpret_cast<std::uintptr_t>(data)};
-    const std::uintptr_t kBegin{(kStart + kPageSize - 1) / kPageSize * kPageSize};
-    const std::uintptr_t kEnd{(kStart + length) / kPageSize * kPageSize};
-    if ((kEnd > kBegin) && (madvise(reinterpret_cast<void *>(kBegin), kEnd - kBegin, MADV_REMOVE) != 0))
+    const auto kPageSize{sysconf(_SC_PAGESIZE)};
+    if (kPageSize > 0)
     {
-        RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to release shm pages");
+        const std::uint64_t kPage{static_cast<std::uint64_t>(kPageSize)};
+        const std::uint64_t kBegin{(offset + kPage - 1) / kPage * kPage};
+        const std::uint64_t kEnd{(static_cast<std::uint64_t>(offset) + length) / kPage * kPage};
+        if (kEnd > kBegin)
+        {
+            const std::size_t kLength{static_cast<std::size_t>(kEnd - kBegin)};
+            if (madvise(buffer + kBegin, kLength, MADV_REMOVE) != 0)
+            {
+                RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to release shm pages");
+            }
+        }
     }
 }
 } // namespace
@@ -241,7 +248,7 @@ bool SharedMemoryBuffer::unmapPartition(MediaPlaybackType playbackType, int id)
     std::uint8_t *partitionDataPtr = nullptr;
     if (getDataPtrForPartition(playbackType, id, &partitionDataPtr))
     {
-        releasePages(partitionDataPtr,
+        releasePages(m_dataBuffer, partitionDataPtr - m_dataBuffer,
                      partition->dataBufferVideoLen + partition->dataBufferAudioLen + partition->dataBufferSubtitleLen);
     }
     partition->id = kNoIdAssigned;
