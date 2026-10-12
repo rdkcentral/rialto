@@ -40,10 +40,10 @@ public:
         m_activeTimers[timer] = callback;
     }
 
-    void removeTimerCallback(const firebolt::rialto::common::Timer *timer)
+    bool removeTimerCallback(const firebolt::rialto::common::Timer *timer)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_activeTimers.erase(timer);
+        return m_activeTimers.erase(timer) > 0;
     }
 
     std::function<void()> getTimerCallback(const firebolt::rialto::common::Timer *timer)
@@ -52,6 +52,8 @@ public:
         auto it = m_activeTimers.find(timer);
         return it != m_activeTimers.end() ? it->second : nullptr;
     }
+
+    bool isLoopThread() const { return std::this_thread::get_id() == m_thread.get_id(); }
 
 private:
     CommonTimerLoop()
@@ -74,6 +76,12 @@ private:
     std::thread m_thread;
     std::mutex m_mutex;
     std::unordered_map<const firebolt::rialto::common::Timer *, std::function<void()>> m_activeTimers;
+};
+
+struct CallbackContext
+{
+    const firebolt::rialto::common::Timer *timer;
+    std::shared_ptr<std::mutex> callbackMutex;
 };
 } // namespace
 
@@ -111,37 +119,49 @@ std::unique_ptr<ITimer> TimerFactory::createTimer(const std::chrono::millisecond
 Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback, TimerType timerType)
 {
     CommonTimerLoop::instance().storeTimerCallback(this, callback);
+    auto *context = new CallbackContext{this, m_callbackMutex};
+    auto destroyContext = [](gpointer data) { delete static_cast<CallbackContext *>(data); };
     if (timerType == TimerType::PERIODIC)
     {
-        m_timerId = g_timeout_add(
-            static_cast<guint>(timeout.count()),
+        m_timerId = g_timeout_add_full(
+            G_PRIORITY_DEFAULT, static_cast<guint>(timeout.count()),
             [](gpointer data) -> gboolean
             {
-                auto timerCallback = CommonTimerLoop::instance().getTimerCallback(static_cast<Timer *>(data));
+                auto *context = static_cast<CallbackContext *>(data);
+                std::lock_guard<std::mutex> callbackLock(*context->callbackMutex);
+                auto timerCallback = CommonTimerLoop::instance().getTimerCallback(context->timer);
                 if (timerCallback)
                 {
                     timerCallback();
-                    return CommonTimerLoop::instance().getTimerCallback(static_cast<Timer *>(data)) ? TRUE : FALSE;
+                    if (CommonTimerLoop::instance().getTimerCallback(context->timer))
+                    {
+                        return TRUE;
+                    }
+                    return FALSE;
                 }
+                // No callback found, remove stale entry if any before stopping the source
+                CommonTimerLoop::instance().removeTimerCallback(context->timer);
                 return FALSE;
             },
-            this);
+            context, destroyContext);
     }
     else
     {
-        m_timerId = g_timeout_add(
-            static_cast<guint>(timeout.count()),
+        m_timerId = g_timeout_add_full(
+            G_PRIORITY_DEFAULT, static_cast<guint>(timeout.count()),
             [](gpointer data) -> gboolean
             {
-                auto timerCallback = CommonTimerLoop::instance().getTimerCallback(static_cast<Timer *>(data));
+                auto *context = static_cast<CallbackContext *>(data);
+                std::lock_guard<std::mutex> callbackLock(*context->callbackMutex);
+                auto timerCallback = CommonTimerLoop::instance().getTimerCallback(context->timer);
                 if (timerCallback)
                 {
                     timerCallback();
-                    CommonTimerLoop::instance().removeTimerCallback(static_cast<Timer *>(data));
                 }
+                CommonTimerLoop::instance().removeTimerCallback(context->timer);
                 return G_SOURCE_REMOVE;
             },
-            this);
+            context, destroyContext);
     }
 }
 
@@ -152,11 +172,17 @@ Timer::~Timer()
 
 void Timer::cancel()
 {
-    CommonTimerLoop::instance().removeTimerCallback(this);
-    if (m_timerId != 0)
+    if (CommonTimerLoop::instance().removeTimerCallback(this))
     {
-        g_source_remove(m_timerId);
-        m_timerId = 0;
+        guint id = m_timerId.exchange(0);
+        if (id != 0)
+        {
+            g_source_remove(id);
+        }
+    }
+    if (!CommonTimerLoop::instance().isLoopThread())
+    {
+        std::lock_guard<std::mutex> lock(*m_callbackMutex);
     }
 }
 
