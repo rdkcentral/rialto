@@ -53,11 +53,24 @@ public:
         return it != m_activeTimers.end() ? it->second : nullptr;
     }
 
+    // Timer sources must attach here, not to the global-default context, so they only ever
+    // dispatch on m_thread.
+    GMainContext *context() const { return m_context; }
+
 private:
     CommonTimerLoop()
     {
-        m_loop = g_main_loop_new(nullptr, FALSE);
-        m_thread = std::thread([this]() { g_main_loop_run(m_loop); });
+        //m_loop = g_main_loop_new(nullptr, FALSE);
+        //m_thread = std::thread([this]() { g_main_loop_run(m_loop); });
+	m_context = g_main_context_new();
+        m_loop = g_main_loop_new(m_context, FALSE);
+        m_thread = std::thread(
+            [this]()
+            {
+                g_main_context_push_thread_default(m_context);
+                g_main_loop_run(m_loop);
+                g_main_context_pop_thread_default(m_context);
+            });
     }
 
     ~CommonTimerLoop()
@@ -68,8 +81,10 @@ private:
             m_thread.join();
         }
         g_main_loop_unref(m_loop);
+	g_main_context_unref(m_context);
     }
 
+    GMainContext *m_context;
     GMainLoop *m_loop;
     std::thread m_thread;
     std::mutex m_mutex;
@@ -111,10 +126,13 @@ std::unique_ptr<ITimer> TimerFactory::createTimer(const std::chrono::millisecond
 Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback, TimerType timerType)
 {
     CommonTimerLoop::instance().storeTimerCallback(this, callback);
+    GSource *source = g_timeout_source_new(static_cast<guint>(timeout.count()));
     if (timerType == TimerType::PERIODIC)
     {
-        m_timerId = g_timeout_add(
-            static_cast<guint>(timeout.count()),
+        //m_timerId = g_timeout_add(
+        //    static_cast<guint>(timeout.count()),
+	g_source_set_callback(
+            source,
             [](gpointer data) -> gboolean
             {
                 auto callback = CommonTimerLoop::instance().getTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
@@ -125,13 +143,15 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
                 }
                 return FALSE;
             },
-            this);
+            this, nullptr);
     }
     else
     {
-	m_timerId = g_timeout_add(
-            static_cast<guint>(timeout.count()),
-	    [](gpointer data) -> gboolean
+        //m_timerId = g_timeout_add(
+        //    static_cast<guint>(timeout.count()),
+	g_source_set_callback(
+            source,
+            [](gpointer data) -> gboolean
             {
                 auto callback = CommonTimerLoop::instance().getTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
                 if (callback)
@@ -139,10 +159,14 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
                     callback();
                     CommonTimerLoop::instance().removeTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
                 }
-		return G_SOURCE_REMOVE;
+                return FALSE;
             },
-            this);
+            this, nullptr);
     }
+    // Attached to our private context (not the global-default one), so this only ever fires on m_thread.
+    // Keep our own ref alongside the context's so cancel() can still destroy it by pointer later.
+    g_source_attach(source, CommonTimerLoop::instance().context());
+    m_source = source;
 }
 
 Timer::~Timer()
@@ -153,10 +177,14 @@ Timer::~Timer()
 void Timer::cancel()
 {
     CommonTimerLoop::instance().removeTimerCallback(this);
-    if (m_timerId != 0)
+    //if (m_timerId != 0)
+    GSource *source = m_source.exchange(nullptr);
+    if (source)
     {
-        g_source_remove(m_timerId);
-        m_timerId = 0;
+        //g_source_remove(m_timerId);
+        //m_timerId = 0;
+	g_source_destroy(source);
+        g_source_unref(source);
     }
 }
 
