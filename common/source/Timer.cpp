@@ -59,8 +59,12 @@ public:
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         auto it = m_activeTimers.find(timer);
-        if (it == m_activeTimers.end())
+        if (it == m_activeTimers.end() || !it->second)
         {
+            if (it != m_activeTimers.end())
+            {
+                m_activeTimers.erase(it);
+            }
             return nullptr;
         }
         m_dispatchingTimers.insert(timer);
@@ -84,10 +88,33 @@ public:
         m_dispatchFinished.notify_all();
     }
 
+    guint addTimeout(guint intervalMs, GSourceFunc func, gpointer data)
+    {
+        GSource *source = g_timeout_source_new(intervalMs);
+        g_source_set_callback(source, func, data, nullptr);
+        guint id = g_source_attach(source, m_context);
+        g_source_unref(source);
+        return id;
+    }
+
+    void removeSource(guint id)
+    {
+        if (id == 0)
+        {
+            return;
+        }
+        GSource *source = g_main_context_find_source_by_id(m_context, id);
+        if (source)
+        {
+            g_source_destroy(source);
+        }
+    }
+
 private:
     CommonTimerLoop()
     {
-        m_loop = g_main_loop_new(nullptr, FALSE);
+        m_context = g_main_context_new();
+        m_loop = g_main_loop_new(m_context, FALSE);
         m_thread = std::thread([this]() { g_main_loop_run(m_loop); });
     }
 
@@ -99,8 +126,10 @@ private:
             m_thread.join();
         }
         g_main_loop_unref(m_loop);
+        g_main_context_unref(m_context);
     }
 
+    GMainContext *m_context;
     GMainLoop *m_loop;
     std::thread m_thread;
     std::mutex m_mutex;
@@ -146,7 +175,7 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
     CommonTimerLoop::instance().storeTimerCallback(this, callback);
     if (timerType == TimerType::PERIODIC)
     {
-        m_timerId = g_timeout_add(
+        m_timerId = CommonTimerLoop::instance().addTimeout(
             static_cast<guint>(timeout.count()),
             [](gpointer data) -> gboolean
             {
@@ -169,7 +198,7 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
     }
     else
     {
-        m_timerId = g_timeout_add(
+        m_timerId = CommonTimerLoop::instance().addTimeout(
             static_cast<guint>(timeout.count()),
             [](gpointer data) -> gboolean
             {
@@ -197,7 +226,7 @@ void Timer::cancel()
     CommonTimerLoop::instance().removeTimerCallback(this);
     if (m_timerId != 0)
     {
-        g_source_remove(m_timerId);
+        CommonTimerLoop::instance().removeSource(m_timerId);
         m_timerId = 0;
     }
 }
