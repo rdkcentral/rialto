@@ -22,10 +22,8 @@
 
 #include "ITimer.h"
 
-#include <atomic>
-#include <glib.h>
+#include <cstdint>
 #include <memory>
-#include <thread>
 
 namespace firebolt::rialto::common
 {
@@ -59,7 +57,7 @@ public:
     bool isActive() const override;
 
 private:
-    std::atomic<guint> m_timerId{0};
+    const std::uint64_t m_timerId;
 };
 } // namespace firebolt::rialto::common
 

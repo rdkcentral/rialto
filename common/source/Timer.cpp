@@ -19,12 +19,16 @@
 
 #include "Timer.h"
 #include "RialtoCommonLogging.h"
+#include <condition_variable>
+#include <glib.h>
 #include <mutex>
 #include <thread>
 #include <unordered_map>
 
 namespace
 {
+using firebolt::rialto::common::TimerType;
+
 class CommonTimerLoop
 {
 public:
@@ -34,30 +38,69 @@ public:
         return instance;
     }
 
-    void storeTimerCallback(const firebolt::rialto::common::Timer *timer, const std::function<void()> &callback)
+    std::uint64_t addTimer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback,
+                           TimerType timerType)
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_activeTimers[timer] = callback;
+        GSource *source = g_timeout_source_new(static_cast<guint>(timeout.count()));
+        std::uint64_t timerId{0};
+        {
+            std::lock_guard<std::mutex> lock{m_mutex};
+            timerId = ++m_lastTimerId;
+            m_timers.emplace(timerId, TimerEntry{callback, timerType == TimerType::PERIODIC, source});
+        }
+        g_source_set_callback(source, &CommonTimerLoop::onTimeout, new std::uint64_t{timerId},
+                              [](gpointer data) { delete static_cast<std::uint64_t *>(data); });
+        g_source_attach(source, m_context);
+        return timerId;
     }
 
-    void removeTimerCallback(const firebolt::rialto::common::Timer *timer)
+    void cancelTimer(std::uint64_t timerId)
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_activeTimers.erase(timer);
+        GSource *source{nullptr};
+        {
+            std::unique_lock<std::mutex> lock{m_mutex};
+            auto timerIt = m_timers.find(timerId);
+            if (timerIt != m_timers.end())
+            {
+                source = timerIt->second.source;
+                m_timers.erase(timerIt);
+            }
+            if (std::this_thread::get_id() != m_thread.get_id())
+            {
+                m_callbackFinished.wait(lock, [this, timerId]() { return m_runningTimerId != timerId; });
+            }
+        }
+        if (source)
+        {
+            // Destroying the source by pointer is safe even if GLib has already removed it.
+            g_source_destroy(source);
+            g_source_unref(source);
+        }
     }
 
-    std::function<void()> getTimerCallback(const firebolt::rialto::common::Timer *timer)
+    bool isTimerActive(std::uint64_t timerId)
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        auto it = m_activeTimers.find(timer);
-        return it != m_activeTimers.end() ? it->second : nullptr;
+        std::lock_guard<std::mutex> lock{m_mutex};
+        return m_timers.find(timerId) != m_timers.end();
     }
 
 private:
-    CommonTimerLoop()
+    struct TimerEntry
     {
-        m_loop = g_main_loop_new(nullptr, FALSE);
-        m_thread = std::thread([this]() { g_main_loop_run(m_loop); });
+        std::function<void()> callback;
+        bool isPeriodic;
+        GSource *source;
+    };
+
+    CommonTimerLoop() : m_context{g_main_context_new()}, m_loop{g_main_loop_new(m_context, FALSE)}
+    {
+        m_thread = std::thread(
+            [this]()
+            {
+                g_main_context_push_thread_default(m_context);
+                g_main_loop_run(m_loop);
+                g_main_context_pop_thread_default(m_context);
+            });
     }
 
     ~CommonTimerLoop()
@@ -68,12 +111,71 @@ private:
             m_thread.join();
         }
         g_main_loop_unref(m_loop);
+        g_main_context_unref(m_context);
     }
 
+    static gboolean onTimeout(gpointer data)
+    {
+        return instance().handleTimeout(*static_cast<std::uint64_t *>(data)) ? G_SOURCE_CONTINUE : G_SOURCE_REMOVE;
+    }
+
+    bool handleTimeout(std::uint64_t timerId)
+    {
+        std::function<void()> callback;
+        {
+            std::lock_guard<std::mutex> lock{m_mutex};
+            auto timerIt = m_timers.find(timerId);
+            if (timerIt == m_timers.end())
+            {
+                return false;
+            }
+            callback = timerIt->second.callback;
+            m_runningTimerId = timerId;
+        }
+
+        if (callback)
+        {
+            callback();
+        }
+
+        bool keepSource{false};
+        GSource *finishedSource{nullptr};
+        {
+            std::lock_guard<std::mutex> lock{m_mutex};
+            m_runningTimerId = kNoTimerId;
+            auto timerIt = m_timers.find(timerId);
+            if (timerIt != m_timers.end())
+            {
+                if (timerIt->second.isPeriodic)
+                {
+                    keepSource = true;
+                }
+                else
+                {
+                    finishedSource = timerIt->second.source;
+                    m_timers.erase(timerIt);
+                }
+            }
+        }
+        m_callbackFinished.notify_all();
+
+        if (finishedSource)
+        {
+            g_source_unref(finishedSource);
+        }
+        return keepSource;
+    }
+
+    static constexpr std::uint64_t kNoTimerId{0};
+
+    GMainContext *m_context;
     GMainLoop *m_loop;
     std::thread m_thread;
     std::mutex m_mutex;
-    std::unordered_map<const firebolt::rialto::common::Timer *, std::function<void()>> m_activeTimers;
+    std::condition_variable m_callbackFinished;
+    std::uint64_t m_lastTimerId{kNoTimerId};
+    std::uint64_t m_runningTimerId{kNoTimerId};
+    std::unordered_map<std::uint64_t, TimerEntry> m_timers;
 };
 } // namespace
 
@@ -109,45 +211,8 @@ std::unique_ptr<ITimer> TimerFactory::createTimer(const std::chrono::millisecond
 }
 
 Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback, TimerType timerType)
+    : m_timerId{CommonTimerLoop::instance().addTimer(timeout, callback, timerType)}
 {
-    CommonTimerLoop::instance().storeTimerCallback(this, callback);
-    if (timerType == TimerType::PERIODIC)
-    {
-        m_timerId = g_timeout_add(
-            static_cast<guint>(timeout.count()),
-            [](gpointer data) -> gboolean
-            {
-                auto callback =
-                    CommonTimerLoop::instance().getTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
-                if (callback)
-                {
-                    callback();
-                    return CommonTimerLoop::instance().getTimerCallback(
-                               static_cast<firebolt::rialto::common::Timer *>(data))
-                               ? TRUE
-                               : FALSE;
-                }
-                return FALSE;
-            },
-            this);
-    }
-    else
-    {
-        m_timerId = g_timeout_add(
-            static_cast<guint>(timeout.count()),
-            [](gpointer data) -> gboolean
-            {
-                auto callback =
-                    CommonTimerLoop::instance().getTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
-                if (callback)
-                {
-                    callback();
-                    CommonTimerLoop::instance().removeTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
-                }
-                return G_SOURCE_REMOVE;
-            },
-            this);
-    }
 }
 
 Timer::~Timer()
@@ -157,16 +222,11 @@ Timer::~Timer()
 
 void Timer::cancel()
 {
-    CommonTimerLoop::instance().removeTimerCallback(this);
-    if (m_timerId != 0)
-    {
-        g_source_remove(m_timerId);
-        m_timerId = 0;
-    }
+    CommonTimerLoop::instance().cancelTimer(m_timerId);
 }
 
 bool Timer::isActive() const
 {
-    return CommonTimerLoop::instance().getTimerCallback(this) != nullptr;
+    return CommonTimerLoop::instance().isTimerActive(m_timerId);
 }
 } // namespace firebolt::rialto::common
