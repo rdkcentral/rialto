@@ -117,11 +117,11 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
             static_cast<guint>(timeout.count()),
             [](gpointer data) -> gboolean
             {
-                auto timerCallback = CommonTimerLoop::instance().getTimerCallback(static_cast<Timer *>(data));
-                if (timerCallback)
+                auto callback = CommonTimerLoop::instance().getTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
+                if (callback)
                 {
-                    timerCallback();
-                    return CommonTimerLoop::instance().getTimerCallback(static_cast<Timer *>(data)) ? TRUE : FALSE;
+                    callback();
+                    return CommonTimerLoop::instance().getTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data)) ? TRUE : FALSE;
                 }
                 return FALSE;
             },
@@ -133,11 +133,11 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
             static_cast<guint>(timeout.count()),
             [](gpointer data) -> gboolean
             {
-                auto timerCallback = CommonTimerLoop::instance().getTimerCallback(static_cast<Timer *>(data));
-                if (timerCallback)
+                auto callback = CommonTimerLoop::instance().getTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
+                if (callback)
                 {
-                    timerCallback();
-                    CommonTimerLoop::instance().removeTimerCallback(static_cast<Timer *>(data));
+                    callback();
+                    CommonTimerLoop::instance().removeTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
                 }
                 return G_SOURCE_REMOVE;
             },
