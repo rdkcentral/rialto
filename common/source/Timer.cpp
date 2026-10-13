@@ -19,6 +19,8 @@
 
 #include "Timer.h"
 #include "RialtoCommonLogging.h"
+#include <cinttypes>
+#include <cstdint>
 #include <limits>
 #include <mutex>
 #include <thread>
@@ -38,8 +40,8 @@ guint toGuintMilliseconds(const std::chrono::milliseconds &timeout)
     }
     if (count > kMaxMs)
     {
-        RIALTO_COMMON_LOG_WARN("Timer duration %lld ms exceeds guint range, clamping to %u ms",
-                               static_cast<long long>(count), std::numeric_limits<guint>::max());
+        RIALTO_COMMON_LOG_WARN("Timer duration %" PRId64 " ms exceeds guint range, clamping to %u ms",
+                               static_cast<int64_t>(count), std::numeric_limits<guint>::max());
         return std::numeric_limits<guint>::max();
     }
     return static_cast<guint>(count);
@@ -87,9 +89,7 @@ public:
 private:
     CommonTimerLoop()
     {
-        //m_loop = g_main_loop_new(nullptr, FALSE);
-        //m_thread = std::thread([this]() { g_main_loop_run(m_loop); });
-	m_context = g_main_context_new();
+        m_context = g_main_context_new();
         m_loop = g_main_loop_new(m_context, FALSE);
         m_thread = std::thread(
             [this]()
@@ -108,7 +108,7 @@ private:
             m_thread.join();
         }
         g_main_loop_unref(m_loop);
-	g_main_context_unref(m_context);
+        g_main_context_unref(m_context);
     }
 
     GMainContext *m_context;
@@ -153,45 +153,37 @@ std::unique_ptr<ITimer> TimerFactory::createTimer(const std::chrono::millisecond
 Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback, TimerType timerType)
 {
     CommonTimerLoop::instance().storeTimerCallback(this, callback);
+
     GSource *source = g_timeout_source_new(toGuintMilliseconds(timeout));
     if (timerType == TimerType::PERIODIC)
     {
-        //m_timerId = g_timeout_add(
-        //    static_cast<guint>(timeout.count()),
-	g_source_set_callback(
+        g_source_set_callback(
             source,
             [](gpointer data) -> gboolean
             {
-                //auto callback = CommonTimerLoop::instance().getTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
-		auto *timer = static_cast<firebolt::rialto::common::Timer *>(data);
+                auto *timer = static_cast<firebolt::rialto::common::Timer *>(data);
                 auto callback = CommonTimerLoop::instance().getTimerCallback(timer);
                 if (callback)
                 {
                     callback();
-                    //return CommonTimerLoop::instance().getTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data)) ? TRUE : FALSE;
                 }
-                //return FALSE;
-		return CommonTimerLoop::instance().hasTimerCallback(timer) ? TRUE : FALSE;
+                return CommonTimerLoop::instance().hasTimerCallback(timer) ? TRUE : FALSE;
             },
             this, nullptr);
     }
     else
     {
-        //m_timerId = g_timeout_add(
-        //    static_cast<guint>(timeout.count()),
-	g_source_set_callback(
+        g_source_set_callback(
             source,
             [](gpointer data) -> gboolean
             {
-                //auto callback = CommonTimerLoop::instance().getTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
-		auto *timer = static_cast<firebolt::rialto::common::Timer *>(data);
+                auto *timer = static_cast<firebolt::rialto::common::Timer *>(data);
                 auto callback = CommonTimerLoop::instance().getTimerCallback(timer);
                 if (callback)
                 {
                     callback();
-                    //CommonTimerLoop::instance().removeTimerCallback(static_cast<firebolt::rialto::common::Timer *>(data));
                 }
-		CommonTimerLoop::instance().removeTimerCallback(timer);
+                CommonTimerLoop::instance().removeTimerCallback(timer);
                 return FALSE;
             },
             this, nullptr);
@@ -210,13 +202,10 @@ Timer::~Timer()
 void Timer::cancel()
 {
     CommonTimerLoop::instance().removeTimerCallback(this);
-    //if (m_timerId != 0)
     GSource *source = m_source.exchange(nullptr);
     if (source)
     {
-        //g_source_remove(m_timerId);
-        //m_timerId = 0;
-	g_source_destroy(source);
+        g_source_destroy(source);
         g_source_unref(source);
     }
 }
