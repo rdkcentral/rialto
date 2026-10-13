@@ -19,12 +19,32 @@
 
 #include "Timer.h"
 #include "RialtoCommonLogging.h"
+#include <limits>
 #include <mutex>
 #include <thread>
 #include <unordered_map>
 
 namespace
 {
+// guint is 32-bit, but std::chrono::milliseconds::rep is typically 64-bit; saturate instead of
+// silently wrapping (which would otherwise fire much earlier than the caller requested).
+guint toGuintMilliseconds(const std::chrono::milliseconds &timeout)
+{
+    constexpr auto kMaxMs = static_cast<std::chrono::milliseconds::rep>(std::numeric_limits<guint>::max());
+    const auto count = timeout.count();
+    if (count < 0)
+    {
+        return 0;
+    }
+    if (count > kMaxMs)
+    {
+        RIALTO_COMMON_LOG_WARN("Timer duration %lld ms exceeds guint range, clamping to %u ms",
+                               static_cast<long long>(count), std::numeric_limits<guint>::max());
+        return std::numeric_limits<guint>::max();
+    }
+    return static_cast<guint>(count);
+}
+
 class CommonTimerLoop
 {
 public:
@@ -126,7 +146,7 @@ std::unique_ptr<ITimer> TimerFactory::createTimer(const std::chrono::millisecond
 Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback, TimerType timerType)
 {
     CommonTimerLoop::instance().storeTimerCallback(this, callback);
-    GSource *source = g_timeout_source_new(static_cast<guint>(timeout.count()));
+    GSource *source = g_timeout_source_new(toGuintMilliseconds(timeout));
     if (timerType == TimerType::PERIODIC)
     {
         //m_timerId = g_timeout_add(
