@@ -31,6 +31,6 @@ TEST_F(SetImmediateOutputTest, shouldSetImmediateOutput)
 
 TEST_F(SetImmediateOutputTest, shouldSetAudioImmediateOutput)
 {
-    shouldGetAudioElementsForImmediateOutput();
+    shouldSetAudioImmediateOutput();
     triggerAudioSetImmediateOutput();
 }

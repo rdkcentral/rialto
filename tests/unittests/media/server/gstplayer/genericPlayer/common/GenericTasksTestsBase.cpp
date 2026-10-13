@@ -836,6 +836,30 @@ void GenericTasksTestsBase::shouldSetupAudioSinkElementWithPendingLowLatency()
     expectSetupAudioSinkElement();
 }
 
+void GenericTasksTestsBase::shouldSetupAudioSinkElementWithPendingLowLatencyAudioSink()
+{
+    testContext->m_context.pendingLowLatencyForAudioSink = true;
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+
+    EXPECT_CALL(testContext->m_gstPlayer, setLowLatencyAudioSink());
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
+    expectSetupAudioSinkElement();
+}
+
+void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithPendingLowLatency()
+{
+    testContext->m_context.pendingLowLatencyForAudioDecoder = true;
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+
+    EXPECT_CALL(testContext->m_gstPlayer, setLowLatencyAudioDecoder());
+    expectSetupAudioDecoderElement();
+}
+
 void GenericTasksTestsBase::shouldSetupAudioSinkElementWithPendingSync()
 {
     testContext->m_context.pendingSync = true;
@@ -3727,20 +3751,18 @@ void GenericTasksTestsBase::triggerFailToCastDolbyVisionSource()
 
 void GenericTasksTestsBase::shouldSetImmediateOutput()
 {
-    shouldGetAudioElementsForImmediateOutput();
     EXPECT_CALL(testContext->m_gstPlayer, setImmediateOutput()).WillOnce(Return(true));
 }
 
-void GenericTasksTestsBase::shouldGetAudioElementsForImmediateOutput()
+void GenericTasksTestsBase::shouldSetAudioImmediateOutput()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
+    EXPECT_CALL(testContext->m_gstPlayer, setLowLatencyAudioDecoder()).WillOnce(Return(true));
+    EXPECT_CALL(testContext->m_gstPlayer, setLowLatencyAudioSink()).WillOnce(Return(true));
 }
 
 void GenericTasksTestsBase::triggerSetImmediateOutput()
 {
-    firebolt::rialto::server::tasks::generic::SetImmediateOutput task{testContext->m_context, testContext->m_gstWrapper,
-                                                                      testContext->m_glibWrapper, testContext->m_gstPlayer,
+    firebolt::rialto::server::tasks::generic::SetImmediateOutput task{testContext->m_context, testContext->m_gstPlayer,
                                                                       MediaSourceType::VIDEO, true};
     task.execute();
 
@@ -3749,10 +3771,12 @@ void GenericTasksTestsBase::triggerSetImmediateOutput()
 
 void GenericTasksTestsBase::triggerAudioSetImmediateOutput()
 {
-    firebolt::rialto::server::tasks::generic::SetImmediateOutput task{testContext->m_context, testContext->m_gstWrapper,
-                                                                      testContext->m_glibWrapper, testContext->m_gstPlayer,
+    firebolt::rialto::server::tasks::generic::SetImmediateOutput task{testContext->m_context, testContext->m_gstPlayer,
                                                                       MediaSourceType::AUDIO, true};
     task.execute();
+
+    EXPECT_EQ(testContext->m_context.pendingLowLatencyForAudioDecoder, true);
+    EXPECT_EQ(testContext->m_context.pendingLowLatencyForAudioSink, true);
 }
 
 void GenericTasksTestsBase::shouldSetReportDecodeErrors()

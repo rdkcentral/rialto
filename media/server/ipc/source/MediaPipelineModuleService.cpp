@@ -561,9 +561,9 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
     }
     if (sourceAttached)
     {
-        auto &sessionSources = m_sessionSources[request->session_id()];
         if (!request->has_switch_source() || !request->switch_source())
         {
+            auto &sessionSources = m_sessionSources[request->session_id()];
             sessionSources[mediaSource->getId()] = mediaSource->getType();
         }
 
@@ -575,7 +575,7 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
                 RIALTO_SERVER_LOG_INFO("Applying saved immediate-output to AUDIO source in session %d",
                                        request->session_id());
                 if (!m_mediaPipelineService.setImmediateOutput(request->session_id(), mediaSource->getId(),
-                                                                immediateOutputIter->second))
+                                                               immediateOutputIter->second))
                 {
                     RIALTO_SERVER_LOG_ERROR("Failed to apply saved immediate-output to AUDIO source");
                     controller->SetFailed("Operation failed");
@@ -802,9 +802,8 @@ void MediaPipelineModuleService::setImmediateOutput(::google::protobuf::RpcContr
                     if (sourceType == MediaSourceType::AUDIO)
                     {
                         hasAudioOrVideoSource = true;
-                        auto &audioSourceIds = sessionId == request->session_id()
-                                                   ? sameSessionAudioSourceIds
-                                                   : peerSessionAudioSourceIds[sessionId];
+                        auto &audioSourceIds = sessionId == request->session_id() ? sameSessionAudioSourceIds
+                                                                                  : peerSessionAudioSourceIds[sessionId];
                         audioSourceIds.push_back(sourceId);
                     }
                     else if (sourceType == MediaSourceType::VIDEO)
@@ -854,8 +853,8 @@ void MediaPipelineModuleService::setImmediateOutput(::google::protobuf::RpcContr
                 m_sessionImmediateOutput[audioSessionId] = request->immediate_output();
                 for (const int32_t audioSourceId : *audioSourceIds)
                 {
-                    RIALTO_SERVER_LOG_INFO("Applying immediate-output to AUDIO source %d in session %d",
-                                           audioSourceId, audioSessionId);
+                    RIALTO_SERVER_LOG_INFO("Applying immediate-output to AUDIO source %d in session %d", audioSourceId,
+                                           audioSessionId);
                     if (!m_mediaPipelineService.setImmediateOutput(audioSessionId, audioSourceId,
                                                                    request->immediate_output()))
                     {

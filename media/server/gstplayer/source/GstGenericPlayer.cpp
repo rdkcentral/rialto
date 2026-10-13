@@ -2200,7 +2200,8 @@ bool GstGenericPlayer::setLowLatencyAudioDecoder()
         if (decoder)
         {
             bool lowLatencyAudioDecoder{m_context.pendingLowLatencyForAudioDecoder.value()};
-            RIALTO_SERVER_LOG_DEBUG("Set low latency properties on audio decoder to %s", lowLatencyAudioDecoder ? "TRUE" : "FALSE");
+            RIALTO_SERVER_LOG_DEBUG("Set low latency properties on audio decoder to %s",
+                                    lowLatencyAudioDecoder ? "TRUE" : "FALSE");
 
             const auto setDecoderBoolPropertyIfExists = [&](const char *property, bool value, bool &ret)
             {
@@ -2256,7 +2257,8 @@ bool GstGenericPlayer::setLowLatencyAudioSink()
         if (sink)
         {
             bool lowLatencyAudioSink{m_context.pendingLowLatencyForAudioSink.value()};
-            RIALTO_SERVER_LOG_DEBUG("Set low latency properties on audio sink to %s", lowLatencyAudioSink ? "TRUE" : "FALSE");
+            RIALTO_SERVER_LOG_DEBUG("Set low latency properties on audio sink to %s",
+                                    lowLatencyAudioSink ? "TRUE" : "FALSE");
 
             const auto setSinkBoolPropertyIfExists = [&](const char *property, bool value, bool &ret)
             {

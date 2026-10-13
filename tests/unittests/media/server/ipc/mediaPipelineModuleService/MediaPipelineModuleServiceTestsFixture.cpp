@@ -521,36 +521,162 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetDuration(
     EXPECT_CALL(m_mediaPipelineServiceMock, getDuration(kHardcodedSessionId, _)).WillOnce(Return(false));
 }
 
-void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetImmediateOutput()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetImmediateOutput(int sessionId)
 {
     expectRequestSuccess();
     EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
-    EXPECT_CALL(m_mediaPipelineServiceMock, setImmediateOutput(kHardcodedSessionId, _, kImmediateOutputVal1))
-        .WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setImmediateOutput(sessionId, _, kImmediateOutputVal1)).WillOnce(Return(true));
 }
 
-void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetImmediateOutput()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetImmediateOutput(int sessionId)
 {
     expectRequestFailure();
     EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
-    EXPECT_CALL(m_mediaPipelineServiceMock, setImmediateOutput(kHardcodedSessionId, _, kImmediateOutputVal1))
-        .WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setImmediateOutput(sessionId, _, kImmediateOutputVal1)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetImmediateOutputForVideoOnly(int sessionId,
-                                                                                              int32_t sourceId)
+                                                                                             int32_t sourceId)
 {
     mediaPipelineServiceWillSetImmediateOutputForVideoOnly(sessionId, sourceId, kImmediateOutputVal1);
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetImmediateOutputForVideoOnly(int sessionId,
-                                                                                              int32_t sourceId,
-                                                                                              bool immediateOutput)
+                                                                                             int32_t sourceId,
+                                                                                             bool immediateOutput)
 {
     expectRequestSuccess();
     EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
-    EXPECT_CALL(m_mediaPipelineServiceMock, setImmediateOutput(sessionId, sourceId, immediateOutput))
+    EXPECT_CALL(m_mediaPipelineServiceMock, setImmediateOutput(sessionId, sourceId, immediateOutput)).WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::testSetImmediateOutputForAudioSourceInSeparateSession()
+{
+    mediaPipelineServiceWillCreateSession();
+    const int videoSessionId = sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillCreateSession();
+    const int audioSessionId = sendCreateSessionRequestAndReceiveResponse();
+
+    constexpr int32_t kVideoSourceId{21};
+    constexpr int32_t kAudioSourceId{22};
+    sendAttachSourceRequestAndReceiveResponse(videoSessionId, firebolt::rialto::MediaSourceType::VIDEO, kVideoSourceId);
+    sendAttachSourceRequestAndReceiveResponse(audioSessionId, firebolt::rialto::MediaSourceType::AUDIO, kAudioSourceId);
+
+    mediaPipelineServiceWillSetImmediateOutputForVideoOnly(videoSessionId, kVideoSourceId);
+    EXPECT_CALL(m_mediaPipelineServiceMock, setImmediateOutput(audioSessionId, kAudioSourceId, kImmediateOutputVal1))
         .WillOnce(Return(true));
+    sendSetImmediateOutputRequestAndReceiveResponse(videoSessionId, kVideoSourceId);
+}
+
+void MediaPipelineModuleServiceTests::testApplyPendingImmediateOutputWhenPeerAudioSourceAttachesLater()
+{
+    mediaPipelineServiceWillCreateSession();
+    const int videoSessionId = sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillCreateSession();
+    const int audioSessionId = sendCreateSessionRequestAndReceiveResponse();
+
+    constexpr int32_t kVideoSourceId{28};
+    constexpr int32_t kAudioSourceId{29};
+    sendAttachSourceRequestAndReceiveResponse(videoSessionId, firebolt::rialto::MediaSourceType::VIDEO, kVideoSourceId);
+
+    mediaPipelineServiceWillSetImmediateOutputForVideoOnly(videoSessionId, kVideoSourceId, kImmediateOutputVal2);
+    sendSetImmediateOutputRequestAndReceiveResponse(videoSessionId, kVideoSourceId, kImmediateOutputVal2);
+
+    EXPECT_CALL(m_mediaPipelineServiceMock, setImmediateOutput(audioSessionId, kAudioSourceId, kImmediateOutputVal2))
+        .WillOnce(Return(true));
+    sendAttachSourceRequestAndReceiveResponse(audioSessionId, firebolt::rialto::MediaSourceType::AUDIO, kAudioSourceId);
+}
+
+void MediaPipelineModuleServiceTests::testDoNotGuessAudioSessionWhenMultiplePeerAudioSessionsExist()
+{
+    mediaPipelineServiceWillCreateSession();
+    const int videoSessionId = sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillCreateSession();
+    const int audioSessionId1 = sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillCreateSession();
+    const int audioSessionId2 = sendCreateSessionRequestAndReceiveResponse();
+
+    constexpr int32_t kVideoSourceId{23};
+    constexpr int32_t kAudioSourceId1{24};
+    constexpr int32_t kAudioSourceId2{27};
+    sendAttachSourceRequestAndReceiveResponse(videoSessionId, firebolt::rialto::MediaSourceType::VIDEO, kVideoSourceId);
+    sendAttachSourceRequestAndReceiveResponse(audioSessionId1, firebolt::rialto::MediaSourceType::AUDIO, kAudioSourceId1);
+    sendAttachSourceRequestAndReceiveResponse(audioSessionId2, firebolt::rialto::MediaSourceType::AUDIO, kAudioSourceId2);
+
+    mediaPipelineServiceWillSetImmediateOutputForVideoOnly(videoSessionId, kVideoSourceId);
+    sendSetImmediateOutputRequestAndReceiveResponse(videoSessionId, kVideoSourceId);
+}
+
+void MediaPipelineModuleServiceTests::testApplyPendingImmediateOutputWhenAudioSourceAttachesLater()
+{
+    mediaPipelineServiceWillCreateSession();
+    const int sessionId = sendCreateSessionRequestAndReceiveResponse();
+    constexpr int32_t kVideoSourceId{31};
+    sendAttachSourceRequestAndReceiveResponse(sessionId, firebolt::rialto::MediaSourceType::VIDEO, kVideoSourceId);
+
+    mediaPipelineServiceWillSetImmediateOutputForVideoOnly(sessionId, kVideoSourceId, kImmediateOutputVal2);
+    sendSetImmediateOutputRequestAndReceiveResponse(sessionId, kVideoSourceId, kImmediateOutputVal2);
+
+    constexpr int32_t kAudioSourceId{32};
+    EXPECT_CALL(m_mediaPipelineServiceMock, setImmediateOutput(sessionId, kAudioSourceId, kImmediateOutputVal2))
+        .WillOnce(Return(true));
+    sendAttachSourceRequestAndReceiveResponse(sessionId, firebolt::rialto::MediaSourceType::AUDIO, kAudioSourceId);
+}
+
+void MediaPipelineModuleServiceTests::testPreserveTrackedSourceIdWhenSwitchingAudioSource()
+{
+    mediaPipelineServiceWillCreateSession();
+    const int sessionId = sendCreateSessionRequestAndReceiveResponse();
+    constexpr int32_t kVideoSourceId{33};
+    constexpr int32_t kAudioSourceId{34};
+    sendAttachSourceRequestAndReceiveResponse(sessionId, firebolt::rialto::MediaSourceType::VIDEO, kVideoSourceId);
+    sendAttachSourceRequestAndReceiveResponse(sessionId, firebolt::rialto::MediaSourceType::AUDIO, kAudioSourceId);
+
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(kMimeType);
+    firebolt::rialto::AttachSourceRequest switchRequest;
+    firebolt::rialto::AttachSourceResponse switchResponse;
+    switchRequest.set_session_id(sessionId);
+    switchRequest.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO);
+    switchRequest.set_mime_type(kMimeType);
+    switchRequest.set_has_drm(true);
+    switchRequest.set_switch_source(true);
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, switchSource(sessionId, AttachedSourceMatcher(ByRef(m_source))))
+        .WillOnce(Invoke(
+            [kAudioSourceId](int, const std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> &source)
+            {
+                EXPECT_EQ(source->getId(), kAudioSourceId);
+                return true;
+            }));
+    m_service->attachSource(m_controllerMock.get(), &switchRequest, &switchResponse, m_closureMock.get());
+
+    mediaPipelineServiceWillSetImmediateOutputForVideoOnly(sessionId, kVideoSourceId);
+    EXPECT_CALL(m_mediaPipelineServiceMock, setImmediateOutput(sessionId, kAudioSourceId, kImmediateOutputVal1))
+        .WillOnce(Return(true));
+    sendSetImmediateOutputRequestAndReceiveResponse(sessionId, kVideoSourceId);
+}
+
+void MediaPipelineModuleServiceTests::testSetVideoImmediateOutputWhenMultipleAudioSourcesExist()
+{
+    mediaPipelineServiceWillCreateSession();
+    const int sessionId = sendCreateSessionRequestAndReceiveResponse();
+
+    constexpr int32_t kVideoSourceId{41};
+    constexpr int32_t kAudioSourceId1{42};
+    constexpr int32_t kAudioSourceId2{43};
+    sendAttachSourceRequestAndReceiveResponse(sessionId, firebolt::rialto::MediaSourceType::VIDEO, kVideoSourceId);
+    sendAttachSourceRequestAndReceiveResponse(sessionId, firebolt::rialto::MediaSourceType::AUDIO, kAudioSourceId1);
+    sendAttachSourceRequestAndReceiveResponse(sessionId, firebolt::rialto::MediaSourceType::AUDIO, kAudioSourceId2);
+
+    expectRequestSuccess();
+    EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setImmediateOutput(sessionId, kVideoSourceId, kImmediateOutputVal1))
+        .WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setImmediateOutput(sessionId, kAudioSourceId1, kImmediateOutputVal1))
+        .WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setImmediateOutput(sessionId, kAudioSourceId2, kImmediateOutputVal1))
+        .WillOnce(Return(true));
+    sendSetImmediateOutputRequestAndReceiveResponse(sessionId, kVideoSourceId);
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetImmediateOutput()
@@ -1249,7 +1375,7 @@ void MediaPipelineModuleServiceTests::sendSetImmediateOutputRequestAndReceiveRes
 }
 
 void MediaPipelineModuleServiceTests::sendSetImmediateOutputRequestAndReceiveResponse(int sessionId, int32_t sourceId,
-                                                                                       bool immediateOutput)
+                                                                                      bool immediateOutput)
 {
     firebolt::rialto::SetImmediateOutputRequest request;
     firebolt::rialto::SetImmediateOutputResponse response;
@@ -1263,10 +1389,15 @@ void MediaPipelineModuleServiceTests::sendSetImmediateOutputRequestAndReceiveRes
 
 void MediaPipelineModuleServiceTests::sendSetImmediateOutputRequestAndReceiveFail()
 {
+    sendSetImmediateOutputRequestAndReceiveFail(kHardcodedSessionId);
+}
+
+void MediaPipelineModuleServiceTests::sendSetImmediateOutputRequestAndReceiveFail(int sessionId)
+{
     firebolt::rialto::SetImmediateOutputRequest request;
     firebolt::rialto::SetImmediateOutputResponse response;
 
-    request.set_session_id(kHardcodedSessionId);
+    request.set_session_id(sessionId);
     request.set_immediate_output(kImmediateOutputVal1);
 
     m_service->setImmediateOutput(m_controllerMock.get(), &request, &response, m_closureMock.get());
