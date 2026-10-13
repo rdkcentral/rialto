@@ -123,6 +123,7 @@ void releasePages(std::uint8_t *data, std::uint32_t length)
     {
         return;
     }
+    // coverity[INTEGER_OVERFLOW:FALSE]
     if (madvise(reinterpret_cast<void *>(kBegin), kEnd - kBegin, MADV_REMOVE) != 0)
     {
         RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to release shm pages");
