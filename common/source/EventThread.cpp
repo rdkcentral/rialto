@@ -114,7 +114,7 @@ void EventThread::addImpl(std::function<void()> &&func)
 {
     std::lock_guard<std::mutex> locker(m_lock);
     m_funcs.emplace_back(std::move(func));
-    m_cond.notify_all();
+    m_cond.notify_one();
 }
 
 }; // namespace firebolt::rialto::common
