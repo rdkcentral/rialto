@@ -489,6 +489,10 @@ void SetupElement::execute() const
         {
             m_player.setSyncOff();
         }
+        if (m_context.pendingLowLatencyForAudioDecoder.has_value())
+        {
+            m_player.setLowLatencyAudioDecoder();
+        }
         bool streamSyncModePending{false};
         bool bufferingLimitPending{false};
         streamSyncModePending = m_context.pendingStreamSyncMode.find(MediaSourceType::AUDIO) !=
@@ -515,6 +519,10 @@ void SetupElement::execute() const
         if (m_context.pendingLowLatency.has_value())
         {
             m_player.setLowLatency();
+        }
+        if (m_context.pendingLowLatencyForAudioSink.has_value())
+        {
+            m_player.setLowLatencyAudioSink();
         }
         if (m_context.pendingSync.has_value())
         {

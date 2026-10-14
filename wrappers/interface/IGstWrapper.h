@@ -680,6 +680,15 @@ public:
     virtual GstElementFactory *gstElementGetFactory(GstElement *element) const = 0;
 
     /**
+     * @brief Return the unique name of a plugin feature.
+     *
+     * @param[in] factory : a GstElementFactory
+     *
+     * @retval TRUE if factory is of type.
+     */
+    virtual const gchar *gstPluginFeatureGetName(GstElementFactory *factory) const = 0;
+
+    /**
      * @brief Check if factory is of the given types.
      *
      * @param[in] factory : a GstElementFactory

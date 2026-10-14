@@ -76,8 +76,16 @@ public:
     void mediaPipelineServiceWillFailToGetPosition();
     void mediaPipelineServiceWillGetDuration();
     void mediaPipelineServiceWillFailToGetDuration();
-    void mediaPipelineServiceWillSetImmediateOutput();
-    void mediaPipelineServiceWillFailToSetImmediateOutput();
+    void mediaPipelineServiceWillSetImmediateOutput(int sessionId);
+    void mediaPipelineServiceWillFailToSetImmediateOutput(int sessionId);
+    void mediaPipelineServiceWillSetImmediateOutputForVideoOnly(int sessionId, int32_t sourceId);
+    void mediaPipelineServiceWillSetImmediateOutputForVideoOnly(int sessionId, int32_t sourceId, bool immediateOutput);
+    void testSetImmediateOutputForAudioSourceInSeparateSession();
+    void testApplyPendingImmediateOutputWhenPeerAudioSourceAttachesLater();
+    void testDoNotGuessAudioSessionWhenMultiplePeerAudioSessionsExist();
+    void testApplyPendingImmediateOutputWhenAudioSourceAttachesLater();
+    void testPreserveTrackedSourceIdWhenSwitchingAudioSource();
+    void testSetVideoImmediateOutputWhenMultipleAudioSourcesExist();
     void mediaPipelineServiceWillGetImmediateOutput();
     void mediaPipelineServiceWillFailToGetImmediateOutput();
     void mediaPipelineServiceWillSetReportDecodeErrors();
@@ -144,6 +152,8 @@ public:
     void sendDestroySessionRequestAndReceiveResponse();
     void sendLoadRequestAndReceiveResponse();
     void sendAttachSourceRequestAndReceiveResponse();
+    void sendAttachSourceRequestAndReceiveResponse(int sessionId, firebolt::rialto::MediaSourceType sourceType,
+                                                   int32_t sourceId);
     void sendAttachVideoSourceRequestAndReceiveResponse();
     void sendAttachDolbySourceRequestAndReceiveResponse();
     void sendAttachSubtitleSourceRequestAndReceiveResponse();
@@ -160,7 +170,10 @@ public:
     void sendGetDurationRequestAndReceiveResponse();
     void sendGetDurationRequestAndReceiveResponseWithoutDurationMatch();
     void sendSetImmediateOutputRequestAndReceiveResponse();
+    void sendSetImmediateOutputRequestAndReceiveResponse(int sessionId, int32_t sourceId);
+    void sendSetImmediateOutputRequestAndReceiveResponse(int sessionId, int32_t sourceId, bool immediateOutput);
     void sendSetImmediateOutputRequestAndReceiveFail();
+    void sendSetImmediateOutputRequestAndReceiveFail(int sessionId);
     void sendGetImmediateOutputRequestAndReceiveResponse();
     void sendGetImmediateOutputRequestAndReceiveFail();
     void sendSetReportDecodeErrorsRequestAndReceiveResponse();
