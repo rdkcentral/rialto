@@ -21,7 +21,11 @@
 #include "ServerStub.h"
 #include "TestClientMock.h"
 #include "TestModuleMock.h"
+#include <atomic>
+#include <condition_variable>
 #include <gtest/gtest.h>
+#include <thread>
+#include <vector>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::ipc;
@@ -243,5 +247,59 @@ TEST_F(RialtoIpcTest, NoReply)
     bool status = messageReceivedCond.wait_for(messageReceivedLock, std::chrono::milliseconds(100),
                                                [&] { return messageReceived; });
 
+    ASSERT_TRUE(status);
+}
+
+/**
+ * Test that IPC client can process concurrent no reply requests.
+ */
+TEST_F(RialtoIpcTest, ConcurrentNoReply)
+{
+    constexpr bool kExpectMessage{false};
+    constexpr int kThreadCount{8};
+    constexpr int kRequestsPerThread{1000};
+    constexpr int kExpectedRequestCount{kThreadCount * kRequestsPerThread};
+    m_clientStub->startMessageThread(kExpectMessage);
+
+    std::mutex messageReceivedMutex;
+    std::condition_variable messageReceivedCond;
+    std::atomic<int> receivedCount{0};
+
+    EXPECT_CALL(*m_testModuleMock, TestRequestSingleVarNoReply(_, _, _, _))
+        .Times(kExpectedRequestCount)
+        .WillRepeatedly(WithArgs<0, 3>(Invoke(
+            [&](auto *c, auto *d)
+            {
+                m_testModuleMock->defaultReturn(c, d);
+                if (receivedCount.fetch_add(1, std::memory_order_relaxed) + 1 == kExpectedRequestCount)
+                {
+                    std::lock_guard<std::mutex> messageReceivedLock(messageReceivedMutex);
+                    messageReceivedCond.notify_one();
+                }
+            })));
+
+    std::vector<std::thread> workers;
+    workers.reserve(kThreadCount);
+    for (int i = 0; i < kThreadCount; ++i)
+    {
+        workers.emplace_back(
+            [this]()
+            {
+                for (int j = 0; j < kRequestsPerThread; ++j)
+                {
+                    EXPECT_TRUE(m_clientStub->sendSingleVarRequestWithNoReply(m_int));
+                }
+            });
+    }
+
+    for (auto &worker : workers)
+    {
+        worker.join();
+    }
+
+    std::unique_lock<std::mutex> messageReceivedLock(messageReceivedMutex);
+    bool status = messageReceivedCond.wait_for(messageReceivedLock, std::chrono::seconds(2),
+                                               [&] { return receivedCount.load(std::memory_order_relaxed) ==
+                                                              kExpectedRequestCount; });
     ASSERT_TRUE(status);
 }
