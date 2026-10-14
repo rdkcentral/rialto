@@ -33,9 +33,10 @@ jobs:
         shell: sh +e {0}
         run: |
           branch="${{ github.base_ref }}"
-          git ls-remote --exit-code --heads "https://github.com/rdkcentral/rialto-ocdm.git" ${{ github.event.pull_request.head.ref }} > /dev/null
-          if [ $? -eq 0 ]; then
+          if git ls-remote --exit-code --heads "https://github.com/rdkcentral/rialto-ocdm.git" "${{ github.event.pull_request.head.ref }}" > /dev/null; then
             branch="${{ github.event.pull_request.head.ref }}"
+          elif ! git ls-remote --exit-code --heads "https://github.com/rdkcentral/rialto-ocdm.git" "$branch" > /dev/null; then
+            branch=master
           fi
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
 

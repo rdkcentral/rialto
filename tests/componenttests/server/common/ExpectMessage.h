@@ -23,6 +23,7 @@
 #include "EventRanger.h"
 #include "IIpcChannel.h"
 #include <condition_variable>
+#include <cstdlib>
 #include <functional>
 #include <gtest/gtest.h>
 #include <memory>
@@ -70,7 +71,7 @@ private:
     EventRanger &m_eventRanger;
     std::shared_ptr<MessageType> m_message{nullptr};
     std::function<bool(const MessageType &)> m_filter{[](const MessageType &) { return true; }};
-    std::chrono::milliseconds m_timeout{600};
+    std::chrono::milliseconds m_timeout{std::getenv("RIALTO_TEST_UNDER_VALGRIND") ? 10000 : 600};
 };
 } // namespace firebolt::rialto::server::ct
 
