@@ -252,6 +252,43 @@ TEST_F(GstreamerMseVideoSinkTests, ShouldFailToGetImmediateOutputProperty)
     gst_object_unref(videoSink);
 }
 
+TEST_F(GstreamerMseVideoSinkTests, ShouldGetVideoPtsProperty)
+{
+    constexpr gint64 kPosition{2500000000};
+    constexpr double kVolume{1.0};
+    constexpr gint64 kExpectedVideoPts{225000};
+
+    RialtoMSEBaseSink *videoSink = createVideoSink();
+    GstElement *pipeline = createPipelineWithSink(videoSink);
+
+    setPausedState(pipeline, videoSink);
+    const int32_t kSourceId{videoSourceWillBeAttached(createVideoMediaSource())};
+    allSourcesWillBeAttached();
+
+    GstCaps *caps{createVideoCaps()};
+    setCaps(videoSink, caps);
+
+    sendPlaybackInfoNotification(videoSink, firebolt::rialto::PlaybackInfo{kPosition, kVolume});
+    gint64 videoPts{0};
+    g_object_get(videoSink, "video-pts", &videoPts, nullptr);
+    EXPECT_EQ(videoPts, kExpectedVideoPts);
+
+    setNullState(pipeline, kSourceId);
+    gst_caps_unref(caps);
+    gst_object_unref(pipeline);
+}
+
+TEST_F(GstreamerMseVideoSinkTests, ShouldFailToGetVideoPtsProperty)
+{
+    RialtoMSEBaseSink *videoSink = createVideoSink();
+
+    gint64 videoPts{0};
+    g_object_get(videoSink, "video-pts", &videoPts, nullptr);
+
+    gst_element_set_state(GST_ELEMENT_CAST(videoSink), GST_STATE_NULL);
+    gst_object_unref(videoSink);
+}
+
 TEST_F(GstreamerMseVideoSinkTests, ShouldFailToSetStreamSyncModePropertyOnRialtoFailure)
 {
     TestContext textContext = createPipelineWithVideoSinkAndSetToPaused();

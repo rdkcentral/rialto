@@ -50,6 +50,7 @@ enum
     PROP_SYNCMODE_STREAMING,
     PROP_SHOW_VIDEO_WINDOW,
     PROP_IS_MASTER,
+    PROP_VIDEO_PTS,
     PROP_LAST
 };
 
@@ -125,6 +126,13 @@ static void rialto_mse_video_sink_get_property(GObject *object, guint propId, GV
         {
             g_value_set_boolean(value, isMaster);
         }
+        break;
+    }
+    case PROP_VIDEO_PTS:
+    {
+        g_value_set_int64(value, 0); // Set default value
+        rialto_mse_base_sink_handle_get_property(RIALTO_MSE_BASE_SINK(object), IPlaybackDelegate::Property::VideoPts,
+                                                 value);
         break;
     }
     default:
@@ -238,6 +246,9 @@ static void rialto_mse_video_sink_class_init(RialtoMSEVideoSinkClass *klass)
     g_object_class_install_property(gobjectClass, PROP_SHOW_VIDEO_WINDOW,
                                     g_param_spec_boolean("show-video-window", "make video window visible",
                                                          "true: visible, false: hidden", TRUE, G_PARAM_WRITABLE));
+    g_object_class_install_property(gobjectClass, PROP_VIDEO_PTS,
+                                    g_param_spec_int64("video_pts", "video PTS", "current video PTS value", G_MININT64,
+                                                       G_MAXINT64, 0, G_PARAM_READABLE));
 
     std::unique_ptr<firebolt::rialto::IMediaPipelineCapabilities> mediaPlayerCapabilities =
         firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory()->createMediaPipelineCapabilities();
