@@ -41,9 +41,9 @@ IpcTests::IpcTests()
 {
 }
 
-void IpcTests::configureServerToSendOkResponses()
+void IpcTests::configureServerToSendOkResponses(uint32_t expectedPlaybackInfoTimerMs)
 {
-    m_appStub.start(StubResponse::OK);
+    m_appStub.start(StubResponse::OK, expectedPlaybackInfoTimerMs);
 }
 
 void IpcTests::configureServerToSendFailResponses()
@@ -127,7 +127,7 @@ void IpcTests::triggerRemoveClient()
     return m_sut->removeClient(kServerId);
 }
 
-bool IpcTests::triggerPerformSetConfiguration()
+bool IpcTests::triggerPerformSetConfiguration(uint32_t playbackInfoTimerMs)
 {
     EXPECT_TRUE(m_sut);
     const auto kInitialState{firebolt::rialto::common::SessionServerState::INACTIVE};
@@ -141,10 +141,10 @@ bool IpcTests::triggerPerformSetConfiguration()
     const std::string kSocketGroup{};
     const std::string kAppId{"app"};
     return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketName, kClientSocketName, kMaxResource,
-                                          kSocketPermissions, kSocketOwner, kSocketGroup, kAppId);
+                                          kSocketPermissions, kSocketOwner, kSocketGroup, kAppId, playbackInfoTimerMs);
 }
 
-bool IpcTests::triggerPerformSetConfigurationWithFd()
+bool IpcTests::triggerPerformSetConfigurationWithFd(uint32_t playbackInfoTimerMs)
 {
     EXPECT_TRUE(m_sut);
     const auto kInitialState{firebolt::rialto::common::SessionServerState::INACTIVE};
@@ -152,7 +152,8 @@ bool IpcTests::triggerPerformSetConfigurationWithFd()
     const std::string kClientSocketName{"westeros-rialto"};
     constexpr firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{2, 1};
     const std::string kAppId{"app"};
-    return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketFd, kClientSocketName, kMaxResource, kAppId);
+    return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketFd, kClientSocketName, kMaxResource, kAppId,
+                                          playbackInfoTimerMs);
 }
 
 bool IpcTests::triggerPerformPing()
