@@ -71,6 +71,18 @@ TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingLowLatency)
     triggerSetupElement();
 }
 
+TEST_F(SetupElementTest, shouldSetupAudioSinkWithPendingImmediateOutput)
+{
+    shouldSetupAudioSinkElementWithPendingLowLatencyAudioSink();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioDecoderWithPendingImmediateOutput)
+{
+    shouldSetupAudioDecoderElementWithPendingLowLatency();
+    triggerSetupElement();
+}
+
 TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingSync)
 {
     shouldSetupAudioSinkElementWithPendingSync();

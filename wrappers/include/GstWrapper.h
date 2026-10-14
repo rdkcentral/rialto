@@ -287,6 +287,11 @@ public:
         return gst_element_get_factory(element);
     }
 
+    const gchar *gstPluginFeatureGetName(GstElementFactory *factory) const override
+    {
+        return gst_plugin_feature_get_name(factory);
+    }
+
     gboolean gstElementFactoryListIsType(GstElementFactory *factory, GstElementFactoryListType type) const override
     {
         return gst_element_factory_list_is_type(factory, type);
