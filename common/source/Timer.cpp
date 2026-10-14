@@ -53,8 +53,6 @@ public:
         return it != m_activeTimers.end() ? it->second : nullptr;
     }
 
-    bool isLoopThread() const { return std::this_thread::get_id() == m_thread.get_id(); }
-
 private:
     CommonTimerLoop()
     {
@@ -120,7 +118,6 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
             [](gpointer data) -> gboolean
             {
                 Timer *timer = static_cast<Timer *>(data);
-                std::lock_guard<std::mutex> callbackLock(timer->m_callbackMutex);
                 auto timerCallback = CommonTimerLoop::instance().getTimerCallback(timer);
                 if (timerCallback)
                 {
@@ -144,7 +141,6 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
             [](gpointer data) -> gboolean
             {
                 Timer *timer = static_cast<Timer *>(data);
-                std::lock_guard<std::mutex> callbackLock(timer->m_callbackMutex);
                 auto timerCallback = CommonTimerLoop::instance().getTimerCallback(timer);
                 if (timerCallback)
                 {
@@ -171,10 +167,6 @@ void Timer::cancel()
         {
             g_source_remove(id);
         }
-    }
-    if (!CommonTimerLoop::instance().isLoopThread())
-    {
-        std::lock_guard<std::mutex> lock(m_callbackMutex);
     }
 }
 
