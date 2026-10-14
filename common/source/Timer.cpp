@@ -117,23 +117,14 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
             static_cast<guint>(timeout.count()),
             [](gpointer data) -> gboolean
             {
-                Timer *timer = static_cast<Timer *>(data);
-                auto timerCallback = CommonTimerLoop::instance().getTimerCallback(timer);
+                auto timerCallback = CommonTimerLoop::instance().getTimerCallback(static_cast<Timer *>(data));
                 if (timerCallback)
                 {
                     timerCallback();
-                    if (CommonTimerLoop::instance().getTimerCallback(timer))
-                    {
-                        return TRUE;
-                    }
+                    return CommonTimerLoop::instance().getTimerCallback(static_cast<Timer *>(data)) ? TRUE : FALSE;
                 }
-                else
-                {
-                    // No callback found, remove stale entry if any before stopping the source
-                    CommonTimerLoop::instance().removeTimerCallback(timer);
-                }
-                // Source is being removed by GLib now, so drop the now-stale id to avoid cancel() reusing it later
-                timer->m_timerId = 0;
+                // No callback found, remove stale entry if any before stopping the source
+                CommonTimerLoop::instance().removeTimerCallback(static_cast<Timer *>(data));
                 return FALSE;
             },
             this);
@@ -144,14 +135,12 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
             static_cast<guint>(timeout.count()),
             [](gpointer data) -> gboolean
             {
-                Timer *timer = static_cast<Timer *>(data);
-                auto timerCallback = CommonTimerLoop::instance().getTimerCallback(timer);
+                auto timerCallback = CommonTimerLoop::instance().getTimerCallback(static_cast<Timer *>(data));
                 if (timerCallback)
                 {
                     timerCallback();
                 }
-                CommonTimerLoop::instance().removeTimerCallback(timer);
-                timer->m_timerId = 0;
+                CommonTimerLoop::instance().removeTimerCallback(static_cast<Timer *>(data));
                 return G_SOURCE_REMOVE;
             },
             this);
@@ -166,10 +155,10 @@ Timer::~Timer()
 void Timer::cancel()
 {
     CommonTimerLoop::instance().removeTimerCallback(this);
-    guint id = m_timerId.exchange(0);
-    if (id != 0)
+    if (m_timerId != 0)
     {
-        g_source_remove(id);
+        g_source_remove(m_timerId);
+        m_timerId = 0;
     }
 }
 
