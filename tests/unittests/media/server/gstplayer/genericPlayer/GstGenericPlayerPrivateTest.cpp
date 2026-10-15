@@ -232,7 +232,7 @@ protected:
         EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).WillOnce(Return());
         EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
             .WillOnce(Invoke(
-                [&](GstElement *element, GstFormat format, gint64 *cur)
+                [expectedInfo](GstElement *element, GstFormat format, gint64 *cur)
                 {
                     *cur = expectedInfo.currentPosition;
                     return TRUE;
