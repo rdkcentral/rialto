@@ -261,18 +261,27 @@ bool SharedMemoryBuffer::clearData(MediaPlaybackType playbackType, int id, const
     if (MediaSourceType::VIDEO == mediaSourceType)
     {
         std::uint8_t *videoData = partitionDataPtr;
+        RIALTO_SERVER_LOG_INFO("USHA: clearData playbackType=%s id=%d mediaType=%s regionBytes=%u",
+                               toString(playbackType), id, common::convertMediaSourceType(mediaSourceType),
+                               partition->dataBufferVideoLen);
         memset(videoData, 0x00, partition->dataBufferVideoLen);
         return true;
     }
     if (MediaSourceType::AUDIO == mediaSourceType)
     {
         std::uint8_t *audioData = partitionDataPtr + partition->dataBufferVideoLen;
+        RIALTO_SERVER_LOG_INFO("USHA: clearData playbackType=%s id=%d mediaType=%s regionBytes=%u",
+                               toString(playbackType), id, common::convertMediaSourceType(mediaSourceType),
+                               partition->dataBufferAudioLen);
         memset(audioData, 0x00, partition->dataBufferAudioLen);
         return true;
     }
     if (MediaSourceType::SUBTITLE == mediaSourceType)
     {
         std::uint8_t *subtitleoData = partitionDataPtr + partition->dataBufferVideoLen + partition->dataBufferAudioLen;
+        RIALTO_SERVER_LOG_INFO("USHA: clearData playbackType=%s id=%d mediaType=%s regionBytes=%u",
+                               toString(playbackType), id, common::convertMediaSourceType(mediaSourceType),
+                               partition->dataBufferSubtitleLen);
         memset(subtitleoData, 0x00, partition->dataBufferSubtitleLen);
         return true;
     }

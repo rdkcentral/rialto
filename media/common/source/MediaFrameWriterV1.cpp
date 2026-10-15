@@ -40,14 +40,21 @@ MediaFrameWriterV1::MediaFrameWriterV1(uint8_t *shmBuffer, const std::shared_ptr
 
 AddSegmentStatus MediaFrameWriterV1::writeFrame(const std::unique_ptr<IMediaPipeline::MediaSegment> &data)
 {
+    RIALTO_COMMON_LOG_INFO("USHA: writer=V1 mediaType=%u segmentId=%d payloadBytes=%zu mediaUsedBefore=%u "
+                           "mediaCapacity=%u metadataUsedBefore=%u metadataCapacity=%u framesBefore=%u",
+                           static_cast<unsigned>(data->getType()), data->getId(), data->getDataLength(),
+                           m_mediaBytesWritten, m_kMaxMediaBytes, m_metadataBytesWritten, m_kMaxMetadataBytes,
+                           m_numFrames);
     if (!writeMetaDataGeneric(data))
     {
-        RIALTO_COMMON_LOG_ERROR("Failed to write metadata");
+        RIALTO_COMMON_LOG_ERROR("USHA: writer=V1 result=NO_SPACE metadataUsed=%u metadataCapacity=%u",
+                                m_metadataBytesWritten, m_kMaxMetadataBytes);
         return AddSegmentStatus::NO_SPACE;
     }
     if (!writeData(data))
     {
-        RIALTO_COMMON_LOG_ERROR("Failed to write segment data");
+        RIALTO_COMMON_LOG_ERROR("USHA: writer=V1 result=NO_SPACE mediaUsed=%u mediaCapacity=%u payloadBytes=%zu",
+                                m_mediaBytesWritten, m_kMaxMediaBytes, data->getDataLength());
         return AddSegmentStatus::NO_SPACE;
     }
     if (!writeMetaDataTypeSpecific(data))
@@ -59,6 +66,10 @@ AddSegmentStatus MediaFrameWriterV1::writeFrame(const std::unique_ptr<IMediaPipe
     m_numFrames++;
     m_metadataBytesWritten += METADATA_V1_SIZE_PER_FRAME_BYTES;
 
+    RIALTO_COMMON_LOG_INFO("USHA: writer=V1 result=OK mediaUsed=%u mediaCapacity=%u metadataUsed=%u "
+                           "metadataCapacity=%u frames=%u",
+                           m_mediaBytesWritten, m_kMaxMediaBytes, m_metadataBytesWritten, m_kMaxMetadataBytes,
+                           m_numFrames);
     return AddSegmentStatus::OK;
 }
 

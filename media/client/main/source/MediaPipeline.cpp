@@ -400,6 +400,9 @@ bool MediaPipeline::handleHaveData(MediaSourceStatus status, uint32_t needDataRe
     }
 
     uint32_t numFrames = needDataRequest->frameWriter ? needDataRequest->frameWriter->getNumFrames() : 0;
+    RIALTO_CLIENT_LOG_INFO("USHA: haveData requestId=%u sourceId=%d status=%u noSpaceForSamples=%d frames=%u",
+                           needDataRequestId, needDataRequest->sourceId, static_cast<unsigned>(status),
+                           status == MediaSourceStatus::NO_SPACE_FOR_SAMPLES, numFrames);
     return m_mediaPipelineIpc->haveData(status, numFrames, needDataRequestId);
 }
 
@@ -460,7 +463,15 @@ AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std
         }
     }
 
-    return needDataRequest->frameWriter->writeFrame(mediaSegment);
+    const AddSegmentStatus result = needDataRequest->frameWriter->writeFrame(mediaSegment);
+    RIALTO_CLIENT_LOG_INFO("USHA: addSegment requestId=%u sourceId=%d mediaType=%u segmentId=%d payloadBytes=%zu "
+                           "capacityBytes=%u result=%u noSpace=%d",
+                           needDataRequestId, needDataRequest->sourceId,
+                           static_cast<unsigned>(mediaSegment->getType()), mediaSegment->getId(),
+                           mediaSegment->getDataLength(),
+                           needDataRequest->shmInfo ? needDataRequest->shmInfo->maxMediaBytes : 0U,
+                           static_cast<unsigned>(result), result == AddSegmentStatus::NO_SPACE);
+    return result;
 }
 
 bool MediaPipeline::renderFrame()
@@ -779,7 +790,8 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
             m_attachSourceCond.wait(lock, [this] { return !m_attachingSource; });
     }
 
-    if (MediaSourceType::UNKNOWN == m_attachedSources.getType(sourceId))
+    const MediaSourceType sourceType{m_attachedSources.getType(sourceId)};
+    if (MediaSourceType::UNKNOWN == sourceType)
     {
         RIALTO_CLIENT_LOG_WARN("NeedMediaData received for unknown source %d, ignoring request id %u", sourceId,
                                requestId);
@@ -791,6 +803,11 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
                                requestId);
         return;
     }
+
+    RIALTO_CLIENT_LOG_INFO("USHA: NeedMediaData requestId=%u sourceId=%d mediaType=%u frameCount=%zu "
+                           "metadataCapacity=%u mediaCapacity=%u",
+                           requestId, sourceId, static_cast<unsigned>(sourceType), frameCount,
+                           shmInfo ? shmInfo->maxMetadataBytes : 0U, shmInfo ? shmInfo->maxMediaBytes : 0U);
 
     switch (m_currentState)
     {

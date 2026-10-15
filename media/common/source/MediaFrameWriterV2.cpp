@@ -114,9 +114,15 @@ try
 {
     auto metadata{buildMetadata(data)};
     size_t metadataSize{metadata.ByteSizeLong()};
-    if (m_bytesWritten + sizeof(metadataSize) + metadataSize + data->getDataLength() > m_kMaxBytes)
+    const size_t requiredBytes{sizeof(metadataSize) + metadataSize + data->getDataLength()};
+    RIALTO_COMMON_LOG_INFO("USHA: writer=V2 mediaType=%u segmentId=%d payloadBytes=%zu metadataBytes=%zu "
+                           "writerUsedBefore=%u writerCapacity=%u framesBefore=%u",
+                           static_cast<unsigned>(data->getType()), data->getId(), data->getDataLength(), metadataSize,
+                           m_bytesWritten, m_kMaxBytes, m_numFrames);
+    if (m_bytesWritten + requiredBytes > m_kMaxBytes)
     {
-        RIALTO_COMMON_LOG_ERROR("Not enough memory available to write MediaSegment");
+        RIALTO_COMMON_LOG_ERROR("USHA: writer=V2 result=NO_SPACE writerUsed=%u writerCapacity=%u requiredBytes=%zu",
+                                m_bytesWritten, m_kMaxBytes, requiredBytes);
         return AddSegmentStatus::NO_SPACE;
     }
     m_dataOffset = m_byteWriter.writeUint32(m_shmBuffer, m_dataOffset, static_cast<uint32_t>(metadataSize));
@@ -133,6 +139,8 @@ try
     m_bytesWritten += sizeof(metadataSize) + metadataSize + data->getDataLength();
     ++m_numFrames;
 
+    RIALTO_COMMON_LOG_INFO("USHA: writer=V2 result=OK writerUsed=%u writerCapacity=%u frames=%u", m_bytesWritten,
+                           m_kMaxBytes, m_numFrames);
     return AddSegmentStatus::OK;
 }
 catch (std::exception &e)
