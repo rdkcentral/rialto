@@ -37,6 +37,7 @@ set(LIB_RIALTO_CLIENT_SOURCES
         source/MediaPipelineCapabilities.cpp
         source/SharedMemoryHandle.cpp
         source/WebAudioPlayer.cpp
+        source/memset.S
         )
 
 add_library( RialtoClient
