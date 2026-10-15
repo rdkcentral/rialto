@@ -24,7 +24,9 @@
 #include "PlayerTaskMock.h"
 #include "TimerMock.h"
 
+#include <cstdlib>
 #include <gst/audio/audio.h>
+#include <string>
 
 using testing::_;
 using testing::ByMove;
@@ -85,6 +87,39 @@ constexpr gint64 kPosition{123};
 constexpr double kVolume{0.5};
 constexpr firebolt::rialto::PlaybackInfo kPlaybackInfo{kPosition, kVolume};
 constexpr bool kIsLive{false};
+constexpr char kPlaybackInfoTimerEnvVar[] = "RIALTO_PLAYBACK_INFO_TIMER_MS";
+
+class ScopedPlaybackInfoTimerEnv
+{
+public:
+    ScopedPlaybackInfoTimerEnv()
+    {
+        if (const char *value = std::getenv(kPlaybackInfoTimerEnvVar))
+        {
+            m_hadPreviousValue = true;
+            m_previousValue = value;
+        }
+        unsetenv(kPlaybackInfoTimerEnvVar);
+    }
+
+    ~ScopedPlaybackInfoTimerEnv()
+    {
+        if (m_hadPreviousValue)
+        {
+            setenv(kPlaybackInfoTimerEnvVar, m_previousValue.c_str(), 1);
+        }
+        else
+        {
+            unsetenv(kPlaybackInfoTimerEnvVar);
+        }
+    }
+
+    void set(const char *value) { setenv(kPlaybackInfoTimerEnvVar, value, 1); }
+
+private:
+    bool m_hadPreviousValue{false};
+    std::string m_previousValue;
+};
 } // namespace
 
 bool operator==(const GstRialtoProtectionData &lhs, const GstRialtoProtectionData &rhs)
@@ -106,6 +141,7 @@ bool operator==(const PlaybackInfo &lhs, const PlaybackInfo &rhs)
 class GstGenericPlayerPrivateTest : public GstGenericPlayerTestCommon
 {
 protected:
+    ScopedPlaybackInfoTimerEnv m_playbackInfoTimerEnv;
     std::unique_ptr<IGstGenericPlayerPrivate> m_sut;
 
     GstElement *m_realElement;
@@ -210,6 +246,17 @@ protected:
         {
             EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(expectedInfo));
         }
+    }
+
+    void expectPlaybackInfoTimerInterval(const std::chrono::milliseconds &interval)
+    {
+        willNotifyPlaybackInfo();
+        std::unique_ptr<common::ITimer> timer = std::make_unique<StrictMock<TimerMock>>();
+        EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*timer), isActive()).WillOnce(Return(true));
+        EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*timer), cancel());
+        EXPECT_CALL(*m_timerFactoryMock, createTimer(interval, _, common::TimerType::PERIODIC))
+            .WillOnce(Return(ByMove(std::move(timer))));
+        m_sut->startNotifyPlaybackInfoTimer();
     }
 
     void willNotifyPlaybackInfoWithAudioFade()
@@ -1711,62 +1758,49 @@ TEST_F(GstGenericPlayerPrivateTest, shouldStartPositionReportingTimer)
 
 TEST_F(GstGenericPlayerPrivateTest, shouldStartPlaybackInfoTimer)
 {
-    willNotifyPlaybackInfo();
-    std::unique_ptr<common::ITimer> playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
-    EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), isActive()).WillOnce(Return(true));
-    EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), cancel());
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(kPlaybackInfoTimerMs, _, common::TimerType::PERIODIC))
-        .WillOnce(Return(ByMove(std::move(playbackInfoTimerMock))));
-
-    m_sut->startNotifyPlaybackInfoTimer();
+    expectPlaybackInfoTimerInterval(kPlaybackInfoTimerMs);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldUseConfiguredPlaybackInfoTimerInterval)
 {
     constexpr std::chrono::milliseconds kConfiguredInterval{250};
-    const char *previousValue = getenv("RIALTO_PLAYBACK_INFO_TIMER_MS");
-    const bool hadPreviousValue = previousValue != nullptr;
-    const std::string previousTimerValue = hadPreviousValue ? previousValue : "";
-    setenv("RIALTO_PLAYBACK_INFO_TIMER_MS", "250", 1);
-    willNotifyPlaybackInfo();
-    std::unique_ptr<common::ITimer> timer = std::make_unique<StrictMock<TimerMock>>();
-    EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*timer), isActive()).WillOnce(Return(true));
-    EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*timer), cancel());
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(kConfiguredInterval, _, common::TimerType::PERIODIC))
-        .WillOnce(Return(ByMove(std::move(timer))));
-
-    m_sut->startNotifyPlaybackInfoTimer();
-    if (hadPreviousValue)
-    {
-        setenv("RIALTO_PLAYBACK_INFO_TIMER_MS", previousTimerValue.c_str(), 1);
-    }
-    else
-    {
-        unsetenv("RIALTO_PLAYBACK_INFO_TIMER_MS");
-    }
+    m_playbackInfoTimerEnv.set("250");
+    expectPlaybackInfoTimerInterval(kConfiguredInterval);
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldNotNotifyUnchangedPlaybackInfo)
+TEST_F(GstGenericPlayerPrivateTest, shouldUseDefaultPlaybackInfoTimerIntervalForMalformedEnvironmentValue)
 {
-    modifyContext([&](GenericPlayerContext &context) { context.lastReportedPlaybackInfo = kPlaybackInfo; });
-    willNotifyPlaybackInfo(kPlaybackInfo, false);
+    m_playbackInfoTimerEnv.set("not-a-number");
+    expectPlaybackInfoTimerInterval(kPlaybackInfoTimerMs);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldUseDefaultPlaybackInfoTimerIntervalForOutOfRangeEnvironmentValue)
+{
+    m_playbackInfoTimerEnv.set("999999999999999999999999999999999999999");
+    expectPlaybackInfoTimerInterval(kPlaybackInfoTimerMs);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotifyPlaybackInfoOnEveryTimerTick)
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).Times(2).WillRepeatedly(Return());
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).Times(2).WillRepeatedly(Return(GST_STATE_PLAYING));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).Times(2).WillRepeatedly(Return(GST_STATE_CHANGE_SUCCESS));
+    EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).Times(2).WillRepeatedly(Return());
+    EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
+        .Times(2)
+        .WillRepeatedly(Invoke(
+            [&](GstElement *element, GstFormat format, gint64 *cur)
+            {
+                *cur = kPosition;
+                return TRUE;
+            }));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kAudioSinkStr), _)).Times(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR))
+        .Times(2)
+        .WillRepeatedly(Return(kVolume));
+    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(kPlaybackInfo)).Times(2);
 
     m_sut->notifyPlaybackInfo();
-}
-
-TEST_F(GstGenericPlayerPrivateTest, shouldNotifyWhenPlaybackPositionChanges)
-{
-    modifyContext([&](GenericPlayerContext &context) { context.lastReportedPlaybackInfo = kPlaybackInfo; });
-    willNotifyPlaybackInfo(PlaybackInfo{kPosition + 1, kVolume});
-
-    m_sut->notifyPlaybackInfo();
-}
-
-TEST_F(GstGenericPlayerPrivateTest, shouldNotifyWhenPlaybackVolumeChanges)
-{
-    modifyContext([&](GenericPlayerContext &context) { context.lastReportedPlaybackInfo = kPlaybackInfo; });
-    willNotifyPlaybackInfo(PlaybackInfo{kPosition, kVolume + 0.1});
-
     m_sut->notifyPlaybackInfo();
 }
 

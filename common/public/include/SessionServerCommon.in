@@ -73,6 +73,7 @@ struct AppConfig
      *
      * This value is hardcoded in entservices-appmanagers and passed through to RialtoSessionServer,
      * where it is picked up by GstGenericPlayer to drive the playback-info timer.
+    * A value of 0 leaves the interval unspecified and uses the 32 ms default.
      *
      * Future enhancement: This will be made configurable per-app via widget config.xml after
      * confirming CPU usage improvements via testing.

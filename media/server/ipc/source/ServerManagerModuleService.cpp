@@ -106,6 +106,10 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
         setenv("RIALTO_PLAYBACK_INFO_TIMER_MS", kPlaybackInfoTimerMsStr.c_str(), 1);
         RIALTO_SERVER_LOG_INFO("PlaybackInfo timer configured to %u ms via AppConfig", request->playbackinfotimerms());
     }
+    else
+    {
+        unsetenv("RIALTO_PLAYBACK_INFO_TIMER_MS");
+    }
     bool success{true};
     if (request->has_sessionmanagementsocketfd())
     {
