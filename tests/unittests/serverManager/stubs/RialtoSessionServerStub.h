@@ -37,7 +37,7 @@ public:
     RialtoSessionServerStub();
     ~RialtoSessionServerStub();
 
-    void start(StubResponse stubResponse);
+    void start(StubResponse stubResponse, uint32_t expectedPlaybackInfoTimerMs = 0);
     int getClientSocket() const;
     void sendStateChangedEvent();
     void sendAckEvent(int pingId, bool success);

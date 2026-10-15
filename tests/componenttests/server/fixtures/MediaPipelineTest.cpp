@@ -27,6 +27,7 @@
 #include "MediaCommon.h"
 #include "MessageBuilders.h"
 #include "SegmentBuilder.h"
+#include <cstdlib>
 #include <gst/audio/audio.h>
 #include <map>
 #include <string>
@@ -52,6 +53,7 @@ const std::string kPlayingStateName{"PLAYING"};
 constexpr GType kGstPlayFlagsType{static_cast<GType>(123)};
 constexpr unsigned kNeededDataLength{1};
 constexpr std::chrono::milliseconds kWorkerTimeout{200};
+constexpr std::chrono::milliseconds kWorkerTimeoutValgrind{10000};
 GstAudioClippingMeta kClippingMeta{};
 } // namespace
 
@@ -528,9 +530,13 @@ void MediaPipelineTest::pause()
     positionUpdatesShouldNotBeReceivedFromNow();
 }
 
-void MediaPipelineTest::notifyPaused()
+void MediaPipelineTest::notifyPaused(bool expectPlaybackInfo)
 {
-    ExpectMessage<firebolt::rialto::PlaybackInfoEvent> expectedPlaybackInfo{m_clientStub};
+    std::unique_ptr<ExpectMessage<firebolt::rialto::PlaybackInfoEvent>> expectedPlaybackInfo;
+    if (expectPlaybackInfo)
+    {
+        expectedPlaybackInfo = std::make_unique<ExpectMessage<firebolt::rialto::PlaybackInfoEvent>>(m_clientStub);
+    }
     ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
 
     m_gstreamerStub.sendStateChanged(GST_STATE_NULL, GST_STATE_PAUSED, GST_STATE_NULL);
@@ -540,8 +546,11 @@ void MediaPipelineTest::notifyPaused()
     EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_sessionId);
     EXPECT_EQ(receivedPlaybackStateChange->state(), ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_PAUSED);
 
-    auto receivedPlaybackInfo{expectedPlaybackInfo.getMessage()};
-    ASSERT_TRUE(receivedPlaybackInfo);
+    if (expectedPlaybackInfo)
+    {
+        auto receivedPlaybackInfo{expectedPlaybackInfo->getMessage()};
+        ASSERT_TRUE(receivedPlaybackInfo);
+    }
 }
 
 void MediaPipelineTest::pushAudioData(unsigned dataCountToPush, int needDataFrameCount)
@@ -872,7 +881,8 @@ void MediaPipelineTest::waitWorker()
     std::unique_lock<std::mutex> locker(m_workerLock);
     if (!m_workerDone)
     {
-        bool status = m_workerCond.wait_for(locker, kWorkerTimeout, [this]() { return m_workerDone; });
+        const auto timeout{std::getenv("RIALTO_TEST_UNDER_VALGRIND") ? kWorkerTimeoutValgrind : kWorkerTimeout};
+        bool status = m_workerCond.wait_for(locker, timeout, [this]() { return m_workerDone; });
         ASSERT_TRUE(status);
     }
     m_workerDone = false;
