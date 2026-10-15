@@ -156,7 +156,7 @@ void SessionServerAppTests::willLaunchApp() const
         .WillOnce(DoAll(SetArrayArgument<3>(kSocketPair.begin(), kSocketPair.end()), Return(0)));
     EXPECT_CALL(m_linuxWrapperMock, vfork(_)).WillOnce(DoAll(InvokeArgument<0>(0), Return(true)));
     EXPECT_CALL(m_linuxWrapperMock, close(kSocketPair[0])).Times(2).WillRepeatedly(Return(-1));
-    EXPECT_CALL(m_linuxWrapperMock, getpid()).WillOnce(Return(kPid));
+    EXPECT_CALL(m_linuxWrapperMock, getpid()).Times(AnyNumber()).WillRepeatedly(Return(kPid));
     EXPECT_CALL(m_linuxWrapperMock, dup(kSocketPair[0])).WillOnce(Return(kDuplicatedSocket));
     EXPECT_CALL(m_linuxWrapperMock, execve(StrEq(kSessionServerPath), _, _)).WillOnce(Return(-1));
     EXPECT_CALL(m_linuxWrapperMock, exit(EXIT_FAILURE)); // Not possible to stop on execve with mock :-)
