@@ -189,4 +189,3 @@ void GstDispatcherThread::handleMessage(GstMessage *message)
     }
 }
 } // namespace firebolt::rialto::server
-

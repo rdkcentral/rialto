@@ -33,7 +33,7 @@ public:
                 (IGstDispatcherThreadClient & client, GstElement *pipeline,
                  const std::shared_ptr<IFlushOnPrerollController> &flushOnPrerollController,
                  const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-		 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper),
+                 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper),
                 (const, override));
 };
 } // namespace firebolt::rialto::server

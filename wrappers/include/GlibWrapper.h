@@ -179,7 +179,10 @@ public:
         g_source_set_callback(source, func, data, notify);
     }
 
-    guint gSourceAttach(GSource *source, GMainContext *context) const override { return g_source_attach(source, context); }
+    guint gSourceAttach(GSource *source, GMainContext *context) const override
+    {
+        return g_source_attach(source, context);
+    }
 
     void gSourceUnref(GSource *source) const override { g_source_unref(source); }
 };
