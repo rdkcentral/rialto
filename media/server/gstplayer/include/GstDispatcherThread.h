@@ -117,4 +117,3 @@ private:
 } // namespace firebolt::rialto::server
 
 #endif // FIREBOLT_RIALTO_SERVER_GST_DISPATCHER_THREAD_H_
-

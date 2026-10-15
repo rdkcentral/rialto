@@ -84,7 +84,7 @@ protected:
         EXPECT_CALL(*m_glibWrapperMock, gMainContextPopThreadDefault(kMainContext));
 
         auto sut = std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_flushOnPrerollControllerMock,
-                                                          m_gstWrapperMock, m_glibWrapperMock);
+                                                         m_gstWrapperMock, m_glibWrapperMock);
         EXPECT_TRUE(m_capturedFunc);
         return sut;
     }
@@ -312,8 +312,7 @@ TEST_F(GstDispatcherThreadTest, FailsGracefullyWhenBusUnavailable)
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(nullptr));
 
     auto sut = std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_flushOnPrerollControllerMock,
-                                                      m_gstWrapperMock, m_glibWrapperMock);
+                                                     m_gstWrapperMock, m_glibWrapperMock);
     // No gMainLoopQuit/Unref/ContextUnref expected: destructor must no-op when construction failed early.
     sut.reset();
 }
-
