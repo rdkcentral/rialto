@@ -36,7 +36,7 @@ public:
     IpcTests();
     virtual ~IpcTests() = default;
 
-    void configureServerToSendOkResponses();
+    void configureServerToSendOkResponses(uint32_t expectedPlaybackInfoTimerMs = 0);
     void configureServerToSendFailResponses();
 
     void simulateStateChangedEventInactive();
@@ -52,8 +52,8 @@ public:
     bool triggerCreateClientConnectToFakeSocket();
     bool triggerCreateClient();
     void triggerRemoveClient();
-    bool triggerPerformSetConfiguration();
-    bool triggerPerformSetConfigurationWithFd();
+    bool triggerPerformSetConfiguration(uint32_t playbackInfoTimerMs = 0);
+    bool triggerPerformSetConfigurationWithFd(uint32_t playbackInfoTimerMs = 0);
     bool triggerPerformPing();
     bool triggerPerformSetState(const firebolt::rialto::common::SessionServerState &state);
     bool triggerSetLogLevels();
