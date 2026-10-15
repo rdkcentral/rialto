@@ -63,10 +63,6 @@ TEST_F(RialtoClientMediaPipelineIpcSetSyncOffTest, ChannelDisconnected)
     expectUnsubscribeEvents();
 
     EXPECT_EQ(m_mediaPipelineIpc->setSyncOff(m_syncOff), false);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**

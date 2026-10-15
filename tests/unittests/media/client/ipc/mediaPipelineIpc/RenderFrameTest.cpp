@@ -54,9 +54,6 @@ TEST_F(RialtoClientMediaPipelineIpcRenderFrameTest, ChannelDisconnected)
     expectUnsubscribeEvents();
 
     EXPECT_FALSE(m_mediaPipelineIpc->renderFrame());
-
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 TEST_F(RialtoClientMediaPipelineIpcRenderFrameTest, ReconnectChannel)

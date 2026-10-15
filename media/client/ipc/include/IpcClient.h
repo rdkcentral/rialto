@@ -23,6 +23,8 @@
 #include "IIpcClient.h"
 #include <atomic>
 #include <memory>
+#include <mutex>
+#include <thread>
 
 namespace firebolt::rialto::client
 {
@@ -63,9 +65,26 @@ public:
 
 protected:
     /**
+     * @brief Serialises the connection state transitions, ie connect(), disconnect() and
+     *        reconnect(), and guards m_ipcThread.
+     */
+    std::mutex m_ipcMutex;
+
+    /**
+     * @brief Guards access to m_ipcChannel.
+     */
+    mutable std::mutex m_channelMutex;
+
+    /**
      * @brief The ipc thread.
      */
     std::thread m_ipcThread;
+
+    /**
+     * @brief Id of the running ipc thread, or a default constructed id when no ipc thread is
+     *        running.
+     */
+    std::atomic<std::thread::id> m_ipcThreadId;
 
     /**
      * @brief The connected ipc communication channel.
@@ -99,8 +118,12 @@ protected:
 
     /**
      * @brief The processing loop for the ipc thread.
+     *
+     * @param[in] ipcChannel : The channel this thread was started to service. Taken by value so
+     *                         that the thread always works on its own channel, even if the
+     *                         member is replaced by a reconnection.
      */
-    void processIpcThread();
+    void processIpcThread(std::shared_ptr<ipc::IChannel> ipcChannel);
 
     /**
      * @brief Establish connection between Rialto Server and Rialto Client
@@ -111,6 +134,11 @@ protected:
      * @brief Close connection between Rialto Server and Rialto Client
      */
     bool disconnect();
+
+    /**
+     * @brief Returns the current ipc channel, if any.
+     */
+    std::shared_ptr<ipc::IChannel> getChannelInternal() const;
 };
 } // namespace firebolt::rialto::client
 

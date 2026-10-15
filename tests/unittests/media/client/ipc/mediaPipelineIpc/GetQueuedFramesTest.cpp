@@ -65,10 +65,6 @@ TEST_F(RialtoClientMediaPipelineIpcGetQueuedFramesTest, ChannelDisconnected)
 
     uint32_t queuedFrames;
     EXPECT_FALSE(m_mediaPipelineIpc->getQueuedFrames(m_kSourceId, queuedFrames));
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**

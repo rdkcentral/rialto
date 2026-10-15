@@ -64,10 +64,6 @@ TEST_F(RialtoClientMediaPipelineIpcSetSubtitleOffsetTest, ChannelDisconnected)
     expectUnsubscribeEvents();
 
     EXPECT_EQ(m_mediaPipelineIpc->setSubtitleOffset(m_kSourceId, m_kPosition), false);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**

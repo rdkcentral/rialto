@@ -63,10 +63,6 @@ TEST_F(RialtoClientMediaPipelineIpcUseBufferingTest, SetUseBufferingChannelDisco
     expectUnsubscribeEvents();
 
     EXPECT_EQ(m_mediaPipelineIpc->setUseBuffering(m_kUseBuffering), false);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**
@@ -128,10 +124,6 @@ TEST_F(RialtoClientMediaPipelineIpcUseBufferingTest, GetUseBufferingChannelDisco
     expectUnsubscribeEvents();
 
     EXPECT_EQ(m_mediaPipelineIpc->getUseBuffering(useBuffering), false);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**

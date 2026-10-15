@@ -87,10 +87,6 @@ TEST_F(RialtoClientWebAudioPlayerIpcGetDeviceInfoTest, ChannelDisconnected)
     expectUnsubscribeEvents();
 
     EXPECT_FALSE(m_webAudioPlayerIpc->getDeviceInfo(m_preferredFrames, m_maximumFrames, m_supportDeferredPlay));
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**

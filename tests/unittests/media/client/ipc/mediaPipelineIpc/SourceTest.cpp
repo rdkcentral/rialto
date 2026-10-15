@@ -268,10 +268,6 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceChannelDisconnected)
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
         std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), false);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**
@@ -315,10 +311,6 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, SwitchAudioSourceChannelDisconnec
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
         std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
     EXPECT_EQ(m_mediaPipelineIpc->switchSource(mediaSource), false);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**
@@ -372,10 +364,6 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, RemoveSourceChannelDisconnected)
     expectUnsubscribeEvents();
 
     EXPECT_EQ(m_mediaPipelineIpc->removeSource(m_id), false);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**
@@ -427,10 +415,6 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AllSourcesAttachedChannelDisconne
     expectUnsubscribeEvents();
 
     EXPECT_EQ(m_mediaPipelineIpc->allSourcesAttached(), false);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**

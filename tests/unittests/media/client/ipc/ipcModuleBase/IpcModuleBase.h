@@ -57,6 +57,12 @@ protected:
 
     Sequence m_isConnectedSeq;
 
+    /**
+     * @brief Set when a failed ipc api call has detached the module from the channel, in which case
+     *        the destructor will not send its destroy request to the server.
+     */
+    bool m_channelDetached{false};
+
     void expectInitIpc();
     void expectInitIpcWithReconnection();
     void expectInitIpcFailure();
@@ -64,6 +70,7 @@ protected:
     void expectInitIpcButNotConnectedChannelAfterReconnect();
     void expectAttachChannel();
     void expectIpcApiCallDisconnected();
+    void expectIpcApiCallSkippedDisconnected();
     void expectIpcApiCallReconnected();
     void expectIpcApiCallSuccess();
     void expectIpcApiCallFailure();
