@@ -19,13 +19,7 @@
 #ifndef FIREBOLT_RIALTO_WRAPPERS_TEXT_TRACK_PLUGIN_WRAPPER_H_
 #define FIREBOLT_RIALTO_WRAPPERS_TEXT_TRACK_PLUGIN_WRAPPER_H_
 
-#ifndef MODULE_NAME
-#define MODULE_NAME TextTrackClosedCaptionsStyleClient
-#endif
-
 #include "ITextTrackPluginWrapper.h"
-#include <com/com.h>
-#include <core/core.h>
 #ifdef RIALTO_ENABLE_TEXT_TRACK
 #include <interfaces/ITextTrack.h>
 #endif // RIALTO_ENABLE_TEXT_TRACK
