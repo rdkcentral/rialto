@@ -272,7 +272,9 @@ void WebAudioTestMethods::willCreateWebAudioPlayer()
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_gstCaps2));
 
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus)).Times(2);
+    // Retires once matched: the dispatcher constructor's own bus-unref (GstreamerStub::setupMessages())
+    // registers a newer expectation for the same call, which GMock would otherwise keep re-selecting.
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus)).RetiresOnSaturation();
 
     // EXPECTS coming from...
     //   GstWebAudioPlayer::changePipelineState

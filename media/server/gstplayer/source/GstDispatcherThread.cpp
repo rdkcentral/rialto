@@ -75,7 +75,14 @@ GstDispatcherThread::~GstDispatcherThread()
     m_isGstreamerDispatcherActive = false;
     if (m_mainLoop)
     {
-        m_glibWrapper->gMainLoopQuit(m_mainLoop);
+        // Schedule the quit as an idle source on the private context rather than calling gMainLoopQuit
+        // directly here: gMainLoopRun() unconditionally marks the loop as running on entry, so a direct
+        // quit issued before the worker thread reaches gMainLoopRun() would be silently lost and join()
+        // below would block forever. An idle source only dispatches once the loop is actually running.
+        GSource *quitSource = m_glibWrapper->gIdleSourceNew();
+        m_glibWrapper->gSourceSetCallback(quitSource, &GstDispatcherThread::onQuitRequested, this, nullptr);
+        m_glibWrapper->gSourceAttach(quitSource, m_mainContext);
+        m_glibWrapper->gSourceUnref(quitSource);
     }
     if (m_gstBusDispatcherThread.joinable())
     {
@@ -94,6 +101,13 @@ gboolean GstDispatcherThread::onBusMessage(GstBus * /*bus*/, GstMessage *message
     return G_SOURCE_CONTINUE;
 }
 
+gboolean GstDispatcherThread::onQuitRequested(gpointer userData)
+{
+    auto *self = static_cast<GstDispatcherThread *>(userData);
+    self->m_glibWrapper->gMainLoopQuit(self->m_mainLoop);
+    return G_SOURCE_REMOVE;
+}
+
 void GstDispatcherThread::gstBusEventHandler()
 {
     m_glibWrapper->gMainContextPushThreadDefault(m_mainContext);
@@ -105,6 +119,14 @@ void GstDispatcherThread::gstBusEventHandler()
 
 void GstDispatcherThread::handleMessage(GstMessage *message)
 {
+    // Checked ahead of the type filter below: the bus watch has higher priority than the destructor's
+    // idle quit source, so a bus kept ready by excluded message types (e.g. BUFFERING) would otherwise
+    // starve the idle source forever, leaving the destructor blocked in join().
+    if (!m_isGstreamerDispatcherActive)
+    {
+        m_glibWrapper->gMainLoopQuit(m_mainLoop);
+        return;
+    }
     // The bus watch delivers every message; only these types were previously popped from the bus at all.
     if (!(GST_MESSAGE_TYPE(message) & kHandledMessageTypes))
     {
