@@ -67,6 +67,14 @@ private:
      */
     static gboolean onBusMessage(GstBus *bus, GstMessage *message, gpointer userData);
 
+    /**
+     * @brief Idle-source callback that quits the main loop. Scheduling the quit this way, rather than
+     *        calling gMainLoopQuit directly from the destructor, guarantees it only runs once the loop
+     *        has actually started (idle sources dispatch strictly from within a running loop), so a
+     *        destructor that races loop startup can never have its quit request lost.
+     */
+    static gboolean onQuitRequested(gpointer userData);
+
 private:
     /**
      * @brief The listening client.

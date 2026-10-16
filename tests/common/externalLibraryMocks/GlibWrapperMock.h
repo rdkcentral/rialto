@@ -48,6 +48,7 @@ public:
                 (const, override));
     MOCK_METHOD(guint, gSourceAttach, (GSource * source, GMainContext *context), (const, override));
     MOCK_METHOD(void, gSourceUnref, (GSource * source), (const, override));
+    MOCK_METHOD(GSource *, gIdleSourceNew, (), (const, override));
     MOCK_METHOD(gulong, gSignalConnect,
                 (gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data), (override));
     MOCK_METHOD(void, gFree, (gpointer mem), (const, override));
