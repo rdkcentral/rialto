@@ -2059,6 +2059,58 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotifyPlaybackInfoWithAudioFade)
     m_sut->startNotifyPlaybackInfoTimer();
 }
 
+TEST_F(GstGenericPlayerPrivateTest, shouldSkipDuplicatePlaybackInfoNotifications)
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).WillRepeatedly(Return());
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).WillRepeatedly(Return(GST_STATE_PLAYING));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).WillRepeatedly(Return(GST_STATE_CHANGE_SUCCESS));
+    EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).WillRepeatedly(Return());
+    EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
+        .WillRepeatedly(
+            Invoke(
+                [&](GstElement *element, GstFormat format, gint64 *cur)
+                {
+                    *cur = kPosition;
+                    return TRUE;
+                }));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kAudioSinkStr), _)).Times(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR)).WillRepeatedly(Return(kVolume));
+    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(kPlaybackInfo)).Times(1);
+
+    m_sut->notifyPlaybackInfo();
+    m_sut->notifyPlaybackInfo();
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotifyPlaybackInfoWhenValuesChange)
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).WillRepeatedly(Return());
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).WillRepeatedly(Return(GST_STATE_PLAYING));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).WillRepeatedly(Return(GST_STATE_CHANGE_SUCCESS));
+    EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).WillRepeatedly(Return());
+    EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
+        .WillOnce(
+            Invoke(
+                [&](GstElement *element, GstFormat format, gint64 *cur)
+                {
+                    *cur = kPosition;
+                    return TRUE;
+                }))
+        .WillOnce(
+            Invoke(
+                [&](GstElement *element, GstFormat format, gint64 *cur)
+                {
+                    *cur = kPosition + 1;
+                    return TRUE;
+                }));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kAudioSinkStr), _)).Times(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR)).WillRepeatedly(Return(kVolume));
+    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(kPlaybackInfo)).Times(1);
+    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(firebolt::rialto::PlaybackInfo{kPosition + 1, kVolume})).Times(1);
+
+    m_sut->notifyPlaybackInfo();
+    m_sut->notifyPlaybackInfo();
+}
+
 TEST_F(GstGenericPlayerPrivateTest, shouldNotStartPositionReportingTimerWhenItIsActive)
 {
     std::unique_ptr<common::ITimer> timerMock = std::make_unique<StrictMock<TimerMock>>();
