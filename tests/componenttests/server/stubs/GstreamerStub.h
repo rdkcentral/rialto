@@ -50,6 +50,11 @@ public:
     void sendWarning(GstElement *src, GError *error, const gchar *debug);
 
 private:
+    // Runs on GstDispatcherThread's worker thread (as the mocked gMainLoopRun action), dispatching any
+    // message sent via send*() to the captured bus-watch callback, exactly as a real GMainLoop would.
+    void runFakeMainLoop();
+
+private:
     std::shared_ptr<testing::StrictMock<wrappers::GlibWrapperMock>> m_glibWrapperMock;
     std::shared_ptr<testing::StrictMock<wrappers::GstWrapperMock>> m_gstWrapperMock;
     GstElement *m_pipeline;
@@ -58,6 +63,9 @@ private:
     GstMessage *m_message;
     std::mutex m_mutex;
     std::condition_variable m_cv;
+    GSourceFunc m_busWatchFunc{nullptr};
+    gpointer m_busWatchUserData{nullptr};
+    bool m_mainLoopShouldQuit{false};
     gpointer m_setupSourceUserData{nullptr};
     GCallback m_setupSourceFunc{};
     gpointer m_setupElementUserData{nullptr};
