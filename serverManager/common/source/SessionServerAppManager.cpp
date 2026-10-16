@@ -239,7 +239,8 @@ void SessionServerAppManager::handleRestartServer(int serverId)
     const std::string kAppName{sessionServer->getAppName()};
     const firebolt::rialto::common::SessionServerState kState{sessionServer->getExpectedState()};
     const firebolt::rialto::common::AppConfig kAppConfig{sessionServer->getSessionManagementSocketName(),
-                                                         sessionServer->getClientDisplayName()};
+                                                         sessionServer->getClientDisplayName(),
+                                                         sessionServer->getPlaybackInfoTimerMs()};
     std::unique_ptr<firebolt::rialto::ipc::INamedSocket> namedSocket{std::move(sessionServer->releaseNamedSocket())};
     if (firebolt::rialto::common::SessionServerState::INACTIVE != kState &&
         firebolt::rialto::common::SessionServerState::ACTIVE != kState)
@@ -274,7 +275,8 @@ bool SessionServerAppManager::resurrectSuspendedServer(const std::shared_ptr<ISe
 {
     const std::string kAppName{kSessionServer->getAppName()};
     const firebolt::rialto::common::AppConfig kAppConfig{kSessionServer->getSessionManagementSocketName(),
-                                                         kSessionServer->getClientDisplayName()};
+                                                         kSessionServer->getClientDisplayName(),
+                                                         kSessionServer->getPlaybackInfoTimerMs()};
     std::unique_ptr<firebolt::rialto::ipc::INamedSocket> namedSocket{std::move(kSessionServer->releaseNamedSocket())};
     m_sessionServerApps.erase(kSessionServer);
 
@@ -594,7 +596,7 @@ bool SessionServerAppManager::configureSessionServerWithSocketName(const std::sh
     if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketName,
                                                   kClientDisplayName, kMaxResource, kSocketPermissions, kSocketOwner,
                                                   kSocketGroup, kAppName, m_cachedAudioCapabilities,
-                                                  m_cachedVideoCapabilities))
+                                                  m_cachedVideoCapabilities, kSessionServer->getPlaybackInfoTimerMs()))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
                                         kSessionServer->getServerId());
@@ -617,7 +619,7 @@ bool SessionServerAppManager::configureSessionServerWithSocketFd(const std::shar
 
     if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketFd,
                                                   kClientDisplayName, kMaxResource, kAppName, m_cachedAudioCapabilities,
-                                                  m_cachedVideoCapabilities))
+                                                  m_cachedVideoCapabilities, kSessionServer->getPlaybackInfoTimerMs()))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
                                         kSessionServer->getServerId());
