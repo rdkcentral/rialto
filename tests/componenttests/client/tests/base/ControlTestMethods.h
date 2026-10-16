@@ -64,6 +64,10 @@ protected:
     void shouldNotifyApplicationStateRunning();
     void sendNotifyApplicationStateRunning();
 
+    // Exercises the deprecated getSharedMemoryHandle() getter, kept for backward compatibility.
+    void checkSharedMemoryHandleIsValid();
+    void checkSharedMemoryHandleIsNull();
+
     // Component test helpers
     virtual void notifyEvent() = 0;
     virtual void waitEvent() = 0;

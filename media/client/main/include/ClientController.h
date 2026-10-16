@@ -161,6 +161,14 @@ private:
      * @brief Next token to hand out from subscribeSharedMemoryHandle().
      */
     int m_nextShmObserverToken{0};
+
+    /**
+     * @brief Serialises subscribe/unsubscribe/notify delivery so unsubscribe cannot return
+     *        while an in-flight notification is still invoking the observer being removed.
+     *        Recursive so an observer may subscribe/unsubscribe itself from within its own
+     *        callback without deadlocking; other threads still block until delivery completes.
+     */
+    std::recursive_mutex m_shmNotifyMutex;
 };
 } // namespace firebolt::rialto::client
 

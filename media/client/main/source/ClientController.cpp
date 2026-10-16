@@ -109,6 +109,7 @@ std::shared_ptr<ISharedMemoryHandle> ClientController::getSharedMemoryHandle()
 
 int ClientController::subscribeSharedMemoryHandle(SharedMemoryHandleObserver observer)
 {
+    std::lock_guard<std::recursive_mutex> deliveryLock{m_shmNotifyMutex};
     std::shared_ptr<ISharedMemoryHandle> currentHandle;
     int token;
     {
@@ -123,6 +124,7 @@ int ClientController::subscribeSharedMemoryHandle(SharedMemoryHandleObserver obs
 
 void ClientController::unsubscribeSharedMemoryHandle(int token)
 {
+    std::lock_guard<std::recursive_mutex> deliveryLock{m_shmNotifyMutex};
     std::lock_guard<std::mutex> lock{m_mutex};
     m_shmObservers.erase(token);
 }
@@ -322,6 +324,7 @@ void ClientController::changeStateAndNotifyClients(ApplicationState state)
 
 void ClientController::notifySharedMemoryHandleObservers()
 {
+    std::lock_guard<std::recursive_mutex> deliveryLock{m_shmNotifyMutex};
     std::shared_ptr<ISharedMemoryHandle> currentHandle;
     std::vector<SharedMemoryHandleObserver> currentObservers;
     {
