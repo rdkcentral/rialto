@@ -185,6 +185,8 @@ public:
     }
 
     void gSourceUnref(GSource *source) const override { g_source_unref(source); }
+
+    GSource *gIdleSourceNew() const override { return g_idle_source_new(); }
 };
 
 }; // namespace firebolt::rialto::wrappers

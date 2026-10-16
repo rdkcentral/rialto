@@ -269,7 +269,6 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(GST_STATE_NULL))
             .WillRepeatedly(Return(kDummyStateName.c_str()));
         EXPECT_CALL(*m_gstWrapperMock, gstDebugBinToDotFileWithTs(GST_BIN(&m_secondaryPipeline), _, _)).RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_secondaryBus));
     }
 
     void secondaryGstPlayerWillBeDestructed()
