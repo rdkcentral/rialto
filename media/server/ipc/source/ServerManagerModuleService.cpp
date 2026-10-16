@@ -24,6 +24,8 @@
 #include "RialtoServerLogging.h"
 #include <AudioDecoderCapabilities.h>
 #include <IIpcController.h>
+#include <cstdlib>
+#include <string>
 #include <VideoDecoderCapabilities.h>
 #include <optional>
 
@@ -126,6 +128,23 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
     {
         RIALTO_SERVER_LOG_INFO(
             "ServerManagerModuleService: no capability fields - session server will use GStreamer query fallback");
+    }
+
+    // Make the per-session PlaybackInfo timer interval available to GstGenericPlayer via an environment
+    // variable. GstGenericPlayer reads RIALTO_PLAYBACK_INFO_TIMER_MS during timer initialization.
+    // This value is set from firebolt::rialto::common::AppConfig::playbackInfoTimerMs, which is
+    // hardcoded in entservices-appmanagers.
+    if (request->has_playbackinfotimerms() && request->playbackinfotimerms() > 0)
+    {
+        const std::string kPlaybackInfoTimerMsStr{std::to_string(request->playbackinfotimerms())};
+        setenv("RIALTO_PLAYBACK_INFO_TIMER_MS", kPlaybackInfoTimerMsStr.c_str(), 1);
+        RIALTO_SERVER_LOG_INFO("PlaybackInfo timer configured to %u ms via AppConfig",
+                                request->playbackinfotimerms());
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_INFO("PlaybackInfo timer not set in SetConfiguration (has=%d), using built-in default",
+                               request->has_playbackinfotimerms());
     }
 
     bool success{true};
