@@ -22,9 +22,11 @@
 #include "GlibWrapperMock.h"
 #include "GstDispatcherThreadClientMock.h"
 #include "GstWrapperMock.h"
+#include <condition_variable>
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 #include <memory>
+#include <mutex>
 
 using namespace firebolt::rialto::server;
 using namespace firebolt::rialto::wrappers;
@@ -60,6 +62,9 @@ protected:
 
     GSourceFunc m_capturedFunc{nullptr};
     gpointer m_capturedUserData{nullptr};
+    GSource m_quitSource{};
+    GSourceFunc m_quitFunc{nullptr};
+    gpointer m_quitUserData{nullptr};
 
     // Sets up the expectations for construction (bus watch wiring + the loop thread) and returns the sut.
     std::unique_ptr<GstDispatcherThread> createSut()
@@ -96,11 +101,34 @@ protected:
         return busFunc(&m_bus, message, m_capturedUserData);
     }
 
-    // Expects the graceful-shutdown teardown (destructor) calls, common to every test.
+    // Expects the destructor's graceful-shutdown teardown (destructor) calls, common to every test.
     void expectDestruction()
     {
         EXPECT_CALL(*m_glibWrapperMock, gMainLoopUnref(kMainLoop));
         EXPECT_CALL(*m_glibWrapperMock, gMainContextUnref(kMainContext));
+    }
+
+    // Expects the destructor's idle-source-based shutdown request (see onQuitRequested) and dispatches
+    // it immediately, as a real GMainLoop would once it next iterates.
+    void expectDestructorShutdown()
+    {
+        EXPECT_CALL(*m_glibWrapperMock, gIdleSourceNew()).WillOnce(Return(&m_quitSource));
+        EXPECT_CALL(*m_glibWrapperMock, gSourceSetCallback(&m_quitSource, _, _, nullptr))
+            .WillOnce(Invoke(
+                [this](GSource *, GSourceFunc func, gpointer data, GDestroyNotify)
+                {
+                    m_quitFunc = func;
+                    m_quitUserData = data;
+                }));
+        EXPECT_CALL(*m_glibWrapperMock, gSourceAttach(&m_quitSource, kMainContext))
+            .WillOnce(Invoke(
+                [this](GSource *source, GMainContext *context)
+                {
+                    m_quitFunc(m_quitUserData);
+                    return 1;
+                }));
+        EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+        EXPECT_CALL(*m_glibWrapperMock, gSourceUnref(&m_quitSource));
     }
 };
 
@@ -112,7 +140,7 @@ TEST_F(GstDispatcherThreadTest, ConstructionAndDestructionWireUpAndTearDownTheMa
 {
     auto sut = createSut();
 
-    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    expectDestructorShutdown();
     expectDestruction();
     sut.reset();
 }
@@ -128,7 +156,7 @@ TEST_F(GstDispatcherThreadTest, UnfilteredMessageTypeIsIgnored)
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_BUFFERING;
     EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(&m_message));
 
-    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    expectDestructorShutdown();
     expectDestruction();
     sut.reset();
 }
@@ -155,7 +183,7 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPaused)
 
     EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(&m_message));
 
-    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    expectDestructorShutdown();
     expectDestruction();
     sut.reset();
 }
@@ -182,7 +210,7 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPlaying)
 
     EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(&m_message));
 
-    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    expectDestructorShutdown();
     expectDestruction();
     sut.reset();
 }
@@ -209,7 +237,7 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPrerolling)
 
     EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(&m_message));
 
-    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    expectDestructorShutdown();
     expectDestruction();
     sut.reset();
 }
@@ -238,8 +266,8 @@ TEST_F(GstDispatcherThreadTest, StateChangedToStop)
 
     EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(&m_message));
 
-    // Destructor calls gMainLoopQuit again unconditionally; safe/idempotent on a real GMainLoop.
-    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    // Destructor always schedules its own shutdown too; safe/idempotent on a real GMainLoop.
+    expectDestructorShutdown();
     expectDestruction();
     sut.reset();
 }
@@ -260,7 +288,8 @@ TEST_F(GstDispatcherThreadTest, Error)
 
     EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(&m_message));
 
-    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    // Destructor always schedules its own shutdown too; safe/idempotent on a real GMainLoop.
+    expectDestructorShutdown();
     expectDestruction();
     sut.reset();
 }
@@ -278,7 +307,7 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPausedNonPipeline)
 
     EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(&m_message));
 
-    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    expectDestructorShutdown();
     expectDestruction();
     sut.reset();
 }
@@ -299,7 +328,7 @@ TEST_F(GstDispatcherThreadTest, QosFromNonPipelineObjectIsForwarded)
 
     EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(&m_message));
 
-    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    expectDestructorShutdown();
     expectDestruction();
     sut.reset();
 }
@@ -314,5 +343,71 @@ TEST_F(GstDispatcherThreadTest, FailsGracefullyWhenBusUnavailable)
     auto sut = std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_flushOnPrerollControllerMock,
                                                      m_gstWrapperMock, m_glibWrapperMock);
     // No gMainLoopQuit/Unref/ContextUnref expected: destructor must no-op when construction failed early.
+    sut.reset();
+}
+
+/**
+ * Test that destruction starting before the worker thread enters gMainLoopRun() doesn't lose the quit
+ * request. A direct gMainLoopQuit() call made in that window would be overwritten by gMainLoopRun()
+ * unconditionally marking the loop as running on entry, hanging the destructor's join() forever; the
+ * idle-source-based shutdown must not be susceptible to this, regardless of how late the loop starts.
+ */
+TEST_F(GstDispatcherThreadTest, ShutdownDoesNotRaceLoopStartup)
+{
+    std::mutex mutex;
+    std::condition_variable cv;
+    bool quitSourceAttached{false};
+    GSource quitSource{};
+    GSourceFunc quitFunc{nullptr};
+    gpointer quitUserData{nullptr};
+
+    EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
+    EXPECT_CALL(*m_glibWrapperMock, gMainContextNew()).WillOnce(Return(kMainContext));
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopNew(kMainContext, FALSE)).WillOnce(Return(kMainLoop));
+    EXPECT_CALL(*m_gstWrapperMock, gstBusCreateWatch(&m_bus)).WillOnce(Return(&m_busSource));
+    EXPECT_CALL(*m_glibWrapperMock, gSourceSetCallback(&m_busSource, _, _, nullptr));
+    EXPECT_CALL(*m_glibWrapperMock, gSourceAttach(&m_busSource, kMainContext)).WillOnce(Return(1));
+    EXPECT_CALL(*m_glibWrapperMock, gSourceUnref(&m_busSource));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
+
+    // Blocks the worker thread until the destructor has attached the idle quit source, i.e. until
+    // destruction has genuinely started before the loop would otherwise have been entered.
+    EXPECT_CALL(*m_glibWrapperMock, gMainContextPushThreadDefault(kMainContext))
+        .WillOnce(Invoke(
+            [&](GMainContext *context)
+            {
+                std::unique_lock lock(mutex);
+                cv.wait(lock, [&] { return quitSourceAttached; });
+            }));
+    // A real GMainLoop dispatches an already-attached, always-ready idle source immediately on entry.
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopRun(kMainLoop))
+        .WillOnce(Invoke([&](GMainLoop *loop) { quitFunc(quitUserData); }));
+    EXPECT_CALL(*m_glibWrapperMock, gMainContextPopThreadDefault(kMainContext));
+
+    EXPECT_CALL(*m_glibWrapperMock, gIdleSourceNew()).WillOnce(Return(&quitSource));
+    EXPECT_CALL(*m_glibWrapperMock, gSourceSetCallback(&quitSource, _, _, nullptr))
+        .WillOnce(Invoke(
+            [&](GSource *, GSourceFunc func, gpointer data, GDestroyNotify)
+            {
+                quitFunc = func;
+                quitUserData = data;
+            }));
+    EXPECT_CALL(*m_glibWrapperMock, gSourceAttach(&quitSource, kMainContext))
+        .WillOnce(Invoke(
+            [&](GSource *source, GMainContext *context)
+            {
+                std::unique_lock lock(mutex);
+                quitSourceAttached = true;
+                cv.notify_one();
+                return 1;
+            }));
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(kMainLoop));
+    EXPECT_CALL(*m_glibWrapperMock, gSourceUnref(&quitSource));
+    expectDestruction();
+
+    auto sut = std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_flushOnPrerollControllerMock,
+                                                     m_gstWrapperMock, m_glibWrapperMock);
+    // Runs on this thread while the worker thread is blocked in gMainContextPushThreadDefault; if the
+    // quit request could be lost, the destructor's join() would hang here forever.
     sut.reset();
 }

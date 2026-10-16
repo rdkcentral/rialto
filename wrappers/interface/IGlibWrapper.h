@@ -439,6 +439,13 @@ public:
      * @param[in] source : the GSource to unref.
      */
     virtual void gSourceUnref(GSource *source) const = 0;
+
+    /**
+     * @brief Creates a new idle GSource, not yet attached to any context.
+     *
+     * @retval a newly allocated GSource.
+     */
+    virtual GSource *gIdleSourceNew() const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers
