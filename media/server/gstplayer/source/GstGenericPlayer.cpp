@@ -2779,18 +2779,20 @@ void GstGenericPlayer::startNotifyPlaybackInfoTimer()
     {
         char *endPtr = nullptr;
         errno = 0;
-        const long parsed = std::strtol(kEnvValue, &endPtr, 10);
+        const int64_t parsed = std::strtoll(kEnvValue, &endPtr, 10);
         if (endPtr != kEnvValue && *endPtr == '\0' && errno == 0 && parsed > 0)
         {
-             playbackInfoTimerMs = std::chrono::milliseconds{static_cast<long>(parsed)};
+            playbackInfoTimerMs = std::chrono::milliseconds{parsed};
         }
-        RIALTO_SERVER_LOG_INFO("RIALTO_PLAYBACK_INFO_TIMER_MS env='%s', using PlaybackInfo timer interval=%ld ms",
-                               kEnvValue, static_cast<long>(playbackInfoTimerMs.count()));
+        RIALTO_SERVER_LOG_INFO("RIALTO_PLAYBACK_INFO_TIMER_MS env='%s', using PlaybackInfo timer interval=%" PRId64
+                               " ms",
+                               kEnvValue, static_cast<int64_t>(playbackInfoTimerMs.count()));
     }
     else
     {
-        RIALTO_SERVER_LOG_INFO("RIALTO_PLAYBACK_INFO_TIMER_MS not set, using default PlaybackInfo timer interval=%ld ms",
-                               static_cast<long>(playbackInfoTimerMs.count()));
+        RIALTO_SERVER_LOG_INFO("RIALTO_PLAYBACK_INFO_TIMER_MS not set, using default PlaybackInfo timer "
+                               "interval=%" PRId64 " ms",
+                               static_cast<int64_t>(playbackInfoTimerMs.count()));
     }
 
     if (m_playbackInfoTimer && m_playbackInfoTimer->isActive())

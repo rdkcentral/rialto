@@ -42,13 +42,13 @@ public:
                  const firebolt::rialto::common::MaxResourceCapabilitites &, const unsigned int, const std::string &,
                  const std::string &, const std::string &,
                  const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &,
-                 const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &),
+                 const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &, uint32_t),
                 (override));
     MOCK_METHOD(bool, performSetConfiguration,
                 (int, const firebolt::rialto::common::SessionServerState &, int, const std::string &,
                  const firebolt::rialto::common::MaxResourceCapabilitites &, const std::string &,
                  const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &,
-                 const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &),
+                 const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &, uint32_t),
                 (override));
     MOCK_METHOD(bool, performSetState, (int, const firebolt::rialto::common::SessionServerState &), (override));
     MOCK_METHOD(bool, performPing, (int serverId, int pingId), (override));
