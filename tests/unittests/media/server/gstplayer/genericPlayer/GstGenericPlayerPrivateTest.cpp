@@ -216,17 +216,18 @@ protected:
         return saveContext;
     }
 
-    void willNotifyPlaybackInfo()
+    void willNotifyPlaybackInfo(int64_t expectedPosition = kPosition)
     {
+        const PlaybackInfo expectedInfo{expectedPosition, kVolume};
         EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).WillOnce(Return());
         EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).WillOnce(Return(GST_STATE_PLAYING));
         EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
         EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).WillOnce(Return());
         EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
             .WillOnce(Invoke(
-                [&](GstElement *element, GstFormat format, gint64 *cur)
+                [expectedPosition](GstElement *element, GstFormat format, gint64 *cur)
                 {
-                    *cur = kPosition;
+                    *cur = expectedPosition;
                     return TRUE;
                 }));
 
@@ -234,7 +235,7 @@ protected:
         EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR))
             .WillOnce(Return(kVolume));
 
-        EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(kPlaybackInfo));
+        EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(expectedInfo));
     }
 
     void willNotifyPlaybackInfoWithAudioFade()
@@ -2164,7 +2165,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSchedulePlaybackInfoWhenPlaybackInfoTi
         .WillOnce(Invoke(
             [&](const std::chrono::milliseconds &timeout, const std::function<void()> &callback, common::TimerType timerType)
             {
-                willNotifyPlaybackInfo();
+                willNotifyPlaybackInfo(kPosition + 1);
                 callback();
                 return std::move(playbackInfoTimerMock);
             }));
