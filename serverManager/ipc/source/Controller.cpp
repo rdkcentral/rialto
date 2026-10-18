@@ -30,9 +30,25 @@ Controller::Controller(std::unique_ptr<common::ISessionServerAppManager> &sessio
 {
 }
 
+Controller::~Controller()
+{
+    std::map<int, std::unique_ptr<Client>> clients;
+    {
+        std::unique_lock<std::mutex> lock{m_clientMutex};
+        m_isShuttingDown = true;
+        clients.swap(m_clients);
+    }
+    clients.clear();
+}
+
 bool Controller::createClient(int serverId, int appMgmtSocket)
 {
     std::unique_lock<std::mutex> lock{m_clientMutex};
+    if (m_isShuttingDown)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Not creating client for serverId: %d, controller is shutting down", serverId);
+        return false;
+    }
     if (m_clients.find(serverId) == m_clients.end())
     {
         auto newClient = std::make_unique<Client>(m_sessionServerAppManager, serverId, appMgmtSocket);
@@ -63,32 +79,36 @@ bool Controller::performSetState(int serverId, const firebolt::rialto::common::S
     return false;
 }
 
-bool Controller::performSetConfiguration(int serverId, const firebolt::rialto::common::SessionServerState &initialState,
-                                         const std::string &socketName, const std::string &clientDisplayName,
-                                         const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
-                                         const unsigned int socketPermissions, const std::string &socketOwner,
-                                         const std::string &socketGroup, const std::string &appName)
+bool Controller::performSetConfiguration(
+    int serverId, const firebolt::rialto::common::SessionServerState &initialState, const std::string &socketName,
+    const std::string &clientDisplayName, const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
+    const unsigned int socketPermissions, const std::string &socketOwner, const std::string &socketGroup,
+    const std::string &appName, const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
 {
     std::unique_lock<std::mutex> lock{m_clientMutex};
     auto client = m_clients.find(serverId);
     if (client != m_clients.end())
     {
         return client->second->performSetConfiguration(initialState, socketName, clientDisplayName, maxResource,
-                                                       socketPermissions, socketOwner, socketGroup, appName);
+                                                       socketPermissions, socketOwner, socketGroup, appName, audioCaps,
+                                                       videoCaps);
     }
     return false;
 }
 
-bool Controller::performSetConfiguration(int serverId, const firebolt::rialto::common::SessionServerState &initialState,
-                                         int socketFd, const std::string &clientDisplayName,
-                                         const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
-                                         const std::string &appName)
+bool Controller::performSetConfiguration(
+    int serverId, const firebolt::rialto::common::SessionServerState &initialState, int socketFd,
+    const std::string &clientDisplayName, const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
+    const std::string &appName, const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
 {
     std::unique_lock<std::mutex> lock{m_clientMutex};
     auto client = m_clients.find(serverId);
     if (client != m_clients.end())
     {
-        return client->second->performSetConfiguration(initialState, socketFd, clientDisplayName, maxResource, appName);
+        return client->second->performSetConfiguration(initialState, socketFd, clientDisplayName, maxResource, appName,
+                                                       audioCaps, videoCaps);
     }
     return false;
 }

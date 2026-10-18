@@ -72,6 +72,12 @@ void Flush::execute() const
     streamInfo.buffers.clear();
     m_context.initialPositions.erase(sourceElem->second.appSrc);
 
+    if (m_type == MediaSourceType::AUDIO)
+    {
+        m_player.clearAudioFirstFrameFallbackProbe();
+        m_context.firstAudioFrameReceived = false;
+    }
+
     m_gstPlayerClient->invalidateActiveRequests(m_type);
 
     if (GST_STATE(m_context.pipeline) >= GST_STATE_PAUSED)

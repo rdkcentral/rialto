@@ -38,6 +38,8 @@ add_gtests (
         mediaPipelineIpc/GetDurationTest.cpp
         mediaPipelineIpc/SetImmediateOutputTest.cpp
         mediaPipelineIpc/GetImmediateOutputTest.cpp
+        mediaPipelineIpc/SetReportDecodeErrorsTest.cpp
+        mediaPipelineIpc/GetQueuedFramesTest.cpp
         mediaPipelineIpc/GetStatsTest.cpp
         mediaPipelineIpc/RenderFrameTest.cpp
         mediaPipelineIpc/GetVolumeTest.cpp
@@ -60,6 +62,9 @@ add_gtests (
 
         # MediaPipelineCapabilitiesIpc tests
         mediaPipelineCapabilitiesIpc/MediaPipelineCapabilitiesIpcTest.cpp
+
+        # MediaCapabilitiesIpc tests
+        mediaCapabilitiesIpc/MediaCapabilitiesIpcTest.cpp
 
         # ControlIpc tests
         controlIpc/base/ControlIpcTestBase.cpp
@@ -100,6 +105,7 @@ add_gtests (
         mediaKeysCapabilitiesIpc/CreateTest.cpp
         mediaKeysCapabilitiesIpc/KeySystemsTest.cpp
         mediaKeysCapabilitiesIpc/CertificateTest.cpp
+        mediaKeysCapabilitiesIpc/RobustnessTest.cpp
 
         # WebAudioPlayer tests
         webAudioPlayerIpc/base/WebAudioPlayerIpcTestBase.cpp
@@ -114,6 +120,9 @@ add_gtests (
         webAudioPlayerIpc/WriteBufferTest.cpp
         webAudioPlayerIpc/GetDeviceInfoTest.cpp
         webAudioPlayerIpc/GetBufferAvailable.cpp
+
+        # PrivateMetricsIpc tests
+        privateMetricsIpc/PrivateMetricsIpcTests.cpp
         )
 
 target_include_directories(

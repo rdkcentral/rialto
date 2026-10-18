@@ -24,7 +24,11 @@
 #include "INamedSocket.h"
 #include "MessageBuilders.h"
 #include "RialtoServerComponentTest.h"
+#include <fcntl.h>
 #include <memory>
+
+using testing::_;
+using testing::Invoke;
 
 namespace
 {
@@ -46,6 +50,8 @@ public:
     void configureSutWithFdInActiveState()
     {
         ASSERT_TRUE(m_namedSocket);
+        EXPECT_CALL(*m_linuxWrapperMock, fcntl(_, F_DUPFD_CLOEXEC, 3))
+            .WillRepeatedly(Invoke([](int fd, int, int) { return ::fcntl(fd, F_DUPFD_CLOEXEC, 3); }));
         ::rialto::SetConfigurationRequest request{createGenericSetConfigurationReq()};
         request.set_initialsessionserverstate(::rialto::SessionServerState::ACTIVE);
         request.set_sessionmanagementsocketfd(m_namedSocket->getFd());

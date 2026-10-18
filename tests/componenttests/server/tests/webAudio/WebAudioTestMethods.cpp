@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include <cstring>
 #include <memory>
 #include <string>
 
@@ -80,7 +81,12 @@ void WebAudioTestMethods::initShm()
     ConfigureAction<GetSharedMemory>(m_clientStub)
         .send(getShmReq)
         .expectSuccess()
-        .matchResponse([&](const auto &resp) { m_shmHandle.init(resp.fd(), resp.size()); });
+        .matchResponse(
+            [&](const auto &resp)
+            {
+                m_shmHandle.init(resp.fd(), resp.size());
+                std::memset(m_shmHandle.getShm(), 0, resp.size());
+            });
 }
 
 int WebAudioTestMethods::checkInitialBufferAvailable()

@@ -55,6 +55,18 @@ TEST_F(MediaKeysCapabilitiesModuleServiceTests, shouldSupportServerCertificate)
     sendIsServerCertificateSupportedRequestAndReceiveResponse();
 }
 
+TEST_F(MediaKeysCapabilitiesModuleServiceTests, shouldGetSupportedRobustnessLevels)
+{
+    cdmServiceWillGetSupportedRobustnessLevels();
+    sendGetSupportedRobustnessLevelsRequestAndReceiveResponse();
+}
+
+TEST_F(MediaKeysCapabilitiesModuleServiceTests, shouldFailToGetSupportedRobustnessLevels)
+{
+    cdmServiceWillFailToGetSupportedRobustnessLevels();
+    sendGetSupportedRobustnessLevelsRequestAndExpectFailure();
+}
+
 TEST_F(MediaKeysCapabilitiesModuleServiceTests, FactoryCreatesObject)
 {
     testFactoryCreatesObject();

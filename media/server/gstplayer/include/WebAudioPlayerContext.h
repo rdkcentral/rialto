@@ -67,6 +67,11 @@ struct WebAudioPlayerContext
     uint32_t lastBytesWritten{};
 
     /**
+     * @brief Counter that increments each time a write operation completes.
+     */
+    uint32_t writeCompletionCounter{};
+
+    /**
      * @brief The number of bytes per sample.
      */
     uint32_t bytesPerSample{};

@@ -22,13 +22,16 @@
 
 #include "ControlModuleStub.h"
 #include "IIpcServer.h"
+#include "MediaCapabilitiesModuleStub.h"
 #include "MediaKeysCapabilitiesModuleStub.h"
 #include "MediaKeysModuleStub.h"
 #include "MediaPipelineCapabilitiesModuleStub.h"
 #include "MediaPipelineModuleStub.h"
 #include "WebAudioPlayerModuleStub.h"
+#include "privatemetricsmodule.pb.h"
 #include <atomic>
 #include <condition_variable>
+#include <cstdint>
 #include <memory>
 #include <thread>
 
@@ -36,6 +39,7 @@ namespace firebolt::rialto::client::ct
 {
 class ServerStub : public ControlModuleStub,
                    public MediaPipelineModuleStub,
+                   public MediaCapabilitiesModuleStub,
                    public MediaKeysModuleStub,
                    public MediaKeysCapabilitiesModuleStub,
                    public MediaPipelineCapabilitiesModuleStub,
@@ -45,18 +49,22 @@ public:
     explicit ServerStub(
         const std::shared_ptr<::firebolt::rialto::ControlModule> &controlModuleMock,
         const std::shared_ptr<::firebolt::rialto::MediaPipelineModule> &mediaPipelineModuleMock,
+        const std::shared_ptr<::firebolt::rialto::MediaCapabilitiesModule> &mediaCapabilitiesModuleMock,
         const std::shared_ptr<::firebolt::rialto::MediaKeysModule> &mediaKeysModuleMock,
         const std::shared_ptr<::firebolt::rialto::MediaKeysCapabilitiesModule> &mediaKeysCapabilitiesModuleMock,
         const std::shared_ptr<::firebolt::rialto::MediaPipelineCapabilitiesModule> &mediaPipelineCapabilitiesModuleMock,
-        const std::shared_ptr<::firebolt::rialto::WebAudioPlayerModule> &webAudioPlayerModuleMock);
+        const std::shared_ptr<::firebolt::rialto::WebAudioPlayerModule> &webAudioPlayerModuleMock,
+        const std::shared_ptr<::firebolt::rialto::PrivateMetricsModule> &privateMetricsModuleMock);
     ~ServerStub();
 
     void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
     void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
+    void notifyMetricsSampleRequestEvent(std::uint64_t sampleId, ::firebolt::rialto::MetricsSampleReason reason);
 
 private:
     std::shared_ptr<::firebolt::rialto::ipc::IServer> m_server;
     std::shared_ptr<::firebolt::rialto::ipc::IClient> m_client;
+    std::shared_ptr<::firebolt::rialto::PrivateMetricsModule> m_privateMetricsModuleMock;
     std::thread m_serverThread;
     std::atomic<bool> m_running;
     std::atomic<bool> m_clientConnected;

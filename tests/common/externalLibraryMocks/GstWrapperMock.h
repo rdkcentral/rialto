@@ -102,6 +102,7 @@ public:
     MOCK_METHOD(void, gstDebugBinToDotFileWithTs, (GstBin * bin, GstDebugGraphDetails details, const gchar *file_name),
                 (override));
     MOCK_METHOD(GstElementFactory *, gstElementGetFactory, (GstElement * element), (const, override));
+    MOCK_METHOD(const gchar *, gstPluginFeatureGetName, (GstElementFactory * factory), (const, override));
     MOCK_METHOD(gboolean, gstElementFactoryListIsType, (GstElementFactory * factory, GstElementFactoryListType type),
                 (const, override));
     MOCK_METHOD(GstCaps *, gstCapsCopy, (const GstCaps *caps), (const, override));

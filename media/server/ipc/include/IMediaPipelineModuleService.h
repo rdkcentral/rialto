@@ -28,7 +28,6 @@
 namespace firebolt::rialto::server::ipc
 {
 class IMediaPipelineModuleService;
-
 /**
  * @brief IMediaPipelineModuleService factory class, returns a concrete implementation of IMediaPipelineModuleService
  */

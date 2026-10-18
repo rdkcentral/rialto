@@ -26,11 +26,13 @@
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ITimer.h"
 #include "MediaCommon.h"
+#include <atomic>
 #include <gst/gst.h>
 #include <list>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <unordered_map>
 #include <vector>
 
@@ -142,6 +144,16 @@ struct GenericPlayerContext
     Rectangle pendingGeometry;
 
     /**
+     * @brief Fallback video geometry used only when setVideoWindow() was not called.
+     */
+    Rectangle defaultVideoGeometry;
+
+    /**
+     * @brief True once geometry has been supplied through setVideoWindow().
+     */
+    std::atomic_bool videoGeometrySetByApi{false};
+
+    /**
      * @brief Current playback rate
      */
     double playbackRate{1.0};
@@ -155,6 +167,21 @@ struct GenericPlayerContext
      * @brief Pending immediate output for MediaSourceType::VIDEO
      */
     std::optional<bool> pendingImmediateOutputForVideo{};
+
+    /**
+     * @brief Pending low latency properties for audio decoder
+     */
+    std::optional<bool> pendingLowLatencyForAudioDecoder{};
+
+    /**
+     * @brief Pending low latency properties for audio sink
+     */
+    std::optional<bool> pendingLowLatencyForAudioSink{};
+
+    /**
+     * @brief Pending report decode errors for MediaSourceType::VIDEO
+     */
+    std::optional<bool> pendingReportDecodeErrorsForVideo{};
 
     /**
      * @brief Pending low latency

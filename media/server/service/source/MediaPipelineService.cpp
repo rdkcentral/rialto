@@ -18,7 +18,10 @@
  */
 
 #include "MediaPipelineService.h"
+#include "IGstCapabilities.h"
+#include "IMediaCapabilitiesServerInternal.h"
 #include "IMediaPipelineServerInternal.h"
+#include "MediaPipelineMetricsClient.h"
 #include "RialtoServerLogging.h"
 #include <exception>
 #include <future>
@@ -31,10 +34,13 @@ namespace firebolt::rialto::server::service
 MediaPipelineService::MediaPipelineService(
     IPlaybackService &playbackService, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-    IDecryptionService &decryptionService)
+    IDecryptionService &decryptionService, IPrivateMetricsService &metricsService,
+    std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory)
     : m_playbackService{playbackService}, m_mediaPipelineFactory{std::move(mediaPipelineFactory)},
       m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
-      m_decryptionService{decryptionService}
+      m_mediaCapabilities{mediaCapabilitiesFactory ? mediaCapabilitiesFactory->createMediaCapabilitiesServerInternal()
+                                                   : nullptr},
+      m_decryptionService{decryptionService}, m_metricsService{metricsService}
 {
     if (!m_mediaPipelineCapabilities)
     {
@@ -80,10 +86,13 @@ bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IM
         auto shmBuffer = m_playbackService.getShmBuffer();
         m_mediaPipelines.emplace(
             std::make_pair(sessionId,
-                           m_mediaPipelineFactory->createMediaPipelineServerInternal(mediaPipelineClient,
-                                                                                     VideoRequirements{maxWidth, maxHeight},
-                                                                                     sessionId, shmBuffer,
-                                                                                     m_decryptionService)));
+                           m_mediaPipelineFactory
+                               ->createMediaPipelineServerInternal(std::make_shared<
+                                                                       MediaPipelineMetricsClient>(sessionId,
+                                                                                                   mediaPipelineClient,
+                                                                                                   m_metricsService),
+                                                                   VideoRequirements{maxWidth, maxHeight}, sessionId,
+                                                                   shmBuffer, m_decryptionService)));
         if (!m_mediaPipelines.at(sessionId))
         {
             RIALTO_SERVER_LOG_ERROR("Could not create MediaPipeline for session with id: %d", sessionId);
@@ -280,6 +289,34 @@ bool MediaPipelineService::setImmediateOutput(int sessionId, int32_t sourceId, b
         return false;
     }
     return mediaPipelineIter->second->setImmediateOutput(sourceId, immediateOutput);
+}
+
+bool MediaPipelineService::setReportDecodeErrors(int sessionId, int32_t sourceId, bool reportDecodeErrors)
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to setReportDecodeErrors, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setReportDecodeErrors(sourceId, reportDecodeErrors);
+}
+
+bool MediaPipelineService::getQueuedFrames(int sessionId, int32_t sourceId, uint32_t &queuedFrames)
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to getQueuedFrames, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->getQueuedFrames(sourceId, queuedFrames);
 }
 
 bool MediaPipelineService::getImmediateOutput(int sessionId, int32_t sourceId, bool &immediateOutput)
@@ -680,6 +717,43 @@ void MediaPipelineService::ping(const std::shared_ptr<IHeartbeatProcedure> &hear
     {
         auto &mediaPipeline = mediaPipelinePair.second;
         mediaPipeline->ping(heartbeatProcedure->createHandler());
+    }
+}
+
+common::AudioDecoderCapabilities MediaPipelineService::getSupportedAudioCapabilities()
+{
+    RIALTO_SERVER_LOG_DEBUG("GetSupportedAudioCapabilities requested");
+
+    if (m_mediaCapabilities)
+    {
+        return m_mediaCapabilities->getSupportedAudioCapabilities();
+    }
+
+    return common::AudioDecoderCapabilities();
+}
+
+common::VideoDecoderCapabilities MediaPipelineService::getSupportedVideoCapabilities()
+{
+    RIALTO_SERVER_LOG_DEBUG("GetSupportedVideoCapabilities requested");
+
+    if (m_mediaCapabilities)
+    {
+        return m_mediaCapabilities->getSupportedVideoCapabilities();
+    }
+
+    return common::VideoDecoderCapabilities();
+}
+
+void MediaPipelineService::setPreloadedCapabilities(const std::optional<common::AudioDecoderCapabilities> &audioCaps,
+                                                    const std::optional<common::VideoDecoderCapabilities> &videoCaps)
+{
+    RIALTO_SERVER_LOG_DEBUG("setPreloadedCapabilities called with audio: %s, video: %s",
+                            audioCaps.has_value() ? "yes" : "no", videoCaps.has_value() ? "yes" : "no");
+
+    // Delegate to MediaCapabilitiesServerInternal to store preloaded state
+    if (m_mediaCapabilities)
+    {
+        m_mediaCapabilities->setPreloadedCapabilities(audioCaps, videoCaps);
     }
 }
 
