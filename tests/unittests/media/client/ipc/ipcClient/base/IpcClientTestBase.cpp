@@ -88,6 +88,7 @@ void IpcClientTestBase::createRpcController()
 
 void IpcClientTestBase::disconnectIpcClient()
 {
+    EXPECT_CALL(*m_channelMock, isConnected()).WillOnce(Return(true));
     EXPECT_CALL(*m_channelMock, disconnect())
         .WillOnce(Invoke(
             [this]()
