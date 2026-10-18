@@ -457,7 +457,6 @@ void GstGenericPlayer::termPipeline()
     }
 
     m_finishSourceSetupTimer.reset();
-    stopNotifyPlaybackInfoTimer();
 
     clearAudioFirstFrameFallbackProbe();
     stopNotifyPlaybackInfoTimer();
@@ -1717,7 +1716,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourc
     for (const auto &[position, resetTime, appliedRate, stopPosition] : initialPosition->second)
     {
         GstSeekFlags seekFlag = resetTime ? GST_SEEK_FLAG_FLUSH : GST_SEEK_FLAG_NONE;
-        RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", common::convertMediaSourceType(mediaSourceType));
+        RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", kTypeStr.c_str());
         GstSegment *segment{m_gstWrapper->gstSegmentNew()};
         m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
         if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, seekFlag,
@@ -1731,10 +1730,9 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourc
         segment->applied_rate = appliedRate;
         RIALTO_SERVER_LOG_MIL("New %s segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT
                               "], rate: %f, appliedRate %f, reset_time: %d\n",
-                              common::convertMediaSourceType(mediaSourceType), GST_TIME_ARGS(segment->start),
-                              GST_TIME_ARGS(segment->stop), segment->rate, segment->applied_rate, resetTime);
-        auto recordId = m_context.gstProfiler->createRecord("First Segment Received",
-                                                            common::convertMediaSourceType(mediaSourceType));
+                              kTypeStr.c_str(), GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop),
+                              segment->rate, segment->applied_rate, resetTime);
+        auto recordId = m_context.gstProfiler->createRecord("First Segment Received", kTypeStr);
         if (recordId)
             m_context.gstProfiler->logRecord(recordId.value());
 
@@ -1749,7 +1747,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourc
 
         m_gstWrapper->gstSegmentFree(segment);
 
-        if (MediaSourceType::AUDIO == mediaSourceType)
+        if (mediaSourceType == MediaSourceType::AUDIO)
         {
             m_context.audioGstSegmentPosition = position;
         }
@@ -1771,8 +1769,11 @@ void GstGenericPlayer::pushAdditionalSegmentIfRequired(GstElement *source)
     {
         return;
     }
-    if (!initialPosition->second.empty() && initialPosition->second.back().resetTime &&
-        currentPosition->second == initialPosition->second.back())
+    const auto &positions = initialPosition->second;
+    const bool allMatchCurrentPosition = !positions.empty() &&
+                                         std::all_of(positions.begin(), positions.end(), [&](const SegmentData &segment)
+                                                     { return segment == currentPosition->second; });
+    if (allMatchCurrentPosition && positions.back().resetTime)
     {
         RIALTO_SERVER_LOG_INFO("Adding additional segment with reset_time = false");
         SegmentData additionalSegment = initialPosition->second.back();
