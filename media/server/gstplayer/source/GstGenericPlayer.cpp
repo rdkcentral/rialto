@@ -694,6 +694,12 @@ void GstGenericPlayer::setSourceFlushed(const MediaSourceType &mediaSourceType)
 
 void GstGenericPlayer::notifyPlaybackInfo()
 {
+    notifyPlaybackInfo(false);
+}
+
+void GstGenericPlayer::notifyPlaybackInfo(bool force)
+{
+    std::lock_guard lock{m_playbackInfoMutex};
     PlaybackInfo info;
     getPosition(info.currentPosition);
     m_context.streamPosition.store(info.currentPosition);
@@ -712,7 +718,7 @@ void GstGenericPlayer::notifyPlaybackInfo()
     // that case burns CPU on both the server side (serialisation, IPC) and the client side
     // (deserialisation + downstream listeners) without delivering any new information. This check
     // does not change playback semantics - it only elides redundant notifications.
-    if (m_context.lastReportedPlaybackInfo.has_value() &&
+    if (!force && m_context.lastReportedPlaybackInfo.has_value() &&
         m_context.lastReportedPlaybackInfo->currentPosition == info.currentPosition &&
         m_context.lastReportedPlaybackInfo->volume == info.volume)
     {
@@ -2796,8 +2802,7 @@ void GstGenericPlayer::startNotifyPlaybackInfoTimer()
     }
 
     // A PAUSED state transition requires a PlaybackInfo event even if its values are unchanged.
-    m_context.lastReportedPlaybackInfo.reset();
-    notifyPlaybackInfo();
+    notifyPlaybackInfo(true);
 
     if (m_playbackInfoTimer && m_playbackInfoTimer->isActive())
     {

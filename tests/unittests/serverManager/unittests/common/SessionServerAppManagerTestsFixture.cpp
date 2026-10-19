@@ -53,6 +53,7 @@ constexpr int kSecondServerId{4};
 constexpr unsigned kNumOfPreloadedServers{1};
 const int kAppMgmtSocket{0};
 const std::string kSessionServerSocketName{getenv("RIALTO_SOCKET_PATH")};
+constexpr uint32_t kPlaybackInfoTimerMs{250};
 constexpr int kMaxSessions{2};
 constexpr int kMaxWebAudioPlayers{3};
 constexpr rialto::servermanager::service::LoggingLevels
@@ -61,14 +62,13 @@ constexpr rialto::servermanager::service::LoggingLevels
                           rialto::servermanager::service::LoggingLevel::WARNING,
                           rialto::servermanager::service::LoggingLevel::MILESTONE,
                           rialto::servermanager::service::LoggingLevel::INFO};
-const firebolt::rialto::common::AppConfig kAppConfig{kSessionServerSocketName};
+const firebolt::rialto::common::AppConfig kAppConfig{kSessionServerSocketName, {}, kPlaybackInfoTimerMs};
 constexpr int kPingId{125};
 const std::string kClientDisplayName{"westeros-rialto"};
 constexpr unsigned int kSocketPermissions{0777};
 const std::string kSocketOwner;
 const std::string kSocketGroup;
 constexpr int kSessionServerSocketFd{342};
-constexpr uint32_t kPlaybackInfoTimerMs{0};
 
 template <typename SessionServerAppPtr> void expectPlaybackInfoTimerMs(SessionServerAppPtr &sessionServerApp)
 {
