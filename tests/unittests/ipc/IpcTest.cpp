@@ -21,6 +21,13 @@
 #include "ServerStub.h"
 #include "TestClientMock.h"
 #include "TestModuleMock.h"
+
+#include <atomic>
+#include <condition_variable>
+#include <mutex>
+#include <thread>
+#include <vector>
+
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
@@ -244,4 +251,67 @@ TEST_F(RialtoIpcTest, NoReply)
                                                [&] { return messageReceived; });
 
     ASSERT_TRUE(status);
+}
+
+/**
+ * Test that IPC client can process no reply request from multiple threads.
+ */
+TEST_F(RialtoIpcTest, ConcurrentNoReply)
+{
+    constexpr bool kExpectMessage{false};
+    constexpr int kNumThreads{4};
+    constexpr int kRequestsPerThread{100};
+    constexpr int kExpectedRequests{kNumThreads * kRequestsPerThread};
+
+    m_clientStub->startMessageThread(kExpectMessage);
+
+    std::mutex messageReceivedMutex;
+    std::condition_variable messageReceivedCond;
+    std::atomic<int> messageReceivedCount{0};
+
+    EXPECT_CALL(*m_testModuleMock, TestRequestSingleVarNoReply(_, _, _, _))
+        .Times(kExpectedRequests)
+        .WillRepeatedly(WithArgs<0, 3>(Invoke(
+            [&](auto *c, auto *d)
+            {
+                m_testModuleMock->defaultReturn(c, d);
+
+                if (messageReceivedCount.fetch_add(1, std::memory_order_relaxed) + 1 == kExpectedRequests)
+                {
+                    std::lock_guard<std::mutex> messageReceivedLock(messageReceivedMutex);
+                    messageReceivedCond.notify_one();
+                }
+            })));
+
+    std::atomic<bool> allRequestsSucceeded{true};
+    std::vector<std::thread> threads;
+    threads.reserve(kNumThreads);
+
+    for (int t = 0; t < kNumThreads; ++t)
+    {
+        threads.emplace_back(
+            [&]()
+            {
+                for (int i = 0; i < kRequestsPerThread; ++i)
+                {
+                    if (!m_clientStub->sendSingleVarRequestWithNoReply(m_int))
+                    {
+                        allRequestsSucceeded.store(false, std::memory_order_relaxed);
+                    }
+                }
+            });
+    }
+
+    for (auto &thread : threads)
+    {
+        thread.join();
+    }
+
+    std::unique_lock<std::mutex> messageReceivedLock(messageReceivedMutex);
+    bool status = messageReceivedCond.wait_for(messageReceivedLock, std::chrono::seconds(2),
+                                               [&] { return messageReceivedCount.load(std::memory_order_relaxed) ==
+                                                             kExpectedRequests; });
+
+    ASSERT_TRUE(status);
+    ASSERT_TRUE(allRequestsSucceeded.load(std::memory_order_relaxed));
 }

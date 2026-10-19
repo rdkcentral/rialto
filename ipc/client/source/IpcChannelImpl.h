@@ -114,19 +114,22 @@ private:
     static void completeWithError(MethodCall *call, std::string reason);
 
 private:
-    int m_sock;
+    std::atomic<int> m_sock;
     int m_epollFd;
     int m_timerFd;
     int m_eventFd;
 
     SimpleBufferPool m_sendBufPool;
 
-    mutable std::mutex m_lock;
+    mutable std::mutex m_pendingCallsLock;
     std::atomic<uint64_t> m_serialCounter;
 
     const std::chrono::milliseconds m_timeout;
 
     std::map<uint64_t, MethodCall> m_methodCalls;
+
+    std::vector<uint8_t> m_recvDataBuf;
+    std::vector<uint8_t> m_recvCtrlBuf;
 
     std::mutex m_eventsLock;
 

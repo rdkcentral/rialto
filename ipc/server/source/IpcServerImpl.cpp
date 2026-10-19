@@ -31,6 +31,7 @@
 #include <cinttypes>
 #include <cstdarg>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -511,7 +512,9 @@ bool ServerImpl::process()
                 continue;
             }
 
-            ClientDetails details = it->second;
+            const int sock = it->second.sock.exchange(-1, std::memory_order_acq_rel);
+            const auto disconnectedCb = it->second.disconnectedCb;
+            auto client = std::move(it->second.client);
 
             // remove from the list of clients
             m_clients.erase(it);
@@ -520,23 +523,23 @@ bool ServerImpl::process()
             locker.unlock();
 
             // remove the socket from epoll and close it
-            if (details.sock >= 0)
+            if (sock >= 0)
             {
-                if (epoll_ctl(m_pollFd, EPOLL_CTL_DEL, details.sock, nullptr) != 0)
+                if (epoll_ctl(m_pollFd, EPOLL_CTL_DEL, sock, nullptr) != 0)
                     RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket from epoll");
 
-                if (shutdown(details.sock, SHUT_RDWR) != 0)
+                if (shutdown(sock, SHUT_RDWR) != 0)
                     RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to shutdown socket");
-                if (close(details.sock) != 0)
+                if (close(sock) != 0)
                     RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to close socket");
             }
 
             // let the installed handler know a client has disconnected
-            if (details.disconnectedCb)
-                details.disconnectedCb(details.client);
+            if (disconnectedCb)
+                disconnectedCb(client);
 
             // ensure client object is destructed without the client lock held
-            details.client.reset();
+            client.reset();
 
             // re-take the lock for the next client
             locker.lock();
@@ -586,15 +589,14 @@ std::shared_ptr<ClientImpl> ServerImpl::addClientSocket(int socketFd, const std:
     auto client = std::make_shared<ClientImpl>(shared_from_this(), kClientId, clientCreds);
 
     // and the details for the internal list
-    ClientDetails clientDetails;
-    clientDetails.sock = socketFd;
-    clientDetails.disconnectedCb = std::move(disconnectedCb);
-    clientDetails.client = client;
-
     // add to the set of clients
     {
         std::lock_guard<std::mutex> locker(m_clientsLock);
-        m_clients.emplace(kClientId, clientDetails);
+        auto it = m_clients.emplace(std::piecewise_construct, std::forward_as_tuple(kClientId), std::forward_as_tuple())
+                      .first;
+        it->second.sock.store(socketFd, std::memory_order_release);
+        it->second.disconnectedCb = std::move(disconnectedCb);
+        it->second.client = client;
     }
 
     RIALTO_IPC_LOG_INFO("new client connected - giving id %" PRIu64, kClientId);
@@ -763,7 +765,7 @@ void ServerImpl::processClientSocket(uint64_t clientId, unsigned events)
         }
 
         // get the socket that corresponds to the client connection
-        sockFd = it->second.sock;
+        sockFd = it->second.sock.load(std::memory_order_acquire);
 
         // get the client object
         clientObj = it->second.client;
@@ -1013,15 +1015,17 @@ void ServerImpl::processMethodCall(const std::shared_ptr<ClientImpl> &client, co
  */
 void ServerImpl::sendReply(uint64_t clientId, const std::shared_ptr<msghdr> &msg)
 {
-    // now take the lock (so the socket is not closed beneath us) and send the reply
-    std::lock_guard<std::mutex> locker(m_clientsLock);
-
-    auto it = m_clients.find(clientId);
-    if (it == m_clients.end())
+    int sock = -1;
     {
-        RIALTO_IPC_LOG_WARN("socket removed before error reply could be sent");
+        std::lock_guard<std::mutex> locker(m_clientsLock);
+        auto it = m_clients.find(clientId);
+        if (it != m_clients.end())
+        {
+            sock = it->second.sock.load(std::memory_order_acquire);
+        }
     }
-    else if (it->second.sock < 0)
+
+    if (sock < 0)
     {
         RIALTO_IPC_LOG_WARN("socket closed before error reply could be sent");
     }
@@ -1029,7 +1033,7 @@ void ServerImpl::sendReply(uint64_t clientId, const std::shared_ptr<msghdr> &msg
     {
         RIALTO_IPC_LOG_WARN("invalid msg to send on socket, ignoring");
     }
-    else if (TEMP_FAILURE_RETRY(sendmsg(it->second.sock, msg.get(), MSG_NOSIGNAL)) !=
+    else if (TEMP_FAILURE_RETRY(sendmsg(sock, msg.get(), MSG_NOSIGNAL)) !=
              static_cast<ssize_t>(msg->msg_iov->iov_len))
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to send the complete error reply message");
@@ -1297,7 +1301,8 @@ std::shared_ptr<msghdr> ServerImpl::populateErrorReply(const std::shared_ptr<con
 bool ServerImpl::isClientConnected(uint64_t clientId) const
 {
     std::unique_lock<std::mutex> locker(m_clientsLock);
-    return (m_clients.count(clientId) > 0);
+    auto it = m_clients.find(clientId);
+    return (it != m_clients.end()) && (it->second.sock.load(std::memory_order_acquire) >= 0);
 }
 
 // -----------------------------------------------------------------------------
@@ -1401,22 +1406,25 @@ bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::prot
         header->msg_controllen = cmsg->cmsg_len;
     }
 
-    // finally, take the lock (so the socket is not closed beneath us) and send the reply
+    int sock = -1;
     {
         std::unique_lock<std::mutex> locker(m_clientsLock);
-
         auto it = m_clients.find(clientId);
-        if (it == m_clients.end() || it->second.sock < 0)
+        if (it != m_clients.end())
         {
-            RIALTO_IPC_LOG_WARN("socket closed before event could be sent");
-            return false;
+            sock = it->second.sock.load(std::memory_order_acquire);
         }
-        else if (TEMP_FAILURE_RETRY(sendmsg(it->second.sock, header, MSG_NOSIGNAL)) !=
-                 static_cast<ssize_t>(requiredDataLen))
-        {
-            RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to send the complete event message");
-            return false;
-        }
+    }
+
+    if (sock < 0)
+    {
+        RIALTO_IPC_LOG_WARN("socket closed before event could be sent");
+        return false;
+    }
+    else if (TEMP_FAILURE_RETRY(sendmsg(sock, header, MSG_NOSIGNAL)) != static_cast<ssize_t>(requiredDataLen))
+    {
+        RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to send the complete event message");
+        return false;
     }
 
     RIALTO_IPC_LOG_DEBUG("event{ %s } - { %s }", eventMessage->GetTypeName().c_str(),
