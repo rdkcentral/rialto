@@ -169,6 +169,10 @@ public:
                          const ::firebolt::rialto::GetUseBufferingRequest *request,
                          ::firebolt::rialto::GetUseBufferingResponse *response,
                          ::google::protobuf::Closure *done) override;
+    void setBatchDecryption(::google::protobuf::RpcController *controller,
+                            const ::firebolt::rialto::SetBatchDecryptionRequest *request,
+                            ::firebolt::rialto::SetBatchDecryptionResponse *response,
+                            ::google::protobuf::Closure *done) override;
 
 private:
     service::IMediaPipelineService &m_mediaPipelineService;

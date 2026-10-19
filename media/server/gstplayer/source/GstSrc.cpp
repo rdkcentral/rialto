@@ -392,7 +392,8 @@ void GstSrc::setDefaultStreamFormatIfNeeded(GstElement *appSrc)
 }
 
 void GstSrc::setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement *source, StreamInfo &streamInfo,
-                               GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type)
+                               GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type,
+                               bool batchDecryption)
 {
     // Configure and add appsrc
     m_glibWrapper->gObjectSet(streamInfo.appSrc, "block", FALSE, "format", GST_FORMAT_TIME, "stream-type",
@@ -449,7 +450,7 @@ void GstSrc::setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement
             m_glibWrapper->gStrdupPrintf("rialtodecryptor%s_%u",
                                          (type == firebolt::rialto::MediaSourceType::VIDEO) ? "video" : "audio", id);
         GstElement *decryptor =
-            m_decryptorFactory->createDecryptorElement(decryptorName, decryptionService, m_gstWrapper);
+            m_decryptorFactory->createDecryptorElement(decryptorName, decryptionService, m_gstWrapper, batchDecryption);
         m_glibWrapper->gFree(decryptorName);
         if (decryptor)
         {

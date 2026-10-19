@@ -417,6 +417,31 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetReportDecodeError
 }
 
 /**
+ * Test that SetBatchDecryption returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetBatchDecryptionFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_FALSE(m_mediaPipeline->setBatchDecryption(true));
+}
+
+/**
+ * Test that SetBatchDecryption returns success if the gstreamer player is initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetBatchDecryptionSuccess)
+{
+    loadGstPlayer();
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setBatchDecryption(true));
+    EXPECT_TRUE(m_mediaPipeline->setBatchDecryption(true));
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setBatchDecryption(false));
+    EXPECT_TRUE(m_mediaPipeline->setBatchDecryption(false));
+}
+
+/**
  * Test that GetQueuedFrames returns failure if the gstreamer player is not initialized
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetQueuedFramesFailureDueToUninitializedPlayer)

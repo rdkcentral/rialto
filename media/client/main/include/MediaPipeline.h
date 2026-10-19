@@ -213,6 +213,8 @@ public:
 
     bool getUseBuffering(bool &useBuffering) override;
 
+    bool setBatchDecryption(bool batchDecryption) override;
+
     bool switchSource(const std::unique_ptr<MediaSource> &source) override;
 
     void notifyApplicationState(ApplicationState state) override;

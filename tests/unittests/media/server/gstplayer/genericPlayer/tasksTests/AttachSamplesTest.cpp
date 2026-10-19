@@ -50,3 +50,28 @@ TEST_F(AttachSamplesTest, shouldSkipAttachingSubtitleSamples)
     shouldSkipAttachingSubtitleSamples();
     triggerAttachSamplesSubtitle();
 }
+
+TEST_F(AttachSamplesTest, shouldAttachAllAudioSamplesInBatch)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextBatchDecryption();
+    shouldAttachAllAudioSamplesInBatch();
+    triggerAttachSamplesAudio();
+}
+
+TEST_F(AttachSamplesTest, shouldAttachAllVideoSamplesInBatch)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
+    setContextBatchDecryption();
+    shouldAttachAllVideoSamplesInBatch();
+    triggerAttachSamplesVideo();
+}
+
+TEST_F(AttachSamplesTest, shouldAttachAllSubtitleSamplesInBatch)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::SUBTITLE);
+    setContextBatchDecryption();
+    shouldAttachAllSubtitleSamplesInBatch();
+    triggerAttachSamplesSubtitle();
+    checkSubtitleSamplesAttached();
+}

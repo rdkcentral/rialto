@@ -48,12 +48,14 @@ public:
      *
      * @param[in] decryptionService : The service used to decrypt frames.
      * @param[in] gstWrapper        : The gstreamer wrapper.
+     * @param[in] batchDecryption   : true to create the batch (multi) decryptor element.
      *
      * @retval a decryptor element instance or null on error.
      */
-    virtual GstElement *
-    createDecryptorElement(const gchar *name, firebolt::rialto::server::IDecryptionService *decryptionService,
-                           const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const = 0;
+    virtual GstElement *createDecryptorElement(const gchar *name,
+                                               firebolt::rialto::server::IDecryptionService *decryptionService,
+                                               const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                               bool batchDecryption) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

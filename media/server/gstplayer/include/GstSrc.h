@@ -123,8 +123,8 @@ public:
     void initSrc() override;
 
     void setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement *source, StreamInfo &streamInfo,
-                           GstAppSrcCallbacks *callbacks, gpointer userData,
-                           firebolt::rialto::MediaSourceType type) override;
+                           GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type,
+                           bool batchDecryption) override;
 
     void allAppSrcsAdded(GstElement *element) override;
 

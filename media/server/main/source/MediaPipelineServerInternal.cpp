@@ -1421,6 +1421,26 @@ bool MediaPipelineServerInternal::getUseBufferingInternal(bool &useBuffering)
     return m_gstPlayer->getUseBuffering(useBuffering);
 }
 
+bool MediaPipelineServerInternal::setBatchDecryption(bool batchDecryption)
+{
+    bool result;
+    auto task = [&]() { result = setBatchDecryptionInternal(batchDecryption); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setBatchDecryptionInternal(bool batchDecryption)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set batch decryption - Gstreamer player has not been loaded");
+        return false;
+    }
+    m_gstPlayer->setBatchDecryption(batchDecryption);
+    return true;
+}
+
 bool MediaPipelineServerInternal::switchSource(const std::unique_ptr<MediaSource> &source)
 {
     bool result;

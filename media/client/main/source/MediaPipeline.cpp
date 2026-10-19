@@ -642,6 +642,13 @@ bool MediaPipeline::getUseBuffering(bool &useBuffering)
     return m_mediaPipelineIpc->getUseBuffering(useBuffering);
 }
 
+bool MediaPipeline::setBatchDecryption(bool batchDecryption)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->setBatchDecryption(batchDecryption);
+}
+
 bool MediaPipeline::switchSource(const std::unique_ptr<MediaSource> &source)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");

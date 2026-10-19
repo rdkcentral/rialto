@@ -1550,6 +1550,19 @@ public:
     virtual bool getUseBuffering(bool &useBuffering) = 0;
 
     /**
+     * @brief Enables/disables batch decryption
+     *
+     * When enabled, encrypted sources use the decryptor element that decrypts
+     * buffers in batches. Must be called after load() and before allSourcesAttached(),
+     * as the decryptor element is created when the sources are set up.
+     *
+     * @param[in] batchDecryption      : true if batch decryption enabled.
+     *
+     * @retval true on success.
+     */
+    virtual bool setBatchDecryption(bool batchDecryption) = 0;
+
+    /**
      * @brief Switches a source stream.
      *
      * This method is called to switch a media source stream.

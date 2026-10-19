@@ -260,6 +260,13 @@ public:
 
     void gstBufferUnmap(GstBuffer *buffer, GstMapInfo *info) override { gst_buffer_unmap(buffer, info); }
 
+    GstBufferList *gstBufferListNewSized(guint size) override { return gst_buffer_list_new_sized(size); }
+
+    void gstBufferListInsert(GstBufferList *list, gint idx, GstBuffer *buffer) override
+    {
+        gst_buffer_list_insert(list, idx, buffer);
+    }
+
     void gstBusSetSyncHandler(GstBus *bus, GstBusSyncHandler func, gpointer user_data, GDestroyNotify notify) override
     {
         gst_bus_set_sync_handler(bus, func, user_data, notify);
@@ -268,6 +275,11 @@ public:
     GstFlowReturn gstAppSrcPushBuffer(GstAppSrc *appsrc, GstBuffer *buffer) override
     {
         return gst_app_src_push_buffer(appsrc, buffer);
+    }
+
+    GstFlowReturn gstAppSrcPushBufferList(GstAppSrc *appsrc, GstBufferList *bufList) override
+    {
+        return gst_app_src_push_buffer_list(appsrc, bufList);
     }
 
     void gstMessageUnref(GstMessage *msg) override { gst_message_unref(msg); }
@@ -643,6 +655,29 @@ public:
     }
 
     void gstPadRemoveProbe(GstPad *pad, gulong id) override { gst_pad_remove_probe(pad, id); }
+
+    GstFlowReturn gstPadPush(GstPad *pad, GstBuffer *buffer) override { return gst_pad_push(pad, buffer); }
+
+    gboolean gstPadSetCaps(GstPad *pad, GstCaps *caps) override { return gst_pad_set_caps(pad, caps); }
+
+    gboolean gstPadEventDefault(GstPad *pad, GstObject *parent, GstEvent *event) override
+    {
+        return gst_pad_event_default(pad, parent, event);
+    }
+
+    void gstEventParseCaps(GstEvent *event, GstCaps **caps) override { gst_event_parse_caps(event, caps); }
+
+    void gstEventUnref(GstEvent *event) override { gst_event_unref(event); }
+
+    GstBuffer *gstBufferRef(GstBuffer *buffer) override { return gst_buffer_ref(buffer); }
+
+    guint gstBufferListLength(GstBufferList *list) override { return gst_buffer_list_length(list); }
+
+    GstBuffer *gstBufferListGet(GstBufferList *list, guint idx) override { return gst_buffer_list_get(list, idx); }
+
+    void gstBufferListUnref(GstBufferList *list) override { gst_buffer_list_unref(list); }
+
+    gboolean gstCapsReplace(GstCaps **oldCaps, GstCaps *newCaps) override { return gst_caps_replace(oldCaps, newCaps); }
 };
 
 }; // namespace firebolt::rialto::wrappers

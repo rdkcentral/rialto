@@ -149,6 +149,7 @@ public:
     bool getBufferingLimit(uint32_t &limitBufferingMs) override;
     void setUseBuffering(bool useBuffering) override;
     bool getUseBuffering(bool &useBuffering) override;
+    void setBatchDecryption(bool batchDecryption) override;
     void switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
 
 private:

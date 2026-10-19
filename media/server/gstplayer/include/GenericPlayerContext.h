@@ -209,6 +209,11 @@ struct GenericPlayerContext
     std::optional<bool> pendingUseBuffering{};
 
     /**
+     * @brief Flag used to select the batch decryptor element for encrypted sources
+     */
+    bool batchDecryption{false};
+
+    /**
      * @brief Pending stream sync mode
      */
     std::map<MediaSourceType, int32_t> pendingStreamSyncMode{};

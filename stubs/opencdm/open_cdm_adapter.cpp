@@ -24,4 +24,17 @@ extern "C"
     {
         return ERROR_NONE;
     }
+#ifdef ENABLE_MULTI_DECRYPT
+    OpenCDMError opencdm_gstreamer_session_decrypt_buffer_multi(struct OpenCDMSession *session, GstBuffer *buffers[],
+                                                                const uint16_t count, GstCaps *caps)
+    {
+        return ERROR_NONE;
+    }
+
+    OpenCDMError opencdm_gstreamer_session_decrypt_buffer_multi_once(struct OpenCDMSession *session, GstBuffer *buffers[],
+                                                                     const uint16_t count, GstCaps *caps)
+    {
+        return ERROR_NONE;
+    }
+#endif // ENABLE_MULTI_DECRYPT
 }

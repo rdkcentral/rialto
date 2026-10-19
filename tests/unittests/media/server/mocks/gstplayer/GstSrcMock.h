@@ -34,7 +34,8 @@ public:
     MOCK_METHOD(void, initSrc, (), (override));
     MOCK_METHOD(void, setupAndAddAppSrc,
                 (IDecryptionService * decryptionService, GstElement *element, StreamInfo &streamInfo,
-                 GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type),
+                 GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type,
+                 bool batchDecryption),
                 (override));
     MOCK_METHOD(void, allAppSrcsAdded, (GstElement * element), (override));
 };

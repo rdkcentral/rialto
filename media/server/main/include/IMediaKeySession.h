@@ -117,6 +117,17 @@ public:
     virtual MediaKeyErrorStatus decrypt(GstBuffer *encrypted, GstCaps *caps) = 0;
 
     /**
+     * @brief Decrypts vector of buffers.
+     *
+     * @param[in]  bufferVec        : Vector of gstreamer buffers containing encrypted data and related meta data. If
+     *                                applicable, decrypted data will be stored here after this call returns.
+     * @param[in] caps              : The gst caps of buffer.
+     *
+     * @retval an error status.
+     */
+    virtual MediaKeyErrorStatus decryptMulti(std::vector<GstBuffer *> &bufferVec, GstCaps *caps) = 0;
+
+    /**
      * @brief Closes the key session.
      *
      * @retval an error status.

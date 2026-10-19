@@ -380,6 +380,13 @@ MATCHER_P2(setReportDecodeErrorsRequestMatcher, sessionId, sourceId, "")
     return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
 }
 
+MATCHER_P2(setBatchDecryptionRequestMatcher, sessionId, batchDecryption, "")
+{
+    const ::firebolt::rialto::SetBatchDecryptionRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetBatchDecryptionRequest *>(arg);
+    return (kRequest->session_id() == sessionId) && (kRequest->batch_decryption() == batchDecryption);
+}
+
 MATCHER_P2(getQueuedFramesRequestMatcher, sessionId, sourceId, "")
 {
     const ::firebolt::rialto::GetQueuedFramesRequest *kRequest =

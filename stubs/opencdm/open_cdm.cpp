@@ -21,9 +21,60 @@
 
 extern "C"
 {
+    struct OpenCDMSystem
+    {
+        OpenCDMSystem(const char system[], const std::string &metadata) : _keySystem(system), _metadata(metadata) {}
+        ~OpenCDMSystem() = default;
+        OpenCDMSystem(const OpenCDMSystem &) = default;
+        OpenCDMSystem(OpenCDMSystem &&) = default;
+        OpenCDMSystem &operator=(OpenCDMSystem &&) = default;
+        OpenCDMSystem &operator=(const OpenCDMSystem &) = default;
+        const std::string &keySystem() const { return _keySystem; }
+        const std::string &Metadata() const { return _metadata; }
+
+    private:
+        std::string _keySystem;
+        std::string _metadata;
+    };
+
+    struct OpenCDMSession
+    {
+
+    public:
+        OpenCDMSession(const OpenCDMSession &) = delete;
+        OpenCDMSession &operator=(const OpenCDMSession &) = delete;
+        OpenCDMSession() = delete;
+
+        OpenCDMSession(OpenCDMSystem *system, OpenCDMSessionCallbacks *callbacks, void *userData)
+            : _callback(callbacks), _userData(userData), _system(system)
+        {
+        }
+
+        virtual ~OpenCDMSession() = default;
+
+    private:
+        OpenCDMSessionCallbacks *_callback;
+        void *_userData;
+        OpenCDMSystem *_system;
+    };
+
     OpenCDMSystem *opencdm_create_system(const char keySystem[])
     {
-        return nullptr;
+        struct OpenCDMSystem *result = nullptr;
+        opencdm_create_system_extended(keySystem, &result);
+        return result;
+    }
+
+    OpenCDMError opencdm_create_system_extended(const char keySystem[], struct OpenCDMSystem **system)
+    {
+        OpenCDMError result(OpenCDMError::ERROR_INVALID_ACCESSOR);
+        if (system != nullptr)
+        {
+            std::string metadata;
+            *system = new OpenCDMSystem(keySystem, metadata);
+            result = OpenCDMError::ERROR_NONE;
+        }
+        return result;
     }
 
     OpenCDMError opencdm_construct_session(OpenCDMSystem *system, const LicenseType licenseType,
@@ -32,11 +83,22 @@ extern "C"
                                            const uint16_t CDMDataLength, OpenCDMSessionCallbacks *callbacks,
                                            void *userData, OpenCDMSession **session)
     {
-        return ERROR_NONE;
+        OpenCDMError result(OpenCDMError::ERROR_INVALID_SESSION);
+        if ((system != nullptr) && (session != nullptr))
+        {
+            *session = new OpenCDMSession(system, callbacks, userData);
+            result = OpenCDMError::ERROR_NONE;
+        }
+
+        return result;
     }
 
     OpenCDMError opencdm_destruct_system(struct OpenCDMSystem *system)
     {
+        if (system != nullptr)
+        {
+            delete system;
+        }
         return ERROR_NONE;
     }
 
@@ -78,6 +140,10 @@ extern "C"
 
     OpenCDMError opencdm_destruct_session(struct OpenCDMSession *session)
     {
+        if (session != nullptr)
+        {
+            delete session;
+        }
         return ERROR_NONE;
     }
 
@@ -87,7 +153,14 @@ extern "C"
     }
     const char *opencdm_session_id(const struct OpenCDMSession *session)
     {
-        return nullptr;
+        if (session)
+        {
+            return "TEST_SESSION_ID";
+        }
+        else
+        {
+            return nullptr;
+        }
     }
 
     uint32_t opencdm_session_has_key_id(struct OpenCDMSession *session, const uint8_t length, const uint8_t keyId[])

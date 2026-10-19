@@ -471,6 +471,15 @@ public:
     virtual bool getUseBuffering(bool &useBuffering) = 0;
 
     /**
+     * @brief Enables/disables batch decryption
+     *
+     * @param[in] batchDecryption      : true if batch decryption enabled.
+     *
+     * @retval true on success.
+     */
+    virtual bool setBatchDecryption(bool batchDecryption) = 0;
+
+    /**
      * @brief Request to switch the source to the server backend.
      *
      * @param[in] source    : The source.

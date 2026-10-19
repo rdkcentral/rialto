@@ -348,6 +348,22 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetReportDecodeErrors)
     sendSetReportDecodeErrorsRequestAndReceiveFail();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldSetBatchDecryption)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillSetBatchDecryption();
+    sendSetBatchDecryptionRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetBatchDecryption)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToSetBatchDecryption();
+    sendSetBatchDecryptionRequestAndReceiveFail();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldGetQueuedFrames)
 {
     mediaPipelineServiceWillCreateSession();
