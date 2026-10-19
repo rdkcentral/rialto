@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +35,8 @@ public:
     MOCK_METHOD(void, initSrc, (), (override));
     MOCK_METHOD(void, setupAndAddAppSrc,
                 (IDecryptionService * decryptionService, GstElement *element, StreamInfo &streamInfo,
-                 GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type),
+                 GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type,
+                 bool batchDecryption),
                 (override));
     MOCK_METHOD(void, allAppSrcsAdded, (GstElement * element), (override));
 };

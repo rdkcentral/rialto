@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2023 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,6 +141,10 @@ public:
     MOCK_METHOD(void, getUseBuffering,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetUseBufferingRequest *request,
                  ::firebolt::rialto::GetUseBufferingResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setBatchDecryption,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::SetBatchDecryptionRequest *request,
+                 ::firebolt::rialto::SetBatchDecryptionResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, flush,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::FlushRequest *request,
                  ::firebolt::rialto::FlushResponse *response, ::google::protobuf::Closure *done));

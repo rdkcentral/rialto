@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -169,6 +170,10 @@ public:
                          const ::firebolt::rialto::GetUseBufferingRequest *request,
                          ::firebolt::rialto::GetUseBufferingResponse *response,
                          ::google::protobuf::Closure *done) override;
+    void setBatchDecryption(::google::protobuf::RpcController *controller,
+                            const ::firebolt::rialto::SetBatchDecryptionRequest *request,
+                            ::firebolt::rialto::SetBatchDecryptionResponse *response,
+                            ::google::protobuf::Closure *done) override;
 
 private:
     service::IMediaPipelineService &m_mediaPipelineService;

@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,6 +150,8 @@ public:
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetUseBuffering,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, bool useBuffering), (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetBatchDecryption,
+                (GenericPlayerContext & context, bool batchDecryption), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSwitchSource,
                 (IGstGenericPlayerPrivate & player, const std::unique_ptr<IMediaPipeline::MediaSource> &source),
                 (const, override));

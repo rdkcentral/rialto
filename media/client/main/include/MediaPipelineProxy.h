@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2024 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -176,6 +177,11 @@ public:
     bool setUseBuffering(bool useBuffering) override { return m_mediaPipeline->setUseBuffering(useBuffering); }
 
     bool getUseBuffering(bool &useBuffering) override { return m_mediaPipeline->getUseBuffering(useBuffering); }
+
+    bool setBatchDecryption(bool batchDecryption) override
+    {
+        return m_mediaPipeline->setBatchDecryption(batchDecryption);
+    }
 
     bool switchSource(const std::unique_ptr<MediaSource> &source) override
     {

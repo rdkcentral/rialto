@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -414,6 +415,31 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetReportDecodeError
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, setReportDecodeErrors(_, false)).WillOnce(Return(true));
     EXPECT_TRUE(m_mediaPipeline->setReportDecodeErrors(videoSourceId, false));
+}
+
+/**
+ * Test that SetBatchDecryption returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetBatchDecryptionFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_FALSE(m_mediaPipeline->setBatchDecryption(true));
+}
+
+/**
+ * Test that SetBatchDecryption returns success if the gstreamer player is initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetBatchDecryptionSuccess)
+{
+    loadGstPlayer();
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setBatchDecryption(true));
+    EXPECT_TRUE(m_mediaPipeline->setBatchDecryption(true));
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setBatchDecryption(false));
+    EXPECT_TRUE(m_mediaPipeline->setBatchDecryption(false));
 }
 
 /**

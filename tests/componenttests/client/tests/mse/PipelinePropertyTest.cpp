@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2024 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,6 +121,10 @@ public:
  *   GetDuration
  *   Expect that GetDuration propagated to the server and gets the duration
  *
+ *  Step 16: Set BatchDecryption
+ *   SetBatchDecryption
+ *   Expect that SetBatchDecryption propagated to the server and sets the property
+ *
  * Test Teardown:
  *  Terminate the media session.
  *  Memory region created for the shared buffer is closed.
@@ -201,5 +206,10 @@ TEST_F(PipelinePropertyTest, setAndGetPipelineProperties)
     uint32_t queuedFrames{123};
     MediaPipelineTestMethods::shouldGetQueuedFrames(queuedFrames);
     MediaPipelineTestMethods::getQueuedFrames(queuedFrames);
+
+    // Step 16: Set BatchDecryption
+    bool batchDecryption{true};
+    MediaPipelineTestMethods::shouldSetBatchDecryption(batchDecryption);
+    MediaPipelineTestMethods::setBatchDecryption(batchDecryption);
 }
 } // namespace firebolt::rialto::client::ct

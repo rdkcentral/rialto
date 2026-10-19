@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,6 +91,8 @@ public:
     void mediaPipelineServiceWillFailToGetImmediateOutput();
     void mediaPipelineServiceWillSetReportDecodeErrors();
     void mediaPipelineServiceWillFailToSetReportDecodeErrors();
+    void mediaPipelineServiceWillSetBatchDecryption();
+    void mediaPipelineServiceWillFailToSetBatchDecryption();
     void mediaPipelineServiceWillGetQueuedFrames();
     void mediaPipelineServiceWillFailToGetQueuedFrames();
     void mediaPipelineServiceWillGetStats();
@@ -178,6 +181,8 @@ public:
     void sendGetImmediateOutputRequestAndReceiveFail();
     void sendSetReportDecodeErrorsRequestAndReceiveResponse();
     void sendSetReportDecodeErrorsRequestAndReceiveFail();
+    void sendSetBatchDecryptionRequestAndReceiveResponse();
+    void sendSetBatchDecryptionRequestAndReceiveFail();
     void sendGetQueuedFramesRequestAndReceiveResponse();
     void sendGetQueuedFramesRequestAndReceiveFail();
     void sendGetStatsRequestAndReceiveResponse();

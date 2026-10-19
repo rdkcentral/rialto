@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2023 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1265,6 +1266,18 @@ void MediaPipelineTestMethods::getUseBuffering(const bool expectedUseBuffering)
     bool returnUseBuffering;
     EXPECT_EQ(m_mediaPipeline->getUseBuffering(returnUseBuffering), true);
     EXPECT_EQ(returnUseBuffering, expectedUseBuffering);
+}
+
+void MediaPipelineTestMethods::shouldSetBatchDecryption(const bool expectedBatchDecryption)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setBatchDecryption(_, setBatchDecryptionRequestMatcher(kSessionId, expectedBatchDecryption), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setBatchDecryption(const bool batchDecryption)
+{
+    EXPECT_EQ(m_mediaPipeline->setBatchDecryption(batchDecryption), true);
 }
 
 void MediaPipelineTestMethods::shouldSetVideoWindow(const uint32_t expectedX, const uint32_t expectedY,

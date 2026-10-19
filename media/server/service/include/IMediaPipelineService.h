@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,6 +90,7 @@ public:
     virtual bool getBufferingLimit(int sessionId, uint32_t &limitBufferingMs) = 0;
     virtual bool setUseBuffering(int sessionId, bool useBuffering) = 0;
     virtual bool getUseBuffering(int sessionId, bool &useBuffering) = 0;
+    virtual bool setBatchDecryption(int sessionId, bool batchDecryption) = 0;
     virtual std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) = 0;
     virtual bool isMimeTypeSupported(const std::string &mimeType) = 0;
     virtual std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,

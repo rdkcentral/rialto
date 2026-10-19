@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -236,6 +237,11 @@ void CdmServiceTests::mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyE
     EXPECT_CALL(m_mediaKeysMock, decrypt(kKeySessionId, _, _)).WillOnce(Return(status));
 }
 
+void CdmServiceTests::mediaKeysWillDecryptMultiWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    EXPECT_CALL(m_mediaKeysMock, decryptMulti(kKeySessionId, _, _)).WillOnce(Return(status));
+}
+
 void CdmServiceTests::mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
     EXPECT_CALL(m_mediaKeysMock, selectKeyId(kKeySessionId, keyId)).WillOnce(Return(status));
@@ -328,6 +334,15 @@ void CdmServiceTests::decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorS
     GstBuffer encryptedData{};
     GstCaps caps{};
     EXPECT_EQ(status, m_sut.decrypt(kKeySessionId, &encryptedData, &caps));
+}
+
+void CdmServiceTests::decryptMultiShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    GstBuffer encryptedData1{};
+    GstBuffer encryptedData2{};
+    std::vector<GstBuffer *> bufferVec{&encryptedData1, &encryptedData2};
+    GstCaps caps{};
+    EXPECT_EQ(status, m_sut.decryptMulti(kKeySessionId, bufferVec, &caps));
 }
 
 void CdmServiceTests::selectKeyIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)

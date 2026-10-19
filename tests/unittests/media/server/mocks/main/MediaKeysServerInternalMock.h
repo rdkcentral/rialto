@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,6 +60,8 @@ public:
     MOCK_METHOD(MediaKeyErrorStatus, getCdmKeySessionId, (int32_t keySessionId, std::string &cdmKeySessionId),
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, decrypt, (int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, decryptMulti,
+                (int32_t keySessionId, std::vector<GstBuffer *> &bufferVec, GstCaps *caps), (override));
     MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));
     MOCK_METHOD(MediaKeyErrorStatus, releaseKeySession, (int32_t keySessionId), (override));
     MOCK_METHOD(MediaKeyErrorStatus, getMetricSystemData, (std::vector<uint8_t> & buffer), (override));

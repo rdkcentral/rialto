@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -865,6 +866,24 @@ message GetUseBufferingResponse {
 }
 
 /**
+ * @fn void setBatchDecryption(bool batchDecryption)
+ * @brief Enables/disables batch decryption
+ *
+ * @param[in] session_id        The id of the A/V session.
+ * @param[in] batch_decryption  true if batch decryption enabled.
+ *
+ * This method selects the decryptor element used for encrypted sources.
+ * Must be called before all sources are attached.
+ *
+ */
+message SetBatchDecryptionRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional bool batch_decryption = 2 [default = false];
+}
+message SetBatchDecryptionResponse {
+}
+
+/**
  * @brief Event sent the playback state has changed.
  *
  * @param session_id   The id of the A/V session the status is for.
@@ -1342,6 +1361,13 @@ service MediaPipelineModule {
      * @see GetDurationRequest
      */
     rpc getDuration(GetDurationRequest) returns (GetDurationResponse) {
+    }
+
+    /**
+     * @brief Enables/disables batch decryption
+     * @see SetBatchDecryptionRequest
+     */
+    rpc setBatchDecryption(SetBatchDecryptionRequest) returns (SetBatchDecryptionResponse) {
     }
 
 }
