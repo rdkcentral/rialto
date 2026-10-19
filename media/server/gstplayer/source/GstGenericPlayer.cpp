@@ -2795,12 +2795,14 @@ void GstGenericPlayer::startNotifyPlaybackInfoTimer()
                                static_cast<int64_t>(playbackInfoTimerMs.count()));
     }
 
+    // A PAUSED state transition requires a PlaybackInfo event even if its values are unchanged.
+    m_context.lastReportedPlaybackInfo.reset();
+    notifyPlaybackInfo();
+
     if (m_playbackInfoTimer && m_playbackInfoTimer->isActive())
     {
         return;
     }
-
-    notifyPlaybackInfo();
 
     const auto kNotifyPlaybackInfo = [this]() { notifyPlaybackInfo(); };
     m_playbackInfoTimer = m_timerFactory->createTimer(playbackInfoTimerMs, kNotifyPlaybackInfo,
