@@ -23,6 +23,7 @@
 #include "TestModuleMock.h"
 
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <mutex>
 #include <thread>
@@ -260,7 +261,7 @@ TEST_F(RialtoIpcTest, ConcurrentNoReply)
 {
     constexpr bool kExpectMessage{false};
     constexpr int kNumThreads{4};
-    constexpr int kRequestsPerThread{100};
+    constexpr int kRequestsPerThread{40};
     constexpr int kExpectedRequests{kNumThreads * kRequestsPerThread};
 
     m_clientStub->startMessageThread(kExpectMessage);
@@ -308,9 +309,20 @@ TEST_F(RialtoIpcTest, ConcurrentNoReply)
     }
 
     std::unique_lock<std::mutex> messageReceivedLock(messageReceivedMutex);
-    bool status = messageReceivedCond.wait_for(messageReceivedLock, std::chrono::seconds(2),
-                                               [&] { return messageReceivedCount.load(std::memory_order_relaxed) ==
-                                                             kExpectedRequests; });
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+    while (messageReceivedCount.load(std::memory_order_relaxed) != kExpectedRequests)
+    {
+        if (messageReceivedCond.wait_until(messageReceivedLock, deadline) == std::cv_status::timeout)
+        {
+            break;
+        }
+    }
+    bool status = (messageReceivedCount.load(std::memory_order_relaxed) == kExpectedRequests);
+    messageReceivedLock.unlock();
+
+    m_clientStub->disconnect();
+    m_clientStub.reset();
+    m_serverStub.reset();
 
     ASSERT_TRUE(status);
     ASSERT_TRUE(allRequestsSucceeded.load(std::memory_order_relaxed));

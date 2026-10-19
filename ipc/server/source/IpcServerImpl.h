@@ -139,7 +139,7 @@ private:
 
     struct ClientDetails
     {
-        std::atomic<int> sock{-1};
+        int sock = -1;
         std::shared_ptr<ClientImpl> client;
         std::function<void(const std::shared_ptr<IClient> &)> disconnectedCb;
     };

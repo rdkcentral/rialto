@@ -121,7 +121,7 @@ private:
 
     SimpleBufferPool m_sendBufPool;
 
-    mutable std::mutex m_pendingCallsLock;
+    mutable std::mutex m_lock;
     std::atomic<uint64_t> m_serialCounter;
 
     const std::chrono::milliseconds m_timeout;
@@ -130,6 +130,10 @@ private:
 
     std::vector<uint8_t> m_recvDataBuf;
     std::vector<uint8_t> m_recvCtrlBuf;
+    mutable std::mutex m_recvBuffersLock;
+
+    // Guards descriptor lifetime across send/recv vs shutdown/close.
+    mutable std::mutex m_socketIoLock;
 
     std::mutex m_eventsLock;
 

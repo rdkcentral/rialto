@@ -116,7 +116,7 @@ std::shared_ptr<IChannel> ChannelFactory::createChannel(const std::string &socke
 
 ChannelImpl::ChannelImpl(int sock)
     : m_sock(-1), m_epollFd(-1), m_timerFd(-1), m_eventFd(-1), m_serialCounter(1), m_timeout(getIpcTimeout()),
-    m_recvDataBuf(kMaxMessageSize), m_recvCtrlBuf(CMSG_SPACE(SCM_MAX_FD * sizeof(int))), m_eventTagCounter(1)
+      m_recvDataBuf(kMaxMessageSize), m_recvCtrlBuf(CMSG_SPACE(SCM_MAX_FD * sizeof(int))), m_eventTagCounter(1)
 {
     if (!attachSocket(sock))
     {
@@ -136,7 +136,7 @@ ChannelImpl::ChannelImpl(int sock)
 
 ChannelImpl::ChannelImpl(const std::string &socketPath)
     : m_sock(-1), m_epollFd(-1), m_timerFd(-1), m_eventFd(-1), m_serialCounter(1), m_timeout(getIpcTimeout()),
-    m_recvDataBuf(kMaxMessageSize), m_recvCtrlBuf(CMSG_SPACE(SCM_MAX_FD * sizeof(int))), m_eventTagCounter(1)
+      m_recvDataBuf(kMaxMessageSize), m_recvCtrlBuf(CMSG_SPACE(SCM_MAX_FD * sizeof(int))), m_eventTagCounter(1)
 {
     if (!createConnectedSocket(socketPath))
     {
@@ -293,12 +293,17 @@ void ChannelImpl::termChannel()
         RIALTO_IPC_LOG_SYS_ERROR(errno, "closing event fd failed");
 
     // if any method calls are still outstanding then complete them with errors now
-    for (auto &entry : m_methodCalls)
+    std::map<uint64_t, MethodCall> callsToDelete;
+    {
+        std::lock_guard<std::mutex> locker(m_lock);
+        callsToDelete = m_methodCalls;
+        m_methodCalls.clear();
+    }
+
+    for (auto &entry : callsToDelete)
     {
         completeWithError(&entry.second, "Channel destructed");
     }
-
-    m_methodCalls.clear();
 }
 
 void ChannelImpl::disconnect()
@@ -333,6 +338,8 @@ void ChannelImpl::disconnectNoLock()
         RIALTO_IPC_LOG_WARN("not connected\n");
         return;
     }
+
+    std::lock_guard<std::mutex> ioLock(m_socketIoLock);
 
     // remove the socket from epoll
     if (epoll_ctl(m_epollFd, EPOLL_CTL_DEL, sock, nullptr) != 0)
@@ -422,7 +429,7 @@ bool ChannelImpl::process()
     {
         std::map<uint64_t, MethodCall> callsToDelete;
         {
-            std::lock_guard<std::mutex> locker(m_pendingCallsLock);
+            std::lock_guard<std::mutex> locker(m_lock);
             callsToDelete = m_methodCalls;
             m_methodCalls.clear();
         }
@@ -467,16 +474,15 @@ bool ChannelImpl::unsubscribe(int eventTag)
  */
 bool ChannelImpl::processSocketEvent()
 {
-    const int sock = m_sock.load(std::memory_order_acquire);
-    if (sock < 0)
-    {
-        return false;
-    }
+    std::lock_guard<std::mutex> recvBufLock(m_recvBuffersLock);
 
     // read all messages from the client socket, we break out if the socket is closed
     // or EWOULDBLOCK is returned on a read (ie. no more messages to read)
     while (true)
     {
+        std::vector<FileDescriptor> fds;
+        int msgFlags = 0;
+
         struct msghdr msg = {nullptr};
         struct iovec io = {.iov_base = m_recvDataBuf.data(), .iov_len = m_recvDataBuf.size()};
 
@@ -487,7 +493,39 @@ bool ChannelImpl::processSocketEvent()
         msg.msg_controllen = m_recvCtrlBuf.size();
 
         // read one message
-        ssize_t rd = TEMP_FAILURE_RETRY(recvmsg(sock, &msg, MSG_CMSG_CLOEXEC));
+        ssize_t rd;
+        {
+            std::lock_guard<std::mutex> ioLock(m_socketIoLock);
+
+            const int sock = m_sock.load(std::memory_order_acquire);
+            if (sock < 0)
+            {
+                return false;
+            }
+
+            rd = TEMP_FAILURE_RETRY(recvmsg(sock, &msg, MSG_CMSG_CLOEXEC));
+
+            if (rd > 0)
+            {
+                msgFlags = msg.msg_flags;
+
+                if (msgFlags & (MSG_TRUNC | MSG_CTRUNC))
+                {
+                    // make sure to close all the fds, otherwise we'll leak them, this
+                    // will read the fds and return in a vector, which will then be
+                    // destroyed, closing all the fds
+                    readMessageFds(&msg, 16);
+                }
+                else
+                {
+                    if (msg.msg_controllen > 0)
+                    {
+                        fds = readMessageFds(&msg, 32);
+                    }
+                }
+            }
+        }
+
         if (rd < 0)
         {
             if (errno != EWOULDBLOCK)
@@ -508,26 +546,14 @@ bool ChannelImpl::processSocketEvent()
             disconnectNoLock();
             return false;
         }
-        else if (msg.msg_flags & (MSG_TRUNC | MSG_CTRUNC))
+        else if (msgFlags & (MSG_TRUNC | MSG_CTRUNC))
         {
             RIALTO_IPC_LOG_WARN("received truncated message from server, discarding");
-
-            // make sure to close all the fds, otherwise we'll leak them, this
-            // will read the fds and return in a vector, which will then be
-            // destroyed, closing all the fds
-            readMessageFds(&msg, 16);
         }
         else
         {
-            // if there is control data then assume fd(s) have been passed
-            std::vector<FileDescriptor> fds;
-            if (msg.msg_controllen > 0)
-            {
-                fds = readMessageFds(&msg, 32);
-            }
-
             // process the message from the server
-            processServerMessage(m_recvDataBuf.data(), rd, &fds);
+            processServerMessage(m_recvDataBuf.data(), static_cast<size_t>(rd), &fds);
         }
     }
 
@@ -559,7 +585,7 @@ void ChannelImpl::processTimeoutEvent()
 
     {
         // check if any method call has now expired
-        std::unique_lock<std::mutex> locker(m_pendingCallsLock);
+        std::unique_lock<std::mutex> locker(m_lock);
 
         // remove the method calls that have expired
         const auto kNow = std::chrono::steady_clock::now();
@@ -617,7 +643,7 @@ void ChannelImpl::processWakeEvent()
     This should be called whenever a new method is called or a method has
     completed.
 
-    \note Must be called while holding the m_pendingCallsLock mutex.
+    \note Must be called while holding the m_lock mutex.
 
  */
 void ChannelImpl::updateTimeoutTimer()
@@ -713,7 +739,7 @@ void ChannelImpl::processReplyFromServer(const transport::MethodCallReply &reply
     const uint64_t kSerialId = reply.reply_id();
 
     {
-        std::lock_guard<std::mutex> locker(m_pendingCallsLock);
+        std::lock_guard<std::mutex> locker(m_lock);
 
         auto it = m_methodCalls.find(kSerialId);
         if (it == m_methodCalls.end())
@@ -761,7 +787,7 @@ void ChannelImpl::processErrorFromServer(const transport::MethodCallError &error
     const uint64_t kSerialId = error.reply_id();
 
     {
-        std::unique_lock<std::mutex> locker(m_pendingCallsLock);
+        std::unique_lock<std::mutex> locker(m_lock);
 
         // find the original request
         auto it = m_methodCalls.find(kSerialId);
@@ -1094,6 +1120,7 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
     // copy in the actual message data
     std::string reqString = request->SerializeAsString();
     call->set_request_message(std::move(reqString));
+    const std::string kRequestDebugString = request->ShortDebugString();
 
     const size_t kRequiredDataLen = message.ByteSizeLong();
     if (kRequiredDataLen > kMaxMessageSize)
@@ -1153,38 +1180,74 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
 
     if (!kNoReplyExpected)
     {
-        std::lock_guard<std::mutex> locker(m_pendingCallsLock);
-        m_methodCalls.emplace(kSerialId, methodCall);
-        updateTimeoutTimer();
+        MethodCall pendingCall = methodCall;
+        pendingCall.timeoutDeadline = std::chrono::steady_clock::time_point::max();
+
+        std::lock_guard<std::mutex> locker(m_lock);
+        m_methodCalls.emplace(kSerialId, pendingCall);
     }
 
-    const int sock = m_sock.load(std::memory_order_acquire);
-    if (sock < 0)
+    ssize_t sendRc = -1;
+    bool notConnected = false;
     {
+        std::lock_guard<std::mutex> ioLock(m_socketIoLock);
+
+        const int sock = m_sock.load(std::memory_order_acquire);
+        if (sock < 0)
+        {
+            notConnected = true;
+        }
+        else
+        {
+            sendRc = sendmsg(sock, header, MSG_NOSIGNAL);
+        }
+    }
+
+    if (notConnected)
+    {
+        bool shouldCompleteLocal = true;
         if (!kNoReplyExpected)
         {
-            std::lock_guard<std::mutex> locker(m_pendingCallsLock);
-            m_methodCalls.erase(kSerialId);
+            std::lock_guard<std::mutex> locker(m_lock);
+            shouldCompleteLocal = (m_methodCalls.erase(kSerialId) > 0);
             updateTimeoutTimer();
         }
-        completeWithError(&methodCall, "Not connected");
+        if (shouldCompleteLocal)
+        {
+            completeWithError(&methodCall, "Not connected");
+        }
         return;
     }
 
-    if (sendmsg(sock, header, MSG_NOSIGNAL) != static_cast<ssize_t>(kRequiredDataLen))
+    if (sendRc != static_cast<ssize_t>(kRequiredDataLen))
     {
+        bool shouldCompleteLocal = true;
         if (!kNoReplyExpected)
         {
-            std::lock_guard<std::mutex> locker(m_pendingCallsLock);
-            m_methodCalls.erase(kSerialId);
+            std::lock_guard<std::mutex> locker(m_lock);
+            shouldCompleteLocal = (m_methodCalls.erase(kSerialId) > 0);
             updateTimeoutTimer();
         }
-        completeWithError(&methodCall, "Failed to send message");
+        if (shouldCompleteLocal)
+        {
+            completeWithError(&methodCall, "Failed to send message");
+        }
         return;
+    }
+
+    if (!kNoReplyExpected)
+    {
+        std::lock_guard<std::mutex> locker(m_lock);
+        auto it = m_methodCalls.find(kSerialId);
+        if (it != m_methodCalls.end())
+        {
+            it->second.timeoutDeadline = std::chrono::steady_clock::now() + m_timeout;
+            updateTimeoutTimer();
+        }
     }
 
     RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", kSerialId, call->service_name().c_str(),
-                         call->method_name().c_str(), request->ShortDebugString().c_str());
+                         call->method_name().c_str(), kRequestDebugString.c_str());
 
     if (kNoReplyExpected)
     {
@@ -1206,4 +1269,4 @@ int ChannelImpl::subscribeImpl(const std::string &kEventName, const google::prot
 
     return kTag;
 }
-}; // namespace firebolt::rialto::ipc
+} // namespace firebolt::rialto::ipc
