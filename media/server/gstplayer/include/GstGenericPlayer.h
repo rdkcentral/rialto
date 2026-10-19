@@ -38,6 +38,7 @@
 #include <IMediaPipeline.h>
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -424,10 +425,13 @@ private:
     void pushSampleIfRequired(GstElement *source, const MediaSourceType &mediaSourceType);
 
 private:
+    void notifyPlaybackInfo(bool force);
+
     /**
      * @brief The player context.
      */
     GenericPlayerContext m_context;
+    std::mutex m_playbackInfoMutex;
 
     /**
      * @brief The gstreamer player client.
