@@ -26,11 +26,13 @@
 #include "IMediaFrameWriter.h"
 #include "IMediaPipeline.h"
 #include "IMediaPipelineIpc.h"
+#include <array>
 #include <atomic>
 #include <condition_variable>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <shared_mutex>
 #include <string>
 #include <vector>
 
@@ -220,6 +222,20 @@ protected:
         std::unique_ptr<common::IMediaFrameWriter> frameWriter; /**< The frame writer used to add segments. */
     };
 
+    static constexpr std::size_t kNumRequestSources{3U}; // audio/video/subtitle
+
+    struct SourceNeedDataRequests
+    {
+        std::mutex mutex;
+        std::map<uint32_t, std::shared_ptr<NeedDataRequest>> requests;
+    };
+
+    struct NeedDataRequestLock
+    {
+        std::unique_lock<std::mutex> lock;
+        std::shared_ptr<NeedDataRequest> request;
+    };
+
     /**
      * @brief The media player client.
      */
@@ -235,22 +251,13 @@ protected:
      */
     IClientController &m_clientController;
 
-    /**
-     * @brief The Need data request map.
-     * Key: requestId
-     * Value: NeedDataRequest
-     */
-    std::map<uint32_t, std::shared_ptr<NeedDataRequest>> m_needDataRequestMap;
+    std::array<SourceNeedDataRequests, kNumRequestSources> m_needDataRequests;
 
-    /**
-     * @brief The current application state. Protected by m_needDataRequestMapMutex
-     */
     ApplicationState m_currentAppState;
 
-    /**
-     * @brief The need data request map mutex.
-     */
-    std::mutex m_needDataRequestMapMutex;
+    std::shared_mutex m_needDataMetaMutex;
+
+    std::map<uint32_t, MediaSourceType> m_requestRouting;
 
     /**
      * @brief The media frame writer factory.
@@ -331,6 +338,18 @@ protected:
      * @param[in] needDataRequestId : Need data request id
      */
     void discardNeedDataRequest(uint32_t needDataRequestId);
+
+    bool toSourceIndex(MediaSourceType sourceType, std::size_t &index) const;
+
+    SourceNeedDataRequests *needDataRequestsFor(MediaSourceType sourceType);
+
+    MediaSourceType lookupRouting(uint32_t needDataRequestId, bool shouldErase);
+
+    NeedDataRequestLock lockNeedDataRequest(uint32_t needDataRequestId);
+
+    std::shared_ptr<NeedDataRequest> takeNeedDataRequest(uint32_t needDataRequestId);
+
+    void clearAllNeedDataRequestsLocked();
 };
 
 }; // namespace firebolt::rialto::client
