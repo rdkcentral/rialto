@@ -223,7 +223,8 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
                                      const unsigned int socketPermissions, const std::string &socketOwner,
                                      const std::string &socketGroup, const std::string &appName,
                                      const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
-                                     const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps, uint32_t playbackInfoTimerMs) const
+                                     const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps,
+                                     uint32_t playbackInfoTimerMs) const
 {
     if (!m_ipcLoop || !m_serviceStub)
     {
@@ -244,7 +245,8 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     if (playbackInfoTimerMs != 0)
     {
         request.set_playbackinfotimerms(playbackInfoTimerMs);
-        RIALTO_SERVER_MANAGER_LOG_INFO("Sending playbackInfoTimerMs=%u in SetConfiguration (socketName) for serverId: %d",
+        RIALTO_SERVER_MANAGER_LOG_INFO("Sending playbackInfoTimerMs=%u in SetConfiguration (socketName) for serverId: "
+                                       "%d",
                                        playbackInfoTimerMs, m_serverId);
     }
     *(request.mutable_loglevels()) = getCurrentLogLevels();
@@ -284,7 +286,8 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
                                      const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                      const std::string &appName,
                                      const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
-                                     const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps, uint32_t playbackInfoTimerMs) const
+                                     const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps,
+                                     uint32_t playbackInfoTimerMs) const
 {
     if (!m_ipcLoop || !m_serviceStub)
     {
