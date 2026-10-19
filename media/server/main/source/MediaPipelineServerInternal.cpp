@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1419,6 +1420,26 @@ bool MediaPipelineServerInternal::getUseBufferingInternal(bool &useBuffering)
         return false;
     }
     return m_gstPlayer->getUseBuffering(useBuffering);
+}
+
+bool MediaPipelineServerInternal::setBatchDecryption(bool batchDecryption)
+{
+    bool result;
+    auto task = [&]() { result = setBatchDecryptionInternal(batchDecryption); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setBatchDecryptionInternal(bool batchDecryption)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set batch decryption - Gstreamer player has not been loaded");
+        return false;
+    }
+    m_gstPlayer->setBatchDecryption(batchDecryption);
+    return true;
 }
 
 bool MediaPipelineServerInternal::switchSource(const std::unique_ptr<MediaSource> &source)

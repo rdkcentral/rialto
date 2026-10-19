@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1503,6 +1504,62 @@ TEST_F(GstGenericPlayerPrivateTest, shouldAttachVideoData)
     m_sut->attachData(firebolt::rialto::MediaSourceType::VIDEO);
 }
 
+TEST_F(GstGenericPlayerPrivateTest, shouldAttachVideoDataAsBufferListWhenBatchDecryptionIsEnabled)
+{
+    GstBuffer buffer1{};
+    GstBuffer buffer2{};
+    GstAppSrc audioSrc{};
+    GstAppSrc videoSrc{};
+    int dummyMemory{0};
+    GstBufferList *bufferList{reinterpret_cast<GstBufferList *>(&dummyMemory)};
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            context.batchDecryption = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].buffers.emplace_back(&buffer1);
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].buffers.emplace_back(&buffer2);
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].isDataNeeded = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
+        });
+    {
+        testing::InSequence s;
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferListNewSized(2)).WillOnce(Return(bufferList));
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferListInsert(bufferList, -1, &buffer1));
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferListInsert(bufferList, -1, &buffer2));
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBufferList(&videoSrc, bufferList));
+    }
+    m_sut->attachData(firebolt::rialto::MediaSourceType::VIDEO);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldAttachAudioDataAsBufferListWhenBatchDecryptionIsEnabled)
+{
+    GstBuffer buffer{};
+    GstAppSrc audioSrc{};
+    GstAppSrc videoSrc{};
+    int dummyMemory{0};
+    GstBufferList *bufferList{reinterpret_cast<GstBufferList *>(&dummyMemory)};
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            context.batchDecryption = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].buffers.emplace_back(&buffer);
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].isDataNeeded = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
+        });
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferListNewSized(1)).WillOnce(Return(bufferList));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferListInsert(bufferList, -1, &buffer));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBufferList(&audioSrc, bufferList));
+    m_sut->attachData(firebolt::rialto::MediaSourceType::AUDIO);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotAttachBufferListWhenBuffersAreEmpty)
+{
+    modifyContext([&](GenericPlayerContext &context) { context.batchDecryption = true; });
+    m_sut->attachData(firebolt::rialto::MediaSourceType::VIDEO);
+}
+
 TEST_F(GstGenericPlayerPrivateTest, shouldAttachVideoSample)
 {
     constexpr std::int64_t kPosition{124};
@@ -1941,6 +1998,141 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotUpdateVideoCapsNoChange)
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
 
     m_sut->updateVideoCaps(kWidth, kHeight, kFrameRate, kCodecDataWithBuffer);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldPushPendingVideoBuffersBeforeCapsChangeWhenBatchDecryptionIsEnabled)
+{
+    GstAppSrc audioSrc{};
+    GstAppSrc videoSrc{};
+    GstCaps dummyCaps1;
+    GstCaps dummyCaps2;
+    GstBuffer buffer{};
+    int dummyMemory{0};
+    GstBufferList *bufferList{reinterpret_cast<GstBufferList *>(&dummyMemory)};
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            context.batchDecryption = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].buffers.emplace_back(&buffer);
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].isDataNeeded = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
+        });
+
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&videoSrc))).WillOnce(Return(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, StrEq("width"), G_TYPE_INT, kWidth));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, StrEq("height"), G_TYPE_INT, kHeight));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleFractionStub(&dummyCaps2, StrEq("framerate"), GST_TYPE_FRACTION,
+                                                                kFrameRate.numerator, kFrameRate.denominator));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&dummyCaps1, &dummyCaps2)).WillOnce(Return(false));
+    {
+        // Buffers received before the caps change must be pushed with the old caps
+        testing::InSequence s;
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferListNewSized(1)).WillOnce(Return(bufferList));
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferListInsert(bufferList, -1, &buffer));
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBufferList(&videoSrc, bufferList));
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(&videoSrc), &dummyCaps2));
+    }
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
+
+    m_sut->updateVideoCaps(kWidth, kHeight, kFrameRate, kEmptyCodecData);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotPushPendingVideoBuffersWhenCapsDoNotChangeAndBatchDecryptionIsEnabled)
+{
+    GstAppSrc audioSrc{};
+    GstAppSrc videoSrc{};
+    GstCaps dummyCaps1;
+    GstCaps dummyCaps2;
+    GstBuffer buffer{};
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            context.batchDecryption = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].buffers.emplace_back(&buffer);
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].isDataNeeded = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
+        });
+
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&videoSrc))).WillOnce(Return(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, StrEq("width"), G_TYPE_INT, kWidth));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, StrEq("height"), G_TYPE_INT, kHeight));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleFractionStub(&dummyCaps2, StrEq("framerate"), GST_TYPE_FRACTION,
+                                                                kFrameRate.numerator, kFrameRate.denominator));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&dummyCaps1, &dummyCaps2)).WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
+
+    m_sut->updateVideoCaps(kWidth, kHeight, kFrameRate, kEmptyCodecData);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&buffer));
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldUpdateVideoCapsWithoutPendingBuffersWhenBatchDecryptionIsEnabled)
+{
+    GstAppSrc videoSrc{};
+    GstCaps dummyCaps1;
+    GstCaps dummyCaps2;
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            context.batchDecryption = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
+        });
+
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&videoSrc))).WillOnce(Return(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, StrEq("width"), G_TYPE_INT, kWidth));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, StrEq("height"), G_TYPE_INT, kHeight));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleFractionStub(&dummyCaps2, StrEq("framerate"), GST_TYPE_FRACTION,
+                                                                kFrameRate.numerator, kFrameRate.denominator));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&dummyCaps1, &dummyCaps2)).WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(&videoSrc), &dummyCaps2));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
+
+    m_sut->updateVideoCaps(kWidth, kHeight, kFrameRate, kEmptyCodecData);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldPushPendingAudioBuffersBeforeCapsChangeWhenBatchDecryptionIsEnabled)
+{
+    GstAppSrc audioSrc{};
+    GstAppSrc videoSrc{};
+    GstCaps dummyCaps1;
+    GstCaps dummyCaps2;
+    GstBuffer buffer{};
+    int dummyMemory{0};
+    GstBufferList *bufferList{reinterpret_cast<GstBufferList *>(&dummyMemory)};
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            context.batchDecryption = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].buffers.emplace_back(&buffer);
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].isDataNeeded = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
+        });
+
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&audioSrc))).WillOnce(Return(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, StrEq("rate"), G_TYPE_INT, kSampleRate));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&dummyCaps1, &dummyCaps2)).WillOnce(Return(false));
+    {
+        // Buffers received before the caps change must be pushed with the old caps
+        testing::InSequence s;
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferListNewSized(1)).WillOnce(Return(bufferList));
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferListInsert(bufferList, -1, &buffer));
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBufferList(&audioSrc, bufferList));
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(&audioSrc), &dummyCaps2));
+    }
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
+
+    m_sut->updateAudioCaps(kSampleRate, kInvalidNumberOfChannels, kEmptyCodecData);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotUpdateAudioVideoCapsWhenNoSrc)

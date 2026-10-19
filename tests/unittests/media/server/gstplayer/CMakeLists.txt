@@ -48,6 +48,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/RemoveSourceTest.cpp
     genericPlayer/tasksTests/RenderFrameTest.cpp
     genericPlayer/tasksTests/ReportPositionTest.cpp
+    genericPlayer/tasksTests/SetBatchDecryptionTest.cpp
     genericPlayer/tasksTests/SetBufferingLimitTest.cpp
     genericPlayer/tasksTests/SetLowLatencyTest.cpp
     genericPlayer/tasksTests/SetImmediateOutputTest.cpp
@@ -108,7 +109,10 @@ add_gtests(RialtoServerGstPlayerUnitTests
     rialtoSrc/AppSrcTest.cpp
 
     #Decyptor unittests
+    decryptor/BatchDecryptorTest.cpp
     decryptor/CreateTest.cpp
+    decryptor/DecryptMultiTest.cpp
+    decryptor/DecryptorElementTest.cpp
     decryptor/DecryptTest.cpp
 
     #ProtectionMetadata unittests

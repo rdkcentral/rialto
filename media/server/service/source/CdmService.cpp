@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -534,6 +535,20 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
         return MediaKeyErrorStatus::FAIL;
     }
     return m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->decrypt(keySessionId, encrypted, caps);
+}
+
+MediaKeyErrorStatus CdmService::decryptMulti(int32_t keySessionId, std::vector<GstBuffer *> &bufferVec, GstCaps *caps)
+{
+    RIALTO_SERVER_LOG_DEBUG("CdmService requested to decrypt multi, key session id: %d", keySessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
+    auto mediaKeysHandleIter{m_sessionInfo.find(keySessionId)};
+    if (mediaKeysHandleIter == m_sessionInfo.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
+        return MediaKeyErrorStatus::FAIL;
+    }
+    return m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->decryptMulti(keySessionId, bufferVec, caps);
 }
 
 bool CdmService::isExtendedInterfaceUsed(int32_t keySessionId)

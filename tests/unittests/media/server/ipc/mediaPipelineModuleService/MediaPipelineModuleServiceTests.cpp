@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -346,6 +347,22 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetReportDecodeErrors)
     sendCreateSessionRequestAndReceiveResponse();
     mediaPipelineServiceWillFailToSetReportDecodeErrors();
     sendSetReportDecodeErrorsRequestAndReceiveFail();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetBatchDecryption)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillSetBatchDecryption();
+    sendSetBatchDecryptionRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetBatchDecryption)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToSetBatchDecryption();
+    sendSetBatchDecryptionRequestAndReceiveFail();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldGetQueuedFrames)

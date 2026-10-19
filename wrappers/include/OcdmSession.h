@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +26,7 @@
 #include "opencdm/open_cdm.h"
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::wrappers
 {
@@ -61,6 +63,8 @@ public:
 
     MediaKeyErrorStatus decryptBuffer(GstBuffer *encrypted, GstCaps *caps) override;
 
+    MediaKeyErrorStatus decryptBufferMulti(std::vector<GstBuffer *> &bufferVec, GstCaps *caps) override;
+
     MediaKeyErrorStatus remove();
 
     MediaKeyErrorStatus close();
@@ -96,6 +100,12 @@ private:
     using OcdmGstSessionDecryptExFn = OpenCDMError (*)(struct OpenCDMSession *, GstBuffer *, GstBuffer *,
                                                        const uint32_t, GstBuffer *, GstBuffer *, uint32_t, GstCaps *);
     using OcdmGstSessionDecryptBufferOnceFn = OpenCDMError (*)(struct OpenCDMSession *, GstBuffer *, GstCaps *);
+
+    using OcdmGstSessionDecryptBufferMultiFn = OpenCDMError (*)(struct OpenCDMSession *, GstBuffer *[], const uint16_t,
+                                                                GstCaps *);
+    using OcdmGstSessionDecryptBufferMultiOnceFn = OpenCDMError (*)(struct OpenCDMSession *, GstBuffer *[],
+                                                                    const uint16_t, GstCaps *caps);
+
     /**
      * @brief The System handle.
      */
@@ -118,6 +128,9 @@ private:
 
     static OcdmGstSessionDecryptExFn m_ocdmGstSessionDecryptEx;
     static OcdmGstSessionDecryptBufferOnceFn m_ocdmGstSessionDecryptBufferOnce;
+
+    static OcdmGstSessionDecryptBufferMultiFn m_ocdmGstSessionDecryptMulti;
+    static OcdmGstSessionDecryptBufferMultiOnceFn m_ocdmGstSessionDecryptMultiOnce;
     /**
      * @brief Requests the processing of the challenge data.
      *

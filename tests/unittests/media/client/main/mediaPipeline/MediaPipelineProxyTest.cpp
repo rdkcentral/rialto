@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2024 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,6 +176,11 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     EXPECT_CALL(*mediaPipelineMock, setReportDecodeErrors(kSourceId, true)).WillOnce(Return(true));
     EXPECT_TRUE(proxy->setReportDecodeErrors(kSourceId, true));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, setBatchDecryption(true)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setBatchDecryption(true));
 
     /////////////////////////////////////////////
 

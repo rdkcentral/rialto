@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,12 +49,14 @@ public:
      *
      * @param[in] decryptionService : The service used to decrypt frames.
      * @param[in] gstWrapper        : The gstreamer wrapper.
+     * @param[in] batchDecryption   : true to create the batch (multi) decryptor element.
      *
      * @retval a decryptor element instance or null on error.
      */
-    virtual GstElement *
-    createDecryptorElement(const gchar *name, firebolt::rialto::server::IDecryptionService *decryptionService,
-                           const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const = 0;
+    virtual GstElement *createDecryptorElement(const gchar *name,
+                                               firebolt::rialto::server::IDecryptionService *decryptionService,
+                                               const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                               bool batchDecryption) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

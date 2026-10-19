@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +38,7 @@
 #include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
+#include "tasks/generic/SetBatchDecryption.h"
 #include "tasks/generic/SetBufferingLimit.h"
 #include "tasks/generic/SetImmediateOutput.h"
 #include "tasks/generic/SetLowLatency.h"
@@ -363,6 +365,12 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetUseBuffering(Gen
                                                                              bool useBuffering) const
 {
     return std::make_unique<tasks::generic::SetUseBuffering>(context, player, useBuffering);
+}
+
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetBatchDecryption(GenericPlayerContext &context,
+                                                                                bool batchDecryption) const
+{
+    return std::make_unique<tasks::generic::SetBatchDecryption>(context, batchDecryption);
 }
 
 std::unique_ptr<IPlayerTask>

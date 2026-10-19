@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +33,7 @@ class IDecryptionService
 public:
     virtual ~IDecryptionService() = default;
     virtual MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) = 0;
+    virtual MediaKeyErrorStatus decryptMulti(int32_t keySessionId, std::vector<GstBuffer *> &bufferVec, GstCaps *caps) = 0;
     virtual bool isExtendedInterfaceUsed(int32_t keySessionId) = 0;
     virtual MediaKeyErrorStatus selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId) = 0;
     virtual void incrementSessionIdUsageCounter(int32_t keySessionId) = 0;

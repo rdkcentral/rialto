@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,6 +88,7 @@ constexpr uint32_t kDuration{30};
 constexpr bool kImmediateOutputVal1{false};
 constexpr bool kImmediateOutputVal2{true};
 constexpr bool kReportDecodeErrorsVal{false};
+constexpr bool kBatchDecryptionVal{true};
 constexpr uint32_t kQueuedFramesVal{123};
 constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
@@ -703,6 +705,20 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetReportDec
 {
     expectRequestFailure();
     EXPECT_CALL(m_mediaPipelineServiceMock, setReportDecodeErrors(kHardcodedSessionId, _, kReportDecodeErrorsVal))
+        .WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetBatchDecryption()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setBatchDecryption(kHardcodedSessionId, kBatchDecryptionVal))
+        .WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetBatchDecryption()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setBatchDecryption(kHardcodedSessionId, kBatchDecryptionVal))
         .WillOnce(Return(false));
 }
 
@@ -1445,6 +1461,28 @@ void MediaPipelineModuleServiceTests::sendSetReportDecodeErrorsRequestAndReceive
     request.set_report_decode_errors(kReportDecodeErrorsVal);
 
     m_service->setReportDecodeErrors(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendSetBatchDecryptionRequestAndReceiveResponse()
+{
+    firebolt::rialto::SetBatchDecryptionRequest request;
+    firebolt::rialto::SetBatchDecryptionResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_batch_decryption(kBatchDecryptionVal);
+
+    m_service->setBatchDecryption(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendSetBatchDecryptionRequestAndReceiveFail()
+{
+    firebolt::rialto::SetBatchDecryptionRequest request;
+    firebolt::rialto::SetBatchDecryptionResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_batch_decryption(kBatchDecryptionVal);
+
+    m_service->setBatchDecryption(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void MediaPipelineModuleServiceTests::sendGetQueuedFramesRequestAndReceiveResponse()

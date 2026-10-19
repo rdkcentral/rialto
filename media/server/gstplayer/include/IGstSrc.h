@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,10 +106,11 @@ public:
      * @param[in] callbacks : Callbacks to be set on the app source.
      * @param[in] userData  : Data to be passed to the callbacks.
      * @param[in] type      : The media type of the source.
+     * @param[in] batchDecryption : Whether the batch decryptor element should be used for encrypted sources.
      */
     virtual void setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement *source, StreamInfo &streamInfo,
                                    GstAppSrcCallbacks *callbacks, gpointer userData,
-                                   firebolt::rialto::MediaSourceType type) = 0;
+                                   firebolt::rialto::MediaSourceType type, bool batchDecryption) = 0;
 
     /**
      * @brief Notify rialto source that all app sources have been added.

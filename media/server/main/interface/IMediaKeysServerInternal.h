@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,6 +89,20 @@ public:
      * @retval an error status.
      */
     virtual MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) = 0;
+
+    /**
+     * @brief Decrypts vector of buffers.
+     *
+     * Encryption metadata shall be attached to the encrypted buffer as protection meta prior to this call.
+     *
+     * @param[in] keySessionId    : The session id for the session.
+     * @param[in] bufferVec       : Vector of gstreamer buffers containing encrypted data and related meta data. If
+     *                              applicable, decrypted data will be stored here after this call returns.
+     * @param[in] caps            : The gst caps shared by all buffers.
+     *
+     * @retval an error status.
+     */
+    virtual MediaKeyErrorStatus decryptMulti(int32_t keySessionId, std::vector<GstBuffer *> &bufferVec, GstCaps *caps) = 0;
 
     /**
      * @brief Checks, if MediaKeys main thread is not deadlocked

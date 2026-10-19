@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,6 +101,8 @@ void ReadShmDataAndAttachSamples::execute() const
 
         attachData(mediaSegment->getType(), gstBuffer);
     }
+    attachData();
+
     // All segments in vector have the same type
     if (!mediaSegments.empty())
     {
@@ -129,7 +132,10 @@ void ReadShmDataAndAttachSamples::attachData(const firebolt::rialto::MediaSource
     if (elem != m_context.streamInfo.end())
     {
         elem->second.buffers.push_back(buffer);
-        m_player.attachData(mediaType);
+        if (!m_context.batchDecryption)
+        {
+            m_player.attachData(mediaType);
+        }
     }
     else
     {
@@ -137,4 +143,23 @@ void ReadShmDataAndAttachSamples::attachData(const firebolt::rialto::MediaSource
         m_gstWrapper->gstBufferUnref(buffer);
     }
 }
+
+void ReadShmDataAndAttachSamples::attachData() const
+{
+    if (m_context.batchDecryption)
+    {
+        using firebolt::rialto::MediaSourceType;
+        std::vector<MediaSourceType> mediaTypes{MediaSourceType::VIDEO, MediaSourceType::AUDIO,
+                                                MediaSourceType::SUBTITLE};
+        for (const auto &mediaType : mediaTypes)
+        {
+            auto elem = m_context.streamInfo.find(mediaType);
+            if (elem != m_context.streamInfo.end() && !elem->second.buffers.empty())
+            {
+                m_player.attachData(mediaType);
+            }
+        }
+    }
+}
+
 } // namespace firebolt::rialto::server::tasks::generic
