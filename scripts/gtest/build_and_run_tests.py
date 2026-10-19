@@ -75,6 +75,8 @@ def buildAndRunGTests(args, f, buildDefines, suitesToRun):
     os.environ["RIALTO_DEBUG"] = "5"
     # Enable profiler for all test suites.
     os.environ["PROFILER_ENABLED"] = "true"
+    if args['valgrind']:
+        os.environ["RIALTO_TEST_UNDER_VALGRIND"] = "1"
 
     # Clean if required
     if args['clean'] == True:

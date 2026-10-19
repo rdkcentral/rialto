@@ -228,7 +228,8 @@ public:
     /**
      * @brief Notifies the client about the current playback state
      *
-     * Notification shall be sent every 32ms after reaching the PLAYING state.
+     * Notifications are sent periodically after reaching the PLAYING state, using the configured
+     * PlaybackInfo interval (32ms when no positive interval is configured).
      *
      * @param[in] playbackInfo : The current playback information.
      */
