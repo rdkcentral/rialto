@@ -408,6 +408,52 @@ TEST_F(RialtoClientMediaPipelineDataTest, haveDataSuccess)
     EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
 }
 
+/**
+ * Test that NeedData requests for two different source types are tracked
+ * independently of each other: adding a segment for one source's request
+ * does not disturb another source's still-pending request, and both are
+ * reported correctly by a subsequent haveData call.
+ */
+TEST_F(RialtoClientMediaPipelineDataTest, MultiSourceRequestsAreIndependentlyRouted)
+{
+    // Attach a second source, of a different MediaSourceType to m_sourceId (audio)
+    const int32_t videoSourceId = m_sourceId + 1;
+    const uint32_t videoRequestId = m_requestId + 1;
+    std::unique_ptr<IMediaPipeline::MediaSource> videoSource =
+        std::make_unique<IMediaPipeline::MediaSourceVideo>("video/h264");
+    EXPECT_CALL(*m_mediaPipelineIpcMock, attachSource(Ref(videoSource), _))
+        .WillOnce(DoAll(SetArgReferee<1>(videoSourceId), Return(true)));
+    EXPECT_EQ(m_mediaPipeline->attachSource(videoSource), true);
+
+    // NeedData for both the audio and video sources are outstanding at the same time
+    needDataGeneric();
+    needData(videoSourceId, m_frameCount, videoRequestId, m_shmInfo);
+
+    // Add a segment for the video request only
+    std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock =
+        std::make_unique<StrictMock<MediaFrameWriterMock>>();
+    m_mediaFrameWriterMock = mediaFrameWriterMock.get();
+
+    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
+    std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::VIDEO, data.size(), data.data());
+
+    EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(&m_shmBuffer));
+    EXPECT_CALL(*m_clientControllerMock, getSharedMemoryHandle()).WillOnce(Return(m_sharedMemoryHandleMock));
+    EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
+        .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
+    EXPECT_CALL(*m_mediaFrameWriterMock, writeFrame(_)).WillOnce(Return(AddSegmentStatus::OK));
+    EXPECT_EQ(m_mediaPipeline->addSegment(videoRequestId, frame), AddSegmentStatus::OK);
+
+    // The audio request's entry must still be intact and unaffected by the video source's traffic
+    EXPECT_CALL(*m_mediaPipelineIpcMock, haveData(m_status, 0, m_requestId)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
+
+    // The video request should report the frame that was written to it
+    EXPECT_CALL(*m_mediaFrameWriterMock, getNumFrames()).WillOnce(Return(1U));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, haveData(m_status, 1U, videoRequestId)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->haveData(m_status, videoRequestId), true);
+}
+
 // /**
 //  * Test that an add segment call with a null segment returns error.
 //  */
