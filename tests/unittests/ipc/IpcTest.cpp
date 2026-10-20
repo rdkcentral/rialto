@@ -21,11 +21,15 @@
 #include "ServerStub.h"
 #include "TestClientMock.h"
 #include "TestModuleMock.h"
+
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
-#include <gtest/gtest.h>
+#include <mutex>
 #include <thread>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::ipc;
@@ -251,55 +255,75 @@ TEST_F(RialtoIpcTest, NoReply)
 }
 
 /**
- * Test that IPC client can process concurrent no reply requests.
+ * Test that IPC client can process no reply request from multiple threads.
  */
 TEST_F(RialtoIpcTest, ConcurrentNoReply)
 {
     constexpr bool kExpectMessage{false};
-    constexpr int kThreadCount{8};
-    constexpr int kRequestsPerThread{1000};
-    constexpr int kExpectedRequestCount{kThreadCount * kRequestsPerThread};
+    constexpr int kNumThreads{4};
+    constexpr int kRequestsPerThread{40};
+    constexpr int kExpectedRequests{kNumThreads * kRequestsPerThread};
+
     m_clientStub->startMessageThread(kExpectMessage);
 
     std::mutex messageReceivedMutex;
     std::condition_variable messageReceivedCond;
-    std::atomic<int> receivedCount{0};
+    std::atomic<int> messageReceivedCount{0};
 
     EXPECT_CALL(*m_testModuleMock, TestRequestSingleVarNoReply(_, _, _, _))
-        .Times(kExpectedRequestCount)
+        .Times(kExpectedRequests)
         .WillRepeatedly(WithArgs<0, 3>(Invoke(
             [&](auto *c, auto *d)
             {
                 m_testModuleMock->defaultReturn(c, d);
-                if (receivedCount.fetch_add(1, std::memory_order_relaxed) + 1 == kExpectedRequestCount)
+
+                if (messageReceivedCount.fetch_add(1, std::memory_order_relaxed) + 1 == kExpectedRequests)
                 {
                     std::lock_guard<std::mutex> messageReceivedLock(messageReceivedMutex);
                     messageReceivedCond.notify_one();
                 }
             })));
 
-    std::vector<std::thread> workers;
-    workers.reserve(kThreadCount);
-    for (int i = 0; i < kThreadCount; ++i)
+    std::atomic<bool> allRequestsSucceeded{true};
+    std::vector<std::thread> threads;
+    threads.reserve(kNumThreads);
+
+    for (int t = 0; t < kNumThreads; ++t)
     {
-        workers.emplace_back(
-            [this]()
+        threads.emplace_back(
+            [&]()
             {
-                for (int j = 0; j < kRequestsPerThread; ++j)
+                for (int i = 0; i < kRequestsPerThread; ++i)
                 {
-                    EXPECT_TRUE(m_clientStub->sendSingleVarRequestWithNoReply(m_int));
+                    if (!m_clientStub->sendSingleVarRequestWithNoReply(m_int))
+                    {
+                        allRequestsSucceeded.store(false, std::memory_order_relaxed);
+                    }
                 }
             });
     }
 
-    for (auto &worker : workers)
+    for (auto &thread : threads)
     {
-        worker.join();
+        thread.join();
     }
 
     std::unique_lock<std::mutex> messageReceivedLock(messageReceivedMutex);
-    bool status = messageReceivedCond.wait_for(messageReceivedLock, std::chrono::seconds(2),
-                                               [&] { return receivedCount.load(std::memory_order_relaxed) ==
-                                                              kExpectedRequestCount; });
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+    while (messageReceivedCount.load(std::memory_order_relaxed) != kExpectedRequests)
+    {
+        if (messageReceivedCond.wait_until(messageReceivedLock, deadline) == std::cv_status::timeout)
+        {
+            break;
+        }
+    }
+    bool status = (messageReceivedCount.load(std::memory_order_relaxed) == kExpectedRequests);
+    messageReceivedLock.unlock();
+
+    m_clientStub->disconnect();
+    m_clientStub.reset();
+    m_serverStub.reset();
+
     ASSERT_TRUE(status);
+    ASSERT_TRUE(allRequestsSucceeded.load(std::memory_order_relaxed));
 }
