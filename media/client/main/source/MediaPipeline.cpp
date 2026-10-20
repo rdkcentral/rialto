@@ -20,6 +20,7 @@
 #include <inttypes.h>
 #include <stdexcept>
 #include <stdint.h>
+#include <thread>
 
 #include "KeyIdMap.h"
 #include "MediaPipeline.h"
@@ -762,8 +763,6 @@ MediaPipeline::NeedDataRequestLock MediaPipeline::lockNeedDataRequest(uint32_t n
     auto it = sourceRequests->requests.find(needDataRequestId);
     if (it == sourceRequests->requests.end())
     {
-        std::unique_lock<std::shared_mutex> metaLock{m_needDataMetaMutex};
-        m_requestRouting.erase(needDataRequestId);
         return NeedDataRequestLock{};
     }
     return NeedDataRequestLock{std::move(lock), it->second};
@@ -961,26 +960,42 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
         needDataRequest->sourceId = sourceId;
         needDataRequest->shmInfo = shmInfo;
 
+        const MediaSourceType sourceType = m_attachedSources.getType(sourceId);
+        SourceNeedDataRequests *sourceRequests = needDataRequestsFor(sourceType);
+        if (!sourceRequests)
         {
-            const MediaSourceType sourceType = m_attachedSources.getType(sourceId);
-            SourceNeedDataRequests *sourceRequests = needDataRequestsFor(sourceType);
-            if (!sourceRequests)
-            {
-                RIALTO_CLIENT_LOG_WARN("NeedMediaData received for unsupported source %d, ignoring request id %u",
-                                       sourceId, requestId);
-                break;
-            }
+            RIALTO_CLIENT_LOG_WARN("NeedMediaData received for unsupported source %d, ignoring request id %u", sourceId,
+                                   requestId);
+            break;
+        }
 
+        bool inserted = false;
+        while (true)
+        {
             std::unique_lock<std::shared_mutex> metaLock{m_needDataMetaMutex};
             if (ApplicationState::RUNNING != m_currentAppState)
             {
                 RIALTO_CLIENT_LOG_INFO("NeedMediaData received in state != RUNNING, ignoring request id %u", requestId);
                 break;
             }
-            m_requestRouting[requestId] = sourceType;
 
-            std::lock_guard<std::mutex> sourceLock{sourceRequests->mutex};
-            sourceRequests->requests[requestId] = needDataRequest;
+            std::unique_lock<std::mutex> sourceLock{sourceRequests->mutex, std::try_to_lock};
+            if (!sourceLock.owns_lock())
+            {
+                metaLock.unlock();
+                std::this_thread::yield();
+                continue;
+            }
+
+            m_requestRouting[requestId] = sourceType;
+            sourceRequests->requests[requestId] = std::move(needDataRequest);
+            inserted = true;
+            break;
+        }
+
+        if (!inserted)
+        {
+            break;
         }
 
         std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();

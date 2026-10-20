@@ -23,8 +23,8 @@
 #include "MediaCommon.h"
 #include <cstdint>
 #include <map>
-#include <shared_mutex>
 #include <mutex>
+#include <shared_mutex>
 
 namespace firebolt::rialto::client
 {
