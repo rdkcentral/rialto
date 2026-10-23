@@ -20,6 +20,10 @@
 #include "Profiler.h"
 #include "RialtoCommonLogging.h"
 
+#ifdef RIALTO_ENABLE_AVMONITOR_CLIENT
+#include <avmonitor.h>
+#endif
+
 #include <algorithm>
 #include <cctype>
 #include <cstddef>
@@ -27,17 +31,19 @@
 #include <cstdlib>
 #include <fstream>
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace
 {
 inline constexpr const char *kProfilerEnv{"PROFILER_ENABLED"};
 inline constexpr const char *kProfilerDumpFileEnv{"PROFILER_DUMP_FILE_NAME"};
+inline constexpr const char *kZenithConnectionEnv{"ZENITH_CONNECTION"};
 inline constexpr std::size_t kMaxRecords{100};
 
-bool getProfilerEnabled()
+bool getEnvAsBool(const char *envName)
 {
-    const char *value = std::getenv(kProfilerEnv);
+    const char *value = std::getenv(envName);
     if (!value || (value[0] == '\0'))
         return false;
 
@@ -51,6 +57,16 @@ bool getProfilerEnabled()
         return false;
 
     return false;
+}
+
+bool getProfilerEnabled()
+{
+    return getEnvAsBool(kProfilerEnv);
+}
+
+bool getZenithConnectionEnabled()
+{
+    return getEnvAsBool(kZenithConnectionEnv);
 }
 
 std::optional<std::string> getDumpFileName()
@@ -87,7 +103,10 @@ std::unique_ptr<IProfiler> ProfilerFactory::createProfiler(std::string moduleNam
 }
 
 Profiler::Profiler(std::string module)
-    : m_module(std::move(module)), m_enabled(getProfilerEnabled()), m_dumpFileName(getDumpFileName())
+    : m_module(std::move(module)),
+      m_enabled(getProfilerEnabled()),
+      m_zenithConnectionEnabled(getZenithConnectionEnabled()),
+      m_dumpFileName(getDumpFileName())
 {
 }
 
@@ -148,10 +167,22 @@ void Profiler::log(const RecordId id)
 
         const auto idStr = std::to_string(static_cast<std::uint64_t>(record->id));
         const auto tsStr = std::to_string(static_cast<std::int64_t>(ms));
+        const auto payload = std::string{"PROFILER | RECORD | MODULE["} + record->moduleName + "] " + "ID[" +
+                     idStr + "] " + "STAGE[" + record->stage + "] " + "INFO[" + record->info + "] " +
+                     "TIMESTAMP[" + tsStr + "]";
 
-        RIALTO_COMMON_LOG_MIL("PROFILER | RECORD | MODULE[%s] ID[%s] STAGE[%s] INFO[%s] TIMESTAMP[%s]",
-                              record->moduleName.c_str(), idStr.c_str(), record->stage.c_str(), record->info.c_str(),
-                              tsStr.c_str());
+        RIALTO_COMMON_LOG_MIL("%s", payload.c_str());
+
+#ifdef RIALTO_ENABLE_AVMONITOR_CLIENT
+        if (m_zenithConnectionEnabled)
+        {
+            const auto status = avmonitor_register_event(payload.c_str());
+            if (status != AVMONITOR_OK)
+            {
+                RIALTO_COMMON_LOG_WARN("Failed to send profiler record to AVMonitor client library");
+            }
+        }
+#endif
     }
 }
 

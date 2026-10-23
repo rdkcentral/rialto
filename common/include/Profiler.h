@@ -57,6 +57,7 @@ private:
 
     std::string m_module;
     bool m_enabled;
+    bool m_zenithConnectionEnabled;
     std::optional<std::string> m_dumpFileName;
 
     mutable std::mutex m_mutex;
