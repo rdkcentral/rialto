@@ -19,7 +19,7 @@ name: Rialto OCDM Test
 
 on:
   pull_request:
-    branches: ["master", "release/*"]
+    branches: ["master", "release/*", "support/*"]
 
   workflow_dispatch:
 
@@ -28,44 +28,135 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Check if rialto-ocdm branch with the same name exists
-        id: check-branch
-        shell: sh +e {0}
+      - name: Find matching rialto-ocdm branch
+        id: select-ref
+        env:
+          PR_BRANCH: ${{ github.head_ref }}
+          BASE_BRANCH: ${{ github.base_ref || github.ref_name }}
         run: |
-          branch="${{ github.base_ref }}"
-          git ls-remote --exit-code --heads "https://github.com/rdkcentral/rialto-ocdm.git" ${{ github.event.pull_request.head.ref }} > /dev/null
-          if [ $? -eq 0 ]; then
-            branch="${{ github.event.pull_request.head.ref }}"
-          fi
-          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          repo="https://github.com/rdkcentral/rialto-ocdm.git"
+          for candidate in "$PR_BRANCH" "$BASE_BRANCH"; do
+            if [ -n "$candidate" ] && git ls-remote --exit-code --heads "$repo" "refs/heads/$candidate" > /dev/null; then
+              echo "Using rialto-ocdm branch: $candidate"
+              echo "ref=$candidate" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "No matching dependency branch; release-pin matrix will run instead"
+          echo "ref=" >> "$GITHUB_OUTPUT"
 
       - name: Checkout rialto-ocdm repo
+        if: steps.select-ref.outputs.ref != ''
         uses: actions/checkout@v4
         with:
           repository: rdkcentral/rialto-ocdm
-          ref: ${{ steps.check-branch.outputs.branch }}
+          ref: ${{ steps.select-ref.outputs.ref }}
           path: rialto-ocdm
           
       - name: Set up Python
+        if: steps.select-ref.outputs.ref != ''
         uses: actions/setup-python@v5
         with:
           python-version: 3.8
 
       - name: Build gstreamer library
+        if: steps.select-ref.outputs.ref != ''
         run: |
           sudo apt-get update
           sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base 
 
       - name: Run tests
+        if: steps.select-ref.outputs.ref != ''
+        env:
+          RIALTO_BUILD_BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
-          cd rialto-ocdm    
-          python build_ut.py -c -xml -f -b ${{ github.event.pull_request.head.ref }}
+          cd rialto-ocdm
+          python build_ut.py -c -xml -f -b "$RIALTO_BUILD_BRANCH"
         
       - name: Upload logs
         uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: logs
+          path: |
+            rialto-ocdm/gtest_result.log
+            rialto-ocdm/build/*gtest_result.xml
+
+
+  build-and-test-release-pins:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - release_line: master
+            manifest_repository: meta-rdk-video
+            manifest_ref: main
+            manifest_file: recipes-extended/rialto/rialto_revision.inc
+            ocdm_key: RIALTO_OCDM_SRCREV
+          - release_line: 8.4
+            manifest_repository: meta-middleware-generic-support
+            manifest_ref: support/8.4.4.0
+            manifest_file: conf/include/generic-srcrev.inc
+            ocdm_key: 'SRCREV:pn-rialto-ocdm'
+          - release_line: 8.6
+            manifest_repository: meta-rdk-video
+            manifest_ref: support/8.6.3.0
+            manifest_file: recipes-extended/rialto/rialto_revision.inc
+            ocdm_key: RIALTO_OCDM_SRCREV
+
+    steps:
+      - name: Checkout ${{ matrix.release_line }} platform manifest
+        uses: actions/checkout@v4
+        with:
+          repository: rdkcentral/${{ matrix.manifest_repository }}
+          ref: ${{ matrix.manifest_ref }}
+          path: platform-manifest
+
+      - name: Resolve OCDM SRCREV from platform manifest
+        id: resolve-pins
+        env:
+          MANIFEST_FILE: platform-manifest/${{ matrix.manifest_file }}
+          OCDM_KEY: ${{ matrix.ocdm_key }}
+        run: |
+          set -eu
+          ocdm_ref=$(awk -F'"' -v key="$OCDM_KEY" 'index($0, key) { print $2; exit }' "$MANIFEST_FILE")
+          if ! printf '%s\n' "$ocdm_ref" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "Could not resolve a 40-character OCDM SRCREV from $MANIFEST_FILE ($OCDM_KEY)" >&2
+            exit 1
+          fi
+          echo "Using manifest OCDM SRCREV: $ocdm_ref"
+          echo "ocdm_ref=$ocdm_ref" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout rialto-ocdm ${{ matrix.release_line }} pin
+        uses: actions/checkout@v4
+        with:
+          repository: rdkcentral/rialto-ocdm
+          ref: ${{ steps.resolve-pins.outputs.ocdm_ref }}
+          path: rialto-ocdm
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+
+      - name: Build GStreamer dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base
+
+      - name: Run tests against Rialto PR branch
+        env:
+          RIALTO_BUILD_BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          cd rialto-ocdm
+          python build_ut.py -c -xml -f -b "$RIALTO_BUILD_BRANCH"
+
+      - name: Upload release-pin logs
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: ocdm-${{ matrix.release_line }}-logs
           path: |
             rialto-ocdm/gtest_result.log
             rialto-ocdm/build/*gtest_result.xml
