@@ -21,7 +21,7 @@
 #include "RialtoCommonLogging.h"
 
 #ifdef RIALTO_ENABLE_AVMONITOR_CLIENT
-#include <avmonitor.h>
+#include <WPEFramework/avmonitor/avmonitor.h>
 #endif
 
 #include <algorithm>
