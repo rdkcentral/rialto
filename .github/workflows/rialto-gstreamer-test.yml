@@ -19,7 +19,7 @@ name: Rialto GStreamer Test
 
 on:
   pull_request:
-    branches: ["master", "release/*"]
+    branches: ["master", "release/*", "support/*"]
 
   workflow_dispatch:
 
@@ -28,24 +28,113 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Check if rialto-gstreamer branch with the same name exists
-        id: check-branch
-        shell: sh +e {0}
+      - name: Find matching rialto-gstreamer branch
+        id: select-ref
+        env:
+          PR_BRANCH: ${{ github.head_ref }}
+          BASE_BRANCH: ${{ github.base_ref || github.ref_name }}
         run: |
-          branch="${{ github.base_ref }}"
-          git ls-remote --exit-code --heads "https://github.com/rdkcentral/rialto-gstreamer.git" ${{ github.event.pull_request.head.ref }} > /dev/null
-          if [ $? -eq 0 ]; then
-            branch="${{ github.event.pull_request.head.ref }}"
-          fi
-          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          repo="https://github.com/rdkcentral/rialto-gstreamer.git"
+          for candidate in "$PR_BRANCH" "$BASE_BRANCH"; do
+            if [ -n "$candidate" ] && git ls-remote --exit-code --heads "$repo" "refs/heads/$candidate" > /dev/null; then
+              echo "Using rialto-gstreamer branch: $candidate"
+              echo "ref=$candidate" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "No matching dependency branch; release-pin matrix will run instead"
+          echo "ref=" >> "$GITHUB_OUTPUT"
 
       - name: Checkout rialto-gstreamer repo
+        if: steps.select-ref.outputs.ref != ''
         uses: actions/checkout@v4
         with:
           repository: rdkcentral/rialto-gstreamer
-          ref: ${{ steps.check-branch.outputs.branch }}
+          ref: ${{ steps.select-ref.outputs.ref }}
           path: rialto-gstreamer
           
+      - name: Set up Python
+        if: steps.select-ref.outputs.ref != ''
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies and build GStreamer library
+        if: steps.select-ref.outputs.ref != ''
+        run: |
+          sudo apt-get update
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+
+      - name: Run tests
+        if: steps.select-ref.outputs.ref != ''
+        env:
+          RIALTO_BUILD_BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          cd rialto-gstreamer
+          python build_ut.py -c -xml -f -b "$RIALTO_BUILD_BRANCH"
+        
+      - name: Upload logs
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: logs
+          path: |
+            rialto-gstreamer/gtest_result.log
+            rialto-gstreamer/build/*gtest_result.xml
+
+
+  build-and-test-release-pins:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - release_line: master
+            manifest_repository: meta-rdk-video
+            manifest_ref: main
+            manifest_file: recipes-extended/rialto/rialto_revision.inc
+            gstreamer_key: RIALTO_GSTREAMER_SRCREV
+          - release_line: 8.4
+            manifest_repository: meta-middleware-generic-support
+            manifest_ref: support/8.4.4.0
+            manifest_file: conf/include/generic-srcrev.inc
+            gstreamer_key: 'SRCREV:pn-rialto-gstreamer'
+          - release_line: 8.6
+            manifest_repository: meta-rdk-video
+            manifest_ref: support/8.6.3.0
+            manifest_file: recipes-extended/rialto/rialto_revision.inc
+            gstreamer_key: RIALTO_GSTREAMER_SRCREV
+
+    steps:
+      - name: Checkout ${{ matrix.release_line }} platform manifest
+        uses: actions/checkout@v4
+        with:
+          repository: rdkcentral/${{ matrix.manifest_repository }}
+          ref: ${{ matrix.manifest_ref }}
+          path: platform-manifest
+
+      - name: Resolve GStreamer SRCREV from platform manifest
+        id: resolve-pins
+        env:
+          MANIFEST_FILE: platform-manifest/${{ matrix.manifest_file }}
+          GSTREAMER_KEY: ${{ matrix.gstreamer_key }}
+        run: |
+          set -eu
+          gstreamer_ref=$(awk -F'"' -v key="$GSTREAMER_KEY" 'index($0, key) { print $2; exit }' "$MANIFEST_FILE")
+          if ! printf '%s\n' "$gstreamer_ref" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "Could not resolve a 40-character GStreamer SRCREV from $MANIFEST_FILE ($GSTREAMER_KEY)" >&2
+            exit 1
+          fi
+          echo "Using manifest GStreamer SRCREV: $gstreamer_ref"
+          echo "gstreamer_ref=$gstreamer_ref" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout rialto-gstreamer ${{ matrix.release_line }} pin
+        uses: actions/checkout@v4
+        with:
+          repository: rdkcentral/rialto-gstreamer
+          ref: ${{ steps.resolve-pins.outputs.gstreamer_ref }}
+          path: rialto-gstreamer
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -56,16 +145,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
 
-      - name: Run tests
+      - name: Run tests against Rialto PR branch
+        env:
+          RIALTO_BUILD_BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
-          cd rialto-gstreamer    
-          python build_ut.py -c -xml -f -b ${{ github.event.pull_request.head.ref }}
-        
-      - name: Upload logs
+          cd rialto-gstreamer
+          python build_ut.py -c -xml -f -b "$RIALTO_BUILD_BRANCH"
+
+      - name: Upload release-pin logs
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: logs
+          name: gstreamer-${{ matrix.release_line }}-logs
           path: |
             rialto-gstreamer/gtest_result.log
             rialto-gstreamer/build/*gtest_result.xml
