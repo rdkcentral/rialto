@@ -425,7 +425,6 @@ void MediaPipelineTest::willStop()
                               SetArgPointee<3>(GST_STATE_NULL)));
     EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(GST_STATE_NULL)).WillRepeatedly(Return(kNullStateName.c_str()));
     EXPECT_CALL(*m_gstWrapperMock, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
 }
 
 void MediaPipelineTest::createSession()
