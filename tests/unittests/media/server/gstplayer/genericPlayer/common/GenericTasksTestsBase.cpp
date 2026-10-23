@@ -2370,11 +2370,6 @@ void GenericTasksTestsBase::shouldStopGstPlayer()
     EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_NULL)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
 }
 
-void GenericTasksTestsBase::shouldStopPositionReportingAndCheckAudioUnderflowTimer()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
-}
-
 void GenericTasksTestsBase::triggerStop()
 {
     firebolt::rialto::server::tasks::generic::Stop task{testContext->m_context, testContext->m_gstPlayer};
