@@ -24,6 +24,8 @@ class RialtoServerMediaKeySessionLoadSessionTest : public MediaKeySessionTestBas
 protected:
     RialtoServerMediaKeySessionLoadSessionTest() { createKeySession(kNetflixKeySystem); }
     ~RialtoServerMediaKeySessionLoadSessionTest() { destroyKeySession(); }
+
+    const std::string m_kCdmSessionId{"cdm_session_id"};
 };
 
 /**
@@ -31,9 +33,23 @@ protected:
  */
 TEST_F(RialtoServerMediaKeySessionLoadSessionTest, Success)
 {
+    EXPECT_CALL(*m_ocdmSessionMock,
+                constructSession(m_keySessionType, InitDataType::UNKNOWN, nullptr, 0, _, m_kCdmSessionId.size()))
+        .WillOnce(Return(MediaKeyErrorStatus::OK));
     EXPECT_CALL(*m_ocdmSessionMock, load()).WillOnce(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->loadSession());
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->loadSession(m_kCdmSessionId));
+}
+
+/**
+ * Test that LoadSession fails if the construct session ocdm api fails.
+ */
+TEST_F(RialtoServerMediaKeySessionLoadSessionTest, OcdmSessionFailureOnConstructSession)
+{
+    EXPECT_CALL(*m_ocdmSessionMock,
+                constructSession(m_keySessionType, InitDataType::UNKNOWN, nullptr, 0, _, m_kCdmSessionId.size()))
+        .WillOnce(Return(MediaKeyErrorStatus::FAIL));
+    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->loadSession(m_kCdmSessionId));
 }
 
 /**
@@ -41,8 +57,11 @@ TEST_F(RialtoServerMediaKeySessionLoadSessionTest, Success)
  */
 TEST_F(RialtoServerMediaKeySessionLoadSessionTest, OcdmSessionFailure)
 {
+    EXPECT_CALL(*m_ocdmSessionMock,
+                constructSession(m_keySessionType, InitDataType::UNKNOWN, nullptr, 0, _, m_kCdmSessionId.size()))
+        .WillOnce(Return(MediaKeyErrorStatus::OK));
     EXPECT_CALL(*m_ocdmSessionMock, load()).WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
-    EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeySession->loadSession());
+    EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeySession->loadSession(m_kCdmSessionId));
 }
 
 /**
@@ -50,6 +69,9 @@ TEST_F(RialtoServerMediaKeySessionLoadSessionTest, OcdmSessionFailure)
  */
 TEST_F(RialtoServerMediaKeySessionLoadSessionTest, OnErrorFailure)
 {
+    EXPECT_CALL(*m_ocdmSessionMock,
+                constructSession(m_keySessionType, InitDataType::UNKNOWN, nullptr, 0, _, m_kCdmSessionId.size()))
+        .WillOnce(Return(MediaKeyErrorStatus::OK));
     EXPECT_CALL(*m_ocdmSessionMock, load())
         .WillOnce(Invoke(
             [this]()
@@ -58,5 +80,5 @@ TEST_F(RialtoServerMediaKeySessionLoadSessionTest, OnErrorFailure)
                 return MediaKeyErrorStatus::OK;
             }));
 
-    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->loadSession());
+    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->loadSession(m_kCdmSessionId));
 }

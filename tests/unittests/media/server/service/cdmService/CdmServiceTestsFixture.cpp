@@ -46,6 +46,7 @@ constexpr uint32_t kInitWithLast15{1};
 constexpr firebolt::rialto::LimitedDurationLicense kLdlState{firebolt::rialto::LimitedDurationLicense::NOT_SPECIFIED};
 constexpr firebolt::rialto::LimitedDurationLicense kLdlStateEnabled{firebolt::rialto::LimitedDurationLicense::ENABLED};
 const std::vector<std::string> kRobustnessLevels{"HW_SECURE_ALL", "SW_SECURE_CRYPTO"};
+const std::string kCdmKeySessionId{"cdm_session_id"};
 } // namespace
 
 CdmServiceTests::CdmServiceTests()
@@ -157,7 +158,7 @@ void CdmServiceTests::mediaKeysWillGenerateRequestLdlEnabledWithStatus(firebolt:
 
 void CdmServiceTests::mediaKeysWillLoadSessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    EXPECT_CALL(m_mediaKeysMock, loadSession(kKeySessionId)).WillOnce(Return(status));
+    EXPECT_CALL(m_mediaKeysMock, loadSession(kKeySessionId, kCdmKeySessionId)).WillOnce(Return(status));
 }
 
 void CdmServiceTests::mediaKeysWillUpdateSessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
@@ -298,7 +299,7 @@ void CdmServiceTests::generateRequestWithLdlEnabledShouldReturnStatus(firebolt::
 
 void CdmServiceTests::loadSessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    EXPECT_EQ(status, m_sut.loadSession(kMediaKeysHandle, kKeySessionId));
+    EXPECT_EQ(status, m_sut.loadSession(kMediaKeysHandle, kKeySessionId, kCdmKeySessionId));
 }
 
 void CdmServiceTests::updateSessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)

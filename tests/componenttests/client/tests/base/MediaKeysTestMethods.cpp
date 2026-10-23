@@ -370,14 +370,15 @@ void MediaKeysTestMethods::sendNotifyLicenseRenewal()
 
 void MediaKeysTestMethods::shouldLoadSession()
 {
-    EXPECT_CALL(*m_mediaKeysModuleMock, loadSession(_, loadSessionRequestMatcher(kMediaKeysHandle, kKeySessionId), _, _))
+    EXPECT_CALL(*m_mediaKeysModuleMock,
+                loadSession(_, loadSessionRequestMatcher(kMediaKeysHandle, kKeySessionId, kCdmKeySessionId), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->loadSessionResponse(kStatusOk)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
 
 void MediaKeysTestMethods::loadSession()
 {
-    EXPECT_EQ(m_mediaKeys->loadSession(kKeySessionId), kStatusOk);
+    EXPECT_EQ(m_mediaKeys->loadSession(kKeySessionId, kCdmKeySessionId), kStatusOk);
 }
 
 void MediaKeysTestMethods::shouldContainsKey()

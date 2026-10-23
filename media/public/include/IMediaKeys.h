@@ -148,11 +148,12 @@ public:
      * state is invalid an MediaKeyErrorStatus:INVALID_STATE is returned. Any
      * other errors will result in MediaKeyErrorStatus:FAIL.
      *
-     * @param[in] keySessionId : The key session id for the session.
+     * @param[in] keySessionId    : The key session id for the session.
+     * @param[in] cdmKeySessionId : The internal CDM key session ID.
      *
      * @retval an error status.
      */
-    virtual MediaKeyErrorStatus loadSession(int32_t keySessionId) = 0;
+    virtual MediaKeyErrorStatus loadSession(int32_t keySessionId, const std::string &cdmKeySessionId) = 0;
 
     /**
      * @brief Updates a key session's state.

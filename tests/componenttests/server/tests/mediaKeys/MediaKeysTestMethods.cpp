@@ -73,6 +73,23 @@ void MediaKeysTestMethods::createKeySession()
             });
 }
 
+void MediaKeysTestMethods::createPersistentKeySession()
+{
+    // Use matchResponse to store media key session id
+    auto request{
+        createCreateKeySessionRequest(m_mediaKeysHandle,
+                                      ::firebolt::rialto::CreateKeySessionRequest_KeySessionType_PERSISTENT_LICENCE)};
+    ConfigureAction<CreateKeySession>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse(
+            [&](const firebolt::rialto::CreateKeySessionResponse &resp)
+            {
+                m_mediaKeySessionId = resp.key_session_id();
+                EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
+            });
+}
+
 void MediaKeysTestMethods::ocdmSessionWillBeCreated()
 {
     EXPECT_CALL(*m_ocdmSystemMock, createSession(_))
@@ -87,10 +104,11 @@ void MediaKeysTestMethods::ocdmSessionWillBeCreated()
 
 void MediaKeysTestMethods::willGenerateRequestPlayready()
 {
-    EXPECT_CALL(m_ocdmSessionMock, constructSession(KeySessionType::TEMPORARY, InitDataType::CENC, _, m_kInitData.size()))
+    EXPECT_CALL(m_ocdmSessionMock,
+                constructSession(KeySessionType::TEMPORARY, InitDataType::CENC, _, m_kInitData.size(), nullptr, 0))
         .WillOnce(testing::Invoke(
-            [&](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[],
-                uint32_t initDataSize) -> MediaKeyErrorStatus
+            [&](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[], uint32_t initDataSize,
+                const uint8_t cdmData[], uint32_t cdmDataSize) -> MediaKeyErrorStatus
             {
                 for (uint32_t i = 0; i < initDataSize; ++i)
                 {
@@ -186,6 +204,21 @@ void MediaKeysTestMethods::closeKeySessionPlayready()
         .send(request)
         .expectSuccess()
         .matchResponse([&](const firebolt::rialto::CloseKeySessionResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
+}
+
+void MediaKeysTestMethods::willLoadKeySession()
+{
+    EXPECT_CALL(m_ocdmSessionMock, load()).WillOnce(Return(MediaKeyErrorStatus::OK));
+}
+void MediaKeysTestMethods::loadKeySession()
+{
+    auto request{createLoadSessionRequest(m_mediaKeysHandle, m_mediaKeySessionId, m_kCdmSessionId)};
+
+    ConfigureAction<LoadSession>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::LoadSessionResponse &resp)
                        { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
 }
 

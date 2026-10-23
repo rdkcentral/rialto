@@ -245,14 +245,16 @@ message GenerateRequestResponse {
  * state is invalid an MediaKeyErrorStatus:INVALID_STATE is returned. Any
  * other errors will result in MediaKeyErrorStatus:FAIL.
  *
- * @param[in] media_keys_handle The handle of the media keys.
- * @param[in] key_session_id  The key session id for the session.
+ * @param[in] media_keys_handle   The handle of the media keys.
+ * @param[in] key_session_id      The key session id for the session.
+ * @param[in] cdm_key_session_id  The internal CDM key session ID.
  *
  * @retval an error status.
  */
 message LoadSessionRequest {
   optional int32 media_keys_handle = 1 [default = -1];
   optional int32 key_session_id = 2 [default = -1];
+  optional string cdm_key_session_id = 3;
 }
 message LoadSessionResponse {
   optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];

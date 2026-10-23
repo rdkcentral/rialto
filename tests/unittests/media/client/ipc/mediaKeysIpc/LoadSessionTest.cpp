@@ -27,6 +27,8 @@ protected:
 
     ~RialtoClientMediaKeysIpcLoadSessionTest() { destroyMediaKeysIpc(); }
 
+    const std::string m_kCdmSessionId{"cdm_session_id"};
+
 public:
     void setLoadSessionResponseSuccess(google::protobuf::Message *response)
     {
@@ -51,11 +53,11 @@ TEST_F(RialtoClientMediaKeysIpcLoadSessionTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("loadSession"), m_controllerMock.get(),
-                                           loadSessionRequestMatcher(m_mediaKeysHandle, m_kKeySessionId), _,
-                                           m_blockingClosureMock.get()))
+                                           loadSessionRequestMatcher(m_mediaKeysHandle, m_kKeySessionId, m_kCdmSessionId),
+                                           _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcLoadSessionTest::setLoadSessionResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->loadSession(m_kKeySessionId), MediaKeyErrorStatus::OK);
+    EXPECT_EQ(m_mediaKeysIpc->loadSession(m_kKeySessionId, m_kCdmSessionId), MediaKeyErrorStatus::OK);
 }
 
 /**
@@ -66,7 +68,7 @@ TEST_F(RialtoClientMediaKeysIpcLoadSessionTest, ChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_EQ(m_mediaKeysIpc->loadSession(m_kKeySessionId), MediaKeyErrorStatus::FAIL);
+    EXPECT_EQ(m_mediaKeysIpc->loadSession(m_kKeySessionId, m_kCdmSessionId), MediaKeyErrorStatus::FAIL);
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -85,7 +87,7 @@ TEST_F(RialtoClientMediaKeysIpcLoadSessionTest, ReconnectChannel)
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("loadSession"), _, _, _, _))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcLoadSessionTest::setLoadSessionResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->loadSession(m_kKeySessionId), MediaKeyErrorStatus::OK);
+    EXPECT_EQ(m_mediaKeysIpc->loadSession(m_kKeySessionId, m_kCdmSessionId), MediaKeyErrorStatus::OK);
 }
 
 /**
@@ -97,7 +99,7 @@ TEST_F(RialtoClientMediaKeysIpcLoadSessionTest, Failure)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("loadSession"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaKeysIpc->loadSession(m_kKeySessionId), MediaKeyErrorStatus::FAIL);
+    EXPECT_EQ(m_mediaKeysIpc->loadSession(m_kKeySessionId, m_kCdmSessionId), MediaKeyErrorStatus::FAIL);
 }
 
 /**
@@ -110,5 +112,5 @@ TEST_F(RialtoClientMediaKeysIpcLoadSessionTest, ErrorReturn)
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("loadSession"), _, _, _, _))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcLoadSessionTest::setLoadSessionResponseFailed)));
 
-    EXPECT_EQ(m_mediaKeysIpc->loadSession(m_kKeySessionId), m_errorStatus);
+    EXPECT_EQ(m_mediaKeysIpc->loadSession(m_kKeySessionId, m_kCdmSessionId), m_errorStatus);
 }

@@ -53,7 +53,8 @@ public:
     virtual MediaKeyErrorStatus generateRequest(int mediaKeysHandle, int32_t keySessionId, InitDataType initDataType,
                                                 const std::vector<uint8_t> &initData,
                                                 const LimitedDurationLicense &ldlState) = 0;
-    virtual MediaKeyErrorStatus loadSession(int mediaKeysHandle, int32_t keySessionId) = 0;
+    virtual MediaKeyErrorStatus loadSession(int mediaKeysHandle, int32_t keySessionId,
+                                            const std::string &cdmKeySessionId) = 0;
     virtual MediaKeyErrorStatus updateSession(int mediaKeysHandle, int32_t keySessionId,
                                               const std::vector<uint8_t> &responseData) = 0;
     virtual MediaKeyErrorStatus closeKeySession(int mediaKeysHandle, int32_t keySessionId) = 0;
