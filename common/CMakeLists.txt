@@ -22,6 +22,8 @@ set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
+option(RIALTO_ENABLE_AVMONITOR_CLIENT "Enable AVMonitor client integration in RialtoCommon profiler" OFF)
+
 add_subdirectory(public)
 
 add_library(
@@ -57,3 +59,28 @@ target_link_libraries (
         PRIVATE
         RialtoLogging
     )
+
+if (RIALTO_ENABLE_AVMONITOR_CLIENT)
+    set(AVMONITOR_CLIENT_TARGET "")
+
+    if (TARGET WPEFrameworkAVMonitor)
+        set(AVMONITOR_CLIENT_TARGET WPEFrameworkAVMonitor)
+    elseif (TARGET WPEFramework::WPEFrameworkAVMonitor)
+        set(AVMONITOR_CLIENT_TARGET WPEFramework::WPEFrameworkAVMonitor)
+    else()
+        find_package(PkgConfig QUIET)
+        if (PkgConfig_FOUND)
+            pkg_check_modules(AVMONITOR_CLIENT QUIET IMPORTED_TARGET WPEFrameworkAVMonitor)
+            if (AVMONITOR_CLIENT_FOUND)
+                set(AVMONITOR_CLIENT_TARGET PkgConfig::AVMONITOR_CLIENT)
+            endif()
+        endif()
+    endif()
+
+    if (AVMONITOR_CLIENT_TARGET STREQUAL "")
+        message(FATAL_ERROR "RIALTO_ENABLE_AVMONITOR_CLIENT is ON, but WPEFrameworkAVMonitor was not found")
+    endif()
+
+    target_compile_definitions(RialtoCommon PRIVATE RIALTO_ENABLE_AVMONITOR_CLIENT)
+    target_link_libraries(RialtoCommon PRIVATE ${AVMONITOR_CLIENT_TARGET})
+endif()
