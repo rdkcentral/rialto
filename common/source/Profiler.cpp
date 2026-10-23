@@ -26,13 +26,16 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdio>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <string>
+#include <thread>
 
 namespace
 {
@@ -76,6 +79,13 @@ std::optional<std::string> getDumpFileName()
         return std::nullopt;
 
     return std::string{value};
+}
+
+std::string getCurrentThreadId()
+{
+    std::ostringstream ss;
+    ss << std::this_thread::get_id();
+    return ss.str();
 }
 } // namespace
 
@@ -176,7 +186,10 @@ void Profiler::log(const RecordId id)
 #ifdef RIALTO_ENABLE_AVMONITOR_CLIENT
         if (m_zenithConnectionEnabled)
         {
+            const auto threadId = getCurrentThreadId();
+            fprintf(stderr, "LUKIWA: Rialto sending AVMonitor event threadId[%s]\n", threadId.c_str());
             const auto status = avmonitor_register_event(payload.c_str());
+            fprintf(stderr, "LUKIWA: Rialto AVMonitor send status[%u] threadId[%s]\n", status, threadId.c_str());
             if (status != AVMONITOR_OK)
             {
                 RIALTO_COMMON_LOG_WARN("Failed to send profiler record to AVMonitor client library");
