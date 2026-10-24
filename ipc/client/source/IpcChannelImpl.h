@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_IPC_IPC_CHANNEL_IMPL_H_
 #define FIREBOLT_RIALTO_IPC_IPC_CHANNEL_IMPL_H_
 
+#include "Arena.h"
 #include "FileDescriptor.h"
 #include "IIpcChannel.h"
 #include "IpcClientControllerImpl.h"
@@ -140,6 +141,8 @@ private:
     };
 
     std::multimap<std::string, Event> m_eventHandlers;
+
+    Arena m_sendArena, m_receiveArena, m_eventArena;
 };
 
 } // namespace firebolt::rialto::ipc
