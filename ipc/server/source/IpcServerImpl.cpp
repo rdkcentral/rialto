@@ -511,7 +511,10 @@ bool ServerImpl::process()
                 continue;
             }
 
-            ClientDetails details = it->second;
+            const int sock = it->second.sock;
+            it->second.sock = -1;
+            std::function<void(const std::shared_ptr<IClient> &)> disconnectedCb = std::move(it->second.disconnectedCb);
+            auto client = std::move(it->second.client);
 
             // remove from the list of clients
             m_clients.erase(it);
@@ -520,23 +523,23 @@ bool ServerImpl::process()
             locker.unlock();
 
             // remove the socket from epoll and close it
-            if (details.sock >= 0)
+            if (sock >= 0)
             {
-                if (epoll_ctl(m_pollFd, EPOLL_CTL_DEL, details.sock, nullptr) != 0)
+                if (epoll_ctl(m_pollFd, EPOLL_CTL_DEL, sock, nullptr) != 0)
                     RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket from epoll");
 
-                if (shutdown(details.sock, SHUT_RDWR) != 0)
+                if (shutdown(sock, SHUT_RDWR) != 0)
                     RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to shutdown socket");
-                if (close(details.sock) != 0)
+                if (close(sock) != 0)
                     RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to close socket");
             }
 
             // let the installed handler know a client has disconnected
-            if (details.disconnectedCb)
-                details.disconnectedCb(details.client);
+            if (disconnectedCb)
+                disconnectedCb(client);
 
             // ensure client object is destructed without the client lock held
-            details.client.reset();
+            client.reset();
 
             // re-take the lock for the next client
             locker.lock();
@@ -586,15 +589,15 @@ std::shared_ptr<ClientImpl> ServerImpl::addClientSocket(int socketFd, const std:
     auto client = std::make_shared<ClientImpl>(shared_from_this(), kClientId, clientCreds);
 
     // and the details for the internal list
-    ClientDetails clientDetails;
-    clientDetails.sock = socketFd;
-    clientDetails.disconnectedCb = std::move(disconnectedCb);
-    clientDetails.client = client;
-
     // add to the set of clients
     {
         std::lock_guard<std::mutex> locker(m_clientsLock);
-        m_clients.emplace(kClientId, clientDetails);
+        ClientDetails clientDetails;
+        clientDetails.sock = socketFd;
+        clientDetails.disconnectedCb = std::move(disconnectedCb);
+        clientDetails.client = client;
+
+        m_clients.emplace(kClientId, std::move(clientDetails));
     }
 
     RIALTO_IPC_LOG_INFO("new client connected - giving id %" PRIu64, kClientId);
@@ -1013,15 +1016,12 @@ void ServerImpl::processMethodCall(const std::shared_ptr<ClientImpl> &client, co
  */
 void ServerImpl::sendReply(uint64_t clientId, const std::shared_ptr<msghdr> &msg)
 {
-    // now take the lock (so the socket is not closed beneath us) and send the reply
+    // Keep the lock held while sending so the descriptor cannot be closed and
+    // reused for another client between lookup and sendmsg.
     std::lock_guard<std::mutex> locker(m_clientsLock);
 
     auto it = m_clients.find(clientId);
-    if (it == m_clients.end())
-    {
-        RIALTO_IPC_LOG_WARN("socket removed before error reply could be sent");
-    }
-    else if (it->second.sock < 0)
+    if (it == m_clients.end() || it->second.sock < 0)
     {
         RIALTO_IPC_LOG_WARN("socket closed before error reply could be sent");
     }
@@ -1297,7 +1297,8 @@ std::shared_ptr<msghdr> ServerImpl::populateErrorReply(const std::shared_ptr<con
 bool ServerImpl::isClientConnected(uint64_t clientId) const
 {
     std::unique_lock<std::mutex> locker(m_clientsLock);
-    return (m_clients.count(clientId) > 0);
+    auto it = m_clients.find(clientId);
+    return (it != m_clients.end()) && (it->second.sock >= 0);
 }
 
 // -----------------------------------------------------------------------------
@@ -1401,22 +1402,19 @@ bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::prot
         header->msg_controllen = cmsg->cmsg_len;
     }
 
-    // finally, take the lock (so the socket is not closed beneath us) and send the reply
+    // Keep the lock held while sending so the descriptor cannot be closed and
+    // reused for another client between lookup and sendmsg.
+    std::unique_lock<std::mutex> locker(m_clientsLock);
+    auto it = m_clients.find(clientId);
+    if (it == m_clients.end() || it->second.sock < 0)
     {
-        std::unique_lock<std::mutex> locker(m_clientsLock);
-
-        auto it = m_clients.find(clientId);
-        if (it == m_clients.end() || it->second.sock < 0)
-        {
-            RIALTO_IPC_LOG_WARN("socket closed before event could be sent");
-            return false;
-        }
-        else if (TEMP_FAILURE_RETRY(sendmsg(it->second.sock, header, MSG_NOSIGNAL)) !=
-                 static_cast<ssize_t>(requiredDataLen))
-        {
-            RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to send the complete event message");
-            return false;
-        }
+        RIALTO_IPC_LOG_WARN("socket closed before event could be sent");
+        return false;
+    }
+    else if (TEMP_FAILURE_RETRY(sendmsg(it->second.sock, header, MSG_NOSIGNAL)) != static_cast<ssize_t>(requiredDataLen))
+    {
+        RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to send the complete event message");
+        return false;
     }
 
     RIALTO_IPC_LOG_DEBUG("event{ %s } - { %s }", eventMessage->GetTypeName().c_str(),
