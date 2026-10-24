@@ -106,6 +106,29 @@ const char *toString(const firebolt::rialto::server::ISharedMemoryBuffer::MediaP
     }
     return "UNKNOWN";
 }
+
+void releasePages(std::uint8_t *data, std::uint32_t length)
+{
+    const auto kPageSize{sysconf(_SC_PAGESIZE)};
+    if (kPageSize <= 0)
+    {
+        RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to get the page size, shm pages not released");
+        return;
+    }
+    const std::uintptr_t kPage{static_cast<std::uintptr_t>(kPageSize)};
+    const std::uintptr_t kStart{reinterpret_cast<std::uintptr_t>(data)};
+    const std::uintptr_t kBegin{(kStart + kPage - 1) / kPage * kPage};
+    const std::uintptr_t kEnd{(kStart + length) / kPage * kPage};
+    if (kEnd <= kBegin)
+    {
+        return;
+    }
+    // coverity[INTEGER_OVERFLOW:FALSE]
+    if (madvise(reinterpret_cast<void *>(kBegin), kEnd - kBegin, MADV_REMOVE) != 0)
+    {
+        RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to release shm pages");
+    }
+}
 } // namespace
 
 namespace firebolt::rialto::server
@@ -225,6 +248,12 @@ bool SharedMemoryBuffer::unmapPartition(MediaPlaybackType playbackType, int id)
     {
         RIALTO_SERVER_LOG_WARN("Failed to unmap Shm partition for id: %d. - partition could not be found", id);
         return false;
+    }
+    std::uint8_t *partitionDataPtr = nullptr;
+    if (getDataPtrForPartition(playbackType, id, &partitionDataPtr))
+    {
+        releasePages(partitionDataPtr,
+                     partition->dataBufferVideoLen + partition->dataBufferAudioLen + partition->dataBufferSubtitleLen);
     }
     partition->id = kNoIdAssigned;
     return true;
