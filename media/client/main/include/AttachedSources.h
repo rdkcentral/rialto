@@ -24,6 +24,7 @@
 #include <cstdint>
 #include <map>
 #include <mutex>
+#include <shared_mutex>
 
 namespace firebolt::rialto::client
 {
@@ -50,7 +51,7 @@ public:
     void setFlushing(std::uint32_t id, bool flushing);
 
 private:
-    mutable std::mutex m_mutex;
+    mutable std::shared_mutex m_mutex;
     std::map<std::uint32_t, Source> m_attachedSources;
 };
 } // namespace firebolt::rialto::client

@@ -21,7 +21,9 @@
 #include "MediaFrameWriterMock.h"
 #include "MediaPipelineTestBase.h"
 #include "SharedMemoryHandleMock.h"
+#include <chrono>
 #include <condition_variable>
+#include <future>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -406,6 +408,152 @@ TEST_F(RialtoClientMediaPipelineDataTest, haveDataSuccess)
 
     EXPECT_CALL(*m_mediaPipelineIpcMock, haveData(m_status, numFrames, m_requestId)).WillOnce(Return(true));
     EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
+}
+
+/**
+ * Test that NeedData requests for two different source types are tracked
+ * independently of each other: adding a segment for one source's request
+ * does not disturb another source's still-pending request, and both are
+ * reported correctly by a subsequent haveData call.
+ */
+TEST_F(RialtoClientMediaPipelineDataTest, MultiSourceRequestsAreIndependentlyRouted)
+{
+    // Attach a second source, of a different MediaSourceType to m_sourceId (audio)
+    const int32_t videoSourceId = m_sourceId + 1;
+    const uint32_t videoRequestId = m_requestId + 1;
+    std::unique_ptr<IMediaPipeline::MediaSource> videoSource =
+        std::make_unique<IMediaPipeline::MediaSourceVideo>("video/h264");
+    EXPECT_CALL(*m_mediaPipelineIpcMock, attachSource(Ref(videoSource), _))
+        .WillOnce(DoAll(SetArgReferee<1>(videoSourceId), Return(true)));
+    EXPECT_EQ(m_mediaPipeline->attachSource(videoSource), true);
+
+    // NeedData for both the audio and video sources are outstanding at the same time
+    needDataGeneric();
+    needData(videoSourceId, m_frameCount, videoRequestId, m_shmInfo);
+
+    // Add a segment for the video request only
+    std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock =
+        std::make_unique<StrictMock<MediaFrameWriterMock>>();
+    m_mediaFrameWriterMock = mediaFrameWriterMock.get();
+
+    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
+    std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::VIDEO, data.size(), data.data());
+
+    EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(&m_shmBuffer));
+    EXPECT_CALL(*m_clientControllerMock, getSharedMemoryHandle()).WillOnce(Return(m_sharedMemoryHandleMock));
+    EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
+        .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
+    EXPECT_CALL(*m_mediaFrameWriterMock, writeFrame(_)).WillOnce(Return(AddSegmentStatus::OK));
+    EXPECT_EQ(m_mediaPipeline->addSegment(videoRequestId, frame), AddSegmentStatus::OK);
+
+    // The audio request's entry must still be intact and unaffected by the video source's traffic
+    EXPECT_CALL(*m_mediaPipelineIpcMock, haveData(m_status, 0, m_requestId)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
+
+    // The video request should report the frame that was written to it
+    EXPECT_CALL(*m_mediaFrameWriterMock, getNumFrames()).WillOnce(Return(1U));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, haveData(m_status, 1U, videoRequestId)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->haveData(m_status, videoRequestId), true);
+}
+
+/**
+ * Test that blocking addSegment on one source does not block addSegment/haveData
+ * for a different source.
+ */
+TEST_F(RialtoClientMediaPipelineDataTest, CrossSourceAddSegmentDoesNotBlock)
+{
+    const int32_t videoSourceId = m_sourceId + 1;
+    const uint32_t videoRequestId = m_requestId + 1;
+
+    std::unique_ptr<IMediaPipeline::MediaSource> videoSource =
+        std::make_unique<IMediaPipeline::MediaSourceVideo>("video/h264");
+    EXPECT_CALL(*m_mediaPipelineIpcMock, attachSource(Ref(videoSource), _))
+        .WillOnce(DoAll(SetArgReferee<1>(videoSourceId), Return(true)));
+    EXPECT_EQ(m_mediaPipeline->attachSource(videoSource), true);
+
+    needDataGeneric();
+    needData(videoSourceId, m_frameCount, videoRequestId, m_shmInfo);
+
+    std::vector<uint8_t> audioData{'A', 'U', 'D', 'I', 'O'};
+    std::vector<uint8_t> videoData{'V', 'I', 'D', 'E', 'O'};
+    std::unique_ptr<IMediaPipeline::MediaSegment> audioFrame =
+        createFrame(MediaSourceType::AUDIO, audioData.size(), audioData.data());
+    std::unique_ptr<IMediaPipeline::MediaSegment> videoFrame =
+        createFrame(MediaSourceType::VIDEO, videoData.size(), videoData.data());
+
+    auto audioWriter = std::make_unique<StrictMock<MediaFrameWriterMock>>();
+    auto *audioWriterRaw = audioWriter.get();
+    auto videoWriter = std::make_unique<StrictMock<MediaFrameWriterMock>>();
+    auto *videoWriterRaw = videoWriter.get();
+
+    std::mutex writeMutex;
+    std::condition_variable writeCond;
+    bool audioWriteEntered = false;
+    bool releaseAudioWrite = false;
+
+    EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(&m_shmBuffer));
+    EXPECT_CALL(*m_clientControllerMock, getSharedMemoryHandle()).WillRepeatedly(Return(m_sharedMemoryHandleMock));
+
+    {
+        ::testing::InSequence sequence;
+
+        EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
+            .WillOnce(Return(ByMove(std::move(audioWriter))));
+        EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
+            .WillOnce(Return(ByMove(std::move(videoWriter))));
+    }
+
+    auto blockAudioWrite = [&](const auto &)
+    {
+        std::unique_lock<std::mutex> lock(writeMutex);
+        audioWriteEntered = true;
+        writeCond.notify_all();
+        writeCond.wait(lock, [&] { return releaseAudioWrite; });
+        return AddSegmentStatus::OK;
+    };
+
+    EXPECT_CALL(*audioWriterRaw, writeFrame(_)).WillOnce(Invoke(blockAudioWrite));
+    EXPECT_CALL(*videoWriterRaw, writeFrame(_)).WillOnce(Return(AddSegmentStatus::OK));
+
+    auto audioAddSegmentFuture =
+        std::async(std::launch::async, [&]() { return m_mediaPipeline->addSegment(m_requestId, audioFrame); });
+
+    {
+        std::unique_lock<std::mutex> lock(writeMutex);
+        if (!writeCond.wait_for(lock, std::chrono::seconds(2), [&] { return audioWriteEntered; }))
+        {
+            releaseAudioWrite = true;
+            writeCond.notify_all();
+            GTEST_FAIL() << "Timed out waiting for audio write to block";
+        }
+    }
+
+    auto videoAddSegmentFuture =
+        std::async(std::launch::async, [&]() { return m_mediaPipeline->addSegment(videoRequestId, videoFrame); });
+
+    if (videoAddSegmentFuture.wait_for(std::chrono::milliseconds(500)) != std::future_status::ready)
+    {
+        {
+            std::lock_guard<std::mutex> lock(writeMutex);
+            releaseAudioWrite = true;
+        }
+        writeCond.notify_all();
+        GTEST_FAIL() << "Video addSegment was blocked by audio addSegment";
+    }
+
+    EXPECT_EQ(videoAddSegmentFuture.get(), AddSegmentStatus::OK);
+
+    EXPECT_CALL(*videoWriterRaw, getNumFrames()).WillOnce(Return(1U));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, haveData(m_status, 1U, videoRequestId)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->haveData(m_status, videoRequestId), true);
+
+    {
+        std::lock_guard<std::mutex> lock(writeMutex);
+        releaseAudioWrite = true;
+    }
+    writeCond.notify_all();
+
+    EXPECT_EQ(audioAddSegmentFuture.get(), AddSegmentStatus::OK);
 }
 
 // /**

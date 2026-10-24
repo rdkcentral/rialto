@@ -23,19 +23,19 @@ namespace firebolt::rialto::client
 {
 void AttachedSources::add(std::uint32_t id, const MediaSourceType &mediaSourceType)
 {
-    std::unique_lock<std::mutex> lock{m_mutex};
+    std::unique_lock<std::shared_mutex> lock{m_mutex};
     m_attachedSources.emplace(id, Source{mediaSourceType});
 }
 
 void AttachedSources::remove(std::uint32_t id)
 {
-    std::unique_lock<std::mutex> lock{m_mutex};
+    std::unique_lock<std::shared_mutex> lock{m_mutex};
     m_attachedSources.erase(id);
 }
 
 MediaSourceType AttachedSources::getType(std::uint32_t id) const
 {
-    std::unique_lock<std::mutex> lock{m_mutex};
+    std::shared_lock<std::shared_mutex> lock{m_mutex};
     auto iter = m_attachedSources.find(id);
     if (m_attachedSources.end() == iter)
     {
@@ -46,7 +46,7 @@ MediaSourceType AttachedSources::getType(std::uint32_t id) const
 
 bool AttachedSources::isFlushing(std::uint32_t id) const
 {
-    std::unique_lock<std::mutex> lock{m_mutex};
+    std::shared_lock<std::shared_mutex> lock{m_mutex};
     auto iter = m_attachedSources.find(id);
     if (m_attachedSources.end() == iter)
     {
@@ -57,7 +57,7 @@ bool AttachedSources::isFlushing(std::uint32_t id) const
 
 void AttachedSources::setFlushing(std::uint32_t id, bool flushing)
 {
-    std::unique_lock<std::mutex> lock{m_mutex};
+    std::unique_lock<std::shared_mutex> lock{m_mutex};
     auto iter = m_attachedSources.find(id);
     if (m_attachedSources.end() == iter)
     {

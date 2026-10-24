@@ -20,6 +20,7 @@
 #include <inttypes.h>
 #include <stdexcept>
 #include <stdint.h>
+#include <thread>
 
 #include "KeyIdMap.h"
 #include "MediaPipeline.h"
@@ -337,8 +338,8 @@ bool MediaPipeline::handleSetPosition(int64_t position)
 {
     // needData requests no longer valid
     {
-        std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
-        m_needDataRequestMap.clear();
+        std::unique_lock<std::shared_mutex> metaLock{m_needDataMetaMutex};
+        clearAllNeedDataRequestsLocked();
     }
     return m_mediaPipelineIpc->setPosition(position);
 }
@@ -384,24 +385,15 @@ bool MediaPipeline::handleHaveData(MediaSourceStatus status, uint32_t needDataRe
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    std::shared_ptr<NeedDataRequest> needDataRequest;
-
-    // Find the needDataRequest for this needDataRequestId
     // The needData request can be cancelled from another thread
+    std::shared_ptr<NeedDataRequest> needDataRequest = takeNeedDataRequest(needDataRequestId);
+    if (!needDataRequest)
     {
-        std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
-
-        auto needDataRequestIt = m_needDataRequestMap.find(needDataRequestId);
-        if (needDataRequestIt == m_needDataRequestMap.end())
-        {
-            // Return success here as the data written is just ignored
-            RIALTO_CLIENT_LOG_WARN("Could not find need data request, with id %u", needDataRequestId);
-            return true;
-        }
-
-        needDataRequest = needDataRequestIt->second;
-        m_needDataRequestMap.erase(needDataRequestIt);
+        // Return success here as the data written is just ignored
+        RIALTO_CLIENT_LOG_WARN("Could not find need data request, with id %u", needDataRequestId);
+        return true;
     }
+
     if (m_attachedSources.isFlushing(needDataRequest->sourceId))
     {
         RIALTO_CLIENT_LOG_WARN("Source %d is flushing. Ignoring need data request, with id %u",
@@ -422,15 +414,14 @@ AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std
         return AddSegmentStatus::ERROR;
     }
 
-    std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
-    auto needDataRequestIt = m_needDataRequestMap.find(needDataRequestId);
-    if (needDataRequestIt == m_needDataRequestMap.end())
+    NeedDataRequestLock needDataRequestLock = lockNeedDataRequest(needDataRequestId);
+    if (!needDataRequestLock.request)
     {
         RIALTO_CLIENT_LOG_ERROR("Could not find need data request, with id %u", needDataRequestId);
         return AddSegmentStatus::ERROR;
     }
 
-    std::shared_ptr<NeedDataRequest> needDataRequest = needDataRequestIt->second;
+    const std::shared_ptr<NeedDataRequest> &needDataRequest = needDataRequestLock.request;
     std::shared_ptr<ISharedMemoryHandle> shmHandle = m_clientController.getSharedMemoryHandle();
     if (nullptr == shmHandle || nullptr == shmHandle->getShm())
     {
@@ -564,19 +555,55 @@ bool MediaPipeline::flush(int32_t sourceId, bool resetTime, bool &async)
         m_attachedSources.setFlushing(sourceId, true);
     }
 
-    // Clear all need datas for flushed source
-    std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
-    for (auto it = m_needDataRequestMap.begin(); it != m_needDataRequestMap.end();)
+    const MediaSourceType sourceType{m_attachedSources.getType(sourceId)};
+    SourceNeedDataRequests *sourceRequests = needDataRequestsFor(sourceType);
+    std::vector<uint32_t> erasedIds;
+
+    if (sourceRequests)
     {
-        if (it->second->sourceId == sourceId)
+        std::lock_guard<std::mutex> lock{sourceRequests->mutex};
+        for (auto it = sourceRequests->requests.begin(); it != sourceRequests->requests.end();)
         {
-            it = m_needDataRequestMap.erase(it);
-        }
-        else
-        {
-            ++it;
+            if (it->second->sourceId == sourceId)
+            {
+                erasedIds.push_back(it->first);
+                it = sourceRequests->requests.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
         }
     }
+    else
+    {
+        for (SourceNeedDataRequests &requestBucket : m_needDataRequests)
+        {
+            std::lock_guard<std::mutex> lock{requestBucket.mutex};
+            for (auto it = requestBucket.requests.begin(); it != requestBucket.requests.end();)
+            {
+                if (it->second->sourceId == sourceId)
+                {
+                    erasedIds.push_back(it->first);
+                    it = requestBucket.requests.erase(it);
+                }
+                else
+                {
+                    ++it;
+                }
+            }
+        }
+    }
+
+    if (!erasedIds.empty())
+    {
+        std::unique_lock<std::shared_mutex> metaLock{m_needDataMetaMutex};
+        for (uint32_t id : erasedIds)
+        {
+            m_requestRouting.erase(id);
+        }
+    }
+
     return true;
 }
 
@@ -646,22 +673,136 @@ bool MediaPipeline::getDuration(int64_t &duration)
 
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)
 {
-    // Find the needDataRequest for this needDataRequestId
     // The needData request can be cancelled from another thread
+    if (takeNeedDataRequest(needDataRequestId))
     {
-        std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
-
-        auto needDataRequestIt = m_needDataRequestMap.find(needDataRequestId);
-        if (needDataRequestIt == m_needDataRequestMap.end())
-        {
-            RIALTO_CLIENT_LOG_INFO("Could not find need data request, with id %u", needDataRequestId);
-        }
-        else
-        {
-            RIALTO_CLIENT_LOG_INFO("Discarding need data request with id %u", needDataRequestId);
-            m_needDataRequestMap.erase(needDataRequestIt);
-        }
+        RIALTO_CLIENT_LOG_INFO("Discarding need data request with id %u", needDataRequestId);
     }
+    else
+    {
+        RIALTO_CLIENT_LOG_INFO("Could not find need data request, with id %u", needDataRequestId);
+    }
+}
+
+bool MediaPipeline::toSourceIndex(MediaSourceType sourceType, std::size_t &index) const
+{
+    switch (sourceType)
+    {
+    case MediaSourceType::AUDIO:
+        index = 0U;
+        return true;
+    case MediaSourceType::VIDEO:
+        index = 1U;
+        return true;
+    case MediaSourceType::SUBTITLE:
+        index = 2U;
+        return true;
+    default:
+        return false;
+    }
+}
+
+MediaPipeline::SourceNeedDataRequests *MediaPipeline::needDataRequestsFor(MediaSourceType sourceType)
+{
+    std::size_t index{0U};
+    if (!toSourceIndex(sourceType, index))
+    {
+        return nullptr;
+    }
+
+    if (index >= m_needDataRequests.size())
+    {
+        return nullptr;
+    }
+
+    return &m_needDataRequests[index];
+}
+
+MediaSourceType MediaPipeline::lookupRouting(uint32_t needDataRequestId, bool shouldErase)
+{
+    if (shouldErase)
+    {
+        std::unique_lock<std::shared_mutex> metaLock{m_needDataMetaMutex};
+        auto it = m_requestRouting.find(needDataRequestId);
+        if (it == m_requestRouting.end())
+        {
+            return MediaSourceType::UNKNOWN;
+        }
+        MediaSourceType sourceType = it->second;
+        m_requestRouting.erase(it);
+        return sourceType;
+    }
+
+    std::shared_lock<std::shared_mutex> metaLock{m_needDataMetaMutex};
+    auto it = m_requestRouting.find(needDataRequestId);
+    if (it == m_requestRouting.end())
+    {
+        return MediaSourceType::UNKNOWN;
+    }
+    return it->second;
+}
+
+MediaPipeline::NeedDataRequestLock MediaPipeline::lockNeedDataRequest(uint32_t needDataRequestId)
+{
+    // The routing lookup is a separate, fast, momentary lock (see
+    // m_needDataMetaMutex); it never overlaps with the bucket lock below,
+    // which is instead held by the caller for as long as it needs.
+    const MediaSourceType sourceType = lookupRouting(needDataRequestId, false);
+    if (MediaSourceType::UNKNOWN == sourceType)
+    {
+        return NeedDataRequestLock{};
+    }
+
+    SourceNeedDataRequests *sourceRequests = needDataRequestsFor(sourceType);
+    if (!sourceRequests)
+    {
+        return NeedDataRequestLock{};
+    }
+
+    std::unique_lock<std::mutex> lock{sourceRequests->mutex};
+    auto it = sourceRequests->requests.find(needDataRequestId);
+    if (it == sourceRequests->requests.end())
+    {
+        return NeedDataRequestLock{};
+    }
+    return NeedDataRequestLock{std::move(lock), it->second};
+}
+
+std::shared_ptr<MediaPipeline::NeedDataRequest> MediaPipeline::takeNeedDataRequest(uint32_t needDataRequestId)
+{
+    const MediaSourceType sourceType = lookupRouting(needDataRequestId, true);
+    if (MediaSourceType::UNKNOWN == sourceType)
+    {
+        return nullptr;
+    }
+
+    SourceNeedDataRequests *sourceRequests = needDataRequestsFor(sourceType);
+    if (!sourceRequests)
+    {
+        return nullptr;
+    }
+
+    std::lock_guard<std::mutex> lock{sourceRequests->mutex};
+    auto it = sourceRequests->requests.find(needDataRequestId);
+    if (it == sourceRequests->requests.end())
+    {
+        return nullptr;
+    }
+    std::shared_ptr<NeedDataRequest> needDataRequest = it->second;
+    sourceRequests->requests.erase(it);
+    return needDataRequest;
+}
+
+void MediaPipeline::clearAllNeedDataRequestsLocked()
+{
+    // Caller must already hold m_needDataMetaMutex.
+    m_requestRouting.clear();
+    std::unique_lock<std::mutex> audioLock{m_needDataRequests[0].mutex};
+    std::unique_lock<std::mutex> videoLock{m_needDataRequests[1].mutex};
+    std::unique_lock<std::mutex> subtitleLock{m_needDataRequests[2].mutex};
+    m_needDataRequests[0].requests.clear();
+    m_needDataRequests[1].requests.clear();
+    m_needDataRequests[2].requests.clear();
 }
 
 std::weak_ptr<IMediaPipelineClient> MediaPipeline::getClient()
@@ -819,14 +960,42 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
         needDataRequest->sourceId = sourceId;
         needDataRequest->shmInfo = shmInfo;
 
+        const MediaSourceType sourceType = m_attachedSources.getType(sourceId);
+        SourceNeedDataRequests *sourceRequests = needDataRequestsFor(sourceType);
+        if (!sourceRequests)
         {
-            std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
+            RIALTO_CLIENT_LOG_WARN("NeedMediaData received for unsupported source %d, ignoring request id %u", sourceId,
+                                   requestId);
+            break;
+        }
+
+        bool inserted = false;
+        while (true)
+        {
+            std::unique_lock<std::shared_mutex> metaLock{m_needDataMetaMutex};
             if (ApplicationState::RUNNING != m_currentAppState)
             {
                 RIALTO_CLIENT_LOG_INFO("NeedMediaData received in state != RUNNING, ignoring request id %u", requestId);
                 break;
             }
-            m_needDataRequestMap[requestId] = std::move(needDataRequest);
+
+            std::unique_lock<std::mutex> sourceLock{sourceRequests->mutex, std::try_to_lock};
+            if (!sourceLock.owns_lock())
+            {
+                metaLock.unlock();
+                std::this_thread::yield();
+                continue;
+            }
+
+            m_requestRouting[requestId] = sourceType;
+            sourceRequests->requests[requestId] = std::move(needDataRequest);
+            inserted = true;
+            break;
+        }
+
+        if (!inserted)
+        {
+            break;
         }
 
         std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
@@ -857,12 +1026,12 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
 void MediaPipeline::notifyApplicationState(ApplicationState state)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
+    std::unique_lock<std::shared_mutex> metaLock{m_needDataMetaMutex};
     m_currentAppState = state;
     if (ApplicationState::RUNNING != state)
     {
         // If shared memory in use, wait for it to finish before returning
-        m_needDataRequestMap.clear();
+        clearAllNeedDataRequestsLocked();
     }
 }
 
