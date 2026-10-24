@@ -36,6 +36,10 @@
 #include "IpcLogging.h"
 #include "rialtoipc.pb.h"
 
+#include <google/protobuf/io/coded_stream.h>
+using google::protobuf::io::ArrayOutputStream;
+using google::protobuf::io::CodedOutputStream;
+
 #if !defined(SCM_MAX_FD)
 #define SCM_MAX_FD 255
 #endif
@@ -1093,17 +1097,32 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
     const uint64_t kSerialId = m_serialCounter++;
 
     // create the transport request
-    transport::MessageToServer message;
-    transport::MethodCall *call = message.mutable_call();
-    call->set_serial_id(kSerialId);
-    call->set_service_name(method->service()->full_name());
-    call->set_method_name(method->name());
+    // transport::MessageToServer message;
+    // transport::MethodCall *call = message.mutable_call();
+    // call->set_serial_id(kSerialId);
+    // call->set_service_name(method->service()->full_name());
+    // call->set_method_name(method->name());
 
     // copy in the actual message data
-    std::string reqString = request->SerializeAsString();
-    call->set_request_message(std::move(reqString));
+    // std::string reqString = request->SerializeAsString();
+    // call->set_request_message(std::move(reqString));
 
-    const size_t kRequiredDataLen = message.ByteSizeLong();
+    const size_t kInnerMsgLen = request->ByteSizeLong();
+    const std::string &kServiceName = method->service()->full_name();
+    const std::string &kMethodName = method->name();
+
+    const size_t kEnvelopeSize = CodedOutputStream::VarintSize32((1 << 3) | 0) + // serial_id tag
+                                 CodedOutputStream::VarintSize64(kSerialId) +
+                                 CodedOutputStream::VarintSize32((2 << 3) | 2) + // service_name tag
+                                 CodedOutputStream::VarintSize32(kServiceName.size()) + kServiceName.size() +
+                                 CodedOutputStream::VarintSize32((3 << 3) | 2) + // method_name tag
+                                 CodedOutputStream::VarintSize32(kMethodName.size()) + kMethodName.size() +
+                                 CodedOutputStream::VarintSize32((4 << 3) | 2) + // request_message tag
+                                 CodedOutputStream::VarintSize32(kInnerMsgLen);
+
+    // const size_t kRequiredDataLen = message.ByteSizeLong();
+    const size_t kRequiredDataLen = kEnvelopeSize + kInnerMsgLen;
+
     if (kRequiredDataLen > kMaxMessageSize)
     {
         RIALTO_IPC_LOG_ERROR("method call to big to send (%zu, max %zu", kRequiredDataLen, kMaxMessageSize);
@@ -1116,8 +1135,8 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
     const size_t kRequiredCtrlLen = kFds.empty() ? 0 : CMSG_SPACE(sizeof(int) * kFds.size());
 
     // build the socket message to send
-    auto msgBuf =
-        m_sendBufPool.allocateShared<uint8_t>(sizeof(msghdr) + sizeof(iovec) + kRequiredCtrlLen + kRequiredDataLen);
+    auto msgBuf = m_sendBufPool.allocateShared<uint8_t>(sizeof(msghdr) + (sizeof(iovec) * 2) + kRequiredCtrlLen +
+                                                        kRequiredDataLen);
 
     auto *header = reinterpret_cast<msghdr *>(msgBuf.get());
     bzero(header, sizeof(msghdr));
@@ -1128,14 +1147,49 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
 
     auto *iov = reinterpret_cast<iovec *>(msgBuf.get() + sizeof(msghdr) + kRequiredCtrlLen);
     header->msg_iov = iov;
-    header->msg_iovlen = 1;
+    header->msg_iovlen = 2;
 
-    auto *data = reinterpret_cast<uint8_t *>(msgBuf.get() + sizeof(msghdr) + kRequiredCtrlLen + sizeof(iovec));
-    iov->iov_base = data;
-    iov->iov_len = kRequiredDataLen;
+    auto *envelopeBuffer =
+        reinterpret_cast<uint8_t *>(msgBuf.get() + sizeof(msghdr) + kRequiredCtrlLen + (sizeof(iovec) * 2));
+    iov[0].iov_base = envelopeBuffer;
+    iov[0].iov_len = kEnvelopeSize;
+
+    ArrayOutputStream rawStream(envelopeBuffer, static_cast<int>(kEnvelopeSize));
+    CodedOutputStream envelope(&rawStream);
+    envelope.WriteVarint32((1 << 3) | 0); // serial_id tag
+    envelope.WriteVarint64(kSerialId);
+
+    envelope.WriteVarint32((2 << 3) | 2); // service_name tag
+    envelope.WriteVarint32(kServiceName.size());
+    envelope.WriteRaw(kServiceName.data(), kServiceName.size());
+
+    envelope.WriteVarint32((3 << 3) | 2); // method_name tag
+    envelope.WriteVarint32(kMethodName.size());
+    envelope.WriteRaw(kMethodName.data(), kMethodName.size());
+
+    envelope.WriteVarint32((4 << 3) | 2); // request_message tag (bytes)
+    envelope.WriteVarint32(kInnerMsgLen); // request_message length prefix
+
+    if (envelope.HadError() || static_cast<size_t>(envelope.ByteCount()) != kEnvelopeSize)
+    {
+        RIALTO_IPC_LOG_ERROR("failed to serialize method call envelope");
+        completeWithError(&methodCall, "Serialization failed");
+        return;
+    }
+
+    auto *msgBuffer = reinterpret_cast<uint8_t *>(envelopeBuffer + kEnvelopeSize);
+    iov[1].iov_base = msgBuffer;
+    iov[1].iov_len = kInnerMsgLen;
+
+    if (!request->SerializeToArray(msgBuffer, kInnerMsgLen))
+    {
+        RIALTO_IPC_LOG_ERROR("failed to serialize request message");
+        completeWithError(&methodCall, "Serialization failed");
+        return;
+    }
 
     // copy in the data
-    message.SerializeWithCachedSizesToArray(data);
+    // message.SerializeWithCachedSizesToArray(data);
 
     // next check if the request is sending any fd's
     if (!kFds.empty())
@@ -1167,58 +1221,73 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
 
         if (m_sock < 0)
         {
-            errorMessage = "Not connected";
+            locker.unlock();
+            completeWithError(&methodCall, "Not connected");
         }
         else if (sendmsg(m_sock, header, MSG_NOSIGNAL) != static_cast<ssize_t>(kRequiredDataLen))
         {
-            errorMessage = "Failed to send message";
+            locker.unlock();
+            completeWithError(&methodCall, "Failed to send message");
         }
         else
         {
-            RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", kSerialId, call->service_name().c_str(),
-                                 call->method_name().c_str(), request->ShortDebugString().c_str());
+            RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", kSerialId, kServiceName.c_str(),
+                                 kMethodName.c_str(), request->ShortDebugString().c_str());
 
             if (kNoReplyExpected)
             {
-                // no reply from server is expected, however if the caller supplied
-                // a closure (it shouldn't) we should still call it now to indicate
-                // the method call has been made
-                doneClosure = done;
+                errorMessage = "Not connected";
+            }
+            else if (sendmsg(m_sock, header, MSG_NOSIGNAL) != static_cast<ssize_t>(kRequiredDataLen))
+            {
+                errorMessage = "Failed to send message";
             }
             else
             {
-                // add the message to the queue so we pick-up the reply
-                m_methodCalls.emplace(kSerialId, methodCall);
+                RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", kSerialId, call->service_name().c_str(),
+                                     call->method_name().c_str(), request->ShortDebugString().c_str());
 
-                // update the single timeout timer
-                updateTimeoutTimer();
+                if (kNoReplyExpected)
+                {
+                    // no reply from server is expected, however if the caller supplied
+                    // a closure (it shouldn't) we should still call it now to indicate
+                    // the method call has been made
+                    doneClosure = done;
+                }
+                else
+                {
+                    // add the message to the queue so we pick-up the reply
+                    m_methodCalls.emplace(kSerialId, methodCall);
+
+                    // update the single timeout timer
+                    updateTimeoutTimer();
+                }
             }
         }
-    }
-    // Lock is released here automatically
+        // Lock is released here automatically
 
-    // Handle error case outside lock to avoid deadlock if user closure re-enters
-    if (!errorMessage.empty())
+        // Handle error case outside lock to avoid deadlock if user closure re-enters
+        if (!errorMessage.empty())
+        {
+            completeWithError(&methodCall, std::move(errorMessage));
+            return;
+        }
+
+        // Invoke closure outside the lock to avoid deadlock if the user closure re-enters
+        if (kNoReplyExpected && doneClosure)
+        {
+            doneClosure->Run();
+        }
+    }
+
+    int ChannelImpl::subscribeImpl(const std::string &kEventName, const google::protobuf::Descriptor *descriptor,
+                                   EventHandler &&handler)
     {
-        completeWithError(&methodCall, std::move(errorMessage));
-        return;
+        std::lock_guard<std::mutex> locker(m_eventsLock);
+
+        const int kTag = m_eventTagCounter++;
+        m_eventHandlers.emplace(kEventName, Event{kTag, descriptor, std::move(handler)});
+
+        return kTag;
     }
-
-    // Invoke closure outside the lock to avoid deadlock if the user closure re-enters
-    if (kNoReplyExpected && doneClosure)
-    {
-        doneClosure->Run();
-    }
-}
-
-int ChannelImpl::subscribeImpl(const std::string &kEventName, const google::protobuf::Descriptor *descriptor,
-                               EventHandler &&handler)
-{
-    std::lock_guard<std::mutex> locker(m_eventsLock);
-
-    const int kTag = m_eventTagCounter++;
-    m_eventHandlers.emplace(kEventName, Event{kTag, descriptor, std::move(handler)});
-
-    return kTag;
-}
 }; // namespace firebolt::rialto::ipc
