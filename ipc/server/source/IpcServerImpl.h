@@ -75,6 +75,7 @@ public:
 
     int fd() const override;
     bool wait(int timeoutMSecs) override;
+    void wake() const override;
     bool process() override;
 
 protected:
