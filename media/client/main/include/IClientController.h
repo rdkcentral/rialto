@@ -79,11 +79,36 @@ public:
     IClientController &operator=(IClientController &&) = delete;
 
     /**
+     * @brief Callback invoked with the current/new shared memory handle, on (re)map/unmap.
+     */
+    using SharedMemoryHandleObserver = std::function<void(const std::shared_ptr<ISharedMemoryHandle> &)>;
+
+    /**
      * @brief Gets the handle to the mapped shared memory.
+     *
+     * @deprecated Use subscribeSharedMemoryHandle() instead, to avoid taking a lock on every call.
      *
      * @retval shared pointer to shm handle.
      */
     virtual std::shared_ptr<ISharedMemoryHandle> getSharedMemoryHandle() = 0;
+
+    /**
+     * @brief Subscribe to shared memory handle (re)map/unmap notifications.
+     *
+     * The observer is invoked immediately with the current handle, and again whenever it changes.
+     *
+     * @param[in] observer : Callback to invoke with the current/new shared memory handle.
+     *
+     * @retval token to pass to unsubscribeSharedMemoryHandle().
+     */
+    virtual int subscribeSharedMemoryHandle(SharedMemoryHandleObserver observer) = 0;
+
+    /**
+     * @brief Unsubscribe a previously registered shared memory handle observer.
+     *
+     * @param[in] token : Token returned by subscribeSharedMemoryHandle().
+     */
+    virtual void unsubscribeSharedMemoryHandle(int token) = 0;
 
     /**
      * @brief Register a client notify when the shared buffer changes.
