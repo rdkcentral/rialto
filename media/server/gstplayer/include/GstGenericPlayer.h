@@ -44,6 +44,8 @@
 
 namespace firebolt::rialto::server
 {
+class RialtoMetrics;
+
 constexpr uint32_t kMinPrimaryVideoWidth{1920};
 constexpr uint32_t kMinPrimaryVideoHeight{1080};
 
@@ -196,6 +198,7 @@ private:
     void setPendingPlaybackRate() override;
     void renderFrame() override;
     void handleBusMessage(GstMessage *message) override;
+    void handleMetricMessage(GstMessage *message) override;
     void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) override;
 
     void addAutoVideoSinkChild(GObject *object) override;
@@ -458,6 +461,8 @@ private:
      * @brief Thread for handling player tasks.
      */
     std::unique_ptr<IWorkerThread> m_workerThread;
+
+    std::shared_ptr<RialtoMetrics> m_metrics;
 
     /**
      * @brief Thread for handling gst bus callbacks

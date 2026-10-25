@@ -142,6 +142,7 @@ target_link_libraries(
 
         PRIVATE
         RialtoLogging
+        RialtoMetrics
         RialtoServerMain
         RialtoWrappers
         RialtoCommon
