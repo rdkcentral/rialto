@@ -161,6 +161,30 @@ TEST_F(GstDispatcherThreadTest, UnfilteredMessageTypeIsIgnored)
     sut.reset();
 }
 
+TEST_F(GstDispatcherThreadTest, ApplicationMessageIsForwardedToMetricsClient)
+{
+    auto sut = createSut();
+
+    gst_init(nullptr, nullptr);
+    GstElement *source = gst_pipeline_new("metric-source");
+    ASSERT_NE(nullptr, source);
+    GstMessage *message = gst_message_new_application(
+        GST_OBJECT(source), gst_structure_new_empty("media-pipeline-metric"));
+    gst_object_unref(source);
+    ASSERT_NE(nullptr, message);
+
+    EXPECT_CALL(m_client, handleMetricMessage(message));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageRef(message)).WillOnce(Return(message));
+    EXPECT_CALL(m_client, handleBusMessage(message));
+
+    EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(message));
+    gst_message_unref(message);
+
+    expectDestructorShutdown();
+    expectDestruction();
+    sut.reset();
+}
+
 /**
  * Test that a GST_MESSAGE_STATE_CHANGED message (to GST_STATE_PAUSED) is handled correctly.
  */

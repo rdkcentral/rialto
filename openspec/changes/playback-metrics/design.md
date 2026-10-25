@@ -8,7 +8,7 @@ This design is focused on the server-side architecture needed to turn bus-level 
 
 **Goals:**
 - Add a dedicated `RialtoMetrics` component that owns metric parsing, caching, and forwarding.
-- Register a GStreamer bus watch and parse `media-pipeline-metric` custom messages without disrupting playback.
+- Route `media-pipeline-metric` messages through the existing GStreamer dispatcher and parse them without disrupting playback.
 - Provide a query path keyed by `(sessionId, sourceId)` for current frame counters.
 - Provide a push path that forwards the same counter snapshot to clients using the existing IPC callback flow.
 - Keep the public contract compatible with the current first-frame and media pipeline event model.
@@ -23,7 +23,7 @@ This design is focused on the server-side architecture needed to turn bus-level 
 
 ### D1: Put all metric ownership in `RialtoMetrics`
 
-`GstGenericPlayer` remains a coordinator, not a metrics implementation site. It owns the bus reference and creates the metrics component, but the parsing, cache, and forwarding logic live in `RialtoMetrics`. This isolates the change, keeps `MediaPipelineServerInternal` thin, and makes the bus callback lifetime explicit.
+`GstDispatcherThread` remains the sole owner of the GStreamer bus watch. It forwards application messages to `GstGenericPlayer`, which routes metric messages to `RialtoMetrics`; parsing, caching, and forwarding logic stay in `RialtoMetrics`. This avoids competing bus watches and keeps `MediaPipelineServerInternal` thin.
 
 Alternatives considered:
 - Put counter storage in `MediaPipelineServerInternal`: rejected because it mixes IPC/service concerns with bus callback ownership and would spread lifecycle management across multiple classes.
@@ -54,7 +54,7 @@ Alternatives considered:
 
 ## Risks / Trade-offs
 
-- [Risk] Bus callback lifetime and teardown ordering could create use-after-free or stale watches. Mitigation: `RialtoMetrics` owns the watch registration and removal, and `GstGenericPlayer` ensures destruction occurs after the bus is no longer active.
+- [Risk] A second bus watch could conflict with the existing dispatcher watch. Mitigation: metric messages are routed through `GstDispatcherThread`, which remains the sole bus consumer.
 - [Risk] Concurrent bus callback and query access can race on the shared cache. Mitigation: guard the cache with a mutex or equivalent lock and ensure all read/write paths go through the same component.
 - [Risk] IPC and GStreamer timing skew could make the snapshot appear stale. Mitigation: timestamp the snapshot when it is received and keep the field semantics explicit in the protobuf contract.
 - [Risk] A broad Phase 1 relay could expose noisy metrics to all clients. Mitigation: document that subscription filtering is deferred and make the current design intentionally simple and pass-through.
@@ -62,7 +62,7 @@ Alternatives considered:
 ## Migration Plan
 
 1. Add the `RialtoMetrics` module and build target.
-2. Register the GStreamer bus watch and parse incoming custom metric messages.
+2. Route application bus messages from `GstDispatcherThread` to `RialtoMetrics` and parse metric messages there.
 3. Add the thread-safe counter cache and query accessor used by the server.
 4. Extend protobuf and IPC service/client code for the query and push flow.
 5. Wire `GstGenericPlayer` and `MediaPipelineServerInternal` to the metrics component.

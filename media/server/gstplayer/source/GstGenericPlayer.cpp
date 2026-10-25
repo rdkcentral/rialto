@@ -37,6 +37,7 @@
 #include "IGstTextTrackSinkFactory.h"
 #include "IMediaPipeline.h"
 #include "ITimer.h"
+#include "RialtoMetricsImpl.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
 #include "Utils.h"
@@ -350,6 +351,7 @@ GstGenericPlayer::GstGenericPlayer(
         RIALTO_SERVER_LOG_MIL("Primary video playback selected");
     }
 
+    m_metrics = std::make_shared<RialtoMetricsImpl>();
     m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline,
                                                                                   m_context.flushOnPrerollController,
                                                                                   m_gstWrapper, m_glibWrapper);
@@ -3195,6 +3197,14 @@ void GstGenericPlayer::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
     m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message, *m_flushWatcher));
+}
+
+void GstGenericPlayer::handleMetricMessage(GstMessage *message)
+{
+    if (m_metrics)
+    {
+        m_metrics->onMetricMessage(message);
+    }
 }
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)

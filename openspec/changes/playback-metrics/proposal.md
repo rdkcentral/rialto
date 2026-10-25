@@ -56,8 +56,7 @@ RialtoMSE Sink (consumer apps)
   - Forward metric events to all connected sessions via IPC layer (passthrough, no filtering)
   - Thread-safe access to all data structures (maps, counters)
 - **Public Interface:**
-  - `void initialize(GstBus *bus)` — Register GStreamer bus callback for metric messages; `initialize()` internally calls `gst_bus_add_watch()` with static trampoline that invokes `onMetricMessage()`
-  - `~RialtoMetrics()` — Destructor must call `gst_bus_remove_watch()` to prevent use-after-free if RialtoMetrics destroyed while bus watch active
+  - `void onMetricMessage(GstMessage *message)` — Receive metric messages routed by the existing GStreamer dispatcher
   - `int32_t getFrameCounters(int32_t sessionId, int32_t sourceId, uint64_t *rendered, uint64_t *dropped, uint64_t *corrupted, uint64_t *timestamp)` — Retrieve counter snapshot
   - `void onMetricMessage(const MetricMessageData &data)` — Internal handler for GStreamer bus callback (static trampoline)
   - `void notifyMetricEvent(int32_t sessionId, int32_t sourceId, uint64_t rendered, uint64_t dropped, uint64_t corrupted, const std::string &errorInfo)` — Forward event to IPC layer if session subscribed
@@ -69,8 +68,8 @@ RialtoMSE Sink (consumer apps)
 - **File:** `rialto/media/server/gstplayer/source/GstGenericPlayer.cpp` / `.h`
 - **Changes:**
   - Add member variable: `std::shared_ptr<RialtoMetrics> m_metrics`
-  - In constructor, instantiate RialtoMetrics: `m_metrics = std::make_shared<RialtoMetrics>()`
-  - In `setupPipeline()`, initialize RialtoMetrics with bus reference: `m_metrics->initialize(bus)` after bus setup completes
+  - In constructor, instantiate RialtoMetrics: `m_metrics = std::make_shared<RialtoMetricsImpl>()`
+  - Route application messages from the existing dispatcher to `RialtoMetrics`; do not register a second bus watch
   - Add accessor method: `std::shared_ptr<RialtoMetrics> getRialtoMetrics() const { return m_metrics; }`
   - No other changes to GstGenericPlayer; metrics handling delegated to RialtoMetrics
 
@@ -197,7 +196,7 @@ message NotifyMetricEvent {
 | Component | Impact Type | Location / Path | Details |
 |-----------|------------|-----------------|---------|
 | **RialtoMetrics Module (PRIMARY)** | New Module | `rialto/media/server/metrics/include/RialtoMetrics.h`, `RialtoMetricsImpl.h`, `source/RialtoMetricsImpl.cpp` | Core metrics processor: GStreamer bus callback, counter caching, metric forwarding (Phase 1: no subscription storage) |
-| **GstGenericPlayer** | Modification | `rialto/media/server/gstplayer/source/GstGenericPlayer.cpp/.h` | Add member: `std::shared_ptr<RialtoMetrics> m_metrics`; instantiate in constructor; pass bus to RialtoMetrics->initialize() |
+| **GstGenericPlayer** | Modification | `rialto/media/server/gstplayer/source/GstGenericPlayer.cpp/.h` | Add member: `std::shared_ptr<RialtoMetrics> m_metrics`; instantiate in constructor; route dispatcher-delivered metric messages to RialtoMetrics |
 | **MediaPipelineServerInternal** | Modification | `rialto/media/server/main/source/MediaPipelineServerInternal.cpp/.h` | Add public method: `getFrameCounters()` that delegates to RialtoMetrics; add accessor `getRialtoMetrics()` (Phase 1: no setMetricSubscription) |
 
 | **Counter Cache** | Data Structure (owned by RialtoMetrics) | `rialto/media/server/metrics/source/RialtoMetricsImpl.cpp` | Thread-safe map: `std::map<std::pair<int32_t, int32_t>, FrameCounters>` (sessionId+sourceId → rendered/dropped/decoded/timestamp) |
@@ -213,7 +212,7 @@ message NotifyMetricEvent {
 ## Success Criteria
 
 **Functional Requirements (Phase 1):**
-- ✅ `RialtoMetrics::initialize(bus)` successfully registers GStreamer bus callback via `gst_bus_add_watch()`
+- ✅ The existing GStreamer dispatcher routes `media-pipeline-metric` messages to `RialtoMetrics` without registering another bus watch
 - ✅ `RialtoMetrics::onMetricMessage()` correctly parses GST_MESSAGE_CUSTOM with structure name 'media-pipeline-metric'
 - ✅ Bus callback non-blocking; GStreamer pipeline latency overhead < 1ms
 - ✅ `RialtoMetrics::getFrameCounters()` returns current counter snapshot from internal cache within 1ms
@@ -263,7 +262,7 @@ message NotifyMetricEvent {
    #define ENABLE_RIALTO_METRICS 0  // Set to 0 to disable entire metrics subsystem
    
    #if ENABLE_RIALTO_METRICS
-   m_metrics->initialize(bus);
+  // Metric messages are routed from GstGenericPlayer::handleMetricMessage.
    #endif
    ```
 
