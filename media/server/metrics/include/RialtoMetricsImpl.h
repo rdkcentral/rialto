@@ -9,6 +9,7 @@ class RialtoMetricsImpl final : public RialtoMetrics
 {
 public:
     ~RialtoMetricsImpl() override = default;
+    void onMetricMessage(GstMessage *message) override;
 };
 } // namespace firebolt::rialto::server
 
