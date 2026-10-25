@@ -29,6 +29,7 @@ set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
 add_subdirectory(common)
+add_subdirectory(metrics)
 add_subdirectory(gstplayer)
 add_subdirectory(main)
 add_subdirectory(ipc)
