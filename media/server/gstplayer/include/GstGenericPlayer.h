@@ -55,6 +55,8 @@ constexpr uint32_t kMinPrimaryVideoHeight{1080};
 class GstGenericPlayerFactory : public IGstGenericPlayerFactory
 {
 public:
+    std::shared_ptr<RialtoMetrics> getRialtoMetrics() const override;
+
     /**
      * @brief Weak pointer to the singleton factory object.
      */

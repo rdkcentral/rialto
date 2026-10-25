@@ -27,6 +27,7 @@
 #include "ISharedMemoryBuffer.h"
 #include "MediaPipelineServerInternal.h"
 #include "NeedMediaData.h"
+#include "RialtoMetrics.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
 
@@ -527,6 +528,51 @@ bool MediaPipelineServerInternal::getStatsInternal(int32_t sourceId, uint64_t &r
         return false;
     }
     return m_gstPlayer->getStats(sourceIter->first, renderedFrames, droppedFrames);
+}
+
+bool MediaPipelineServerInternal::getFrameCounters(int32_t sessionId, int32_t sourceId, uint64_t &renderedFrames,
+                                                    uint64_t &droppedFrames, uint64_t &corruptedFrames,
+                                                    uint64_t &timestamp)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]()
+    { result = getFrameCountersInternal(sessionId, sourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::getFrameCountersInternal(int32_t sessionId, int32_t sourceId,
+                                                           uint64_t &renderedFrames, uint64_t &droppedFrames,
+                                                           uint64_t &corruptedFrames, uint64_t &timestamp)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - Gstreamer player has not been loaded");
+        return false;
+    }
+
+    const auto metrics = m_gstPlayer->getRialtoMetrics();
+    if (!metrics)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - RialtoMetrics is unavailable");
+        return false;
+    }
+
+    FrameCounters counters;
+    if (!metrics->getFrameCounters(sessionId, sourceId, counters))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - Source not found");
+        return false;
+    }
+
+    renderedFrames = counters.rendered;
+    droppedFrames = counters.dropped;
+    corruptedFrames = counters.corrupted;
+    timestamp = counters.timestamp;
+    return true;
 }
 
 bool MediaPipelineServerInternal::setImmediateOutput(int32_t sourceId, bool immediateOutput)
