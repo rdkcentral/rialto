@@ -19,6 +19,7 @@
 
 #include "HeartbeatHandlerMock.h"
 #include "MediaPipelineTestBase.h"
+#include "RialtoMetricsImpl.h"
 #include <thread>
 
 using ::testing::ByMove;
@@ -532,6 +533,28 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStatsSuccess)
     EXPECT_TRUE(m_mediaPipeline->getStats(videoSourceId, renderedFrames, droppedFrames));
     EXPECT_EQ(renderedFrames, m_kRenderedFrames);
     EXPECT_EQ(droppedFrames, m_kDroppedFrames);
+}
+
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersSuccess)
+{
+    loadGstPlayer();
+    const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    auto metrics = std::make_shared<RialtoMetricsImpl>();
+    metrics->updateFrameCounters(m_kSessionId, sourceId, FrameCounters{3141, 95, 7, 1234});
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getRialtoMetrics()).WillOnce(Return(metrics));
+
+    uint64_t renderedFrames{0};
+    uint64_t droppedFrames{0};
+    uint64_t corruptedFrames{0};
+    uint64_t timestamp{0};
+    EXPECT_TRUE(m_mediaPipeline->getFrameCounters(m_kSessionId, sourceId, renderedFrames, droppedFrames,
+                                                  corruptedFrames, timestamp));
+    EXPECT_EQ(3141U, renderedFrames);
+    EXPECT_EQ(95U, droppedFrames);
+    EXPECT_EQ(7U, corruptedFrames);
+    EXPECT_EQ(1234U, timestamp);
 }
 
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, RenderFrameSuccess)

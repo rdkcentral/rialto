@@ -3194,6 +3194,11 @@ void GstGenericPlayer::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
     }
 }
 
+std::shared_ptr<RialtoMetrics> GstGenericPlayer::getRialtoMetrics() const
+{
+    return m_metrics;
+}
+
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
     m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message, *m_flushWatcher));
