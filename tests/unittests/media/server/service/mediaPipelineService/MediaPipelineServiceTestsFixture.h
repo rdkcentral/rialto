@@ -175,6 +175,8 @@ public:
     void getQueuedFramesShouldFail();
     void getStatsShouldSucceed();
     void getStatsShouldFail();
+    void getFrameCountersShouldSucceed();
+    void getFrameCountersShouldFail();
     void getSupportedMimeTypesSucceed();
     void isMimeTypeSupportedSucceed();
     void getSupportedPropertiesSucceed();

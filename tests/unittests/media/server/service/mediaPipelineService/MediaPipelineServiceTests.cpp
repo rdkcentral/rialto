@@ -442,6 +442,26 @@ TEST_F(MediaPipelineServiceTests, shouldGetStats)
     getStatsShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToGetFrameCountersForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    getFrameCountersShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetFrameCounters)
+{
+    initSession();
+    mediaPipelineWillFailToGetFrameCounters();
+    getFrameCountersShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetFrameCounters)
+{
+    initSession();
+    mediaPipelineWillGetFrameCounters();
+    getFrameCountersShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldGetSupportedMimeTypes)
 {
     createMediaPipelineShouldSuccess();

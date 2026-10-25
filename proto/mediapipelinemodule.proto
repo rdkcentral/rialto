@@ -770,6 +770,28 @@ message GetStatsResponse {
     optional int64 dropped_frames = 2 [default = -1];
 }
 
+enum MetricType {
+    VIDEO_FRAME_DROP = 0;
+    AUDIO_FRAME_DROP = 1;
+    VIDEO_DECODE_ERROR = 2;
+    AUDIO_DECODE_ERROR = 3;
+    VIDEO_FRAME_REPEAT = 4;
+    AUDIO_GAP = 5;
+    BUFFER_UNDERFLOW = 6;
+}
+
+message GetFrameCountersRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+}
+
+message GetFrameCountersResponse {
+    optional uint64 rendered_frames = 1 [default = 0];
+    optional uint64 dropped_frames = 2 [default = 0];
+    optional uint64 corrupted_frames = 3 [default = 0];
+    optional uint64 timestamp = 4 [default = 0]; // Server timestamp in nanoseconds.
+}
+
 /**
  * @fn void processAudioGap(int64 position, uint32 duration, uint32 level)
  * @brief Process audio gap.
@@ -977,6 +999,18 @@ message QosEvent {
 }
 
 /**
+ * @brief Event sent by the server with a frame-counter snapshot.
+ */
+message NotifyMetricEvent {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+    optional uint64 rendered_frames = 3 [default = 0];
+    optional uint64 dropped_frames = 4 [default = 0];
+    optional uint64 corrupted_frames = 5 [default = 0];
+    optional string error_info = 6;
+}
+
+/**
  * @brief Event sent by the server when a buffer underflow has been raised.
  *
  * @param session_id        The id of the A/V session the request is for.
@@ -1173,6 +1207,13 @@ service MediaPipelineModule {
      * @see GetStatsRequest
      */
     rpc getStats(GetStatsRequest) returns (GetStatsResponse) {
+    }
+
+    /**
+     * @brief Gets the latest frame-counter snapshot for a source.
+     * @see GetFrameCountersRequest
+     */
+    rpc getFrameCounters(GetFrameCountersRequest) returns (GetFrameCountersResponse) {
     }
 
     /**

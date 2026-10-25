@@ -94,6 +94,8 @@ public:
     void mediaPipelineServiceWillFailToGetQueuedFrames();
     void mediaPipelineServiceWillGetStats();
     void mediaPipelineServiceWillFailToGetStats();
+    void mediaPipelineServiceWillGetFrameCounters();
+    void mediaPipelineServiceWillFailToGetFrameCounters();
     void mediaPipelineServiceWillRenderFrame();
     void mediaPipelineServiceWillFailToRenderFrame();
     void mediaPipelineServiceWillSetVolume();
@@ -182,6 +184,8 @@ public:
     void sendGetQueuedFramesRequestAndReceiveFail();
     void sendGetStatsRequestAndReceiveResponse();
     void sendGetStatsRequestAndReceiveResponseWithoutStatsMatch();
+    void sendGetFrameCountersRequestAndReceiveResponse();
+    void sendGetFrameCountersRequestAndReceiveFail();
     void sendHaveDataRequestAndReceiveResponse();
     void sendSetPlaybackRateRequestAndReceiveResponse();
     void sendSetVideoWindowRequestAndReceiveResponse();

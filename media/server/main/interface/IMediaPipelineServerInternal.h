@@ -99,6 +99,9 @@ public:
      */
     virtual bool haveData(MediaSourceStatus status, uint32_t numFrames, uint32_t needDataRequestId) = 0;
 
+    virtual bool getFrameCounters(int32_t sessionId, int32_t sourceId, uint64_t &renderedFrames,
+                                  uint64_t &droppedFrames, uint64_t &corruptedFrames, uint64_t &timestamp) = 0;
+
     /**
      * @brief Checks if MediaPipeline threads are not deadlocked
      *
