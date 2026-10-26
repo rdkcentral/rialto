@@ -45,6 +45,10 @@ public:
                 (override));
     MOCK_METHOD(void, notifyCancelNeedMediaData, (int32_t sourceId), (override));
     MOCK_METHOD(void, notifyQos, (int32_t sourceId, const QosInfo &qosInfo), (override));
+    MOCK_METHOD(void, notifyMetricEvent,
+                (int32_t sourceId, uint64_t renderedFrames, uint64_t droppedFrames, uint64_t corruptedFrames,
+                 const std::string &errorInfo),
+                (override));
     MOCK_METHOD(void, notifyBufferUnderflow, (int32_t sourceId), (override));
     MOCK_METHOD(void, notifyFirstFrameReceived, (int32_t sourceId), (override));
     MOCK_METHOD(void, notifyPlaybackError, (int32_t sourceId, PlaybackError error), (override));
