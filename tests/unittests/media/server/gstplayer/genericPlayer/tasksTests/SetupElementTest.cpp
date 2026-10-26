@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include "GenericPlayerContext.h"
 #include "GenericTasksTestsBase.h"
 
 class SetupElementTest : public GenericTasksTestsBase
@@ -35,6 +36,29 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometry)
     triggerSetupElement();
 }
 
+TEST_F(SetupElementTest, shouldUseEnvironmentGeometryAsFallback)
+{
+    const firebolt::rialto::server::Rectangle fallbackGeometry{1, 2, 3, 4};
+    shouldSetupVideoElementWithFallbackGeometry();
+    triggerSetupElement();
+    checkPendingGeometry(fallbackGeometry);
+}
+
+TEST_F(SetupElementTest, shouldKeepApiGeometryAuthoritativeOverEnvironmentFallback)
+{
+    const firebolt::rialto::server::Rectangle apiGeometry{5, 6, 7, 8};
+    shouldSetupVideoElementWithApiGeometryAndFallback();
+    triggerSetupElement();
+    checkPendingGeometry(apiGeometry);
+}
+
+TEST_F(SetupElementTest, shouldNotApplyEnvironmentFallbackAfterApiGeometryWasCleared)
+{
+    shouldSetupVideoElementWithoutFallbackAfterApiCall();
+    triggerSetupElement();
+    checkPendingGeometry({});
+}
+
 TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingImmediateOutput)
 {
     shouldSetupVideoElementWithPendingImmediateOutput();
@@ -44,6 +68,18 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingImmediateOutput)
 TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingLowLatency)
 {
     shouldSetupAudioSinkElementWithPendingLowLatency();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioSinkWithPendingImmediateOutput)
+{
+    shouldSetupAudioSinkElementWithPendingLowLatencyAudioSink();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioDecoderWithPendingImmediateOutput)
+{
+    shouldSetupAudioDecoderElementWithPendingLowLatency();
     triggerSetupElement();
 }
 
@@ -186,6 +222,24 @@ TEST_F(SetupElementTest, shouldReportAudioUnderflow)
 
     shouldSetAudioUnderflowCallback();
     triggerAudioUnderflowCallback();
+}
+
+TEST_F(SetupElementTest, shouldReportFirstAudioFrameFromSignal)
+{
+    shouldSetupAudioDecoderElementWithFirstAudioFrameCallback();
+    triggerSetupElement();
+
+    shouldSetFirstAudioFrameCallback();
+    triggerFirstAudioFrameCallback();
+}
+
+TEST_F(SetupElementTest, shouldReportFirstAudioFrameFromFallbackProbe)
+{
+    shouldSetupAudioSinkElementWithFirstAudioFrameProbe();
+    triggerSetupElement();
+
+    shouldSetFirstAudioFrameFallbackProbeCallback();
+    triggerFirstAudioFrameFallbackProbeCallback();
 }
 
 TEST_F(SetupElementTest, shouldReportAutoVideoSinkChildAdded)

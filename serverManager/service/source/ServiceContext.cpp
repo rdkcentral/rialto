@@ -38,6 +38,15 @@ ServiceContext::ServiceContext(const std::shared_ptr<IStateObserver> &stateObser
 {
 }
 
+ServiceContext::~ServiceContext()
+{
+    if (m_sessionServerAppManager)
+    {
+        m_sessionServerAppManager->setShuttingDown();
+        m_sessionServerAppManager.reset();
+    }
+}
+
 common::ISessionServerAppManager &ServiceContext::getSessionServerAppManager()
 {
     return *m_sessionServerAppManager;

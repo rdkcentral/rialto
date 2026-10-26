@@ -81,5 +81,6 @@ target_link_libraries(
         RialtoServerManagerCommon
         RialtoServerManagerIpc
         RialtoServerManager
+        RialtoWrappers
         Threads::Threads
         )

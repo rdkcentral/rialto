@@ -45,6 +45,7 @@ public:
                 (const, override));
     MOCK_METHOD(int, chmod, (const char *pathname, mode_t mode), (const, override));
     MOCK_METHOD(int, chown, (const char *pathname, uid_t owner, gid_t group), (const, override));
+    MOCK_METHOD(int, fcntl, (int fd, int op, int args), (const, override));
 };
 } // namespace firebolt::rialto::wrappers
 

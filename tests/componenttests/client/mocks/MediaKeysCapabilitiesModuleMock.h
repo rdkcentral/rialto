@@ -45,6 +45,10 @@ public:
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::IsServerCertificateSupportedRequest *request,
                  ::firebolt::rialto::IsServerCertificateSupportedResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getSupportedRobustnessLevels,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::GetSupportedRobustnessLevelsRequest *request,
+                 ::firebolt::rialto::GetSupportedRobustnessLevelsResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {
@@ -87,6 +91,17 @@ public:
     {
         firebolt::rialto::IsServerCertificateSupportedResponse response;
         response.set_is_supported(value);
+        return response;
+    }
+
+    ::firebolt::rialto::GetSupportedRobustnessLevelsResponse
+    getSupportedRobustnessLevelsResponse(const std::vector<std::string> &values)
+    {
+        firebolt::rialto::GetSupportedRobustnessLevelsResponse response;
+        for (const auto &value : values)
+        {
+            response.add_robustness_levels(value);
+        }
         return response;
     }
 

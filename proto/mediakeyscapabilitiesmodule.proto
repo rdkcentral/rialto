@@ -83,6 +83,21 @@ message IsServerCertificateSupportedResponse {
   optional bool is_supported = 1;
 }
 
+/**
+ * @fn bool, vector<string> getSupportedRobustnessLevels(const std::string &keySystem)
+ * @brief Returns supported robustness levels for a key system.
+ *
+ * @param[in]  key_system   The key system to query.
+ *
+ * @returns the supported robustness levels.
+ */
+message GetSupportedRobustnessLevelsRequest {
+  optional string key_system = 1;
+}
+message GetSupportedRobustnessLevelsResponse {
+  repeated string robustness_levels = 1;
+}
+
 service MediaKeysCapabilitiesModule {
     /**
      * @brief Returns the EME key systems supported by Rialto.
@@ -110,5 +125,12 @@ service MediaKeysCapabilitiesModule {
      * @see IsServerCertificateSupportedRequest
      */
     rpc isServerCertificateSupported(IsServerCertificateSupportedRequest) returns (IsServerCertificateSupportedResponse) {
+    }
+
+    /**
+     * @brief Gets the robustness levels supported by the specified key system.
+     * @see GetSupportedRobustnessLevelsRequest
+     */
+    rpc getSupportedRobustnessLevels(GetSupportedRobustnessLevelsRequest) returns (GetSupportedRobustnessLevelsResponse) {
     }
 }

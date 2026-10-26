@@ -197,6 +197,13 @@ MATCHER_P(isServerCertificateSupportedRequestMatcher, keySystem, "")
     return (kRequest->key_system() == keySystem);
 }
 
+MATCHER_P(getSupportedRobustnessLevelsRequestMatcher, keySystem, "")
+{
+    const ::firebolt::rialto::GetSupportedRobustnessLevelsRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetSupportedRobustnessLevelsRequest *>(arg);
+    return (kRequest->key_system() == keySystem);
+}
+
 MATCHER_P2(releaseKeySessionRequestMatcher, mediaKeysHandle, keySessionId, "")
 {
     const ::firebolt::rialto::ReleaseKeySessionRequest *kRequest =

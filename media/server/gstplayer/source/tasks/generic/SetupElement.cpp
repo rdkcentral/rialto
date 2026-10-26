@@ -77,6 +77,37 @@ void firstVideoFrameCallback(GstElement *object, guint fifoDepth, gpointer queue
 }
 
 /**
+ * @brief Callback for first audio frame event from the emitting audio element. Called by the Gstreamer thread.
+ *
+ * @param[in] object     : the object that emitted the signal
+ * @param[in] fifoDepth  : the fifo depth (may be 0)
+ * @param[in] queueDepth : the queue depth (may be NULL)
+ * @param[in] self       : The pointer to IGstGenericPlayerPrivate
+ */
+void firstAudioFrameCallback(GstElement *object, guint fifoDepth, gpointer queueDepth, gpointer self)
+{
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->scheduleFirstAudioFrameReceived(firebolt::rialto::server::AudioFirstFrameAction::CLEAR_PROBE);
+}
+
+/**
+ * @brief Fallback probe callback for first audio frame on sink pad.
+ */
+GstPadProbeReturn firstAudioFrameProbeCallback(GstPad *pad, GstPadProbeInfo *info, gpointer self)
+{
+    if (!(info->type & GST_PAD_PROBE_TYPE_BUFFER) || !GST_PAD_PROBE_INFO_BUFFER(info))
+    {
+        return GST_PAD_PROBE_OK;
+    }
+
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->scheduleFirstAudioFrameReceived(firebolt::rialto::server::AudioFirstFrameAction::CLEAR_PROBE_STATE);
+    return GST_PAD_PROBE_REMOVE;
+}
+
+/**
  * @brief Callback for a autovideosink when a child has been added to the sink.
  *
  * @param[in] obj        : the parent element (autovideosink)
@@ -150,6 +181,35 @@ SetupElement::SetupElement(GenericPlayerContext &context,
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_player{player}, m_element{element}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetupElement");
+
+    // Property setting has to happen immediately
+    if (isVideoParser(*m_gstWrapper, m_element))
+    {
+        RIALTO_SERVER_LOG_INFO("Setting syncmode-streaming to 1 on video parser (immediate)");
+        bool streamSyncModePending{false};
+        streamSyncModePending = m_context.pendingStreamSyncMode.find(MediaSourceType::VIDEO) !=
+                                m_context.pendingStreamSyncMode.end();
+        if (streamSyncModePending)
+        {
+            m_player.setStreamSyncMode(MediaSourceType::VIDEO);
+        }
+    }
+    else if (isAudioDecoder(*m_gstWrapper, m_element))
+    {
+        bool streamSyncModePending{false};
+        bool bufferingLimitPending{false};
+        streamSyncModePending = m_context.pendingStreamSyncMode.find(MediaSourceType::AUDIO) !=
+                                m_context.pendingStreamSyncMode.end();
+        bufferingLimitPending = m_context.pendingBufferingLimit.has_value();
+        if (streamSyncModePending)
+        {
+            m_player.setStreamSyncMode(MediaSourceType::AUDIO);
+        }
+        if (bufferingLimitPending)
+        {
+            m_player.setBufferingLimit();
+        }
+    }
 }
 
 SetupElement::~SetupElement()
@@ -261,6 +321,10 @@ void SetupElement::execute() const
                 RIALTO_SERVER_LOG_INFO("Setting video decoder handle for subtitle sink: %p", m_element);
                 m_context.isVideoHandleSet = true;
             }
+            if (m_context.pendingReportDecodeErrorsForVideo.has_value())
+            {
+                m_player.setReportDecodeErrors();
+            }
         }
     }
 
@@ -295,6 +359,32 @@ void SetupElement::execute() const
                 m_glibWrapper->gSignalConnect(m_element, firstFrameSignalName.value().c_str(),
                                               G_CALLBACK(firstVideoFrameCallback), &m_player);
             }
+            else if (isAudio(*m_gstWrapper, m_element))
+            {
+                RIALTO_SERVER_LOG_INFO("Connecting first audio frame callback for signal: %s",
+                                       firstFrameSignalName.value().c_str());
+                m_glibWrapper->gSignalConnect(m_element, firstFrameSignalName.value().c_str(),
+                                              G_CALLBACK(firstAudioFrameCallback), &m_player);
+            }
+        }
+        else if (isAudioSink(*m_gstWrapper, m_element))
+        {
+            GstPad *sinkPad = m_gstWrapper->gstElementGetStaticPad(m_element, "sink");
+            if (sinkPad)
+            {
+                gulong probeId = m_gstWrapper->gstPadAddProbe(sinkPad, GST_PAD_PROBE_TYPE_BUFFER,
+                                                              firstAudioFrameProbeCallback, &m_player, nullptr);
+
+                if (probeId != 0)
+                {
+                    RIALTO_SERVER_LOG_INFO("Installed first audio frame fallback probe on sink");
+                    m_player.setAudioFirstFrameFallbackProbe(sinkPad, probeId);
+                }
+                else
+                {
+                    m_gstWrapper->gstObjectUnref(sinkPad);
+                }
+            }
         }
     }
 
@@ -307,6 +397,11 @@ void SetupElement::execute() const
         }
         if (!m_context.pendingGeometry.empty())
         {
+            m_player.setVideoSinkRectangle();
+        }
+        else if (!m_context.videoGeometrySetByApi.load() && !m_context.defaultVideoGeometry.empty())
+        {
+            m_context.pendingGeometry = m_context.defaultVideoGeometry;
             m_player.setVideoSinkRectangle();
         }
         if (m_context.pendingImmediateOutputForVideo.has_value())
@@ -328,14 +423,24 @@ void SetupElement::execute() const
         {
             m_player.setSyncOff();
         }
-        if (m_context.pendingStreamSyncMode.find(MediaSourceType::AUDIO) != m_context.pendingStreamSyncMode.end())
+        if (m_context.pendingLowLatencyForAudioDecoder.has_value())
+        {
+            m_player.setLowLatencyAudioDecoder();
+        }
+        bool streamSyncModePending{false};
+        bool bufferingLimitPending{false};
+        streamSyncModePending = m_context.pendingStreamSyncMode.find(MediaSourceType::AUDIO) !=
+                                m_context.pendingStreamSyncMode.end();
+        bufferingLimitPending = m_context.pendingBufferingLimit.has_value();
+        if (streamSyncModePending)
         {
             m_player.setStreamSyncMode(MediaSourceType::AUDIO);
         }
-        if (m_context.pendingBufferingLimit.has_value())
+        if (bufferingLimitPending)
         {
             m_player.setBufferingLimit();
         }
+
         if (m_context.isLive &&
             m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_element), "enable-rate-correction"))
         {
@@ -349,6 +454,10 @@ void SetupElement::execute() const
         {
             m_player.setLowLatency();
         }
+        if (m_context.pendingLowLatencyForAudioSink.has_value())
+        {
+            m_player.setLowLatencyAudioSink();
+        }
         if (m_context.pendingSync.has_value())
         {
             m_player.setSync();
@@ -356,7 +465,10 @@ void SetupElement::execute() const
     }
     else if (isVideoParser(*m_gstWrapper, m_element))
     {
-        if (m_context.pendingStreamSyncMode.find(MediaSourceType::VIDEO) != m_context.pendingStreamSyncMode.end())
+        bool streamSyncModePending{false};
+        streamSyncModePending = m_context.pendingStreamSyncMode.find(MediaSourceType::VIDEO) !=
+                                m_context.pendingStreamSyncMode.end();
+        if (streamSyncModePending)
         {
             m_player.setStreamSyncMode(MediaSourceType::VIDEO);
         }
@@ -366,7 +478,6 @@ void SetupElement::execute() const
     {
         m_gstWrapper->gstBaseParseSetPtsInterpolation(GST_BASE_PARSE(m_element), FALSE);
     }
-
     m_gstWrapper->gstObjectUnref(m_element);
 }
 } // namespace firebolt::rialto::server::tasks::generic

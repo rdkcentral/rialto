@@ -19,6 +19,12 @@
 
 set( CMAKE_CXX_STANDARD 17 )
 
+# RIALTO-197: deprecated-declarations error in the latest stable2 for gstreamer.
+# Should be removed once the issue is fixed.
+add_compile_options(
+  "-Wno-deprecated-declarations"
+)
+
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
@@ -49,6 +55,11 @@ add_library(
         source/TextTrackAccessor.cpp
         source/TextTrackSession.cpp
         source/NeedDataDelayCalculator.cpp
+        source/MediaCapabilitiesServerInternal.cpp
+        source/MetricsCollector.cpp
+        source/LogMetricsReporter.cpp
+        source/CompositeMetricsReporter.cpp
+        source/MetricsThresholdChecker.cpp
         )
 
 target_include_directories(

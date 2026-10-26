@@ -21,6 +21,7 @@
 #include "HeartbeatHandlerMock.h"
 #include "PlayerTaskMock.h"
 #include "WebAudioUtil.h"
+#include <chrono>
 #include <thread>
 
 using testing::DoAll;
@@ -63,6 +64,7 @@ public:
         {
             std::unique_lock<std::mutex> lock(context.writeBufferMutex);
             context.lastBytesWritten = m_bytesWritten;
+            ++context.writeCompletionCounter;
         }
         context.writeBufferCond.notify_one();
     }

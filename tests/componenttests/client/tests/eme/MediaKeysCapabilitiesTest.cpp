@@ -134,7 +134,15 @@ TEST_F(MediaKeysCapabilitiesTest, checkSupportedKeySystems)
     MediaKeysTestMethods::shouldNotSupportServerCertificate();
     MediaKeysTestMethods::doesNotSupportServerCertificate();
 
-    // Step 9: Destroy MediaKeysCabilities.
+    // Step 9: Get supported robustness levels - success
+    MediaKeysTestMethods::shouldGetSupportedRobustnessLevels();
+    MediaKeysTestMethods::getSupportedRobustnessLevels();
+
+    // Step 10: Get supported robustness levels - failure
+    MediaKeysTestMethods::shouldNotGetSupportedRobustnessLevels();
+    MediaKeysTestMethods::doesNotGetSupportedRobustnessLevels();
+
+    // Step 11: Destroy MediaKeysCabilities.
     MediaKeysTestMethods::destroyMediaKeysCapabilitiesObject();
 }
 } // namespace firebolt::rialto::client::ct

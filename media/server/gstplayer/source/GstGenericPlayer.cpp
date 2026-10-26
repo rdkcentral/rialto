@@ -17,11 +17,16 @@
  * limitations under the License.
  */
 
+#include <algorithm>
 #include <chrono>
 #include <cinttypes>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <limits>
 #include <malloc.h>
+#include <optional>
 #include <stdexcept>
 
 #include "FlushWatcher.h"
@@ -36,6 +41,7 @@
 #include "TypeConverters.h"
 #include "Utils.h"
 #include "WorkerThread.h"
+#include "tasks/generic/FirstFrameReceived.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
 
 namespace
@@ -47,6 +53,124 @@ namespace
  */
 constexpr std::chrono::milliseconds kPositionReportTimerMs{250};
 constexpr std::chrono::seconds kSubtitleClockResyncInterval{10};
+
+std::optional<int> getIntEnv(const char *envName)
+{
+    const char *value = std::getenv(envName);
+    if (!value || value[0] == '\0')
+    {
+        return std::nullopt;
+    }
+
+    char *endPtr{nullptr};
+    const int64_t parsedValue{std::strtol(value, &endPtr, 10)};
+    if (endPtr == value || *endPtr != '\0' || parsedValue < std::numeric_limits<int>::min() ||
+        parsedValue > std::numeric_limits<int>::max())
+    {
+        RIALTO_SERVER_LOG_WARN("Ignoring invalid integer value '%s' from %s", value, envName);
+        return std::nullopt;
+    }
+
+    return static_cast<int>(parsedValue);
+}
+
+std::optional<firebolt::rialto::server::Rectangle> getDefaultVideoGeometryFromEnvironment()
+{
+    const char *rectangleValue = std::getenv("RIALTO_VIDEO_WINDOW_RECTANGLE");
+    if (rectangleValue && rectangleValue[0] != '\0')
+    {
+        int x{}, y{}, width{}, height{};
+        if (std::sscanf(rectangleValue, "%d,%d,%d,%d", &x, &y, &width, &height) == 4)
+        {
+            if (width > 0 && height > 0)
+            {
+                return firebolt::rialto::server::Rectangle{x, y, width, height};
+            }
+
+            RIALTO_SERVER_LOG_WARN("Ignoring invalid %s value '%s' because width/height must be positive",
+                                   "RIALTO_VIDEO_WINDOW_RECTANGLE", rectangleValue);
+            return std::nullopt;
+        }
+
+        RIALTO_SERVER_LOG_WARN("Ignoring invalid %s value '%s', expected x,y,width,height",
+                               "RIALTO_VIDEO_WINDOW_RECTANGLE", rectangleValue);
+        return std::nullopt;
+    }
+
+    const std::optional<int> x = getIntEnv("RIALTO_VIDEO_WINDOW_X");
+    const std::optional<int> y = getIntEnv("RIALTO_VIDEO_WINDOW_Y");
+    const std::optional<int> width = getIntEnv("RIALTO_VIDEO_WINDOW_WIDTH");
+    const std::optional<int> height = getIntEnv("RIALTO_VIDEO_WINDOW_HEIGHT");
+
+    if (!x && !y && !width && !height)
+    {
+        return std::nullopt;
+    }
+
+    if (!x || !y || !width || !height)
+    {
+        RIALTO_SERVER_LOG_WARN("Ignoring incomplete video geometry environment. Set all of %s, %s, %s and %s",
+                               "RIALTO_VIDEO_WINDOW_X", "RIALTO_VIDEO_WINDOW_Y", "RIALTO_VIDEO_WINDOW_WIDTH",
+                               "RIALTO_VIDEO_WINDOW_HEIGHT");
+        return std::nullopt;
+    }
+
+    if (*width <= 0 || *height <= 0)
+    {
+        RIALTO_SERVER_LOG_WARN(
+            "Ignoring invalid video geometry from environment because width/height must be positive");
+        return std::nullopt;
+    }
+
+    return firebolt::rialto::server::Rectangle{*x, *y, *width, *height};
+}
+
+bool setRenderRectangleProperty(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                                GstElement *videoSink, const firebolt::rialto::server::Rectangle &rectangle)
+{
+    GValue renderRectangle = G_VALUE_INIT;
+    glibWrapper->gValueInit(&renderRectangle, GST_TYPE_ARRAY);
+
+    auto appendCoordinate = [&](int coordinate)
+    {
+        GValue value = G_VALUE_INIT;
+        glibWrapper->gValueInit(&value, G_TYPE_INT);
+        g_value_set_int(&value, coordinate);
+        gstWrapper->gstValueArrayAppendValue(&renderRectangle, &value);
+        glibWrapper->gValueUnset(&value);
+    };
+
+    appendCoordinate(rectangle.x);
+    appendCoordinate(rectangle.y);
+    appendCoordinate(rectangle.width);
+    appendCoordinate(rectangle.height);
+
+    g_object_set_property(G_OBJECT(videoSink), "render-rectangle", &renderRectangle);
+    glibWrapper->gValueUnset(&renderRectangle);
+    return true;
+}
+
+void applyPlaybinSinkOverride(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                              const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                              GstElement *pipeline, const char *envName, const char *propertyName)
+{
+    const char *sinkFactoryName = std::getenv(envName);
+    if (!sinkFactoryName || sinkFactoryName[0] == '\0')
+    {
+        return;
+    }
+
+    GstElement *sink = gstWrapper->gstElementFactoryMake(sinkFactoryName, sinkFactoryName);
+    if (!sink)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create '%s' from %s", sinkFactoryName, envName);
+        return;
+    }
+
+    glibWrapper->gObjectSet(pipeline, propertyName, sink, nullptr);
+    RIALTO_SERVER_LOG_INFO("Overrode playbin %s with %s from %s", propertyName, sinkFactoryName, envName);
+}
 
 bool operator==(const firebolt::rialto::server::SegmentData &lhs, const firebolt::rialto::server::SegmentData &rhs)
 {
@@ -83,7 +207,8 @@ std::shared_ptr<IGstGenericPlayerFactory> IGstGenericPlayerFactory::getFactory()
 std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlayer(
     IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
     const VideoRequirements &videoRequirements, bool isLive,
-    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory)
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory,
+    const std::shared_ptr<IGstProfilerFactory> &gstProfilerFactory)
 {
     std::unique_ptr<IGstGenericPlayer> gstPlayer;
 
@@ -108,10 +233,21 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
             throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
         }
 
+        // Fall back to the default profiler factory if the caller explicitly
+        // passed nullptr. IGstProfilerFactory::getFactory() can itself return
+        // nullptr on allocation failure, so re-check afterwards and fail with
+        // a clear error rather than passing null on and reporting the generic
+        // "No gst profiler factory provided" message from the constructor.
+        auto resolvedGstProfilerFactory = gstProfilerFactory ? gstProfilerFactory : IGstProfilerFactory::getFactory();
+        if (!resolvedGstProfilerFactory)
+        {
+            throw std::runtime_error("Cannot obtain default IGstProfilerFactory");
+        }
+
         gstPlayer = std::make_unique<
             GstGenericPlayer>(client, decryptionService, type, videoRequirements, isLive, gstWrapper, glibWrapper,
                               rdkGstreamerUtilsWrapper, IGstInitialiser::instance(), std::make_unique<FlushWatcher>(),
-                              IGstSrcFactory::getFactory(), IGstProfilerFactory::getFactory(),
+                              IGstSrcFactory::getFactory(), resolvedGstProfilerFactory,
                               common::ITimerFactory::getFactory(),
                               std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
                                                                          rdkGstreamerUtilsWrapper,
@@ -216,7 +352,7 @@ GstGenericPlayer::GstGenericPlayer(
 
     m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline,
                                                                                   m_context.flushOnPrerollController,
-                                                                                  m_gstWrapper);
+                                                                                  m_gstWrapper, m_glibWrapper);
 }
 
 GstGenericPlayer::~GstGenericPlayer()
@@ -255,6 +391,17 @@ void GstGenericPlayer::initMsePipeline()
 {
     // Make playbin
     m_context.pipeline = m_gstWrapper->gstElementFactoryMake("playbin", "media_pipeline");
+
+    if (const auto defaultGeometry = getDefaultVideoGeometryFromEnvironment())
+    {
+        m_context.defaultVideoGeometry = *defaultGeometry;
+        RIALTO_SERVER_LOG_INFO("Loaded fallback video geometry from environment: x=%d y=%d width=%d height=%d",
+                               defaultGeometry->x, defaultGeometry->y, defaultGeometry->width, defaultGeometry->height);
+    }
+
+    applyPlaybinSinkOverride(m_gstWrapper, m_glibWrapper, m_context.pipeline, "RIALTO_PLAYBIN_AUDIO_SINK", "audio-sink");
+    applyPlaybinSinkOverride(m_gstWrapper, m_glibWrapper, m_context.pipeline, "RIALTO_PLAYBIN_VIDEO_SINK", "video-sink");
+
     // Set pipeline flags
     setPlaybinFlags(true);
 
@@ -310,6 +457,9 @@ void GstGenericPlayer::termPipeline()
     }
 
     m_finishSourceSetupTimer.reset();
+    stopNotifyPlaybackInfoTimer();
+
+    clearAudioFirstFrameFallbackProbe();
     stopNotifyPlaybackInfoTimer();
 
     for (auto &elem : m_context.streamInfo)
@@ -1180,6 +1330,41 @@ bool GstGenericPlayer::setImmediateOutput(const MediaSourceType &mediaSourceType
     return true;
 }
 
+bool GstGenericPlayer::setReportDecodeErrors(const MediaSourceType &mediaSourceType, bool reportDecodeErrors)
+{
+    if (!m_workerThread)
+        return false;
+
+    m_workerThread->enqueueTask(
+        m_taskFactory->createSetReportDecodeErrors(m_context, *this, mediaSourceType, reportDecodeErrors));
+    return true;
+}
+
+bool GstGenericPlayer::getQueuedFrames(uint32_t &queuedFrames)
+{
+    bool returnValue{false};
+    GstElement *decoder{getDecoder(MediaSourceType::VIDEO)};
+    if (decoder)
+    {
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "queued-frames"))
+        {
+            m_glibWrapper->gObjectGet(decoder, "queued-frames", &queuedFrames, nullptr);
+            returnValue = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("queued-frames not supported in element %s", GST_ELEMENT_NAME(decoder));
+        }
+        m_gstWrapper->gstObjectUnref(decoder);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get queued-frames property, decoder is NULL");
+    }
+
+    return returnValue;
+}
+
 bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutputRef)
 {
     bool returnValue{false};
@@ -1516,6 +1701,8 @@ bool GstGenericPlayer::setCodecData(GstCaps *caps, const std::shared_ptr<CodecDa
 
 void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourceType &mediaSourceType)
 {
+    const std::string kTypeStr{common::convertMediaSourceType(mediaSourceType)};
+
     auto initialPosition = m_context.initialPositions.find(source);
     if (m_context.initialPositions.end() == initialPosition)
     {
@@ -1544,10 +1731,9 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourc
         segment->applied_rate = appliedRate;
         RIALTO_SERVER_LOG_MIL("New %s segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT
                               "], rate: %f, appliedRate %f, reset_time: %d\n",
-                              common::convertMediaSourceType(mediaSourceType), GST_TIME_ARGS(segment->start),
-                              GST_TIME_ARGS(segment->stop), segment->rate, segment->applied_rate, resetTime);
-        auto recordId = m_context.gstProfiler->createRecord("First Segment Received",
-                                                            common::convertMediaSourceType(mediaSourceType));
+                              kTypeStr.c_str(), GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop),
+                              segment->rate, segment->applied_rate, resetTime);
+        auto recordId = m_context.gstProfiler->createRecord("First Segment Received", kTypeStr);
         if (recordId)
             m_context.gstProfiler->logRecord(recordId.value());
 
@@ -1562,7 +1748,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourc
 
         m_gstWrapper->gstSegmentFree(segment);
 
-        if (MediaSourceType::AUDIO == mediaSourceType)
+        if (mediaSourceType == MediaSourceType::AUDIO)
         {
             m_context.audioGstSegmentPosition = position;
         }
@@ -1584,8 +1770,11 @@ void GstGenericPlayer::pushAdditionalSegmentIfRequired(GstElement *source)
     {
         return;
     }
-    if (!initialPosition->second.empty() && initialPosition->second.back().resetTime &&
-        currentPosition->second == initialPosition->second.back())
+    const auto &positions = initialPosition->second;
+    const bool allMatchCurrentPosition = !positions.empty() &&
+                                         std::all_of(positions.begin(), positions.end(), [&](const SegmentData &segment)
+                                                     { return segment == currentPosition->second; });
+    if (allMatchCurrentPosition && positions.back().resetTime)
     {
         RIALTO_SERVER_LOG_INFO("Adding additional segment with reset_time = false");
         SegmentData additionalSegment = initialPosition->second.back();
@@ -1754,6 +1943,63 @@ void GstGenericPlayer::scheduleFirstVideoFrameReceived()
     }
 }
 
+void GstGenericPlayer::scheduleFirstAudioFrameReceived(AudioFirstFrameAction audioAction)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(
+            m_taskFactory->createFirstFrameReceived(m_context, *this, MediaSourceType::AUDIO, audioAction));
+    }
+}
+
+void GstGenericPlayer::setAudioFirstFrameFallbackProbe(GstPad *pad, gulong id)
+{
+    GstPad *oldPad{m_context.audioFirstFrameProbePad};
+    gulong oldId{m_context.audioFirstFrameProbeId};
+    m_context.audioFirstFrameProbePad = pad;
+    m_context.audioFirstFrameProbeId = id;
+
+    if (oldPad && oldId != 0)
+    {
+        m_gstWrapper->gstPadRemoveProbe(oldPad, oldId);
+    }
+
+    if (oldPad)
+    {
+        m_gstWrapper->gstObjectUnref(oldPad);
+    }
+}
+
+void GstGenericPlayer::clearAudioFirstFrameFallbackProbe()
+{
+    GstPad *pad{m_context.audioFirstFrameProbePad};
+    gulong id{m_context.audioFirstFrameProbeId};
+    m_context.audioFirstFrameProbePad = nullptr;
+    m_context.audioFirstFrameProbeId = 0;
+
+    if (pad && id != 0)
+    {
+        m_gstWrapper->gstPadRemoveProbe(pad, id);
+    }
+
+    if (pad)
+    {
+        m_gstWrapper->gstObjectUnref(pad);
+    }
+}
+
+void GstGenericPlayer::clearAudioFirstFrameFallbackProbeState()
+{
+    GstPad *pad{m_context.audioFirstFrameProbePad};
+    m_context.audioFirstFrameProbePad = nullptr;
+    m_context.audioFirstFrameProbeId = 0;
+
+    if (pad)
+    {
+        m_gstWrapper->gstObjectUnref(pad);
+    }
+}
+
 void GstGenericPlayer::scheduleAllSourcesAttached()
 {
     allSourcesAttached();
@@ -1857,6 +2103,7 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
 
 void GstGenericPlayer::setVideoGeometry(int x, int y, int width, int height)
 {
+    m_context.videoGeometrySetByApi.store(true);
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(
@@ -1878,18 +2125,30 @@ bool GstGenericPlayer::setVideoSinkRectangle()
     GstElement *videoSink{getSink(MediaSourceType::VIDEO)};
     if (videoSink)
     {
+        const Rectangle pendingGeometry = m_context.pendingGeometry;
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
         {
-            std::string rect =
-                std::to_string(m_context.pendingGeometry.x) + ',' + std::to_string(m_context.pendingGeometry.y) + ',' +
-                std::to_string(m_context.pendingGeometry.width) + ',' + std::to_string(m_context.pendingGeometry.height);
+            std::string rect = std::to_string(pendingGeometry.x) + ',' + std::to_string(pendingGeometry.y) + ',' +
+                               std::to_string(pendingGeometry.width) + ',' + std::to_string(pendingGeometry.height);
             m_glibWrapper->gObjectSet(videoSink, "rectangle", rect.c_str(), nullptr);
+            result = true;
+        }
+        else if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "render-rectangle"))
+        {
+            result = setRenderRectangleProperty(m_gstWrapper, m_glibWrapper, videoSink, pendingGeometry);
+        }
+
+        if (result)
+        {
+            RIALTO_SERVER_LOG_MIL("Applied video geometry x=%d y=%d width=%d height=%d to sink '%s'", pendingGeometry.x,
+                                  pendingGeometry.y, pendingGeometry.width, pendingGeometry.height,
+                                  GST_ELEMENT_NAME(videoSink));
             m_context.pendingGeometry.clear();
             result = true;
         }
         else
         {
-            RIALTO_SERVER_LOG_ERROR("Failed to set the video rectangle");
+            RIALTO_SERVER_LOG_ERROR("Failed to set video geometry on sink '%s'", GST_ELEMENT_NAME(videoSink));
         }
         m_gstWrapper->gstObjectUnref(videoSink);
     }
@@ -1929,6 +2188,185 @@ bool GstGenericPlayer::setImmediateOutput()
         {
             RIALTO_SERVER_LOG_DEBUG("Pending an immediate-output, sink is NULL");
         }
+    }
+    return result;
+}
+
+bool GstGenericPlayer::setLowLatencyAudioDecoder()
+{
+    bool result{true};
+    if (m_context.pendingLowLatencyForAudioDecoder.has_value())
+    {
+        GstElement *decoder = getDecoder(MediaSourceType::AUDIO);
+        if (decoder)
+        {
+            bool lowLatencyAudioDecoder{m_context.pendingLowLatencyForAudioDecoder.value()};
+            RIALTO_SERVER_LOG_DEBUG("Set low latency properties on audio decoder to %s",
+                                    lowLatencyAudioDecoder ? "TRUE" : "FALSE");
+
+            const auto setDecoderBoolPropertyIfExists = [&](const char *property, bool value, bool &ret)
+            {
+                if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), property))
+                {
+                    gboolean propertyValue{value ? TRUE : FALSE};
+                    m_glibWrapper->gObjectSet(decoder, property, propertyValue, nullptr);
+                }
+                else
+                {
+                    ret = false;
+                }
+            };
+
+            const auto setDecoderIntPropertyIfExists = [&](const char *property, gint value, bool &ret)
+            {
+                if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), property))
+                {
+                    m_glibWrapper->gObjectSet(decoder, property, value, nullptr);
+                }
+                else
+                {
+                    ret = false;
+                }
+            };
+
+            GstElementFactory *factory = m_gstWrapper->gstElementGetFactory(decoder);
+            const std::string decoderName = std::string(m_gstWrapper->gstPluginFeatureGetName(factory));
+
+            if (m_glibWrapper->gStrHasPrefix(decoderName.c_str(), "brcmaudiodecoder"))
+            {
+                setDecoderBoolPropertyIfExists("sync-off", lowLatencyAudioDecoder, result);
+                setDecoderIntPropertyIfExists("stream_sync_mode", lowLatencyAudioDecoder ? 1 : 0, result);
+            }
+
+            m_context.pendingLowLatencyForAudioDecoder.reset();
+            m_gstWrapper->gstObjectUnref(decoder);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_DEBUG("Pending an low latency audio decoder, decoder is NULL");
+        }
+    }
+    return result;
+}
+
+bool GstGenericPlayer::setLowLatencyAudioSink()
+{
+    bool result{true};
+    if (m_context.pendingLowLatencyForAudioSink.has_value())
+    {
+        GstElement *sink{getSink(MediaSourceType::AUDIO)};
+        if (sink)
+        {
+            bool lowLatencyAudioSink{m_context.pendingLowLatencyForAudioSink.value()};
+            RIALTO_SERVER_LOG_DEBUG("Set low latency properties on audio sink to %s",
+                                    lowLatencyAudioSink ? "TRUE" : "FALSE");
+
+            const auto setSinkBoolPropertyIfExists = [&](const char *property, bool value, bool &ret)
+            {
+                if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), property))
+                {
+                    gboolean propertyValue{value ? TRUE : FALSE};
+                    m_glibWrapper->gObjectSet(sink, property, propertyValue, nullptr);
+                }
+                else
+                {
+                    ret = false;
+                }
+            };
+
+            const auto setSinkIntPropertyIfExists = [&](const char *property, gint value, bool &ret)
+            {
+                if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), property))
+                {
+                    m_glibWrapper->gObjectSet(sink, property, value, nullptr);
+                }
+                else
+                {
+                    ret = false;
+                }
+            };
+
+            GstElementFactory *factory = m_gstWrapper->gstElementGetFactory(sink);
+            const std::string sinkName = std::string(m_gstWrapper->gstPluginFeatureGetName(factory));
+
+            if (m_glibWrapper->gStrHasPrefix(sinkName.c_str(), "brcmaudiosink"))
+            {
+                setSinkBoolPropertyIfExists("low-latency", lowLatencyAudioSink, result);
+                setSinkBoolPropertyIfExists("sync", !lowLatencyAudioSink, result);
+            }
+            else if (m_glibWrapper->gStrHasPrefix(sinkName.c_str(), "rtkaudiosink"))
+            {
+                setSinkBoolPropertyIfExists("media-tunnel", false, result);
+                setSinkBoolPropertyIfExists("audio-service", true, result);
+                setSinkIntPropertyIfExists("lowdelay-sync-mode", lowLatencyAudioSink ? 0 : 1, result);
+                setSinkBoolPropertyIfExists("sync", !lowLatencyAudioSink, result);
+            }
+            else if (m_glibWrapper->gStrHasPrefix(sinkName.c_str(), "amlhalasink"))
+            {
+                setSinkBoolPropertyIfExists("llp-mode", lowLatencyAudioSink, result);
+                setSinkBoolPropertyIfExists("sync", !lowLatencyAudioSink, result);
+            }
+            else if (m_glibWrapper->gStrHasPrefix(sinkName.c_str(), "mtkaudiosink"))
+            {
+                setSinkBoolPropertyIfExists("llp-mode", lowLatencyAudioSink, result);
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_WARN("No low latency vendor mapping applied for sink '%s'", sinkName.c_str());
+            }
+
+            m_context.pendingLowLatencyForAudioSink.reset();
+            m_gstWrapper->gstObjectUnref(sink);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_DEBUG("Pending an low latency audio sink, sink is NULL");
+        }
+    }
+    return result;
+}
+
+bool GstGenericPlayer::setReportDecodeErrors()
+{
+    bool result{false};
+    bool reportDecodeErrors{false};
+
+    {
+        std::unique_lock lock{m_context.propertyMutex};
+        if (!m_context.pendingReportDecodeErrorsForVideo.has_value())
+        {
+            return false;
+        }
+        reportDecodeErrors = m_context.pendingReportDecodeErrorsForVideo.value();
+    }
+
+    GstElement *decoder = getDecoder(MediaSourceType::VIDEO);
+    if (decoder)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Set report decode errors to %s", reportDecodeErrors ? "TRUE" : "FALSE");
+
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "report-decode-errors"))
+        {
+            gboolean reportDecodeErrorsGboolean{reportDecodeErrors ? TRUE : FALSE};
+            m_glibWrapper->gObjectSet(decoder, "report-decode-errors", reportDecodeErrorsGboolean, nullptr);
+            result = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set report-decode-errors property on decoder '%s'",
+                                    GST_ELEMENT_NAME(decoder));
+        }
+
+        m_gstWrapper->gstObjectUnref(decoder);
+
+        {
+            std::unique_lock lock{m_context.propertyMutex};
+            m_context.pendingReportDecodeErrorsForVideo.reset();
+        }
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("Pending report-decode-errors, decoder is NULL");
     }
     return result;
 }
@@ -2039,7 +2477,7 @@ bool GstGenericPlayer::setSyncOff()
 
             if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "sync-off"))
             {
-                gboolean syncOffGboolean{decoder ? TRUE : FALSE};
+                gboolean syncOffGboolean{syncOff ? TRUE : FALSE};
                 m_glibWrapper->gObjectSet(decoder, "sync-off", syncOffGboolean, nullptr);
                 result = true;
             }
@@ -2137,8 +2575,13 @@ bool GstGenericPlayer::setRenderFrame()
                 RIALTO_SERVER_LOG_INFO("Rendering preroll");
 
                 m_glibWrapper->gObjectSet(sink, kStepOnPrerollPropertyName.c_str(), 1, nullptr);
-                m_gstWrapper->gstElementSendEvent(sink, m_gstWrapper->gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true,
-                                                                                      false));
+                gboolean sendRet =
+                    m_gstWrapper->gstElementSendEvent(sink, m_gstWrapper->gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0,
+                                                                                          true, false));
+                if (!sendRet)
+                {
+                    RIALTO_SERVER_LOG_WARN("Failed to send step event for rendering preroll frame");
+                }
                 m_glibWrapper->gObjectSet(sink, kStepOnPrerollPropertyName.c_str(), 0, nullptr);
                 result = true;
             }
@@ -2321,9 +2764,9 @@ void GstGenericPlayer::startNotifyPlaybackInfoTimer()
 
     notifyPlaybackInfo();
 
-    m_playbackInfoTimer =
-        m_timerFactory
-            ->createTimer(kPlaybackInfoTimerMs, [this]() { notifyPlaybackInfo(); }, firebolt::rialto::common::TimerType::PERIODIC);
+    const auto kNotifyPlaybackInfo = [this]() { notifyPlaybackInfo(); };
+    m_playbackInfoTimer = m_timerFactory->createTimer(kPlaybackInfoTimerMs, kNotifyPlaybackInfo,
+                                                      firebolt::rialto::common::TimerType::PERIODIC);
 }
 
 void GstGenericPlayer::stopNotifyPlaybackInfoTimer()

@@ -124,9 +124,16 @@ GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uin
         throw std::runtime_error("Failed to initalise the pipeline");
     }
 
-    if ((!gstDispatcherThreadFactory) ||
-        (!(m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline,
-                                                                                         nullptr, m_gstWrapper))))
+    if (!gstDispatcherThreadFactory)
+    {
+        termWebAudioPipeline();
+        resetWorkerThread();
+        throw std::runtime_error("Failed to create the dispatcher thread");
+    }
+
+    m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, nullptr,
+                                                                                  m_gstWrapper, m_glibWrapper);
+    if (!m_gstDispatcherThread)
     {
         termWebAudioPipeline();
         resetWorkerThread();
@@ -410,9 +417,13 @@ uint32_t GstWebAudioPlayer::writeBuffer(uint8_t *mainPtr, uint32_t mainLength, u
 {
     // Must block and wait for the data to be written from the shared buffer.
     std::unique_lock<std::mutex> lock(m_context.writeBufferMutex);
+    const uint32_t initialCompletionCounter = m_context.writeCompletionCounter;
     m_workerThread->enqueueTask(m_taskFactory->createWriteBuffer(m_context, mainPtr, mainLength, wrapPtr, wrapLength));
-    std::cv_status status = m_context.writeBufferCond.wait_for(lock, std::chrono::milliseconds(kMaxWriteBufferTimeoutMs));
-    if (std::cv_status::timeout == status)
+    bool success =
+        m_context.writeBufferCond.wait_for(lock, std::chrono::milliseconds(kMaxWriteBufferTimeoutMs),
+                                           [this, initialCompletionCounter]()
+                                           { return m_context.writeCompletionCounter != initialCompletionCounter; });
+    if (!success)
     {
         RIALTO_SERVER_LOG_ERROR("Timed out writing to the gstreamer buffers");
         return 0;
@@ -470,4 +481,4 @@ void GstWebAudioPlayer::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandl
     }
 }
 
-}; // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server

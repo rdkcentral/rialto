@@ -22,16 +22,20 @@
 
 #include "ClientLogControlTestMethods.h"
 #include "ControlTestMethods.h"
+#include "MediaCapabilitiesTestMethods.h"
 #include "MediaKeysTestMethods.h"
 #include "MediaPipelineTestMethods.h"
+#include "PrivateMetricsModuleMock.h"
 #include "ServerStub.h"
 #include "WebAudioPlayerTestMethods.h"
+#include <cstdint>
 #include <gtest/gtest.h>
 #include <memory>
 
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;
+using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
@@ -45,6 +49,7 @@ class ClientComponentTest : public ::testing::Test,
                             public ControlTestMethods,
                             public ClientLogControlTestMethods,
                             public MediaPipelineTestMethods,
+                            public MediaCapabilitiesTestMethods,
                             public MediaKeysTestMethods,
                             public WebAudioPlayerTestMethods
 {
@@ -59,6 +64,9 @@ protected:
     void disconnectServer();
     void startApplicationRunning();
     void stopApplication();
+    void sendMetricsSampleRequestEvent(std::uint64_t sampleId, ::firebolt::rialto::MetricsSampleReason reason);
+
+    std::shared_ptr<NiceMock<PrivateMetricsModuleMock>> m_privateMetricsModuleMock;
 
 private:
     // Derived class helpers
