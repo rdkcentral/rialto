@@ -44,6 +44,10 @@ std::string toString(const firebolt::rialto::common::SessionServerState &state)
     {
         return "NotRunning";
     }
+    case firebolt::rialto::common::SessionServerState::SUSPENDED:
+    {
+        return "Suspended";
+    }
     case firebolt::rialto::common::SessionServerState::ERROR:
     {
         return "Error";

@@ -43,9 +43,7 @@ public:
     create(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
            const firebolt::rialto::common::AppConfig &appConfig, SessionServerAppManager &sessionServerAppManager,
            std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket) const override;
-    std::shared_ptr<ISessionServerApp>
-    create(SessionServerAppManager &sessionServerAppManager,
-           std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket) const override;
+    std::shared_ptr<ISessionServerApp> create(SessionServerAppManager &sessionServerAppManager) const override;
 
 private:
     const std::list<std::string> m_kEnvironmentVariables;

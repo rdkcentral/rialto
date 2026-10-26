@@ -24,6 +24,7 @@
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
 #include "IFactoryAccessor.h"
+#include "MediaPipelineStructureMatchers.h"
 #include "RdkGstreamerUtilsWrapperFactoryMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
 
@@ -33,6 +34,7 @@
 #include <unordered_map>
 
 using namespace firebolt::rialto;
+using namespace firebolt::rialto::common;
 using namespace firebolt::rialto::server;
 using namespace firebolt::rialto::wrappers;
 
@@ -78,6 +80,7 @@ public:
                     {"audio/mpeg, mpegversion=(int)1, layer=(int)3", {}},
                     {"audio/x-eac3", {}},
                     {"audio/x-opus", {}},
+                    {"audio/x-vorbis", {}},
                     {"audio/x-opus, channel-mapping-family=(int)0", {}},
                     {"audio/b-wav", {}},
                     {"audio/x-flac", {}},
@@ -86,6 +89,7 @@ public:
                     {"video/x-h264", {}},
                     {"video/x-h265", {}},
                     {"video/x-vp9", {}},
+                    {"video/x-vp8", {}},
                     {"video/mpeg, mpegversion=(int)4", {}},
                     {"video/x-h264(memory:DMABuf)", {}},
                     {"video/x-h265(memory:DMABuf)", {}},

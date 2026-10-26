@@ -26,11 +26,13 @@
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ITimer.h"
 #include "MediaCommon.h"
+#include <atomic>
 #include <gst/gst.h>
 #include <list>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <unordered_map>
 #include <vector>
 
@@ -142,6 +144,16 @@ struct GenericPlayerContext
     Rectangle pendingGeometry;
 
     /**
+     * @brief Fallback video geometry used only when setVideoWindow() was not called.
+     */
+    Rectangle defaultVideoGeometry;
+
+    /**
+     * @brief True once geometry has been supplied through setVideoWindow().
+     */
+    std::atomic_bool videoGeometrySetByApi{false};
+
+    /**
      * @brief Current playback rate
      */
     double playbackRate{1.0};
@@ -155,6 +167,21 @@ struct GenericPlayerContext
      * @brief Pending immediate output for MediaSourceType::VIDEO
      */
     std::optional<bool> pendingImmediateOutputForVideo{};
+
+    /**
+     * @brief Pending low latency properties for audio decoder
+     */
+    std::optional<bool> pendingLowLatencyForAudioDecoder{};
+
+    /**
+     * @brief Pending low latency properties for audio sink
+     */
+    std::optional<bool> pendingLowLatencyForAudioSink{};
+
+    /**
+     * @brief Pending report decode errors for MediaSourceType::VIDEO
+     */
+    std::optional<bool> pendingReportDecodeErrorsForVideo{};
 
     /**
      * @brief Pending low latency
@@ -289,6 +316,21 @@ struct GenericPlayerContext
      * @brief Profiler for player pipeline
      */
     std::unique_ptr<IGstProfiler> gstProfiler;
+
+    /**
+     * @brief True when first audio frame has already been scheduled for the current audio source lifecycle.
+     */
+    bool firstAudioFrameReceived{false};
+
+    /**
+     * @brief Fallback probe id for first audio frame detection on sink pad.
+     */
+    gulong audioFirstFrameProbeId{0};
+
+    /**
+     * @brief Fallback sink pad that owns audio first frame probe.
+     */
+    GstPad *audioFirstFrameProbePad{nullptr};
 
     /**
      * @brief The audio position set in the GstSegment.

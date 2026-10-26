@@ -59,4 +59,12 @@
         <id>toomanyconfigs</id>
         <fileName>stubs/wpeframework-core/third-party/Source/core/JSON.cpp</fileName>
     </suppress>
+    <suppress>
+        <id>unknownMacro</id>
+        <fileName>stubs/wpeframework-core/third-party/Source/core/Proxy.h</fileName>
+    </suppress>
+    <suppress>
+        <id>syntaxError</id>
+        <fileName>stubs/wpeframework-core/third-party/Source/core/FileSystem.h</fileName>
+    </suppress>
 </suppressions>

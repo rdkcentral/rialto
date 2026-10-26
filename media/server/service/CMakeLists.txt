@@ -19,6 +19,13 @@
 
 # Find includes in corresponding build directories
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
+
+# RIALTO-197: deprecated-declarations error in the latest stable2 for gstreamer.
+# Should be removed once the issue is fixed.
+add_compile_options(
+  "-Wno-deprecated-declarations"
+)
+
 add_library (
         RialtoServerService STATIC
 
@@ -28,7 +35,10 @@ add_library (
         source/ControlService.cpp
         source/SessionServerManager.cpp
         source/MediaPipelineService.cpp
+        source/MediaPipelineMetricsClient.cpp
         source/WebAudioPlayerService.cpp
+        source/WebAudioPlayerMetricsClient.cpp
+        source/PrivateMetricsService.cpp
 )
 set_target_properties (
         RialtoServerService
@@ -47,6 +57,7 @@ target_include_directories (
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerGstPlayer,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoServerManagerCommon,INTERFACE_INCLUDE_DIRECTORIES>
         ${GStreamerApp_INCLUDE_DIRS}
 )
 target_link_libraries (

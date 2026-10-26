@@ -91,6 +91,8 @@ constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
 const std::vector<std::string> kSupportedProperties{"immediate-output", "testProp2"};
 constexpr uint64_t kStopPosition{452345};
+const firebolt::rialto::common::AudioDecoderCapabilities kAudioCapabilities{"1.0", "1.1", {}};
+const firebolt::rialto::common::VideoDecoderCapabilities kVideoCapabilities{"2.0", "2.1", {}};
 constexpr bool kIsLive{false};
 } // namespace
 
@@ -1381,6 +1383,18 @@ void MediaPipelineTestMethods::shouldNotifyFirstFrameReceivedVideo()
         .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
 }
 
+void MediaPipelineTestMethods::shouldNotifyFirstFrameReceivedAudio()
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyFirstFrameReceived(kAudioSourceId))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
+void MediaPipelineTestMethods::sendNotifyFirstFrameReceivedAudio()
+{
+    getServerStub()->notifyFirstFrameReceivedEvent(kSessionId, kAudioSourceId);
+    waitEvent();
+}
+
 void MediaPipelineTestMethods::sendNotifyFirstFrameReceivedVideo()
 {
     getServerStub()->notifyFirstFrameReceivedEvent(kSessionId, kVideoSourceId);
@@ -1475,6 +1489,34 @@ void MediaPipelineTestMethods::shouldGetImmediateOutput(bool immediateOutput)
 void MediaPipelineTestMethods::getImmediateOutput(bool immediateOutput)
 {
     EXPECT_TRUE(m_mediaPipeline->getImmediateOutput(kVideoSourceId, immediateOutput));
+}
+
+void MediaPipelineTestMethods::shouldSetReportDecodeErrors(bool reportDecodeErrors)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setReportDecodeErrors(_, setReportDecodeErrorsRequestMatcher(kSessionId, kVideoSourceId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->SetReportDecodeErrorsResponse()),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::setReportDecodeErrors(bool reportDecodeErrors)
+{
+    EXPECT_TRUE(m_mediaPipeline->setReportDecodeErrors(kVideoSourceId, reportDecodeErrors));
+}
+
+void MediaPipelineTestMethods::shouldGetQueuedFrames(uint32_t queuedFrames)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                getQueuedFrames(_, getQueuedFramesRequestMatcher(kSessionId, kVideoSourceId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getQueuedFramesResponse(queuedFrames)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getQueuedFrames(uint32_t queuedFrames)
+{
+    uint32_t returnQueuedFrames;
+    EXPECT_TRUE(m_mediaPipeline->getQueuedFrames(kVideoSourceId, returnQueuedFrames));
+    EXPECT_EQ(returnQueuedFrames, queuedFrames);
 }
 
 void MediaPipelineTestMethods::shouldGetStats(uint64_t renderedFrames, uint64_t droppedFrames)
@@ -1933,8 +1975,9 @@ void MediaPipelineTestMethods::shouldHaveDataInternal(const int32_t sessionId, c
             {
                 // Increment needData request Id
                 m_needDataRequestId++;
-                m_mediaPipelineModuleMock->defaultReturn(controller, done);
+                // Reset the write cursor before the reply wakes the client test thread.
                 resetWriteLocation(partition);
+                m_mediaPipelineModuleMock->defaultReturn(controller, done);
             })));
 }
 

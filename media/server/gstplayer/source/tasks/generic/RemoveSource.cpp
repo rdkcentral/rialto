@@ -45,6 +45,8 @@ void RemoveSource::execute() const
         RIALTO_SERVER_LOG_DEBUG("RemoveSource not supported for type != AUDIO");
         return;
     }
+    m_player.clearAudioFirstFrameFallbackProbe();
+    m_context.firstAudioFrameReceived = false;
     m_context.audioSourceRemoved = true;
     if (m_gstPlayerClient)
     {

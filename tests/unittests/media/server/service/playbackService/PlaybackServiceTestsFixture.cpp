@@ -77,7 +77,7 @@ void PlaybackServiceTests::createPlaybackServiceShouldSuccess()
                                                                                  m_mediaPipelineCapabilitiesFactoryMock,
                                                                                  m_webAudioPlayerFactoryMock,
                                                                                  std::move(m_shmBufferFactory),
-                                                                                 m_decryptionServiceMock);
+                                                                                 m_decryptionServiceMock, nullptr);
 }
 
 void PlaybackServiceTests::triggerSwitchToActive()
@@ -146,6 +146,11 @@ void PlaybackServiceTests::getMaxPlaybacksShouldSucceed()
 void PlaybackServiceTests::getMaxWebAudioPlayersShouldSucceed()
 {
     EXPECT_EQ(m_sut->getMaxWebAudioPlayers(), kMaxWebAudioPlayers);
+}
+
+void PlaybackServiceTests::getPrivateMetricsServiceShouldSucceed()
+{
+    EXPECT_NO_THROW(m_sut->getPrivateMetricsService());
 }
 
 void PlaybackServiceTests::clientDisplayNameShouldBeSet()

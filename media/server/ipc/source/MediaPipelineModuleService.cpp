@@ -19,12 +19,14 @@
 
 #include "MediaPipelineModuleService.h"
 #include "IMediaPipelineService.h"
+#include "IPrivateMetricsModuleService.h"
 #include "MediaPipelineClient.h"
 #include "RialtoCommonModule.h"
 #include "RialtoServerLogging.h"
 #include <IIpcController.h>
 #include <algorithm>
 #include <cstdint>
+#include <optional>
 #include <unordered_map>
 #include <utility>
 
@@ -323,6 +325,8 @@ void MediaPipelineModuleService::clientDisconnected(const std::shared_ptr<::fire
     for (const auto &sessionId : sessionIds)
     {
         m_mediaPipelineService.destroySession(sessionId);
+        m_sessionSources.erase(sessionId);
+        m_sessionImmediateOutput.erase(sessionId);
     }
 }
 
@@ -350,6 +354,7 @@ void MediaPipelineModuleService::createSession(::google::protobuf::RpcController
     {
         // Assume that IPC library works well and client is present
         m_clientSessions[ipcController->getClient()].insert(sessionId);
+        m_sessionSources.emplace(sessionId, std::map<int32_t, MediaSourceType>{});
         response->set_session_id(sessionId);
     }
     else
@@ -387,6 +392,8 @@ void MediaPipelineModuleService::destroySession(::google::protobuf::RpcControlle
     {
         sessionIter->second.erase(request->session_id());
     }
+    m_sessionSources.erase(request->session_id());
+    m_sessionImmediateOutput.erase(request->session_id());
     done->Run();
 }
 
@@ -429,10 +436,10 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
     std::shared_ptr<CodecData> codecData{};
     if (request->has_codec_data())
     {
-        auto codecDataProto = request->codec_data();
+        const auto &kCodecDataProto = request->codec_data();
         codecData = std::make_shared<CodecData>();
-        codecData->data = std::vector<std::uint8_t>(codecDataProto.data().begin(), codecDataProto.data().end());
-        codecData->type = convertCodecDataType(codecDataProto.type());
+        codecData->data = std::vector<std::uint8_t>(kCodecDataProto.data().begin(), kCodecDataProto.data().end());
+        codecData->type = convertCodecDataType(kCodecDataProto.type());
     }
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource;
     firebolt::rialto::SourceConfigType configType = convertConfigType(request->config_type());
@@ -516,10 +523,12 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
         return;
     }
 
+    bool sourceAttached{false};
     if (!request->has_switch_source() || !request->switch_source())
     {
         RIALTO_SERVER_LOG_DEBUG("Attaching source");
-        if (!m_mediaPipelineService.attachSource(request->session_id(), mediaSource))
+        sourceAttached = m_mediaPipelineService.attachSource(request->session_id(), mediaSource);
+        if (!sourceAttached)
         {
             RIALTO_SERVER_LOG_ERROR("Attach source failed");
             controller->SetFailed("Operation failed");
@@ -528,10 +537,50 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
     else
     {
         RIALTO_SERVER_LOG_DEBUG("Switching source");
-        if (!m_mediaPipelineService.switchSource(request->session_id(), mediaSource))
+        const auto sessionSourcesIter = m_sessionSources.find(request->session_id());
+        if (sessionSourcesIter != m_sessionSources.end())
+        {
+            const auto existingSourceIter =
+                std::find_if(sessionSourcesIter->second.begin(), sessionSourcesIter->second.end(),
+                             [&mediaSource](const auto &source) { return source.second == mediaSource->getType(); });
+            if (existingSourceIter != sessionSourcesIter->second.end())
+            {
+                mediaSource->setId(existingSourceIter->first);
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_WARN("Switching source with no tracked source id");
+            }
+        }
+        sourceAttached = m_mediaPipelineService.switchSource(request->session_id(), mediaSource);
+        if (!sourceAttached)
         {
             RIALTO_SERVER_LOG_ERROR("Switch source failed");
             controller->SetFailed("Operation failed");
+        }
+    }
+    if (sourceAttached)
+    {
+        if (!request->has_switch_source() || !request->switch_source())
+        {
+            auto &sessionSources = m_sessionSources[request->session_id()];
+            sessionSources[mediaSource->getId()] = mediaSource->getType();
+        }
+
+        if (mediaSource->getType() == MediaSourceType::AUDIO)
+        {
+            const auto immediateOutputIter = m_sessionImmediateOutput.find(request->session_id());
+            if (immediateOutputIter != m_sessionImmediateOutput.end())
+            {
+                RIALTO_SERVER_LOG_INFO("Applying saved immediate-output to AUDIO source in session %d",
+                                       request->session_id());
+                if (!m_mediaPipelineService.setImmediateOutput(request->session_id(), mediaSource->getId(),
+                                                               immediateOutputIter->second))
+                {
+                    RIALTO_SERVER_LOG_ERROR("Failed to apply saved immediate-output to AUDIO source");
+                    controller->SetFailed("Operation failed");
+                }
+            }
         }
     }
     response->set_source_id(mediaSource->getId());
@@ -548,6 +597,14 @@ void MediaPipelineModuleService::removeSource(::google::protobuf::RpcController 
     {
         RIALTO_SERVER_LOG_ERROR("Remove source failed");
         controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        const auto sessionSourcesIter = m_sessionSources.find(request->session_id());
+        if (sessionSourcesIter != m_sessionSources.end())
+        {
+            sessionSourcesIter->second.erase(request->source_id());
+        }
     }
     done->Run();
 }
@@ -694,11 +751,157 @@ void MediaPipelineModuleService::setImmediateOutput(::google::protobuf::RpcContr
                                                     ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    if (!m_mediaPipelineService.setImmediateOutput(request->session_id(), request->source_id(),
-                                                   request->immediate_output()))
+    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+    if (!ipcController)
+    {
+        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        controller->SetFailed("ipc library provided incompatible controller object");
+        done->Run();
+        return;
+    }
+
+    const auto clientSessionsIter = m_clientSessions.find(ipcController->getClient());
+    if (clientSessionsIter == m_clientSessions.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Set immediate output requested by unknown client");
+        controller->SetFailed("Operation failed");
+        done->Run();
+        return;
+    }
+
+    const auto sourceSessionIter = m_sessionSources.find(request->session_id());
+    const auto ownedSessionIter = clientSessionsIter->second.find(request->session_id());
+    if (ownedSessionIter == clientSessionsIter->second.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Set immediate output requested for session not owned by client");
+        controller->SetFailed("Operation failed");
+        done->Run();
+        return;
+    }
+
+    bool success = m_mediaPipelineService.setImmediateOutput(request->session_id(), request->source_id(),
+                                                             request->immediate_output());
+    if (success && sourceSessionIter != m_sessionSources.end())
+    {
+        const auto sourceIter = sourceSessionIter->second.find(request->source_id());
+        if (sourceIter != sourceSessionIter->second.end() && sourceIter->second == MediaSourceType::VIDEO)
+        {
+            std::vector<int32_t> sameSessionAudioSourceIds;
+            std::map<int, std::vector<int32_t>> peerSessionAudioSourceIds;
+            std::vector<int> emptyPeerSessions;
+            for (const int sessionId : clientSessionsIter->second)
+            {
+                const auto sessionSourcesIter = m_sessionSources.find(sessionId);
+                if (sessionSourcesIter == m_sessionSources.end())
+                {
+                    continue;
+                }
+                bool hasAudioOrVideoSource{false};
+                for (const auto &[sourceId, sourceType] : sessionSourcesIter->second)
+                {
+                    if (sourceType == MediaSourceType::AUDIO)
+                    {
+                        hasAudioOrVideoSource = true;
+                        auto &audioSourceIds = sessionId == request->session_id() ? sameSessionAudioSourceIds
+                                                                                  : peerSessionAudioSourceIds[sessionId];
+                        audioSourceIds.push_back(sourceId);
+                    }
+                    else if (sourceType == MediaSourceType::VIDEO)
+                    {
+                        hasAudioOrVideoSource = true;
+                    }
+                }
+                if (sessionId != request->session_id() && !hasAudioOrVideoSource)
+                {
+                    emptyPeerSessions.push_back(sessionId);
+                }
+            }
+
+            m_sessionImmediateOutput[request->session_id()] = request->immediate_output();
+            int audioSessionId{request->session_id()};
+            std::vector<int32_t> *audioSourceIds{&sameSessionAudioSourceIds};
+            bool pendingAudioSource{false};
+            if (sameSessionAudioSourceIds.empty())
+            {
+                if (peerSessionAudioSourceIds.size() == 1)
+                {
+                    audioSessionId = peerSessionAudioSourceIds.begin()->first;
+                    audioSourceIds = &peerSessionAudioSourceIds.begin()->second;
+                }
+                else if (peerSessionAudioSourceIds.size() > 1)
+                {
+                    RIALTO_SERVER_LOG_WARN(
+                        "Cannot pair immediate-output with AUDIO: multiple AUDIO sessions belong to client");
+                }
+                else if (emptyPeerSessions.size() == 1)
+                {
+                    audioSessionId = emptyPeerSessions.front();
+                    pendingAudioSource = true;
+                    m_sessionImmediateOutput[audioSessionId] = request->immediate_output();
+                    RIALTO_SERVER_LOG_INFO("Saved immediate-output for pending AUDIO source in session %d",
+                                           audioSessionId);
+                }
+                else if (emptyPeerSessions.size() > 1)
+                {
+                    RIALTO_SERVER_LOG_WARN(
+                        "Cannot pair immediate-output with pending AUDIO: multiple empty sessions belong to client");
+                }
+            }
+
+            if (!pendingAudioSource && !audioSourceIds->empty())
+            {
+                m_sessionImmediateOutput[audioSessionId] = request->immediate_output();
+                for (const int32_t audioSourceId : *audioSourceIds)
+                {
+                    RIALTO_SERVER_LOG_INFO("Applying immediate-output to AUDIO source %d in session %d", audioSourceId,
+                                           audioSessionId);
+                    if (!m_mediaPipelineService.setImmediateOutput(audioSessionId, audioSourceId,
+                                                                   request->immediate_output()))
+                    {
+                        success = false;
+                    }
+                }
+            }
+        }
+    }
+    if (!success)
     {
         RIALTO_SERVER_LOG_ERROR("Set Immediate Output failed");
         controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::setReportDecodeErrors(::google::protobuf::RpcController *controller,
+                                                       const ::firebolt::rialto::SetReportDecodeErrorsRequest *request,
+                                                       ::firebolt::rialto::SetReportDecodeErrorsResponse *response,
+                                                       ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.setReportDecodeErrors(request->session_id(), request->source_id(),
+                                                      request->report_decode_errors()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set Report Decode Error failed");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::getQueuedFrames(::google::protobuf::RpcController *controller,
+                                                 const ::firebolt::rialto::GetQueuedFramesRequest *request,
+                                                 ::firebolt::rialto::GetQueuedFramesResponse *response,
+                                                 ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    uint32_t queuedFramesNumber;
+    if (!m_mediaPipelineService.getQueuedFrames(request->session_id(), request->source_id(), queuedFramesNumber))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get queued frames failed");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_queued_frames(queuedFramesNumber);
     }
     done->Run();
 }

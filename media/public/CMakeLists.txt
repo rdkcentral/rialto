@@ -41,6 +41,7 @@ set (
         include/IClientLogHandler.h
         include/IControl.h
         include/IControlClient.h
+		include/IMediaCapabilities.h
         include/IMediaKeys.h
         include/IMediaKeysCapabilities.h
         include/IMediaKeysClient.h

@@ -31,5 +31,8 @@ target_include_directories(
         RialtoTestCommonMatchers
 
         INTERFACE
+	
+	${CMAKE_SOURCE_DIR}/tests/common/matchers
+	$<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
         .
     )

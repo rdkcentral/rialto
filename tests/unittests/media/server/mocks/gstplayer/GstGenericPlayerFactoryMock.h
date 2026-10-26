@@ -36,7 +36,8 @@ public:
                 (IGstGenericPlayerClient * client, IDecryptionService &decryptionService, MediaType type,
                  const VideoRequirements &videoRequirements, bool isLive,
                  const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory>
-                     &rdkGstreamerUtilsWrapperFactory),
+                     &rdkGstreamerUtilsWrapperFactory,
+                 const std::shared_ptr<IGstProfilerFactory> &gstProfilerFactory),
                 (override));
 };
 } // namespace firebolt::rialto::server

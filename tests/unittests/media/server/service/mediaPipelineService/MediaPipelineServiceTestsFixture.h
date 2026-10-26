@@ -28,6 +28,7 @@
 #include "MediaPipelineServerInternalMock.h"
 #include "MediaPipelineService.h"
 #include "PlaybackServiceMock.h"
+#include "PrivateMetricsServiceMock.h"
 #include "SharedMemoryBufferMock.h"
 #include <gtest/gtest.h>
 #include <memory>
@@ -68,8 +69,12 @@ public:
     void mediaPipelineWillFailToGetDuration();
     void mediaPipelineWillSetImmediateOutput();
     void mediaPipelineWillFailToSetImmediateOutput();
+    void mediaPipelineWillSetReportDecodeErrors();
+    void mediaPipelineWillFailToSetReportDecodeErrors();
     void mediaPipelineWillGetImmediateOutput();
     void mediaPipelineWillFailToGetImmediateOutput();
+    void mediaPipelineWillGetQueuedFrames();
+    void mediaPipelineWillFailToGetQueuedFrames();
     void mediaPipelineWillGetStats();
     void mediaPipelineWillFailToGetStats();
     void mediaPipelineWillRenderFrame();
@@ -160,10 +165,14 @@ public:
     void getPositionShouldFail();
     void getDurationShouldSucceed();
     void getDurationShouldFail();
+    void setReportDecodeErrorsShouldSucceed();
+    void setReportDecodeErrorsShouldFail();
     void setImmediateOutputShouldSucceed();
     void setImmediateOutputShouldFail();
     void getImmediateOutputShouldSucceed();
     void getImmediateOutputShouldFail();
+    void getQueuedFramesShouldSucceed();
+    void getQueuedFramesShouldFail();
     void getStatsShouldSucceed();
     void getStatsShouldFail();
     void getSupportedMimeTypesSucceed();
@@ -230,6 +239,7 @@ private:
     StrictMock<firebolt::rialto::server::MediaPipelineServerInternalMock> &m_mediaPipelineMock;
     StrictMock<firebolt::rialto::server::DecryptionServiceMock> m_decryptionServiceMock;
     StrictMock<firebolt::rialto::server::service::PlaybackServiceMock> m_playbackServiceMock;
+    StrictMock<firebolt::rialto::server::service::PrivateMetricsServiceMock> m_metricsServiceMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>> m_heartbeatProcedureMock;
     std::unique_ptr<firebolt::rialto::server::service::MediaPipelineService> m_sut;
 };
