@@ -16,7 +16,7 @@
 
 - [x] 3.1 Extend the IPC service/client stubs for `GetFrameCounters` and `NotifyMetricEvent`, and verify requests and notifications serialize and deserialize successfully.
 - [x] 3.2 Register the async client callback for push events, and verify a server-side metric event reaches the application callback without additional filtering.
-- [ ] 3.3 Document the server/client contract and usage expectations, and verify the docs match the implemented request and callback shapes.
+- [x] 3.3 Document the server/client contract and usage expectations, and verify the docs match the implemented request and callback shapes.
 
 ## 4. Verification and regression coverage
 
