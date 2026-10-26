@@ -2,19 +2,19 @@
 
 ## 1. Metrics module foundation
 
-- [ ] 1.1 Create the `RialtoMetrics` module skeleton and CMake wiring, and verify the new target builds with the existing media server configuration.
-- [ ] 1.2 Route metric messages through the existing GStreamer dispatcher, and verify delivery without adding a second bus watch or changing existing message handling.
-- [ ] 1.3 Add the thread-safe counter cache keyed by `(sessionId, sourceId)`, and verify query access returns the latest snapshot without races.
+- [x] 1.1 Create the `RialtoMetrics` module skeleton and CMake wiring, and verify the new target builds with the existing media server configuration.
+- [x] 1.2 Route metric messages through the existing GStreamer dispatcher, and verify delivery without adding a second bus watch or changing existing message handling.
+- [x] 1.3 Add the thread-safe counter cache keyed by `(sessionId, sourceId)`, and verify query access returns the latest snapshot without races.
 
 ## 2. Server-side relay integration
 
-- [ ] 2.1 Wire `GstGenericPlayer` to own `RialtoMetrics` and route dispatcher-delivered metric messages, and verify player setup preserves existing bus initialization.
-- [ ] 2.2 Add `MediaPipelineServerInternal` query delegation to the new metrics cache, and verify the returned snapshot values are correct for known source IDs.
-- [ ] 2.3 Add protocol-level pass-through handling for query and push events, and verify the response payload matches the expected counter fields and timestamp semantics.
+- [x] 2.1 Wire `GstGenericPlayer` to own `RialtoMetrics` and route dispatcher-delivered metric messages, and verify player setup preserves existing bus initialization.
+- [x] 2.2 Add `MediaPipelineServerInternal` query delegation to the new metrics cache, and verify the returned snapshot values are correct for known source IDs.
+- [x] 2.3 Add protocol-level pass-through handling for query and push events, and verify the response payload matches the expected counter fields and timestamp semantics.
 
 ## 3. IPC and client integration
 
-- [ ] 3.1 Extend the IPC service/client stubs for `GetFrameCounters` and `NotifyMetricEvent`, and verify requests and notifications serialize and deserialize successfully.
+- [x] 3.1 Extend the IPC service/client stubs for `GetFrameCounters` and `NotifyMetricEvent`, and verify requests and notifications serialize and deserialize successfully.
 - [ ] 3.2 Register the async client callback for push events, and verify a server-side metric event reaches the application callback without additional filtering.
 - [ ] 3.3 Document the server/client contract and usage expectations, and verify the docs match the implemented request and callback shapes.
 
