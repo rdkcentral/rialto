@@ -90,11 +90,14 @@ void IpcLoop::ipcThread()
     {
         m_ipcChannel->wait(-1);
     }
-
-    RIALTO_SERVER_MANAGER_LOG_INFO("exiting ipc thread");
+    RIALTO_SERVER_MANAGER_LOG_WARN("IPC loop exited; m_isClosing=%d, channel=%p", m_isClosing, m_ipcChannel.get());
     if (!m_isClosing)
     {
         m_kClient.onDisconnected();
+    }
+    else
+    {
+        RIALTO_SERVER_MANAGER_LOG_INFO("IPC loop exit is expected during normal shutdown");
     }
 }
 
