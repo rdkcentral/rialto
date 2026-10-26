@@ -289,11 +289,27 @@ std::string SessionServerApp::addAppSuffixToLogFile(const std::string &envVar) c
     return envVar;
 }
 
+#if 0
 void SessionServerApp::kill()
 {
     if (m_pid > 0)
     {
         m_linuxWrapper->kill(m_pid, SIGKILL);
+    }
+}
+#endif
+
+void SessionServerApp::kill()
+{
+    if (m_pid > 0)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Force killing server with id: %d, pid: %d", m_kServerId, m_pid);
+        m_linuxWrapper->kill(m_pid, SIGKILL);
+    }
+    else
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("kill() requested for server with id: %d, but pid is not valid (%d)",
+                                       m_kServerId, m_pid);
     }
 }
 

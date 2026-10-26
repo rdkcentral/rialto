@@ -61,6 +61,7 @@ public:
     void onAck(int serverId, int pingId, bool success) override;
     std::string getAppConnectionInfo(const std::string &appName) const override;
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;
+    bool shouldRestartServer(int serverId) const override;
     void restartServer(int serverId) override;
     void onServerStartupTimeout(int serverId) override;
     void setShuttingDown() override;

@@ -337,12 +337,38 @@ bool Client::setLogLevels(const service::LoggingLevels &logLevels) const
     return true;
 }
 
+#if 0
 void Client::onDisconnected() const
 {
     if (!m_sessionServerAppManager || m_isServerManagerShuttingDown || m_isServerShuttingDown)
     {
         RIALTO_SERVER_MANAGER_LOG_DEBUG("Connection to serverId: %d broken, but server is shutting down", m_serverId);
         return;
+    }
+    RIALTO_SERVER_MANAGER_LOG_WARN("Connection to serverId: %d broken, server probably crashed. Starting recovery",
+                                   m_serverId);
+    m_sessionServerAppManager->restartServer(m_serverId);
+}
+#endif
+
+void Client::onDisconnected() const
+{
+    RIALTO_SERVER_MANAGER_LOG_WARN(
+        "IPC disconnect event for serverId: %d (managerShutdown=%d, serverShutdown=%d, socket=%d)", m_serverId,
+        m_isServerManagerShuttingDown, m_isServerShuttingDown, m_socket);
+    if (!m_sessionServerAppManager || m_isServerManagerShuttingDown || m_isServerShuttingDown)
+    {
+        RIALTO_SERVER_MANAGER_LOG_DEBUG("Connection to serverId: %d broken, but server is shutting down", m_serverId);
+        return;
+    }
+    if (!m_sessionServerAppManager->shouldRestartServer(m_serverId))
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN(
+            "Connection to serverId: %d broken, but restart is not required because the server is intentionally shutting "
+            "down or already marked not running",
+            m_serverId);
+
+            return;
     }
     RIALTO_SERVER_MANAGER_LOG_WARN("Connection to serverId: %d broken, server probably crashed. Starting recovery",
                                    m_serverId);

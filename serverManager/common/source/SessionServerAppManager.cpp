@@ -543,6 +543,37 @@ std::shared_ptr<ISessionServerApp> SessionServerAppManager::getServerById(int se
     return nullptr;
 }
 
+bool SessionServerAppManager::shouldRestartServer(int serverId) const
+{
+    if (m_isShuttingDown)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Skip recovery for serverId: %d because server manager is shutting down",
+                                       serverId);
+        return false;
+    }
+
+    auto sessionServer{getServerById(serverId)};
+    if (!sessionServer)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Skip recovery for serverId: %d because the session server is no longer tracked",
+                                       serverId);
+        return false;
+    }
+
+    const auto kExpectedState{sessionServer->getExpectedState()};
+    if (firebolt::rialto::common::SessionServerState::NOT_RUNNING == kExpectedState ||
+        firebolt::rialto::common::SessionServerState::SUSPENDED == kExpectedState)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Skip recovery for serverId: %d because it is expected to be %s",
+                                       serverId, toString(kExpectedState));
+        return false;
+    }
+
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("Recovery allowed for serverId: %d; current expected state: %s", serverId,
+                                    toString(kExpectedState));
+    return true;
+}
+
 void SessionServerAppManager::handleStateChangeFailure(const std::shared_ptr<ISessionServerApp> &kSessionServer,
                                                        const firebolt::rialto::common::SessionServerState &state)
 {
