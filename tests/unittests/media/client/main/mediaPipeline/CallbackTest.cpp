@@ -73,6 +73,15 @@ TEST_F(RialtoClientMediaPipelineCallbackTest, NotifyQos)
     m_mediaPipelineCallback->notifyQos(sourceId, qosInfo);
 }
 
+TEST_F(RialtoClientMediaPipelineCallbackTest, NotifyMetricEvent)
+{
+    constexpr int32_t kSourceId{22};
+    const std::string kErrorInfo{"decoder error"};
+
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyMetricEvent(kSourceId, 101, 7, 3, kErrorInfo));
+    m_mediaPipelineCallback->notifyMetricEvent(kSourceId, 101, 7, 3, kErrorInfo);
+}
+
 /**
  * Test a notification of playback error is forwarded to the registered client.
  */
