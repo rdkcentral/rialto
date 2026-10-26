@@ -84,15 +84,6 @@ public:
     using SharedMemoryHandleObserver = std::function<void(const std::shared_ptr<ISharedMemoryHandle> &)>;
 
     /**
-     * @brief Gets the handle to the mapped shared memory.
-     *
-     * @deprecated Use subscribeSharedMemoryHandle() instead, to avoid taking a lock on every call.
-     *
-     * @retval shared pointer to shm handle.
-     */
-    virtual std::shared_ptr<ISharedMemoryHandle> getSharedMemoryHandle() = 0;
-
-    /**
      * @brief Subscribe to shared memory handle (re)map/unmap notifications.
      *
      * The observer is invoked immediately with the current handle, and again whenever it changes.

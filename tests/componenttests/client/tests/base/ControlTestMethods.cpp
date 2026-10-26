@@ -97,8 +97,12 @@ void ControlTestMethods::sendNotifyApplicationStateRunning()
 
 void ControlTestMethods::checkSharedMemoryHandleIsValid()
 {
-    std::shared_ptr<ISharedMemoryHandle> handle =
-        IClientControllerAccessor::instance().getClientController().getSharedMemoryHandle();
+    IClientController &clientController = IClientControllerAccessor::instance().getClientController();
+    std::shared_ptr<ISharedMemoryHandle> handle;
+    const int token = clientController.subscribeSharedMemoryHandle(
+        [&](const std::shared_ptr<ISharedMemoryHandle> &currentHandle) { handle = currentHandle; });
+    clientController.unsubscribeSharedMemoryHandle(token);
+
     ASSERT_NE(nullptr, handle);
     EXPECT_NE(nullptr, handle->getShm());
 }
@@ -128,6 +132,5 @@ void ControlTestMethods::checkSharedMemoryHandleIsNull()
     clientController.unsubscribeSharedMemoryHandle(token);
 
     EXPECT_TRUE(handleIsNull);
-    EXPECT_EQ(nullptr, clientController.getSharedMemoryHandle());
 }
 } // namespace firebolt::rialto::client::ct

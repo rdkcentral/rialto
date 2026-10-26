@@ -101,12 +101,6 @@ ClientController::~ClientController()
     termSharedMemory();
 }
 
-std::shared_ptr<ISharedMemoryHandle> ClientController::getSharedMemoryHandle()
-{
-    std::lock_guard<std::mutex> lock{m_mutex};
-    return m_shmHandle;
-}
-
 int ClientController::subscribeSharedMemoryHandle(SharedMemoryHandleObserver observer)
 {
     std::lock_guard<std::recursive_mutex> deliveryLock{m_shmNotifyMutex};

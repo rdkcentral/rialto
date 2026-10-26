@@ -93,12 +93,21 @@ protected:
         IControlClient &client = *m_sut;
         client.notifyApplicationState(state);
     }
+
+    std::shared_ptr<ISharedMemoryHandle> currentSharedMemoryHandle()
+    {
+        std::shared_ptr<ISharedMemoryHandle> handle;
+        const int token = m_sut->subscribeSharedMemoryHandle(
+            [&](const std::shared_ptr<ISharedMemoryHandle> &currentHandle) { handle = currentHandle; });
+        m_sut->unsubscribeSharedMemoryHandle(token);
+        return handle;
+    }
 };
 
 TEST_F(ClientControllerMemoryManagementTest, DoNothingWhenSwitchedToCurrentState)
 {
     changeAppState(ApplicationState::UNKNOWN);
-    EXPECT_EQ(nullptr, m_sut->getSharedMemoryHandle());
+    EXPECT_EQ(nullptr, currentSharedMemoryHandle());
 }
 
 TEST_F(ClientControllerMemoryManagementTest, SwitchToRunningShouldFailWhenIpcReturnsError)
@@ -106,7 +115,7 @@ TEST_F(ClientControllerMemoryManagementTest, SwitchToRunningShouldFailWhenIpcRet
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(false)));
     changeAppState(ApplicationState::RUNNING);
-    EXPECT_EQ(nullptr, m_sut->getSharedMemoryHandle());
+    EXPECT_EQ(nullptr, currentSharedMemoryHandle());
 }
 
 TEST_F(ClientControllerMemoryManagementTest, SwitchToRunningShouldFailWhenIpcReturnsInvalidFdAndSize)
@@ -114,7 +123,7 @@ TEST_F(ClientControllerMemoryManagementTest, SwitchToRunningShouldFailWhenIpcRet
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(-1), SetArgReferee<1>(0), Return(true)));
     changeAppState(ApplicationState::RUNNING);
-    EXPECT_EQ(nullptr, m_sut->getSharedMemoryHandle());
+    EXPECT_EQ(nullptr, currentSharedMemoryHandle());
 }
 
 TEST_F(ClientControllerMemoryManagementTest, SwitchToRunningShouldFailWhenMemoryFailsToMap)
@@ -123,7 +132,7 @@ TEST_F(ClientControllerMemoryManagementTest, SwitchToRunningShouldFailWhenMemory
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(12345), SetArgReferee<1>(10), Return(true)));
     changeAppState(ApplicationState::RUNNING);
-    EXPECT_EQ(nullptr, m_sut->getSharedMemoryHandle());
+    EXPECT_EQ(nullptr, currentSharedMemoryHandle());
 }
 
 TEST_F(ClientControllerMemoryManagementTest, SwitchToRunningShouldSucceed)
@@ -131,14 +140,14 @@ TEST_F(ClientControllerMemoryManagementTest, SwitchToRunningShouldSucceed)
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
     changeAppState(ApplicationState::RUNNING);
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle());
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle()->getShm());
+    EXPECT_NE(nullptr, currentSharedMemoryHandle());
+    EXPECT_NE(nullptr, currentSharedMemoryHandle()->getShm());
 }
 
 TEST_F(ClientControllerMemoryManagementTest, SwitchToInactiveWithoutMemoryTerminationShouldSucceed)
 {
     changeAppState(ApplicationState::INACTIVE);
-    EXPECT_EQ(nullptr, m_sut->getSharedMemoryHandle());
+    EXPECT_EQ(nullptr, currentSharedMemoryHandle());
 }
 
 TEST_F(ClientControllerMemoryManagementTest, SwitchToInactiveWithMemoryTerminationShouldSucceed)
@@ -146,10 +155,10 @@ TEST_F(ClientControllerMemoryManagementTest, SwitchToInactiveWithMemoryTerminati
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
     changeAppState(ApplicationState::RUNNING);
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle());
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle()->getShm());
+    EXPECT_NE(nullptr, currentSharedMemoryHandle());
+    EXPECT_NE(nullptr, currentSharedMemoryHandle()->getShm());
     changeAppState(ApplicationState::INACTIVE);
-    EXPECT_EQ(nullptr, m_sut->getSharedMemoryHandle());
+    EXPECT_EQ(nullptr, currentSharedMemoryHandle());
 }
 
 TEST_F(ClientControllerMemoryManagementTest, RegisterClientFailureWhenClientIsNull)
@@ -194,11 +203,11 @@ TEST_F(ClientControllerMemoryManagementTest, SwitchStatesWithClientNotification)
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
     EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::RUNNING));
     changeAppState(ApplicationState::RUNNING);
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle());
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle()->getShm());
+    EXPECT_NE(nullptr, currentSharedMemoryHandle());
+    EXPECT_NE(nullptr, currentSharedMemoryHandle()->getShm());
     EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::INACTIVE));
     changeAppState(ApplicationState::INACTIVE);
-    EXPECT_EQ(nullptr, m_sut->getSharedMemoryHandle());
+    EXPECT_EQ(nullptr, currentSharedMemoryHandle());
 }
 
 TEST_F(ClientControllerMemoryManagementTest, SwitchStatesWithoutClientNotification)
@@ -210,10 +219,10 @@ TEST_F(ClientControllerMemoryManagementTest, SwitchStatesWithoutClientNotificati
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
     changeAppState(ApplicationState::RUNNING);
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle());
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle()->getShm());
+    EXPECT_NE(nullptr, currentSharedMemoryHandle());
+    EXPECT_NE(nullptr, currentSharedMemoryHandle()->getShm());
     changeAppState(ApplicationState::INACTIVE);
-    EXPECT_EQ(nullptr, m_sut->getSharedMemoryHandle());
+    EXPECT_EQ(nullptr, currentSharedMemoryHandle());
 }
 
 TEST_F(ClientControllerMemoryManagementTest, RegisterClientInRunningState)
@@ -232,8 +241,8 @@ TEST_F(ClientControllerMemoryManagementTest, RegisterClientInRunningState)
     // Second client registration should skip sending registerClient via IPC
     EXPECT_TRUE(m_sut->registerClient(m_controlClientMock, appState));
     EXPECT_EQ(kExpectedAppState, appState);
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle());
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle()->getShm());
+    EXPECT_NE(nullptr, currentSharedMemoryHandle());
+    EXPECT_NE(nullptr, currentSharedMemoryHandle()->getShm());
 }
 
 TEST_F(ClientControllerMemoryManagementTest, RegisterClientIpcOnceAfterSwitchToInactive)
@@ -247,13 +256,13 @@ TEST_F(ClientControllerMemoryManagementTest, RegisterClientIpcOnceAfterSwitchToI
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
     EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::RUNNING));
     changeAppState(ApplicationState::RUNNING);
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle());
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle()->getShm());
+    EXPECT_NE(nullptr, currentSharedMemoryHandle());
+    EXPECT_NE(nullptr, currentSharedMemoryHandle()->getShm());
 
     // Switch state to Inactive
     EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::INACTIVE));
     changeAppState(ApplicationState::INACTIVE);
-    EXPECT_EQ(nullptr, m_sut->getSharedMemoryHandle());
+    EXPECT_EQ(nullptr, currentSharedMemoryHandle());
 
     // Second client registration should skip sending registerClient via IPC and return Inactive state
     EXPECT_TRUE(m_sut->registerClient(m_controlClientMock, appState));
@@ -271,13 +280,13 @@ TEST_F(ClientControllerMemoryManagementTest, SendRegisterClientIpcTwiceAfterSwit
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
     EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::RUNNING));
     changeAppState(ApplicationState::RUNNING);
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle());
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle()->getShm());
+    EXPECT_NE(nullptr, currentSharedMemoryHandle());
+    EXPECT_NE(nullptr, currentSharedMemoryHandle()->getShm());
 
     // Switch state to Unknown
     EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::UNKNOWN));
     changeAppState(ApplicationState::UNKNOWN);
-    EXPECT_EQ(nullptr, m_sut->getSharedMemoryHandle());
+    EXPECT_EQ(nullptr, currentSharedMemoryHandle());
 
     // Second client registration should send registerClient again
     EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
@@ -290,10 +299,10 @@ TEST_F(ClientControllerMemoryManagementTest, SwitchToUnknown)
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
     changeAppState(ApplicationState::RUNNING);
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle());
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle()->getShm());
+    EXPECT_NE(nullptr, currentSharedMemoryHandle());
+    EXPECT_NE(nullptr, currentSharedMemoryHandle()->getShm());
     changeAppState(ApplicationState::UNKNOWN);
-    EXPECT_EQ(nullptr, m_sut->getSharedMemoryHandle());
+    EXPECT_EQ(nullptr, currentSharedMemoryHandle());
 }
 
 /**
@@ -410,7 +419,7 @@ TEST_F(ClientControllerMemoryManagementTest, LateSubscriberReceivesCurrentHandle
 
     EXPECT_EQ(1, invocationCount);
     ASSERT_NE(nullptr, delivered);
-    EXPECT_EQ(m_sut->getSharedMemoryHandle(), delivered);
+    EXPECT_EQ(currentSharedMemoryHandle(), delivered);
 }
 
 TEST_F(ClientControllerMemoryManagementTest, ObserverReceivesNullHandleOnInactiveAndUnknown)

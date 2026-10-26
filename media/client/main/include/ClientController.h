@@ -47,7 +47,6 @@ public:
                               const std::shared_ptr<IPrivateMetricsIpcFactory> &privateMetricsIpcFactory);
     ~ClientController() override;
 
-    std::shared_ptr<ISharedMemoryHandle> getSharedMemoryHandle() override;
     int subscribeSharedMemoryHandle(SharedMemoryHandleObserver observer) override;
     void unsubscribeSharedMemoryHandle(int token) override;
     bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) override;
