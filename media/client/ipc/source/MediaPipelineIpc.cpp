@@ -741,6 +741,38 @@ bool MediaPipelineIpc::getStats(int32_t sourceId, uint64_t &renderedFrames, uint
     return true;
 }
 
+bool MediaPipelineIpc::getFrameCounters(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
+                                        uint64_t &corruptedFrames, uint64_t &timestamp)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetFrameCountersRequest request;
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+
+    firebolt::rialto::GetFrameCountersResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getFrameCounters(ipcController.get(), &request, &response, blockingClosure.get());
+    blockingClosure->wait();
+
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get frame counters due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    renderedFrames = response.rendered_frames();
+    droppedFrames = response.dropped_frames();
+    corruptedFrames = response.corrupted_frames();
+    timestamp = response.timestamp();
+    return true;
+}
+
 bool MediaPipelineIpc::setPlaybackRate(double rate)
 {
     if (!reattachChannelIfRequired())

@@ -44,6 +44,7 @@ add_gtests (
         # MediaPipelineModuleService unittests
         mediaPipelineModuleService/MediaPipelineModuleServiceTestsFixture.cpp
         mediaPipelineModuleService/MediaPipelineModuleServiceTests.cpp
+        mediaPipelineClient/MediaPipelineClientTests.cpp
 
         # ControlModuleService unittests
         controlModuleService/ControlModuleServiceTestsFixture.cpp
