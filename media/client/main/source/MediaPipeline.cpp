@@ -877,6 +877,18 @@ void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
     }
 }
 
+void MediaPipeline::notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames, uint64_t droppedFrames,
+                                      uint64_t corruptedFrames, const std::string &errorInfo)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
+    if (client)
+    {
+        client->notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames, errorInfo);
+    }
+}
+
 void MediaPipeline::notifyBufferUnderflow(int32_t sourceId)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");

@@ -151,6 +151,13 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         return false;
     m_eventTags.push_back(eventTag);
 
+    eventTag = ipcChannel->subscribe<firebolt::rialto::NotifyMetricEvent>(
+        [this](const std::shared_ptr<firebolt::rialto::NotifyMetricEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onMetricEvent, this, event); });
+    if (eventTag < 0)
+        return false;
+    m_eventTags.push_back(eventTag);
+
     eventTag = ipcChannel->subscribe<firebolt::rialto::BufferUnderflowEvent>(
         [this](const std::shared_ptr<firebolt::rialto::BufferUnderflowEvent> &event)
         { m_eventThread->add(&MediaPipelineIpc::onBufferUnderflow, this, event); });
@@ -1627,6 +1634,15 @@ void MediaPipelineIpc::onQos(const std::shared_ptr<firebolt::rialto::QosEvent> &
     {
         QosInfo qosInfo = {event->qos_info().processed(), event->qos_info().dropped()};
         m_mediaPipelineIpcClient->notifyQos(event->source_id(), qosInfo);
+    }
+}
+
+void MediaPipelineIpc::onMetricEvent(const std::shared_ptr<firebolt::rialto::NotifyMetricEvent> &event)
+{
+    if (event->session_id() == m_sessionId)
+    {
+        m_mediaPipelineIpcClient->notifyMetricEvent(event->source_id(), event->rendered_frames(), event->dropped_frames(),
+                                                    event->corrupted_frames(), event->error_info());
     }
 }
 
