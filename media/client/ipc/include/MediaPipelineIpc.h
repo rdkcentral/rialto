@@ -101,6 +101,9 @@ public:
 
     bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
 
+    bool getFrameCounters(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
+                          uint64_t &corruptedFrames, uint64_t &timestamp) override;
+
     bool setPlaybackRate(double rate) override;
 
     bool renderFrame() override;

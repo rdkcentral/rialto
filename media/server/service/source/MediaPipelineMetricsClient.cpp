@@ -70,6 +70,11 @@ void MediaPipelineMetricsClient::notifyQos(int32_t sourceId, const QosInfo &qosI
 {
     m_client->notifyQos(sourceId, qosInfo);
 }
+void MediaPipelineMetricsClient::notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames, uint64_t droppedFrames,
+                                                   uint64_t corruptedFrames, const std::string &errorInfo)
+{
+    m_client->notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames, errorInfo);
+}
 void MediaPipelineMetricsClient::notifyBufferUnderflow(int32_t sourceId)
 {
     m_client->notifyBufferUnderflow(sourceId);
