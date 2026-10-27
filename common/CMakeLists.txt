@@ -22,9 +22,6 @@ set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
-find_package( PkgConfig REQUIRED )
-pkg_check_modules( GStreamerApp REQUIRED IMPORTED_TARGET gstreamer-app-1.0 gstreamer-pbutils-1.0 gstreamer-audio-1.0)
-
 add_subdirectory(public)
 
 add_library(
@@ -52,7 +49,6 @@ target_include_directories(
 
         PRIVATE
         include
-        ${GStreamerApp_INCLUDE_DIRS}
     )
 
 target_link_libraries (
@@ -60,5 +56,4 @@ target_link_libraries (
 
         PRIVATE
         RialtoLogging
-        ${GStreamerApp_LIBRARIES}
     )
