@@ -88,7 +88,7 @@ public:
     virtual void notifyQos(int32_t sourceId, const QosInfo &qosInfo) = 0;
 
     virtual void notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames, uint64_t droppedFrames,
-                                   uint64_t corruptedFrames, const std::string &errorInfo) = 0;
+                                   uint64_t corruptedFrames, uint64_t ptsNs, const std::string &errorInfo) = 0;
 
     /**
      * @brief Notifies the client that buffer underflow occurred.

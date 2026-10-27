@@ -2,7 +2,7 @@
 
 ## Overview
 
-Playback metrics use two IPC flows: a synchronous snapshot query and an asynchronous event notification. Both are keyed by the media pipeline session and source IDs. The IPC layer passes counter values through without aggregation.
+Playback metrics use two IPC flows: a synchronous snapshot query and an asynchronous event notification. Both are keyed by the media pipeline session and source IDs. The IPC layer passes counter values and timestamps through without aggregation.
 
 ## Snapshot Query
 
@@ -13,9 +13,9 @@ Playback metrics use two IPC flows: a synchronous snapshot query and an asynchro
 | `rendered_frames` | `uint64` | Rendered frame count |
 | `dropped_frames` | `uint64` | Dropped frame count |
 | `corrupted_frames` | `uint64` | Corrupted frame count |
-| `timestamp` | `uint64` | Snapshot timestamp in nanoseconds |
+| `timestamp` | `uint64` | Presentation timestamp (PTS) associated with the cached snapshot, in nanoseconds |
 
-An unknown session or source, or an unavailable metrics cache, fails the RPC. The timestamp is returned unchanged; the service does not convert its units.
+The timestamp is taken from the metric message's `pts_ns` value and returned unchanged; the service does not convert its units. An unknown session or source, or an unavailable metrics cache, fails the RPC.
 
 The client IPC stub is:
 
@@ -37,26 +37,27 @@ The server sends `NotifyMetricEvent` with these fields:
 | `rendered_frames` | `uint64` | Rendered frame count |
 | `dropped_frames` | `uint64` | Dropped frame count |
 | `corrupted_frames` | `uint64` | Corrupted frame count |
-| `error_info` | `string` | Optional error details |
+| `pts_ns` | `uint64` | Presentation timestamp (PTS) associated with the metric snapshot, in nanoseconds |
+| `error_info` | `string` | Metric type name (for example, `METRIC_VIDEO_FRAME_DROP`) |
 
-`NotifyMetricEvent` has no timestamp field. The `MetricType` enum is defined in the protocol but is not included in this event payload.
+The event carries the PTS as `pts_ns`. It does not carry the numeric `MetricType` enum field; the server maps the metric type to its string name in `error_info`.
 
 The server-side notification signature is:
 
 ```cpp
 void notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames, uint64_t droppedFrames,
-                       uint64_t corruptedFrames, const std::string &errorInfo);
+                       uint64_t corruptedFrames, uint64_t ptsNs, const std::string &errorInfo);
 ```
 
-The server IPC client fills in its session ID, copies the remaining values into the event, and sends it. The client IPC layer subscribes to this event type when setting up the IPC channel. It dispatches events on its event thread, forwards events for the current session without further filtering, and passes all payload fields to `IMediaPipelineIpcClient::notifyMetricEvent`. `MediaPipeline` forwards that callback to the registered `IMediaPipelineClient` when it is still available.
+The server IPC client fills in its session ID, copies the remaining values into the event, and sends it. The client IPC layer subscribes to this event type when setting up the IPC channel. It dispatches events on its event thread, forwards events for the current session without further filtering, and passes all payload fields, including `pts_ns`, to `IMediaPipelineIpcClient::notifyMetricEvent`. `MediaPipeline` forwards that callback to the registered `IMediaPipelineClient` when it is still available.
 
 Applications receive the callback as:
 
 ```cpp
 void notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames, uint64_t droppedFrames,
-                       uint64_t corruptedFrames, const std::string &errorInfo);
+                       uint64_t corruptedFrames, uint64_t ptsNs, const std::string &errorInfo);
 ```
 
 ## Message Types
 
-The protocol defines these metric categories: `VIDEO_FRAME_DROP`, `AUDIO_FRAME_DROP`, `VIDEO_DECODE_ERROR`, `AUDIO_DECODE_ERROR`, `VIDEO_FRAME_REPEAT`, `AUDIO_GAP`, and `BUFFER_UNDERFLOW`. The current query and push payloads carry counter snapshots; they do not include a metric category field.
+The protocol defines these metric categories: `VIDEO_FRAME_DROP`, `AUDIO_FRAME_DROP`, `VIDEO_DECODE_ERROR`, `AUDIO_DECODE_ERROR`, `VIDEO_FRAME_REPEAT`, `AUDIO_GAP`, and `BUFFER_UNDERFLOW`. The push event's `error_info` contains the corresponding string name prefixed with `METRIC_` (or `METRIC_UNKNOWN` for an unrecognized type); the numeric enum is not part of the payload.

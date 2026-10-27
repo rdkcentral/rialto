@@ -234,7 +234,7 @@ void MediaPipelineClient::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
 }
 
 void MediaPipelineClient::notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames, uint64_t droppedFrames,
-                                            uint64_t corruptedFrames, const std::string &errorInfo)
+                                            uint64_t corruptedFrames, uint64_t ptsNs, const std::string &errorInfo)
 {
     RIALTO_SERVER_LOG_DEBUG("Sending NotifyMetricEvent...");
 
@@ -244,6 +244,7 @@ void MediaPipelineClient::notifyMetricEvent(int32_t sourceId, uint64_t renderedF
     event->set_rendered_frames(renderedFrames);
     event->set_dropped_frames(droppedFrames);
     event->set_corrupted_frames(corruptedFrames);
+    event->set_pts_ns(ptsNs);
     event->set_error_info(errorInfo);
 
     m_ipcClient->sendEvent(event);

@@ -3208,7 +3208,13 @@ void GstGenericPlayer::handleMetricMessage(GstMessage *message)
 {
     if (m_metrics)
     {
-        m_metrics->onMetricMessage(message);
+        const auto metric = m_metrics->onMetricMessage(message);
+        if (metric && m_gstPlayerClient)
+        {
+            m_gstPlayerClient->notifyMetricEvent(metric->sourceId, metric->counters.rendered,
+                                                 metric->counters.dropped, metric->counters.corrupted,
+                                                 metric->counters.timestamp, metricTypeToString(metric->type));
+        }
     }
 }
 

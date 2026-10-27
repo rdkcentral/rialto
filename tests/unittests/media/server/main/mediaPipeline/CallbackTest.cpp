@@ -260,6 +260,22 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyQosFailureSourceIdNotFound)
     m_gstPlayerCallback->notifyQos(mediaSourceType, qosInfo);
 }
 
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricEvent)
+{
+    constexpr int32_t sourceId{11};
+    constexpr uint64_t renderedFrames{101};
+    constexpr uint64_t droppedFrames{7};
+    constexpr uint64_t corruptedFrames{3};
+    constexpr uint64_t ptsNs{9001};
+    const std::string errorInfo{"METRIC_BUFFER_UNDERFLOW"};
+
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaPipelineClientMock,
+                notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo));
+
+    m_gstPlayerCallback->notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo);
+}
+
 /**
  * Test a notification of playback error is forwarded to the registered client.
  */
