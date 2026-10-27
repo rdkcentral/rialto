@@ -1,10 +1,67 @@
 #include "RialtoMetricsImpl.h"
 #include <atomic>
 #include <gtest/gtest.h>
+#include <gst/gst.h>
 #include <thread>
 #include <vector>
 
 using namespace firebolt::rialto::server;
+
+TEST(RialtoMetricsTest, ParsesElementMetricMessageAndUpdatesFrameCounters)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("metrics-source");
+    ASSERT_NE(nullptr, source);
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric_type", G_TYPE_UINT, 0U, "source_id",
+                                                 G_TYPE_UINT, 11U, "rendered_frames", G_TYPE_UINT64, guint64{101},
+                                                 "dropped_frames", G_TYPE_UINT64, guint64{7}, "corrupted_frames",
+                                                 G_TYPE_UINT64, guint64{3}, "pts_ns", G_TYPE_UINT64, guint64{9001},
+                                                 nullptr);
+    ASSERT_NE(nullptr, structure);
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    gst_object_unref(source);
+    ASSERT_NE(nullptr, message);
+
+    RialtoMetricsImpl metrics;
+    metrics.setSessionId(7);
+    const auto parsed = metrics.onMetricMessage(message);
+    gst_message_unref(message);
+
+    ASSERT_TRUE(parsed.has_value());
+    EXPECT_EQ(0U, parsed->type);
+    EXPECT_EQ(11, parsed->sourceId);
+    FrameCounters counters;
+    ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
+    EXPECT_EQ(101U, counters.rendered);
+    EXPECT_EQ(7U, counters.dropped);
+    EXPECT_EQ(3U, counters.corrupted);
+    EXPECT_EQ(9001U, counters.timestamp);
+    EXPECT_FALSE(metrics.getFrameCounters(8, 11, counters));
+}
+
+TEST(RialtoMetricsTest, IgnoresMalformedElementMetricMessage)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("metrics-source");
+    ASSERT_NE(nullptr, source);
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric_type", G_TYPE_UINT, 0U, "source_id",
+                                                 G_TYPE_UINT, 11U, nullptr);
+    ASSERT_NE(nullptr, structure);
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    gst_object_unref(source);
+    ASSERT_NE(nullptr, message);
+
+    RialtoMetricsImpl metrics;
+    metrics.setSessionId(7);
+    const auto parsed = metrics.onMetricMessage(message);
+    gst_message_unref(message);
+
+    EXPECT_FALSE(parsed.has_value());
+    FrameCounters counters;
+    EXPECT_FALSE(metrics.getFrameCounters(7, 11, counters));
+}
 
 TEST(RialtoMetricsTest, ReturnsLatestSnapshotForSessionAndSource)
 {
