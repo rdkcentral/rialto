@@ -222,6 +222,9 @@ TEST_F(MediaKeysTest, generateFail)
  *  Step 3: Load a Persistent Key Session should succeed
  *          OCDM Functions construct_session and load should be called
  *
+ *  Step 4: Terminate the Persistent Key Session
+ *          OCDM Functions close_session and destruct_session should be called
+ *
  * Test Tear-down:
  *  Server is terminated.
  *
@@ -243,6 +246,10 @@ TEST_F(MediaKeysTest, PersistentSessionRenewal)
     willConstructPersistentOcdmSession();
     willLoadKeySession();
     loadKeySession();
+
+    // Step 4: Terminate the Persistent Key Session
+    willTeardown();
+    willRelease();
 }
 
 } // namespace firebolt::rialto::server::ct

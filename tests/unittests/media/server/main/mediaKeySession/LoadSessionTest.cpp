@@ -22,7 +22,7 @@
 class RialtoServerMediaKeySessionLoadSessionTest : public MediaKeySessionTestBase
 {
 protected:
-    RialtoServerMediaKeySessionLoadSessionTest() { createKeySession(kNetflixKeySystem); }
+    RialtoServerMediaKeySessionLoadSessionTest() { createKeySession(kWidevineKeySystem); }
     ~RialtoServerMediaKeySessionLoadSessionTest() { destroyKeySession(); }
 
     const std::string m_kCdmSessionId{"cdm_session_id"};
@@ -39,6 +39,8 @@ TEST_F(RialtoServerMediaKeySessionLoadSessionTest, Success)
     EXPECT_CALL(*m_ocdmSessionMock, load()).WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->loadSession(m_kCdmSessionId));
+
+    expectCloseKeySession(kWidevineKeySystem);
 }
 
 /**
@@ -62,6 +64,8 @@ TEST_F(RialtoServerMediaKeySessionLoadSessionTest, OcdmSessionFailure)
         .WillOnce(Return(MediaKeyErrorStatus::OK));
     EXPECT_CALL(*m_ocdmSessionMock, load()).WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
     EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeySession->loadSession(m_kCdmSessionId));
+
+    expectCloseKeySession(kWidevineKeySystem);
 }
 
 /**
@@ -81,4 +85,6 @@ TEST_F(RialtoServerMediaKeySessionLoadSessionTest, OnErrorFailure)
             }));
 
     EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->loadSession(m_kCdmSessionId));
+
+    expectCloseKeySession(kWidevineKeySystem);
 }

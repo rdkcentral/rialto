@@ -194,7 +194,7 @@ MediaKeyErrorStatus MediaKeySession::loadSession(const std::string &cdmKeySessio
 {
     initOcdmErrorChecking();
 
-    if (m_kSessionType == KeySessionType::PERSISTENT_LICENCE && !cdmKeySessionId.empty())
+    if (!m_isSessionConstructed && m_kSessionType == KeySessionType::PERSISTENT_LICENCE && !cdmKeySessionId.empty())
     {
         std::vector<uint8_t> cdmData(cdmKeySessionId.begin(), cdmKeySessionId.end());
         MediaKeyErrorStatus status = m_ocdmSession->constructSession(m_kSessionType, InitDataType::UNKNOWN, nullptr, 0,
@@ -202,8 +202,9 @@ MediaKeyErrorStatus MediaKeySession::loadSession(const std::string &cdmKeySessio
         if (MediaKeyErrorStatus::OK != status)
         {
             RIALTO_SERVER_LOG_ERROR("Failed to restore persistent license");
-            return MediaKeyErrorStatus::FAIL;
+            return status;
         }
+        m_isSessionConstructed = true;
     }
 
     MediaKeyErrorStatus status = m_ocdmSession->load();
