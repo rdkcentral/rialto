@@ -28,9 +28,13 @@
 #include "ISessionServerApp.h"
 #include "ISessionServerAppManager.h"
 #include "IStateObserver.h"
+#include "IYamlCppWrapper.h"
 #include "SessionServerAppFactory.h"
+#include <AudioDecoderCapabilities.h>
+#include <VideoDecoderCapabilities.h>
 #include <atomic>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 
@@ -44,7 +48,8 @@ public:
                             std::unique_ptr<ISessionServerAppFactory> &&sessionServerAppFactory,
                             std::unique_ptr<IHealthcheckServiceFactory> &&healthcheckServiceFactory,
                             const std::shared_ptr<firebolt::rialto::common::IEventThreadFactory> &eventThreadFactory,
-                            const firebolt::rialto::ipc::INamedSocketFactory &namedSocketFactory);
+                            const firebolt::rialto::ipc::INamedSocketFactory &namedSocketFactory,
+                            std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCppWrapper);
     virtual ~SessionServerAppManager();
     SessionServerAppManager(const SessionServerAppManager &) = delete;
     SessionServerAppManager(SessionServerAppManager &&) = delete;
@@ -104,6 +109,8 @@ private:
     std::shared_ptr<service::IStateObserver> m_stateObserver;
     std::unique_ptr<IHealthcheckService> m_healthcheckService;
     const firebolt::rialto::ipc::INamedSocketFactory &m_namedSocketFactory;
+    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> m_cachedAudioCapabilities;
+    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> m_cachedVideoCapabilities;
     std::atomic_bool m_isShuttingDown;
 };
 } // namespace rialto::servermanager::common

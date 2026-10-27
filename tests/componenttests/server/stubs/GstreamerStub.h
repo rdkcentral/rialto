@@ -50,6 +50,11 @@ public:
     void sendWarning(GstElement *src, GError *error, const gchar *debug);
 
 private:
+    // Runs on GstDispatcherThread's worker thread (as the mocked gMainLoopRun action), dispatching any
+    // message sent via send*() to the captured bus-watch callback, exactly as a real GMainLoop would.
+    void runFakeMainLoop();
+
+private:
     std::shared_ptr<testing::StrictMock<wrappers::GlibWrapperMock>> m_glibWrapperMock;
     std::shared_ptr<testing::StrictMock<wrappers::GstWrapperMock>> m_gstWrapperMock;
     GstElement *m_pipeline;
@@ -58,6 +63,21 @@ private:
     GstMessage *m_message;
     std::mutex m_mutex;
     std::condition_variable m_cv;
+    GSourceFunc m_busWatchFunc{nullptr};
+    gpointer m_busWatchUserData{nullptr};
+    GSourceFunc m_quitFunc{nullptr};
+    gpointer m_quitUserData{nullptr};
+    bool m_mainLoopShouldQuit{false};
+    // Distinct non-null fake identities per stub instance (addresses only compared, never dereferenced).
+    // DualVideoPlaybackTest creates two stubs sharing the same wrapper mocks, so these must not collide.
+    char m_mainContextIdentity{};
+    char m_mainLoopIdentity{};
+    char m_busSourceIdentity{};
+    char m_quitSourceIdentity{};
+    GMainContext *m_fakeMainContext;
+    GMainLoop *m_fakeMainLoop;
+    GSource *m_fakeBusSource;
+    GSource *m_fakeQuitSource;
     gpointer m_setupSourceUserData{nullptr};
     GCallback m_setupSourceFunc{};
     gpointer m_setupElementUserData{nullptr};

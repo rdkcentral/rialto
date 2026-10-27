@@ -182,6 +182,33 @@ protected:
         return &m_element;
     }
 
+    void expectFactoryName(GstElement *element, const gchar *name)
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(element)).WillOnce(Return(m_factory)).RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureGetName(m_factory)).WillOnce(Return(name));
+    }
+
+    void expectAudioSinkFactoryName(const gchar *name)
+    {
+        const std::vector<const gchar *> prefixes{"brcmaudiosink", "rtkaudiosink", "amlhalasink", "mtkaudiosink"};
+        for (const gchar *prefix : prefixes)
+        {
+            const bool matches = std::string{name}.find(prefix) == 0;
+            EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq(prefix))).WillOnce(Return(matches));
+            if (matches)
+            {
+                break;
+            }
+        }
+    }
+
+    void expectSetPropertyWithGenericStub(const char *propertyName)
+    {
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_realElement), StrEq(propertyName)))
+            .WillOnce(Return(&m_rectangleSpec));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_realElement, StrEq(propertyName))).Times(1);
+    }
+
     GenericPlayerContext *getPlayerContext()
     {
         GenericPlayerContext *saveContext;
@@ -565,6 +592,91 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetLowLatency)
     expectSetProperty(m_glibWrapperMock, m_gstWrapperMock, m_realElement, kLowLatencyStr, true);
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
     EXPECT_TRUE(m_sut->setLowLatency());
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldSetLowLatencyPropertiesOnBrcmAudioDecoder)
+{
+    modifyContext([&](GenericPlayerContext &context) { context.pendingLowLatencyForAudioDecoder = true; });
+
+    expectGetDecoder(m_realElement);
+    expectFactoryName(m_realElement, "brcmaudiodecoder");
+    EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq("brcmaudiodecoder"))).WillOnce(Return(TRUE));
+    expectSetProperty(m_glibWrapperMock, m_gstWrapperMock, m_realElement, kSyncOffStr, true);
+    expectSetPropertyWithGenericStub("stream_sync_mode");
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
+
+    EXPECT_TRUE(m_sut->setLowLatencyAudioDecoder());
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldSetLowLatencyPropertiesOnBrcmAudioSink)
+{
+    modifyContext([&](GenericPlayerContext &context) { context.pendingLowLatencyForAudioSink = true; });
+
+    expectGetAVSink(kAudioSinkStr, m_realElement);
+    expectFactoryName(m_realElement, "brcmaudiosink");
+    expectAudioSinkFactoryName("brcmaudiosink");
+    expectSetProperty(m_glibWrapperMock, m_gstWrapperMock, m_realElement, kLowLatencyStr, true);
+    expectSetProperty(m_glibWrapperMock, m_gstWrapperMock, m_realElement, kSyncStr, false);
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
+
+    EXPECT_TRUE(m_sut->setLowLatencyAudioSink());
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldDisableLowLatencyPropertiesOnBrcmAudioSink)
+{
+    modifyContext([&](GenericPlayerContext &context) { context.pendingLowLatencyForAudioSink = false; });
+
+    expectGetAVSink(kAudioSinkStr, m_realElement);
+    expectFactoryName(m_realElement, "brcmaudiosink");
+    expectAudioSinkFactoryName("brcmaudiosink");
+    expectSetProperty(m_glibWrapperMock, m_gstWrapperMock, m_realElement, kLowLatencyStr, false);
+    expectSetProperty(m_glibWrapperMock, m_gstWrapperMock, m_realElement, kSyncStr, true);
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
+
+    EXPECT_TRUE(m_sut->setLowLatencyAudioSink());
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldSetLowLatencyPropertiesOnRtkAudioSink)
+{
+    modifyContext([&](GenericPlayerContext &context) { context.pendingLowLatencyForAudioSink = true; });
+
+    expectGetAVSink(kAudioSinkStr, m_realElement);
+    expectFactoryName(m_realElement, "rtkaudiosink");
+    expectAudioSinkFactoryName("rtkaudiosink");
+    expectSetPropertyWithGenericStub("media-tunnel");
+    expectSetPropertyWithGenericStub("audio-service");
+    expectSetPropertyWithGenericStub("lowdelay-sync-mode");
+    expectSetProperty(m_glibWrapperMock, m_gstWrapperMock, m_realElement, kSyncStr, false);
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
+
+    EXPECT_TRUE(m_sut->setLowLatencyAudioSink());
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldSetLowLatencyPropertiesOnAmlAudioSink)
+{
+    modifyContext([&](GenericPlayerContext &context) { context.pendingLowLatencyForAudioSink = true; });
+
+    expectGetAVSink(kAudioSinkStr, m_realElement);
+    expectFactoryName(m_realElement, "amlhalasink");
+    expectAudioSinkFactoryName("amlhalasink");
+    expectSetPropertyWithGenericStub("llp-mode");
+    expectSetProperty(m_glibWrapperMock, m_gstWrapperMock, m_realElement, kSyncStr, false);
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
+
+    EXPECT_TRUE(m_sut->setLowLatencyAudioSink());
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldSetLowLatencyPropertiesOnMtkAudioSink)
+{
+    modifyContext([&](GenericPlayerContext &context) { context.pendingLowLatencyForAudioSink = true; });
+
+    expectGetAVSink(kAudioSinkStr, m_realElement);
+    expectFactoryName(m_realElement, "mtkaudiosink");
+    expectAudioSinkFactoryName("mtkaudiosink");
+    expectSetPropertyWithGenericStub("llp-mode");
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
+
+    EXPECT_TRUE(m_sut->setLowLatencyAudioSink());
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldSetLowLatencyAutoAudioSink)

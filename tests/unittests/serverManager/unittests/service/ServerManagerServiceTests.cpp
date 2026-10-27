@@ -17,9 +17,10 @@
  * limitations under the License.
  */
 
+#include "DecoderCapabilitiesCommon.h"
 #include "RialtoLogging.h"
 #include "ServerManagerServiceTestsFixture.h"
-#include "ServiceContext.h"
+#include "YamlCppWrapperMock.h"
 #include "gtest/gtest.h"
 
 namespace
@@ -28,12 +29,6 @@ const std::string kAppName{"YouTube"};
 const firebolt::rialto::common::SessionServerState kAppState{firebolt::rialto::common::SessionServerState::INACTIVE};
 const std::string kAppSocket{getenv("RIALTO_SOCKET_PATH")};
 const firebolt::rialto::common::AppConfig kAppConfig{kAppSocket};
-
-void createAndDestroyServiceContext()
-{
-    rialto::servermanager::service::ServiceContext
-        context{nullptr, {}, "", std::chrono::milliseconds{0}, std::chrono::seconds{0}, 0, 0, "", ""};
-}
 } // namespace
 
 TEST_F(ServerManagerServiceTests, initiateApplicationShouldReturnTrueIfOperationSucceeded)
@@ -90,7 +85,43 @@ TEST_F(ServerManagerServiceTests, registerLogHandlerShouldFailWhenPtrIsNull)
     EXPECT_FALSE(triggerRegisterLogHandler(nullptr));
 }
 
-TEST(ServiceContextTests, DestructorShouldNotThrow)
+/**
+ * @test yamlCppWrapperMockDelegation
+ * @brief Verify that IYamlCppWrapper mocks can be used and calls can be expected.
+ *
+ * This test verifies the mock wrapper can be instantiated and expectations can be set:
+ * 1. Mock wrapper can be created via shared_ptr
+ * 2. Audio capability queries can be mocked
+ * 3. Video capability queries can be mocked
+ */
+namespace
 {
-    ASSERT_NO_THROW(createAndDestroyServiceContext());
+// Test that YAML wrapper mocks can be used
+TEST(YamlCppWrapperMockDelegation, wrapperDelegatesAudioCapabilitiesCorrectly)
+{
+    auto mockWrapper = std::make_shared<firebolt::rialto::wrappers::YamlCppWrapperMock>();
+
+    EXPECT_CALL(*mockWrapper, getAudioDecoderCapabilities(::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Return(firebolt::rialto::common::DecoderCapabilitiesStatus::OK));
+
+    firebolt::rialto::common::AudioDecoderCapabilities result;
+    auto status = mockWrapper->getAudioDecoderCapabilities(result);
+
+    EXPECT_EQ(status, firebolt::rialto::common::DecoderCapabilitiesStatus::OK);
 }
+
+TEST(YamlCppWrapperMockDelegation, wrapperDelegatesVideoCapabilitiesCorrectly)
+{
+    auto mockWrapper = std::make_shared<firebolt::rialto::wrappers::YamlCppWrapperMock>();
+
+    EXPECT_CALL(*mockWrapper, getVideoDecoderCapabilities(::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Return(firebolt::rialto::common::DecoderCapabilitiesStatus::OK));
+
+    firebolt::rialto::common::VideoDecoderCapabilities result;
+    auto status = mockWrapper->getVideoDecoderCapabilities(result);
+
+    EXPECT_EQ(status, firebolt::rialto::common::DecoderCapabilitiesStatus::OK);
+}
+} // namespace

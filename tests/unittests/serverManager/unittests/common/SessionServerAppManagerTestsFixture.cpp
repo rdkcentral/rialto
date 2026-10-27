@@ -111,7 +111,7 @@ SessionServerAppManagerTests::SessionServerAppManagerTests()
                                                                                  std::move(m_sessionServerAppFactory),
                                                                                  std::move(m_healthcheckServiceFactory),
                                                                                  eventThreadFactoryMock,
-                                                                                 m_namedSocketFactoryMock);
+                                                                                 m_namedSocketFactoryMock, nullptr);
 }
 
 void SessionServerAppManagerTests::sessionServerLaunchWillFail(const firebolt::rialto::common::SessionServerState &state)
@@ -246,7 +246,8 @@ void SessionServerAppManagerTests::sessionServerWillChangeStateToUninitialized()
                 performSetConfiguration(kServerId, firebolt::rialto::common::SessionServerState::INACTIVE,
                                         kSessionServerSocketName, kClientDisplayName,
                                         MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kSocketPermissions,
-                                        kSocketOwner, kSocketGroup, kAppName))
+                                        kSocketOwner, kSocketGroup, kAppName, testing::Eq(std::nullopt),
+                                        testing::Eq(std::nullopt)))
         .WillOnce(Return(true));
     EXPECT_CALL(*m_stateObserver, stateChanged(kAppName, firebolt::rialto::common::SessionServerState::UNINITIALIZED));
 }
@@ -283,7 +284,8 @@ void SessionServerAppManagerTests::preloadedSessionServerWillSetConfiguration()
                 performSetConfiguration(kServerId, firebolt::rialto::common::SessionServerState::INACTIVE,
                                         kSessionServerSocketName, kClientDisplayName,
                                         MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kSocketPermissions,
-                                        kSocketOwner, kSocketGroup, kEmptyAppName))
+                                        kSocketOwner, kSocketGroup, kEmptyAppName, testing::Eq(std::nullopt),
+                                        testing::Eq(std::nullopt)))
         .WillOnce(Return(true));
     EXPECT_CALL(m_namedSocketFactoryMock, createNamedSocket()).WillOnce(Return(ByMove(std::move(m_namedSocket))));
     EXPECT_CALL(m_sessionServerAppFactoryMock, create(_)).WillOnce(Return(m_secondSessionServerAppMock));
@@ -307,7 +309,8 @@ void SessionServerAppManagerTests::preloadedSessionServerWillSetConfigurationWit
     EXPECT_CALL(m_controllerMock,
                 performSetConfiguration(kServerId, firebolt::rialto::common::SessionServerState::INACTIVE,
                                         kSessionServerSocketFd, kClientDisplayName,
-                                        MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kEmptyAppName))
+                                        MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kEmptyAppName,
+                                        testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerAppFactoryMock, create(_)).WillOnce(Return(m_secondSessionServerAppMock));
     EXPECT_CALL(*m_secondSessionServerAppMock, launch()).WillOnce(Return(true));
@@ -337,7 +340,8 @@ void SessionServerAppManagerTests::sessionServerWillFailToSetConfigurationWithFd
     EXPECT_CALL(m_controllerMock,
                 performSetConfiguration(kServerId, firebolt::rialto::common::SessionServerState::INACTIVE,
                                         kSessionServerSocketFd, kClientDisplayName,
-                                        MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kAppName))
+                                        MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kAppName,
+                                        testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
         .WillOnce(Return(false));
     EXPECT_CALL(*m_stateObserver, stateChanged(kAppName, firebolt::rialto::common::SessionServerState::UNINITIALIZED));
 }
@@ -361,7 +365,8 @@ void SessionServerAppManagerTests::sessionServerWillFailToSetConfiguration()
                 performSetConfiguration(kServerId, firebolt::rialto::common::SessionServerState::INACTIVE,
                                         kSessionServerSocketName, kClientDisplayName,
                                         MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kSocketPermissions,
-                                        kSocketOwner, kSocketGroup, kAppName))
+                                        kSocketOwner, kSocketGroup, kAppName, testing::Eq(std::nullopt),
+                                        testing::Eq(std::nullopt)))
         .WillOnce(Return(false));
     EXPECT_CALL(*m_stateObserver, stateChanged(kAppName, firebolt::rialto::common::SessionServerState::UNINITIALIZED));
 }
@@ -383,7 +388,8 @@ void SessionServerAppManagerTests::preloadedSessionServerWillFailToSetConfigurat
                 performSetConfiguration(kServerId, firebolt::rialto::common::SessionServerState::INACTIVE,
                                         kSessionServerSocketName, kClientDisplayName,
                                         MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kSocketPermissions,
-                                        kSocketOwner, kSocketGroup, kAppName))
+                                        kSocketOwner, kSocketGroup, kAppName, testing::Eq(std::nullopt),
+                                        testing::Eq(std::nullopt)))
         .WillOnce(Return(false));
 }
 
@@ -595,7 +601,8 @@ void SessionServerAppManagerTests::sessionServerWillResurrectSuspendedServerFrom
                 performSetConfiguration(kSecondServerId, firebolt::rialto::common::SessionServerState::ACTIVE,
                                         kSessionServerSocketName, kClientDisplayName,
                                         MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kSocketPermissions,
-                                        kSocketOwner, kSocketGroup, kAppName))
+                                        kSocketOwner, kSocketGroup, kAppName, testing::Eq(std::nullopt),
+                                        testing::Eq(std::nullopt)))
         .WillOnce(Return(true));
     auto newPreloadedServer{std::make_shared<StrictMock<rialto::servermanager::common::SessionServerAppMock>>()};
     EXPECT_CALL(*newPreloadedServer, launch()).WillOnce(Return(false));

@@ -39,18 +39,35 @@ void SetImmediateOutput::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetImmediateOutput for %s source", common::convertMediaSourceType(m_type));
 
-    if (m_type == MediaSourceType::VIDEO)
+    if (m_type == MediaSourceType::AUDIO)
+    {
+        m_context.pendingLowLatencyForAudioDecoder = m_immediateOutput;
+        m_context.pendingLowLatencyForAudioSink = m_immediateOutput;
+
+        if (m_context.pipeline)
+        {
+            m_player.setLowLatencyAudioDecoder();
+            m_player.setLowLatencyAudioSink();
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_DEBUG("Pending immediate-output: pipeline is NULL");
+            return;
+        }
+    }
+    else if (m_type == MediaSourceType::VIDEO)
     {
         m_context.pendingImmediateOutputForVideo = m_immediateOutput;
+        if (m_context.pipeline)
+        {
+            m_player.setImmediateOutput();
+        }
+        return;
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("SetImmediateOutput not currently supported for non-video");
-    }
-
-    if (m_context.pipeline)
-    {
-        m_player.setImmediateOutput();
+        RIALTO_SERVER_LOG_ERROR("SetImmediateOutput not currently supported for source type %s",
+                                common::convertMediaSourceType(m_type));
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic

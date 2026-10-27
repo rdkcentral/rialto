@@ -20,6 +20,10 @@
 add_gtests (
         RialtoClientUnitTests
 
+        # MediaCapabilities tests
+        ${CMAKE_CURRENT_SOURCE_DIR}/../ipc/ipcModuleBase/IpcModuleBase.cpp
+        mediaCapabilities/MediaCapabilitiesTests.cpp
+
         # MediaPipeline tests
         mediaPipeline/base/MediaPipelineTestBase.cpp
         mediaPipeline/CreateTest.cpp
@@ -101,10 +105,13 @@ target_include_directories(
         PRIVATE
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoPlayerCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoClientIpcImpl,INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoClientIpcImpl,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoClientCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoClientMocks,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoUnittestCommonMocks,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoIpcMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoPlayerCommonMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoPlayerPublicMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoPlayerPublicClientMocks,INTERFACE_INCLUDE_DIRECTORIES>
@@ -115,6 +122,7 @@ target_include_directories(
         mocks
 
         # Test Bases
+        ${CMAKE_CURRENT_SOURCE_DIR}/../ipc/ipcModuleBase
         mediaPipeline/base
         webAudioPlayer/base
         )
@@ -125,4 +133,5 @@ target_link_libraries(
         RialtoCommonMisc
         # # Link application source
         RialtoClient
+        RialtoClientIpcImpl
         )

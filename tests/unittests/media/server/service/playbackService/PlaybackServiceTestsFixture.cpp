@@ -77,7 +77,7 @@ void PlaybackServiceTests::createPlaybackServiceShouldSuccess()
                                                                                  m_mediaPipelineCapabilitiesFactoryMock,
                                                                                  m_webAudioPlayerFactoryMock,
                                                                                  std::move(m_shmBufferFactory),
-                                                                                 m_decryptionServiceMock);
+                                                                                 m_decryptionServiceMock, nullptr);
 }
 
 void PlaybackServiceTests::triggerSwitchToActive()

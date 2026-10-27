@@ -22,6 +22,7 @@
 
 #include "ClientLogControlTestMethods.h"
 #include "ControlTestMethods.h"
+#include "MediaCapabilitiesTestMethods.h"
 #include "MediaKeysTestMethods.h"
 #include "MediaPipelineTestMethods.h"
 #include "PrivateMetricsModuleMock.h"
@@ -48,6 +49,7 @@ class ClientComponentTest : public ::testing::Test,
                             public ControlTestMethods,
                             public ClientLogControlTestMethods,
                             public MediaPipelineTestMethods,
+                            public MediaCapabilitiesTestMethods,
                             public MediaKeysTestMethods,
                             public WebAudioPlayerTestMethods
 {

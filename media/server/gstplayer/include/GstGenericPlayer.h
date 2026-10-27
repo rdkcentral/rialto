@@ -164,6 +164,8 @@ private:
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
     bool setImmediateOutput() override;
+    bool setLowLatencyAudioDecoder() override;
+    bool setLowLatencyAudioSink() override;
     bool setReportDecodeErrors() override;
     bool setShowVideoWindow() override;
     bool setLowLatency() override;

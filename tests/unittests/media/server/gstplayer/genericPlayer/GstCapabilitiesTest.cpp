@@ -24,6 +24,7 @@
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
 #include "IFactoryAccessor.h"
+#include "MediaPipelineStructureMatchers.h"
 #include "RdkGstreamerUtilsWrapperFactoryMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
 
@@ -33,6 +34,7 @@
 #include <unordered_map>
 
 using namespace firebolt::rialto;
+using namespace firebolt::rialto::common;
 using namespace firebolt::rialto::server;
 using namespace firebolt::rialto::wrappers;
 
