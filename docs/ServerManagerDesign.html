@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RialtoServerManager ↔ RialtoServer Design</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem;
+            color: #333;
+            background: #fafafa;
+        }
+        h1 { color: #1a1a2e; border-bottom: 3px solid #16213e; padding-bottom: 0.5rem; }
+        h2 { color: #16213e; margin-top: 2rem; }
+        h3 { color: #0f3460; }
+        table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+        th, td { border: 1px solid #ddd; padding: 0.6rem 1rem; text-align: left; }
+        th { background: #16213e; color: white; }
+        tr:nth-child(even) { background: #f0f0f0; }
+        code { background: #e8e8e8; padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.9em; }
+        pre { background: #1a1a2e; color: #e0e0e0; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        pre code { background: none; color: inherit; }
+        .diagram { background: white; border: 1px solid #ddd; padding: 1.5rem; border-radius: 6px; margin: 1rem 0; font-family: monospace; white-space: pre; line-height: 1.4; }
+        .option { border-left: 4px solid #0f3460; padding: 1rem 1.5rem; margin: 1rem 0; background: white; border-radius: 0 6px 6px 0; }
+        .option h3 { margin-top: 0; }
+        .effort-small { border-left-color: #27ae60; }
+        .effort-medium { border-left-color: #f39c12; }
+        .effort-large { border-left-color: #e74c3c; }
+        .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 3px; font-size: 0.8em; font-weight: bold; color: white; margin-left: 0.5rem; }
+        .badge-small { background: #27ae60; }
+        .badge-medium { background: #f39c12; }
+        .badge-large { background: #e74c3c; }
+        .recommendation { background: #eafaf1; border: 2px solid #27ae60; padding: 1rem 1.5rem; border-radius: 6px; margin-top: 2rem; }
+        ul { padding-left: 1.5rem; }
+        li { margin-bottom: 0.3rem; }
+    </style>
+</head>
+<body>
+
+<h1>RialtoServerManager ↔ RialtoServer Interface Design</h1>
+
+<h2>Architecture Overview</h2>
+
+<p><strong>RialtoServerManager</strong> is a library linked into the platform's app-management process.
+It owns the lifecycle of one or more <strong>RialtoServer</strong> (RialtoSessionServer) child processes — one per application.
+Each RialtoServer manages media playback for a single app.</p>
+
+<div class="diagram">
+┌─────────────────────┐
+│  App Management     │
+│  (Platform)         │
+│  ┌───────────────┐  │         ┌─────────────────────┐
+│  │ ServerManager │──┼─────────│  RialtoServer       │
+│  │ (library)     │  │ Control │  (App 1 process)    │
+│  │               │◄─┼─────────│                     │
+│  │               │  │ Events  └──────────┬──────────┘
+│  │               │  │                    │ Session IPC
+│  │               │──┼──────┐  ┌──────────▼──────────┐
+│  │               │  │      │  │  Client App 1       │
+│  └───────────────┘  │      │  └─────────────────────┘
+└─────────────────────┘      │
+                             │  ┌─────────────────────┐
+                             └──│  RialtoServer       │
+                        Control │  (App 2 process)    │
+                             ┌──│                     │
+                             │  └──────────┬──────────┘
+                             │             │ Session IPC
+                             │  ┌──────────▼──────────┐
+                             │  │  Client App 2       │
+                             │  └─────────────────────┘
+                             │
+</div>
+
+<h2>Two Distinct IPC Channels Per Server</h2>
+
+<table>
+    <tr>
+        <th>Channel</th>
+        <th>Purpose</th>
+        <th>Transport</th>
+        <th>Created By</th>
+    </tr>
+    <tr>
+        <td><strong>Control Channel</strong></td>
+        <td>Manager ↔ Server lifecycle commands</td>
+        <td><code>socketpair(AF_UNIX, SOCK_SEQPACKET)</code>, FD passed as <code>argv[1]</code></td>
+        <td>ServerManager at spawn</td>
+    </tr>
+    <tr>
+        <td><strong>Session Channel</strong></td>
+        <td>Client App ↔ Server media operations</td>
+        <td>Named Unix domain socket (e.g. <code>/tmp/rialto-N</code>)</td>
+        <td>Server after <code>setConfiguration</code></td>
+    </tr>
+</table>
+
+<h2>Control Channel Protocol</h2>
+
+<p>Protobuf RPC over the control socketpair. The wire format is <strong>asymmetric</strong>:</p>
+<ul>
+    <li><code>MessageToServer</code> contains only <code>MethodCall</code> (Manager → Server)</li>
+    <li><code>MessageFromServer</code> contains only <code>Reply | Error | Event</code> (Server → Manager)</li>
+</ul>
+
+<h3>Manager → Server (RPC Calls)</h3>
+<table>
+    <tr><th>RPC</th><th>Purpose</th></tr>
+    <tr><td><code>setConfiguration</code></td><td>Initial setup: socket name/FD, permissions, state, resources, log levels, app name</td></tr>
+    <tr><td><code>setState</code></td><td>Request state transition (ACTIVE / INACTIVE / NOT_RUNNING)</td></tr>
+    <tr><td><code>setLogLevels</code></td><td>Update log levels across components</td></tr>
+    <tr><td><code>ping</code></td><td>Healthcheck probe</td></tr>
+</table>
+
+<h3>Server → Manager (Events only)</h3>
+<table>
+    <tr><th>Event</th><th>Purpose</th></tr>
+    <tr><td><code>StateChangedEvent</code></td><td>Notify manager of state transitions</td></tr>
+    <tr><td><code>AckEvent</code></td><td>Healthcheck acknowledgement (with success/failure flag)</td></tr>
+</table>
+
+<h2>Server States</h2>
+
+<div class="diagram">
+                    ┌──────────────┐
+        spawn       │ UNINITIALIZED│
+    ┌──────────────►│              │
+    │               └──────┬───────┘
+    │                      │ setConfiguration
+    │               ┌──────▼───────┐
+    │          ┌───►│    ACTIVE    │◄───┐
+    │          │    └──────┬───────┘    │
+    │  setState│           │setState    │setState
+    │          │    ┌──────▼───────┐    │
+    │          └────│   INACTIVE   │────┘
+    │               └──────┬───────┘
+    │                      │ setState(NOT_RUNNING)
+┌───┴──────────┐    ┌──────▼───────┐
+│ NOT_RUNNING  │◄───│              │
+└──────────────┘    └──────────────┘
+
+    Any state ──── healthcheck failure ────► ERROR ──── restart ────► UNINITIALIZED
+</div>
+
+<h2>Session Lifecycle</h2>
+<ol>
+    <li>Platform calls <code>initiateApplication(appId, ACTIVE, appConfig)</code></li>
+    <li>Manager picks a preloaded child or spawns a new one via <code>vfork</code> + <code>execve</code></li>
+    <li>Child reads control socket FD from <code>argv[1]</code>, starts <code>ApplicationManagementServer</code>, emits <strong>UNINITIALIZED</strong></li>
+    <li>Manager receives UNINITIALIZED, sends <strong>SetConfigurationRequest</strong></li>
+    <li>Server creates the app-facing named socket, starts media services, transitions to requested state</li>
+    <li>Server sends <strong>StateChangedEvent</strong>; Manager forwards to <code>IStateObserver</code></li>
+    <li>Client app connects to the named socket for media playback</li>
+    <li>Periodic <strong>ping</strong> → <strong>AckEvent</strong> healthchecks run</li>
+    <li>On NOT_RUNNING: server tears down, manager cleans up</li>
+    <li>On healthcheck failure: manager marks ERROR, kills child, restarts with preserved config</li>
+</ol>
+
+<h2>Key Interfaces</h2>
+
+<table>
+    <tr><th>Interface</th><th>Side</th><th>Role</th></tr>
+    <tr><td><code>IServerManagerService</code></td><td>Manager (public API)</td><td>External API for platform to manage apps</td></tr>
+    <tr><td><code>IStateObserver</code></td><td>Manager (callback)</td><td>Notifies platform of state changes</td></tr>
+    <tr><td><code>IController</code></td><td>Manager (internal)</td><td>Dispatches RPCs to per-server Clients</td></tr>
+    <tr><td><code>ISessionServerAppManager</code></td><td>Manager (internal)</td><td>Orchestrates lifecycle, healthchecks, restart</td></tr>
+    <tr><td><code>ISessionServerManager</code></td><td>Server (service layer)</td><td>Server's internal lifecycle manager</td></tr>
+    <tr><td><code>IApplicationManagementServer</code></td><td>Server (IPC layer)</td><td>Control channel endpoint; sends events back</td></tr>
+    <tr><td><code>ServerManagerModuleService</code></td><td>Server (IPC layer)</td><td>Protobuf RPC handler for incoming commands</td></tr>
+</table>
+
+<hr>
+
+<h1>Solution Options: Adding Server → Manager Data Requests</h1>
+
+<p>The current IPC framework does not support server-initiated RPC on the control socket.
+Below are three options for enabling the Server to request data from the Manager.</p>
+
+<div class="option effort-small">
+    <h3>Option 1: Event + Correlation ID <span class="badge badge-small">Small</span></h3>
+    <p><strong>Approach:</strong> Use the existing event mechanism with a request/response pattern.</p>
+    <ul>
+        <li>Server sends a new event: <code>DataRequestEvent{id, request_type, params}</code></li>
+        <li>Manager receives it, fetches the data, sends it back via a new RPC: <code>provideData(id, payload)</code></li>
+    </ul>
+    <p><strong>Changes (~5–10 files):</strong></p>
+    <ul>
+        <li>Add 1 new event message + 1 new RPC to <code>servermanagermodule.proto</code></li>
+        <li>Manager-side: subscribe to new event in <code>Client</code>, add new RPC call</li>
+        <li>Server-side: new <code>sendEvent</code> in <code>ApplicationManagementServer</code>, new handler in <code>ServerManagerModuleService</code></li>
+    </ul>
+    <p><strong>Pros:</strong> No IPC framework changes. Follows existing AckEvent precedent.</p>
+    <p><strong>Cons:</strong> Asynchronous only. Requires correlation ID management. Slightly awkward request/response semantics.</p>
+</div>
+
+<div class="option effort-medium">
+    <h3>Option 2: Second Reverse Socket <span class="badge badge-medium">Medium</span></h3>
+    <p><strong>Approach:</strong> Manager runs an <code>IpcServer</code> on a known socket. Server creates an <code>IpcClient</code> to it after configuration.</p>
+    <ul>
+        <li>Manager exports a new service (e.g. <code>ServerManagerDataModule</code>)</li>
+        <li>Server uses a <code>_Stub</code> to make synchronous RPC calls to the manager</li>
+    </ul>
+    <p><strong>Changes (~15–20 files):</strong></p>
+    <ul>
+        <li>New proto service definition for manager-provided data</li>
+        <li>Manager-side: new <code>IpcServer</code> instance, export service, handle incoming RPCs</li>
+        <li>Server-side: new <code>IpcClient</code>/<code>IChannel</code> in <code>SessionServerManager</code>, use a Stub for calls</li>
+        <li>New socket path management (passed in <code>SetConfigurationRequest</code>)</li>
+    </ul>
+    <p><strong>Pros:</strong> Uses IPC libraries as designed. Synchronous request/response. Clean separation of concerns.</p>
+    <p><strong>Cons:</strong> Extra socket per server. More FD management. More boilerplate setup.</p>
+</div>
+
+<div class="option effort-large">
+    <h3>Option 3: Symmetric IPC Framework <span class="badge badge-large">Large</span></h3>
+    <p><strong>Approach:</strong> Extend the core IPC transport to support bidirectional RPC on a single socket.</p>
+    <ul>
+        <li>Modify <code>rialtoipc-transport.proto</code> to allow <code>MethodCall</code> in both directions</li>
+        <li>Add <code>exportService()</code> to client-side <code>IChannel</code></li>
+        <li>Add <code>CallMethod()</code>/stub support to server-side <code>IClient</code></li>
+    </ul>
+    <p><strong>Changes (30+ files across <code>ipc/</code>, <code>serverManager/</code>, <code>media/server/</code>):</strong></p>
+    <ul>
+        <li>Transport protocol redesign</li>
+        <li>Reply tracking and dispatch on both sides</li>
+        <li>Threading/reentrancy review (deadlock risk with mutual blocking calls)</li>
+        <li>Refactor all existing consumers</li>
+    </ul>
+    <p><strong>Pros:</strong> Cleanest long-term architecture. Single socket. Full bidirectional RPC.</p>
+    <p><strong>Cons:</strong> High effort. Risk of deadlocks. Touches core infrastructure used by all components.</p>
+</div>
+
+<div class="recommendation">
+    <h3>Recommendation</h3>
+    <p><strong>Option 1</strong> is the pragmatic choice for infrequent, async data requests. It requires no structural
+    changes and follows the existing <code>ping</code>/<code>AckEvent</code> precedent.</p>
+    <p><strong>Option 2</strong> is the right choice if you need synchronous request/response semantics or expect the
+    Server→Manager data API to grow over time. It stays within the framework's design intent with moderate effort.</p>
+</div>
+
+</body>
+</html>

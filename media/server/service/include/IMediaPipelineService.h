@@ -23,8 +23,11 @@
 #include "IHeartbeatProcedure.h"
 #include "IMediaPipeline.h"
 #include "MediaCommon.h"
+#include <AudioDecoderCapabilities.h>
+#include <VideoDecoderCapabilities.h>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -55,6 +58,8 @@ public:
     virtual bool setPosition(int sessionId, std::int64_t position) = 0;
     virtual bool getPosition(int sessionId, std::int64_t &position) = 0;
     virtual bool setImmediateOutput(int sessionId, int32_t sourceId, bool immediateOutput) = 0;
+    virtual bool setReportDecodeErrors(int sessionId, int32_t sourceId, bool reportDecodeErrors) = 0;
+    virtual bool getQueuedFrames(int sessionId, int32_t sourceId, uint32_t &queuedFrames) = 0;
     virtual bool getImmediateOutput(int sessionId, int32_t sourceId, bool &immediateOutput) = 0;
     virtual bool getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
     virtual bool setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
@@ -92,6 +97,10 @@ public:
     virtual bool switchSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
     virtual bool isVideoMaster(bool &isVideoMaster) = 0;
     virtual bool getDuration(int sessionId, std::int64_t &duration) = 0;
+    virtual common::AudioDecoderCapabilities getSupportedAudioCapabilities() = 0;
+    virtual common::VideoDecoderCapabilities getSupportedVideoCapabilities() = 0;
+    virtual void setPreloadedCapabilities(const std::optional<common::AudioDecoderCapabilities> &audioCaps,
+                                          const std::optional<common::VideoDecoderCapabilities> &videoCaps) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

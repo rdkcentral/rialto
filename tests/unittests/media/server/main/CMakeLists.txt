@@ -48,6 +48,9 @@ add_gtests (
 
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
 
+        mediaCapabilities/MediaCapabilitiesTestsFixture.cpp
+        mediaCapabilities/MediaCapabilitiesTests.cpp
+
         mediaKeys/base/MediaKeysTestBase.cpp
         mediaKeys/CreateTest.cpp
         mediaKeys/CreateKeySessionTest.cpp
@@ -75,6 +78,7 @@ add_gtests (
         mediaKeysCapabilities/CreateTest.cpp
         mediaKeysCapabilities/KeySystemsTest.cpp
         mediaKeysCapabilities/CertificateTest.cpp
+        mediaKeysCapabilities/RobustnessTest.cpp
 
         mediaKeySession/base/MediaKeySessionTestBase.cpp
         mediaKeySession/CreateTest.cpp
@@ -100,6 +104,10 @@ add_gtests (
         needMediaData/NeedMediaDataTests.cpp
 
         mainThread/MainThreadTest.cpp
+
+        metrics/LogMetricsReporterTests.cpp
+        metrics/MetricsCollectorTests.cpp
+        metrics/MetricsHelpersTests.cpp
 
         textTrackAccessor/TextTrackAccessorTest.cpp
 
@@ -128,6 +136,9 @@ target_include_directories(
         $<TARGET_PROPERTY:ExternalLibraryMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoUnittestCommonMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoWrappersMocks,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoServerIpc,INTERFACE_INCLUDE_DIRECTORIES>
+        ${PROJECT_SOURCE_DIR}/media/server/service/include
+        ${PROJECT_SOURCE_DIR}/media/server/service/source
 
         # Test Bases
         mediaKeys/base

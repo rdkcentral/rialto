@@ -19,26 +19,33 @@
 
 #include "PlaybackService.h"
 #include "IMediaPipelineServerInternal.h"
+#include "IMetricsCollector.h"
 #include "IWebAudioPlayerServerInternal.h"
+#include "PrivateMetricsService.h"
 #include "RialtoServerLogging.h"
 #include <exception>
 #include <future>
+#include <malloc.h>
 #include <string>
 #include <utility>
 #include <vector>
 
 namespace firebolt::rialto::server::service
 {
-PlaybackService::PlaybackService(std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
-                                 std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-                                 std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
-                                 std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory,
-                                 IDecryptionService &decryptionService)
+PlaybackService::PlaybackService(
+    std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
+    std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
+    std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
+    std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory, IDecryptionService &decryptionService,
+    std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory)
     : m_shmBufferFactory{std::move(shmBufferFactory)}, m_isActive{false}, m_maxPlaybacks{0}, m_maxWebAudioPlayers{0},
+      m_privateMetricsService{std::make_unique<PrivateMetricsService>(IMetricsCollectorFactory::createFactory())},
       m_mediaPipelineService{std::make_unique<MediaPipelineService>(*this, std::move(mediaPipelineFactory),
                                                                     std::move(mediaPipelineCapabilitiesFactory),
-                                                                    decryptionService)},
-      m_webAudioPlayerService{std::make_unique<WebAudioPlayerService>(*this, std::move(webAudioPlayerFactory))}
+                                                                    decryptionService, *m_privateMetricsService,
+                                                                    std::move(mediaCapabilitiesFactory))},
+      m_webAudioPlayerService{
+          std::make_unique<WebAudioPlayerService>(*this, std::move(webAudioPlayerFactory), *m_privateMetricsService)}
 {
     RIALTO_SERVER_LOG_DEBUG("PlaybackService is constructed");
 }
@@ -72,6 +79,9 @@ void PlaybackService::switchToInactive()
     m_mediaPipelineService->clearMediaPipelines();
     m_webAudioPlayerService->clearWebAudioPlayers();
     m_shmBuffer.reset();
+    // Return freed heap pages to the OS now that pipelines and shared memory
+    // have been released, so the process has a low memory footprint while idle.
+    ::malloc_trim(0);
 }
 
 void PlaybackService::setMaxPlaybacks(int maxPlaybacks)
@@ -145,6 +155,11 @@ IMediaPipelineService &PlaybackService::getMediaPipelineService() const
 IWebAudioPlayerService &PlaybackService::getWebAudioPlayerService() const
 {
     return *m_webAudioPlayerService;
+}
+
+IPrivateMetricsService &PlaybackService::getPrivateMetricsService() const
+{
+    return *m_privateMetricsService;
 }
 
 void PlaybackService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) const

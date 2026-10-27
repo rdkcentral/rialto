@@ -38,6 +38,8 @@ public:
     MOCK_METHOD(bool, supportsKeySystem, (const std::string &keySystem), (override));
     MOCK_METHOD(bool, getSupportedKeySystemVersion, (const std::string &keySystem, std::string &version), (override));
     MOCK_METHOD(bool, isServerCertificateSupported, (const std::string &keySystem), (override));
+    MOCK_METHOD(bool, getSupportedRobustnessLevels,
+                (const std::string &keySystem, std::vector<std::string> &robustnessLevels), (override));
 };
 } // namespace firebolt::rialto::client
 

@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef GENERIC_TASKS_TESTS_BASE_H_
-#define GENERIC_TASKS_TESTS_BASE_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GENERIC_TASKS_TESTS_BASE_H_
+#define FIREBOLT_RIALTO_SERVER_GENERIC_TASKS_TESTS_BASE_H_
 
 #include "MediaCommon.h"
 
@@ -42,6 +42,11 @@ using ::testing::SaveArg;
 using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
+
+namespace firebolt::rialto::server
+{
+struct Rectangle;
+}
 
 /**
  * @brief GenericTasksTest Base class
@@ -83,8 +88,14 @@ protected:
     void shouldSetupVideoDecoderElementOnly();
     void shouldSetupVideoDecoderElementWithFirstVideoFrameCallback();
     void shouldSetupVideoElementWithPendingGeometry();
+    void shouldSetupVideoElementWithFallbackGeometry();
+    void shouldSetupVideoElementWithApiGeometryAndFallback();
+    void shouldSetupVideoElementWithoutFallbackAfterApiCall();
+    void checkPendingGeometry(const firebolt::rialto::server::Rectangle &geometry);
     void shouldSetupVideoElementWithPendingImmediateOutput();
     void shouldSetupAudioSinkElementWithPendingLowLatency();
+    void shouldSetupAudioSinkElementWithPendingLowLatencyAudioSink();
+    void shouldSetupAudioDecoderElementWithPendingLowLatency();
     void shouldSetupAudioSinkElementWithPendingSync();
     void shouldSetupAudioDecoderElementWithPendingSyncOff();
     void shouldSetupAudioDecoderElementWithPendingStreamSyncMode();
@@ -102,14 +113,20 @@ protected:
     void shouldSetupAudioElementAutoAudioSinkWithMultipleChildren();
     void shouldSetupAudioSinkElementOnly();
     void shouldSetupAudioDecoderElementOnly();
+    void shouldSetupAudioDecoderElementWithFirstAudioFrameCallback();
+    void shouldSetupAudioSinkElementWithFirstAudioFrameProbe();
     void shouldSetVideoUnderflowCallback();
     void shouldSetFirstVideoFrameCallback();
+    void shouldSetFirstAudioFrameCallback();
+    void shouldSetFirstAudioFrameFallbackProbeCallback();
     void shouldSetupBaseParse();
     void triggerSetupElement();
     void triggerVideoUnderflowCallback();
     void triggerFirstVideoFrameCallback();
+    void triggerFirstAudioFrameCallback();
     void shouldSetAudioUnderflowCallback();
     void triggerAudioUnderflowCallback();
+    void triggerFirstAudioFrameFallbackProbeCallback();
     void shouldAddFirstAutoVideoSinkChild();
     void shouldAddFirstAutoAudioSinkChild();
     void shouldNotAddAutoVideoSinkChild();
@@ -288,9 +305,15 @@ protected:
     void shouldSetVideoMute();
     void shouldSetSubtitleMute();
 
+    // report-decode-errors decoder property test method
+    void shouldSetReportDecodeErrors();
+    void triggerSetReportDecodeErrors();
+
     // immediate-output sink property test methods
     void shouldSetImmediateOutput();
     void triggerSetImmediateOutput();
+    void shouldSetAudioImmediateOutput();
+    void triggerAudioSetImmediateOutput();
 
     // low-latency sink property test methods
     void shouldSetLowLatency();
@@ -475,4 +498,4 @@ private:
     std::string getFadeString(double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType);
 };
 
-#endif // GENERIC_TASKS_TESTS_BASE_H_
+#endif // FIREBOLT_RIALTO_SERVER_GENERIC_TASKS_TESTS_BASE_H_

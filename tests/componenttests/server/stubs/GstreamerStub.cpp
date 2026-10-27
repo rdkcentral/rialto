@@ -32,7 +32,7 @@ using testing::StrEq;
 namespace
 {
 constexpr int32_t kMessageTimeoutMs{200};
-}
+} // namespace
 
 namespace firebolt::rialto::server::ct
 {
@@ -40,7 +40,11 @@ GstreamerStub::GstreamerStub(const std::shared_ptr<testing::StrictMock<wrappers:
                              const std::shared_ptr<testing::StrictMock<wrappers::GstWrapperMock>> &gstWrapperMock,
                              GstElement *pipeline, GstBus *bus, GstElement *rialtoSource)
     : m_glibWrapperMock{glibWrapperMock}, m_gstWrapperMock{gstWrapperMock}, m_pipeline{pipeline}, m_bus{bus},
-      m_rialtoSource{rialtoSource}, m_message{nullptr}
+      m_rialtoSource{rialtoSource}, m_message{nullptr},
+      m_fakeMainContext{reinterpret_cast<GMainContext *>(&m_mainContextIdentity)},
+      m_fakeMainLoop{reinterpret_cast<GMainLoop *>(&m_mainLoopIdentity)},
+      m_fakeBusSource{reinterpret_cast<GSource *>(&m_busSourceIdentity)},
+      m_fakeQuitSource{reinterpret_cast<GSource *>(&m_quitSourceIdentity)}
 {
 }
 
@@ -88,27 +92,93 @@ void GstreamerStub::setupMessages(bool repeatedCallsToGstPipelineGetBus)
     {
         EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(m_pipeline))).WillOnce(Return(m_bus));
     }
-    // Called from the polling loop in GstDispatcherThread::gstBusEventHandler
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstBusTimedPopFiltered(m_bus, 100 * GST_MSECOND,
-                                       static_cast<GstMessageType>(GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_QOS |
-                                                                   GST_MESSAGE_EOS | GST_MESSAGE_ERROR |
-                                                                   GST_MESSAGE_WARNING | GST_MESSAGE_APPLICATION)))
+    // GstDispatcherThread construction: a private GMainContext/GMainLoop with a bus watch attached.
+    EXPECT_CALL(*m_glibWrapperMock, gMainContextNew()).WillOnce(Return(m_fakeMainContext));
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopNew(m_fakeMainContext, FALSE)).WillOnce(Return(m_fakeMainLoop));
+    EXPECT_CALL(*m_gstWrapperMock, gstBusCreateWatch(m_bus)).WillOnce(Return(m_fakeBusSource));
+    EXPECT_CALL(*m_glibWrapperMock, gSourceSetCallback(m_fakeBusSource, _, _, nullptr))
+        .WillOnce(Invoke(
+            [this](GSource *, GSourceFunc func, gpointer data, GDestroyNotify)
+            {
+                m_busWatchFunc = func;
+                m_busWatchUserData = data;
+            }));
+    EXPECT_CALL(*m_glibWrapperMock, gSourceAttach(m_fakeBusSource, m_fakeMainContext)).WillOnce(Return(1));
+    EXPECT_CALL(*m_glibWrapperMock, gSourceUnref(m_fakeBusSource));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_bus));
+
+    // GstDispatcherThread::gstBusEventHandler, running on its own worker thread.
+    EXPECT_CALL(*m_glibWrapperMock, gMainContextPushThreadDefault(m_fakeMainContext));
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopRun(m_fakeMainLoop))
+        .WillOnce(Invoke([this](GMainLoop *mainLoop) { runFakeMainLoop(); }));
+    EXPECT_CALL(*m_glibWrapperMock, gMainContextPopThreadDefault(m_fakeMainContext));
+
+    // Reached from both handleMessage() (on GST_STATE_NULL) and the destructor, so must tolerate repeats.
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopQuit(m_fakeMainLoop))
+        .Times(testing::AtLeast(1))
         .WillRepeatedly(Invoke(
-            [&](GstBus *bus, GstClockTime timeout, GstMessageType types)
+            [this](GMainLoop *mainLoop)
             {
                 std::unique_lock lock(m_mutex);
-                m_cv.wait_for(lock, std::chrono::milliseconds(kMessageTimeoutMs), [&]() { return m_message; });
-                if (m_message)
-                {
-                    GstMessage *msgCopy = m_message;
-                    m_message = nullptr;
-                    EXPECT_CALL(*m_gstWrapperMock, gstMessageUnref(msgCopy))
-                        .WillOnce(Invoke([](GstMessage *msg) { gst_message_unref(msg); }));
-                    return msgCopy;
-                }
-                return m_message;
+                m_mainLoopShouldQuit = true;
+                m_cv.notify_one();
             }));
+    EXPECT_CALL(*m_glibWrapperMock, gMainLoopUnref(m_fakeMainLoop));
+    EXPECT_CALL(*m_glibWrapperMock, gMainContextUnref(m_fakeMainContext));
+
+    // Destructor shutdown: the quit request is scheduled via an idle source rather than calling
+    // gMainLoopQuit directly, so dispatch it as soon as it's attached (the fake loop has no real
+    // "not started yet" window to simulate, so immediate dispatch is an equivalent fake behaviour).
+    // Retires once matched: DualVideoPlaybackTest's two stubs share this mock, and whichever is
+    // destroyed second must still reach its own (older) expectation rather than this one again.
+    EXPECT_CALL(*m_glibWrapperMock, gIdleSourceNew()).WillOnce(Return(m_fakeQuitSource)).RetiresOnSaturation();
+    EXPECT_CALL(*m_glibWrapperMock, gSourceSetCallback(m_fakeQuitSource, _, _, nullptr))
+        .WillOnce(Invoke(
+            [this](GSource *, GSourceFunc func, gpointer data, GDestroyNotify)
+            {
+                m_quitFunc = func;
+                m_quitUserData = data;
+            }));
+    EXPECT_CALL(*m_glibWrapperMock, gSourceAttach(m_fakeQuitSource, m_fakeMainContext))
+        .WillOnce(Invoke(
+            [this](GSource *source, GMainContext *context)
+            {
+                m_quitFunc(m_quitUserData);
+                return 1U;
+            }));
+    EXPECT_CALL(*m_glibWrapperMock, gSourceUnref(m_fakeQuitSource));
+
+    // The bus watch unrefs the original message once the callback returns, so handleMessage takes its own ref,
+    // which the HandleBusMessage task (generic and webAudio) releases once it has finished with the message.
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageRef(_))
+        .WillRepeatedly(Invoke([](GstMessage *message) { return gst_message_ref(message); }));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageUnref(_))
+        .WillRepeatedly(Invoke([](GstMessage *message) { gst_message_unref(message); }));
+}
+
+void GstreamerStub::runFakeMainLoop()
+{
+    while (true)
+    {
+        std::unique_lock lock(m_mutex);
+        m_cv.wait_for(lock, std::chrono::milliseconds(kMessageTimeoutMs),
+                      [this]() { return m_message || m_mainLoopShouldQuit; });
+        GstMessage *message{m_message};
+        m_message = nullptr;
+        bool shouldQuit{m_mainLoopShouldQuit};
+        lock.unlock();
+
+        if (message)
+        {
+            auto busFunc = reinterpret_cast<gboolean (*)(GstBus *, GstMessage *, gpointer)>(m_busWatchFunc);
+            busFunc(m_bus, message, m_busWatchUserData);
+            gst_message_unref(message); // mimics the real bus watch's auto-unref once the callback returns
+        }
+        if (shouldQuit)
+        {
+            return;
+        }
+    }
 }
 
 void GstreamerStub::setupRialtoSource()

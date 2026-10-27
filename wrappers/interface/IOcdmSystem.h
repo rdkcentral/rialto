@@ -149,6 +149,15 @@ public:
     virtual bool supportsServerCertificate() const = 0;
 
     /**
+     * @brief Gets the robustness levels supported by the underlying CDM for this key system.
+     *
+     * @param[out] robustnessLevels : The supported robustness levels.
+     *
+     * @retval true if robustness levels were retrieved successfully
+     */
+    virtual bool getSupportedRobustnessLevels(std::vector<std::string> &robustnessLevels) = 0;
+
+    /**
      * @brief Get metrics for a DRM system
      *
      * Some DRMs (e.g. WideVine) offer metric data that can be used for any

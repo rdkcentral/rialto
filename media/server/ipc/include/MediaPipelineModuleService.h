@@ -90,6 +90,14 @@ public:
                             const ::firebolt::rialto::SetImmediateOutputRequest *request,
                             ::firebolt::rialto::SetImmediateOutputResponse *response,
                             ::google::protobuf::Closure *done) override;
+    void setReportDecodeErrors(::google::protobuf::RpcController *controller,
+                               const ::firebolt::rialto::SetReportDecodeErrorsRequest *request,
+                               ::firebolt::rialto::SetReportDecodeErrorsResponse *response,
+                               ::google::protobuf::Closure *done) override;
+    void getQueuedFrames(::google::protobuf::RpcController *controller,
+                         const ::firebolt::rialto::GetQueuedFramesRequest *request,
+                         ::firebolt::rialto::GetQueuedFramesResponse *response,
+                         ::google::protobuf::Closure *done) override;
     void getImmediateOutput(::google::protobuf::RpcController *controller,
                             const ::firebolt::rialto::GetImmediateOutputRequest *request,
                             ::firebolt::rialto::GetImmediateOutputResponse *response,
@@ -165,6 +173,8 @@ public:
 private:
     service::IMediaPipelineService &m_mediaPipelineService;
     std::map<std::shared_ptr<::firebolt::rialto::ipc::IClient>, std::set<int>> m_clientSessions;
+    std::map<int, std::map<int32_t, MediaSourceType>> m_sessionSources;
+    std::map<int, bool> m_sessionImmediateOutput;
 };
 } // namespace firebolt::rialto::server::ipc
 

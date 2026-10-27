@@ -53,6 +53,8 @@ void ServerStub::clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::
         client->exportService(m_controlModuleMock);
     if (m_mediaPipelineModuleMock)
         client->exportService(m_mediaPipelineModuleMock);
+    if (m_mediaCapabilitiesModuleMock)
+        client->exportService(m_mediaCapabilitiesModuleMock);
     if (m_mediaKeysModuleMock)
         client->exportService(m_mediaKeysModuleMock);
     if (m_mediaKeysCapabilitiesModuleMock)
@@ -61,6 +63,8 @@ void ServerStub::clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::
         client->exportService(m_mediaPipelineCapabilitiesModuleMock);
     if (m_webAudioPlayerModuleMock)
         client->exportService(m_webAudioPlayerModuleMock);
+    if (m_privateMetricsModuleMock)
+        client->exportService(m_privateMetricsModuleMock);
 
     // Notify listening thread
     m_clientConnectCond.notify_one();
@@ -69,16 +73,29 @@ void ServerStub::clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::
 ServerStub::ServerStub(
     const std::shared_ptr<::firebolt::rialto::ControlModule> &controlModuleMock,
     const std::shared_ptr<::firebolt::rialto::MediaPipelineModule> &mediaPipelineModuleMock,
+    const std::shared_ptr<::firebolt::rialto::MediaCapabilitiesModule> &mediaCapabilitiesModuleMock,
     const std::shared_ptr<::firebolt::rialto::MediaKeysModule> &mediaKeysModuleMock,
     const std::shared_ptr<::firebolt::rialto::MediaKeysCapabilitiesModule> &mediaKeysCapabilitiesModuleMock,
     const std::shared_ptr<::firebolt::rialto::MediaPipelineCapabilitiesModule> &mediaPipelineCapabilitiesModuleMock,
-    const std::shared_ptr<::firebolt::rialto::WebAudioPlayerModule> &webAudioPlayerModuleMock)
+    const std::shared_ptr<::firebolt::rialto::WebAudioPlayerModule> &webAudioPlayerModuleMock,
+    const std::shared_ptr<::firebolt::rialto::PrivateMetricsModule> &privateMetricsModuleMock)
     : ControlModuleStub{controlModuleMock}, MediaPipelineModuleStub{mediaPipelineModuleMock},
-      MediaKeysModuleStub{mediaKeysModuleMock}, MediaKeysCapabilitiesModuleStub{mediaKeysCapabilitiesModuleMock},
+      MediaCapabilitiesModuleStub{mediaCapabilitiesModuleMock}, MediaKeysModuleStub{mediaKeysModuleMock},
+      MediaKeysCapabilitiesModuleStub{mediaKeysCapabilitiesModuleMock},
       MediaPipelineCapabilitiesModuleStub{mediaPipelineCapabilitiesModuleMock},
-      WebAudioPlayerModuleStub{webAudioPlayerModuleMock}
+      WebAudioPlayerModuleStub{webAudioPlayerModuleMock}, m_privateMetricsModuleMock{privateMetricsModuleMock}
 {
     init();
+}
+
+void ServerStub::notifyMetricsSampleRequestEvent(std::uint64_t sampleId, ::firebolt::rialto::MetricsSampleReason reason)
+{
+    waitForClientConnect();
+
+    auto event = std::make_shared<::firebolt::rialto::MetricsSampleRequestEvent>();
+    event->set_sample_id(sampleId);
+    event->set_reason(reason);
+    getClient()->sendEvent(event);
 }
 
 void ServerStub::init()

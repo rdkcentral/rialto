@@ -22,6 +22,7 @@
 #include "IMediaKeysCapabilitiesModuleService.h"
 #include "IMediaKeysModuleService.h"
 #include "IMediaPipelineModuleService.h"
+#include "IPrivateMetricsModuleService.h"
 #include "IWebAudioPlayerModuleService.h"
 #include "LinuxUtils.h"
 #include "RialtoServerLogging.h"
@@ -40,21 +41,26 @@ constexpr gid_t kNoGroupChange = -1; // -1 means chown() won't change the group
 namespace firebolt::rialto::server::ipc
 {
 SessionManagementServer::SessionManagementServer(
+    const std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &linuxWrapper,
     const std::shared_ptr<firebolt::rialto::ipc::IServerFactory> &ipcFactory,
     const std::shared_ptr<IMediaPipelineModuleServiceFactory> &mediaPipelineModuleFactory,
     const std::shared_ptr<IMediaPipelineCapabilitiesModuleServiceFactory> &mediaPipelineCapabilitiesModuleFactory,
+    const std::shared_ptr<IMediaCapabilitiesModuleServiceFactory> &mediaCapabilitiesModuleFactory,
     const std::shared_ptr<IMediaKeysModuleServiceFactory> &mediaKeysModuleFactory,
     const std::shared_ptr<IMediaKeysCapabilitiesModuleServiceFactory> &mediaKeysCapabilitiesModuleFactory,
     const std::shared_ptr<IWebAudioPlayerModuleServiceFactory> &webAudioPlayerModuleFactory,
+    const std::shared_ptr<IPrivateMetricsModuleServiceFactory> &privateMetricsModuleFactory,
     const std::shared_ptr<IControlModuleServiceFactory> &controlModuleFactory, service::IPlaybackService &playbackService,
     service::ICdmService &cdmService, service::IControlService &controlService)
-    : m_isRunning{false},
+    : m_linuxWrapper{linuxWrapper}, m_isRunning{false},
       m_mediaPipelineModule{mediaPipelineModuleFactory->create(playbackService.getMediaPipelineService())},
       m_mediaPipelineCapabilitiesModule{
           mediaPipelineCapabilitiesModuleFactory->create(playbackService.getMediaPipelineService())},
+      m_mediaCapabilitiesModule{mediaCapabilitiesModuleFactory->create(playbackService.getMediaPipelineService())},
       m_mediaKeysModule{mediaKeysModuleFactory->create(cdmService)},
       m_mediaKeysCapabilitiesModule{mediaKeysCapabilitiesModuleFactory->create(cdmService)},
       m_webAudioPlayerModule{webAudioPlayerModuleFactory->create(playbackService.getWebAudioPlayerService())},
+      m_privateMetricsModule{privateMetricsModuleFactory->create(playbackService.getPrivateMetricsService())},
       m_controlModule{controlModuleFactory->create(playbackService, controlService)}
 {
     m_ipcServer = ipcFactory->create();
@@ -66,6 +72,11 @@ SessionManagementServer::~SessionManagementServer()
     if (m_ipcServerThread.joinable())
     {
         m_ipcServerThread.join();
+    }
+    if (m_socketFd >= 0)
+    {
+        if (::close(m_socketFd) != 0)
+            RIALTO_SERVER_LOG_SYS_ERROR(errno, "Failed to close socket file descriptor");
     }
 }
 
@@ -106,7 +117,15 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
 
 bool SessionManagementServer::initialize(int32_t socketFd)
 {
-    RIALTO_SERVER_LOG_INFO("Initializing Session Management Server. Socket fd: %d", socketFd);
+    // Rialto IPC library closes the file descriptor when the message handler finishes, so we need to duplicate the file
+    // descriptor to keep it open for the lifetime of the server.
+    m_socketFd = m_linuxWrapper->fcntl(socketFd, F_DUPFD_CLOEXEC, 3);
+    if (m_socketFd < 0)
+    {
+        RIALTO_SERVER_LOG_SYS_ERROR(errno, "Failed to duplicate socket file descriptor");
+        return false;
+    }
+    RIALTO_SERVER_LOG_INFO("Initializing Session Management Server. Socket fd: %d", m_socketFd);
     if (!m_ipcServer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to initialize SessionManagementServer - Ipc server instance is NULL");
@@ -114,13 +133,13 @@ bool SessionManagementServer::initialize(int32_t socketFd)
     }
 
     // add a socket for clients and associate with a streamer object
-    if (!m_ipcServer->addSocket(socketFd,
+    if (!m_ipcServer->addSocket(m_socketFd,
                                 std::bind(&SessionManagementServer::onClientConnected, this, std::placeholders::_1),
                                 std::bind(&SessionManagementServer::onClientDisconnected, this, std::placeholders::_1)))
     {
         RIALTO_SERVER_LOG_ERROR("Failed to initialize SessionManagementServer - can't add socket fd %d to the ipc "
                                 "server",
-                                socketFd);
+                                m_socketFd);
         return false;
     }
 
@@ -161,15 +180,25 @@ void SessionManagementServer::setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, 
     m_setLogLevelsService.setLogLevels(defaultLogLevels, clientLogLevels, ipcLogLevels, commonLogLevels);
 }
 
+void SessionManagementServer::notifyApplicationStateChanged(ApplicationState newState)
+{
+    if (m_privateMetricsModule)
+    {
+        m_privateMetricsModule->notifyApplicationStateChanged(newState);
+    }
+}
+
 void SessionManagementServer::onClientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client)
 {
     RIALTO_SERVER_LOG_MIL("Client app connected");
     m_controlModule->clientConnected(client);
     m_mediaPipelineModule->clientConnected(client);
     m_mediaPipelineCapabilitiesModule->clientConnected(client);
+    m_mediaCapabilitiesModule->clientConnected(client);
     m_mediaKeysModule->clientConnected(client);
     m_mediaKeysCapabilitiesModule->clientConnected(client);
     m_webAudioPlayerModule->clientConnected(client);
+    m_privateMetricsModule->clientConnected(client);
     m_setLogLevelsService.clientConnected(client);
 }
 
@@ -179,9 +208,11 @@ void SessionManagementServer::onClientDisconnected(const std::shared_ptr<::fireb
     m_setLogLevelsService.clientDisconnected(client);
     m_mediaKeysCapabilitiesModule->clientDisconnected(client);
     m_mediaKeysModule->clientDisconnected(client);
+    m_mediaCapabilitiesModule->clientDisconnected(client);
     m_mediaPipelineCapabilitiesModule->clientDisconnected(client);
     m_mediaPipelineModule->clientDisconnected(client);
     m_webAudioPlayerModule->clientDisconnected(client);
+    m_privateMetricsModule->clientDisconnected(client);
     m_controlModule->clientDisconnected(client);
 }
 } // namespace firebolt::rialto::server::ipc

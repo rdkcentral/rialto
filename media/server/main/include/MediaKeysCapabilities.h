@@ -73,6 +73,8 @@ public:
 
     bool isServerCertificateSupported(const std::string &keySystem) override;
 
+    bool getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels) override;
+
 private:
     /**
      * @brief The IOcdm instance.

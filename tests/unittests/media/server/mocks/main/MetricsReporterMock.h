@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2026 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,21 @@
  * limitations under the License.
  */
 
-#include "MediaSourceUtil.h"
+#ifndef FIREBOLT_RIALTO_SERVER_METRICS_REPORTER_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_METRICS_REPORTER_MOCK_H_
 
-namespace firebolt::rialto
-{
-bool operator==(const AudioConfig &lac, const AudioConfig &rac)
-{
-    return lac.numberOfChannels == rac.numberOfChannels && lac.sampleRate == rac.sampleRate &&
-           std::equal(std::begin(lac.codecSpecificConfig), std::end(lac.codecSpecificConfig),
-                      std::begin(rac.codecSpecificConfig));
-}
+#include "IMetricsReporter.h"
+#include <gmock/gmock.h>
 
-bool operator==(const IMediaPipeline::MediaSource &lms, const IMediaPipeline::MediaSource &rms)
+namespace firebolt::rialto::server
 {
-    return lms.getId() == rms.getId() && lms.getType() == rms.getType() && lms.getMimeType() == rms.getMimeType();
-}
-} // namespace firebolt::rialto
+class MetricsReporterMock : public IMetricsReporter
+{
+public:
+    MOCK_METHOD(void, reportPeriodicSample, (const PeriodicMetricsReport &report), (override));
+    MOCK_METHOD(void, reportStateTransition, (const StateTransitionReport &report), (override));
+    MOCK_METHOD(void, reportThresholdExceeded, (const ThresholdAlert &alert), (override));
+};
+} // namespace firebolt::rialto::server
+
+#endif // FIREBOLT_RIALTO_SERVER_METRICS_REPORTER_MOCK_H_

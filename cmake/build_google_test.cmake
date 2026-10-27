@@ -93,11 +93,22 @@ macro( add_gtests TESTNAME )
 
     # gtest_discover_tests replaces gtest_add_tests,
     # see https://cmake.org/cmake/help/v3.10/module/GoogleTest.html for more options to pass to it
-    gtest_discover_tests( ${TESTNAME}
-            # set a working directory so your project root so that you can find
-            # test data via paths relative to the project root
-            WORKING_DIRECTORY ${PROJECT_DIR}
-            )
+    # DISCOVERY_MODE PRE_TEST defers test enumeration from cmake configure
+    # time to just before test execution. It was added in CMake 3.18; on older
+    # versions we omit it so configuration still works (falling back to the
+    # default POST_BUILD discovery mode).
+    if( CMAKE_VERSION VERSION_GREATER_EQUAL "3.18" )
+        gtest_discover_tests( ${TESTNAME}
+                # set a working directory so your project root so that you can find
+                # test data via paths relative to the project root
+                WORKING_DIRECTORY ${PROJECT_DIR}
+                DISCOVERY_MODE PRE_TEST
+                )
+    else()
+        gtest_discover_tests( ${TESTNAME}
+                WORKING_DIRECTORY ${PROJECT_DIR}
+                )
+    endif()
 
     set_target_properties( ${TESTNAME} PROPERTIES FOLDER test )
 

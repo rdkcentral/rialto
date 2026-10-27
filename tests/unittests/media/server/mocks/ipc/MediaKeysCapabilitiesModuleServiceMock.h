@@ -50,6 +50,11 @@ public:
                  const ::firebolt::rialto::GetSupportedKeySystemVersionRequest *request,
                  ::firebolt::rialto::GetSupportedKeySystemVersionResponse *response, ::google::protobuf::Closure *done),
                 (override));
+    MOCK_METHOD(void, getSupportedRobustnessLevels,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::GetSupportedRobustnessLevelsRequest *request,
+                 ::firebolt::rialto::GetSupportedRobustnessLevelsResponse *response, ::google::protobuf::Closure *done),
+                (override));
 };
 } // namespace firebolt::rialto::server::ipc
 
