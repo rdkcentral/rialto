@@ -39,9 +39,10 @@ TEST(MediaPipelineClientTests, NotifyMetricEventSerializesAndPreservesPayload)
                 EXPECT_EQ(101U, decoded.rendered_frames());
                 EXPECT_EQ(7U, decoded.dropped_frames());
                 EXPECT_EQ(3U, decoded.corrupted_frames());
+                EXPECT_EQ(9001U, decoded.pts_ns());
                 EXPECT_EQ("decoder error", decoded.error_info());
                 return true;
             }));
 
-    client.notifyMetricEvent(kSourceId, 101, 7, 3, "decoder error");
+    client.notifyMetricEvent(kSourceId, 101, 7, 3, 9001, "decoder error");
 }

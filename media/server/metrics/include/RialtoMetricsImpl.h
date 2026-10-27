@@ -11,7 +11,8 @@ class RialtoMetricsImpl final : public RialtoMetrics
 {
 public:
     ~RialtoMetricsImpl() override = default;
-    void onMetricMessage(GstMessage *message) override;
+    void setSessionId(int32_t sessionId) override;
+    std::optional<ParsedMetricMessage> onMetricMessage(GstMessage *message) override;
     void updateFrameCounters(int32_t sessionId, int32_t sourceId, const FrameCounters &counters) override;
     bool getFrameCounters(int32_t sessionId, int32_t sourceId, FrameCounters &counters) const override;
 
@@ -19,6 +20,7 @@ private:
     using CounterKey = std::pair<int32_t, int32_t>;
 
     mutable std::mutex m_counterMutex;
+    int32_t m_sessionId{-1};
     std::map<CounterKey, FrameCounters> m_counterCache;
 };
 } // namespace firebolt::rialto::server

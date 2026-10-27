@@ -78,8 +78,8 @@ TEST_F(RialtoClientMediaPipelineCallbackTest, NotifyMetricEvent)
     constexpr int32_t kSourceId{22};
     const std::string kErrorInfo{"decoder error"};
 
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyMetricEvent(kSourceId, 101, 7, 3, kErrorInfo));
-    m_mediaPipelineCallback->notifyMetricEvent(kSourceId, 101, 7, 3, kErrorInfo);
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyMetricEvent(kSourceId, 101, 7, 3, 9001, kErrorInfo));
+    m_mediaPipelineCallback->notifyMetricEvent(kSourceId, 101, 7, 3, 9001, kErrorInfo);
 }
 
 /**

@@ -201,6 +201,9 @@ public:
 
     void notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo) override;
 
+    void notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames, uint64_t droppedFrames, uint64_t corruptedFrames,
+                           uint64_t ptsNs, const std::string &errorInfo) override;
+
     void notifyBufferUnderflow(MediaSourceType mediaSourceType) override;
 
     void notifyFirstFrameReceived(MediaSourceType mediaSourceType) override;

@@ -226,6 +226,12 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
         return false;
     }
 
+    const auto metrics = m_gstPlayer->getRialtoMetrics();
+    if (metrics)
+    {
+        metrics->setSessionId(m_sessionId);
+    }
+
     notifyNetworkState(NetworkState::BUFFERING);
 
     return true;
@@ -1693,6 +1699,22 @@ void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, con
                 return;
             }
             m_mediaPipelineClient->notifyQos(kSourceIter->second, qosInfo);
+        }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
+}
+
+void MediaPipelineServerInternal::notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames,
+                                                    uint64_t droppedFrames, uint64_t corruptedFrames,
+                                                    uint64_t ptsNs, const std::string &errorInfo)
+{
+    auto task = [&, sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo]()
+    {
+        if (m_mediaPipelineClient)
+        {
+            m_mediaPipelineClient->notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames,
+                                                     ptsNs, errorInfo);
         }
     };
 

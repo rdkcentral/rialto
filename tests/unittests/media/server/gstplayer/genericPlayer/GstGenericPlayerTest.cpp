@@ -20,12 +20,14 @@
 #include "DataReaderMock.h"
 #include "GstGenericPlayerTestCommon.h"
 #include "HeartbeatHandlerMock.h"
+#include "IGstDispatcherThreadClient.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IMediaPipeline.h"
 #include "MatchersGenericPlayer.h"
 #include "MediaSourceUtil.h"
 #include "PlayerTaskMock.h"
 #include "TimerMock.h"
+#include <gst/gst.h>
 
 using testing::_;
 using testing::ByMove;
@@ -1171,4 +1173,48 @@ TEST_F(GstGenericPlayerTest, shouldReturnDuration)
             }));
     EXPECT_TRUE(m_sut->getDuration(targetDuration));
     EXPECT_EQ(kExpectedDuration, targetDuration);
+}
+
+TEST_F(GstGenericPlayerTest, shouldNotifyClientForEveryMetricType)
+{
+    constexpr guint kVideoFrameDropMetric{0};
+    constexpr guint kBufferUnderflowMetric{6};
+    constexpr guint kSourceId{11};
+    constexpr guint64 kRenderedFrames{101};
+    constexpr guint64 kDroppedFrames{7};
+    constexpr guint64 kCorruptedFrames{3};
+    constexpr guint64 kPtsNs{9001};
+
+    const auto metrics = m_sut->getRialtoMetrics();
+    ASSERT_NE(nullptr, metrics);
+    metrics->setSessionId(7);
+
+    auto *dispatcherClient = dynamic_cast<IGstDispatcherThreadClient *>(m_sut.get());
+    ASSERT_NE(nullptr, dispatcherClient);
+
+    const auto makeMetricMessage = [&](guint metricType)
+    {
+        GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric_type", G_TYPE_UINT, metricType,
+                                                     "source_id", G_TYPE_UINT, kSourceId, "rendered_frames",
+                                                     G_TYPE_UINT64, kRenderedFrames, "dropped_frames", G_TYPE_UINT64,
+                                                     kDroppedFrames, "corrupted_frames", G_TYPE_UINT64,
+                                                     kCorruptedFrames, "pts_ns", G_TYPE_UINT64, kPtsNs, nullptr);
+        return gst_message_new_element(GST_OBJECT(m_element), structure);
+    };
+
+    EXPECT_CALL(m_gstPlayerClient,
+                notifyMetricEvent(kSourceId, kRenderedFrames, kDroppedFrames, kCorruptedFrames,
+                                  kPtsNs, std::string{"METRIC_VIDEO_FRAME_DROP"}));
+    GstMessage *dropMessage = makeMetricMessage(kVideoFrameDropMetric);
+    ASSERT_NE(nullptr, dropMessage);
+    dispatcherClient->handleMetricMessage(dropMessage);
+    gst_message_unref(dropMessage);
+
+    EXPECT_CALL(m_gstPlayerClient,
+                notifyMetricEvent(kSourceId, kRenderedFrames, kDroppedFrames, kCorruptedFrames,
+                                  kPtsNs, std::string{"METRIC_BUFFER_UNDERFLOW"}));
+    GstMessage *underflowMessage = makeMetricMessage(kBufferUnderflowMetric);
+    ASSERT_NE(nullptr, underflowMessage);
+    dispatcherClient->handleMetricMessage(underflowMessage);
+    gst_message_unref(underflowMessage);
 }
