@@ -1642,7 +1642,7 @@ void MediaPipelineIpc::onMetricEvent(const std::shared_ptr<firebolt::rialto::Not
     if (event->session_id() == m_sessionId)
     {
         m_mediaPipelineIpcClient->notifyMetricEvent(event->source_id(), event->rendered_frames(), event->dropped_frames(),
-                                                    event->corrupted_frames(), event->error_info());
+                                                    event->corrupted_frames(), event->pts_ns(), event->error_info());
     }
 }
 
