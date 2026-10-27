@@ -14,6 +14,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#Fix test on test
 
 name: Rialto OCDM Test
 
@@ -24,12 +25,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
+  select_dependency_ref:
     runs-on: ubuntu-24.04
+    outputs:
+      ref: ${{ steps.select.outputs.ref }}
 
     steps:
       - name: Find matching rialto-ocdm branch
-        id: select-ref
+        id: select
         env:
           PR_BRANCH: ${{ github.head_ref }}
           BASE_BRANCH: ${{ github.base_ref || github.ref_name }}
@@ -42,31 +45,33 @@ jobs:
               exit 0
             fi
           done
-          echo "No matching dependency branch; release-pin matrix will run instead"
+          echo "No matching dependency branch; release-pin fallback will run instead"
           echo "ref=" >> "$GITHUB_OUTPUT"
 
+  build-and-test:
+    needs: select_dependency_ref
+    if: needs.select_dependency_ref.outputs.ref != ''
+    runs-on: ubuntu-24.04
+
+    steps:
       - name: Checkout rialto-ocdm repo
-        if: steps.select-ref.outputs.ref != ''
         uses: actions/checkout@v4
         with:
           repository: rdkcentral/rialto-ocdm
-          ref: ${{ steps.select-ref.outputs.ref }}
+          ref: ${{ needs.select_dependency_ref.outputs.ref }}
           path: rialto-ocdm
           
       - name: Set up Python
-        if: steps.select-ref.outputs.ref != ''
         uses: actions/setup-python@v5
         with:
           python-version: 3.8
 
       - name: Build gstreamer library
-        if: steps.select-ref.outputs.ref != ''
         run: |
           sudo apt-get update
           sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base 
 
       - name: Run tests
-        if: steps.select-ref.outputs.ref != ''
         env:
           RIALTO_BUILD_BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
@@ -84,40 +89,63 @@ jobs:
 
 
   build-and-test-release-pins:
+    needs: select_dependency_ref
+    if: needs.select_dependency_ref.outputs.ref == ''
     runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - release_line: master
-            manifest_repository: meta-rdk-video
-            manifest_ref: main
-            manifest_file: recipes-extended/rialto/rialto_revision.inc
-            ocdm_key: RIALTO_OCDM_SRCREV
-          - release_line: 8.4
-            manifest_repository: meta-middleware-generic-support
-            manifest_ref: support/8.4.4.0
-            manifest_file: conf/include/generic-srcrev.inc
-            ocdm_key: 'SRCREV:pn-rialto-ocdm'
-          - release_line: 8.6
-            manifest_repository: meta-rdk-video
-            manifest_ref: support/8.6.3.0
-            manifest_file: recipes-extended/rialto/rialto_revision.inc
-            ocdm_key: RIALTO_OCDM_SRCREV
 
     steps:
-      - name: Checkout ${{ matrix.release_line }} platform manifest
+      - name: Select release pin for target branch
+        id: select-release
+        env:
+          TARGET_BRANCH: ${{ github.base_ref || github.ref_name }}
+        run: |
+          case "$TARGET_BRANCH" in
+            master)
+              release_line=master
+              manifest_repository=meta-rdk-video
+              manifest_ref=main
+              manifest_file=recipes-extended/rialto/rialto_revision.inc
+              ocdm_key=RIALTO_OCDM_SRCREV
+              ;;
+            release/v0.15.*|support/8.4.*)
+              release_line=8.4
+              manifest_repository=meta-middleware-generic-support
+              manifest_ref=support/8.4.4.0
+              manifest_file=conf/include/generic-srcrev.inc
+              ocdm_key='SRCREV:pn-rialto-ocdm'
+              ;;
+            release/v0.22.*|support/8.6.*)
+              release_line=8.6
+              manifest_repository=meta-rdk-video
+              manifest_ref=support/8.6.3.0
+              manifest_file=recipes-extended/rialto/rialto_revision.inc
+              ocdm_key=RIALTO_OCDM_SRCREV
+              ;;
+            *)
+              echo "No dependency pin mapping for target branch: $TARGET_BRANCH" >&2
+              exit 1
+              ;;
+          esac
+          {
+            echo "release_line=$release_line"
+            echo "manifest_repository=$manifest_repository"
+            echo "manifest_ref=$manifest_ref"
+            echo "manifest_file=$manifest_file"
+            echo "ocdm_key=$ocdm_key"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout ${{ steps.select-release.outputs.release_line }} platform manifest
         uses: actions/checkout@v4
         with:
-          repository: rdkcentral/${{ matrix.manifest_repository }}
-          ref: ${{ matrix.manifest_ref }}
+          repository: rdkcentral/${{ steps.select-release.outputs.manifest_repository }}
+          ref: ${{ steps.select-release.outputs.manifest_ref }}
           path: platform-manifest
 
       - name: Resolve OCDM SRCREV from platform manifest
         id: resolve-pins
         env:
-          MANIFEST_FILE: platform-manifest/${{ matrix.manifest_file }}
-          OCDM_KEY: ${{ matrix.ocdm_key }}
+          MANIFEST_FILE: platform-manifest/${{ steps.select-release.outputs.manifest_file }}
+          OCDM_KEY: ${{ steps.select-release.outputs.ocdm_key }}
         run: |
           set -eu
           ocdm_ref=$(awk -F'"' -v key="$OCDM_KEY" 'index($0, key) { print $2; exit }' "$MANIFEST_FILE")
@@ -128,7 +156,7 @@ jobs:
           echo "Using manifest OCDM SRCREV: $ocdm_ref"
           echo "ocdm_ref=$ocdm_ref" >> "$GITHUB_OUTPUT"
 
-      - name: Checkout rialto-ocdm ${{ matrix.release_line }} pin
+      - name: Checkout rialto-ocdm ${{ steps.select-release.outputs.release_line }} pin
         uses: actions/checkout@v4
         with:
           repository: rdkcentral/rialto-ocdm
@@ -156,7 +184,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: ocdm-${{ matrix.release_line }}-logs
+          name: ocdm-${{ steps.select-release.outputs.release_line }}-logs
           path: |
             rialto-ocdm/gtest_result.log
             rialto-ocdm/build/*gtest_result.xml
