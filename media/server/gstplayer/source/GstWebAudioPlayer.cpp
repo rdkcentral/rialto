@@ -124,9 +124,16 @@ GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uin
         throw std::runtime_error("Failed to initalise the pipeline");
     }
 
-    if ((!gstDispatcherThreadFactory) ||
-        (!(m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline,
-                                                                                         nullptr, m_gstWrapper))))
+    if (!gstDispatcherThreadFactory)
+    {
+        termWebAudioPipeline();
+        resetWorkerThread();
+        throw std::runtime_error("Failed to create the dispatcher thread");
+    }
+
+    m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, nullptr,
+                                                                                  m_gstWrapper, m_glibWrapper);
+    if (!m_gstDispatcherThread)
     {
         termWebAudioPipeline();
         resetWorkerThread();
