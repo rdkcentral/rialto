@@ -810,11 +810,6 @@ bool MediaPipelineIpc::setVolume(double targetVolume, uint32_t volumeDuration, E
     }
 
     firebolt::rialto::SetVolumeRequest request;
-
-    // Intentional segfault
-    volatile char *str = nullptr;
-    *str = 'A';
-
     request.set_session_id(m_sessionId);
     request.set_volume(targetVolume);
     request.set_volume_duration(volumeDuration);

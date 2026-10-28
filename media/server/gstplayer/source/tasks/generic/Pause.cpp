@@ -35,7 +35,10 @@ Pause::~Pause()
 
 void Pause::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing Pause");
+    RIALTO_SERVER_LOG_MIL("Executing Pause");
+    // Intentional segfault
+    volatile char *str = nullptr;
+    *str = 'A';
     m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
     m_player.changePipelineState(GST_STATE_PAUSED);
     m_context.isPlaying = false;
