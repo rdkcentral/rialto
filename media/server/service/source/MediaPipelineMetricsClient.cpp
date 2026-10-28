@@ -18,6 +18,7 @@
  */
 
 #include "MediaPipelineMetricsClient.h"
+#include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server::service
 {
@@ -74,6 +75,11 @@ void MediaPipelineMetricsClient::notifyMetricEvent(int32_t sourceId, uint64_t re
                                                    uint64_t corruptedFrames, uint64_t ptsNs,
                                                    const std::string &errorInfo)
 {
+    RIALTO_SERVER_LOG_DEBUG(
+        "Relaying playback metric event sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu, type: %s",
+        m_sessionId, sourceId, static_cast<unsigned long long>(renderedFrames),
+        static_cast<unsigned long long>(droppedFrames), static_cast<unsigned long long>(corruptedFrames),
+        static_cast<unsigned long long>(ptsNs), errorInfo.c_str());
     m_client->notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo);
 }
 void MediaPipelineMetricsClient::notifyBufferUnderflow(int32_t sourceId)

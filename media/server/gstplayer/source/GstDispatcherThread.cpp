@@ -143,6 +143,8 @@ void GstDispatcherThread::handleMessage(GstMessage *message)
 
     if (metricMessage)
     {
+        RIALTO_SERVER_LOG_DEBUG("Dispatching playback metric message from %s",
+                                GST_OBJECT_NAME(GST_MESSAGE_SRC(message)));
         m_client.handleMetricMessage(message);
     }
 

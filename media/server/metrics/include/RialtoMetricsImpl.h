@@ -10,7 +10,7 @@ namespace firebolt::rialto::server
 class RialtoMetricsImpl final : public RialtoMetrics
 {
 public:
-    ~RialtoMetricsImpl() override = default;
+    ~RialtoMetricsImpl() override;
     void setSessionId(int32_t sessionId) override;
     std::optional<ParsedMetricMessage> onMetricMessage(GstMessage *message) override;
     void updateFrameCounters(int32_t sessionId, int32_t sourceId, const FrameCounters &counters) override;

@@ -229,7 +229,12 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
     const auto metrics = m_gstPlayer->getRialtoMetrics();
     if (metrics)
     {
+        RIALTO_SERVER_LOG_DEBUG("Assigning playback metrics sessionId: %d", m_sessionId);
         metrics->setSessionId(m_sessionId);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("Playback metrics unavailable for sessionId: %d", m_sessionId);
     }
 
     notifyNetworkState(NetworkState::BUFFERING);
@@ -540,13 +545,15 @@ bool MediaPipelineServerInternal::getFrameCounters(int32_t sessionId, int32_t so
                                                     uint64_t &droppedFrames, uint64_t &corruptedFrames,
                                                     uint64_t &timestamp)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
+    RIALTO_SERVER_LOG_DEBUG("Querying playback metrics sessionId: %d, sourceId: %d", sessionId, sourceId);
 
     bool result;
     auto task = [&]()
     { result = getFrameCountersInternal(sessionId, sourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    RIALTO_SERVER_LOG_DEBUG("Playback metrics query %s for sessionId: %d, sourceId: %d", result ? "succeeded" : "failed",
+                            sessionId, sourceId);
     return result;
 }
 
@@ -554,6 +561,7 @@ bool MediaPipelineServerInternal::getFrameCountersInternal(int32_t sessionId, in
                                                            uint64_t &renderedFrames, uint64_t &droppedFrames,
                                                            uint64_t &corruptedFrames, uint64_t &timestamp)
 {
+    RIALTO_SERVER_LOG_DEBUG("Reading cached playback metrics sessionId: %d, sourceId: %d", sessionId, sourceId);
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - Gstreamer player has not been loaded");
@@ -570,7 +578,8 @@ bool MediaPipelineServerInternal::getFrameCountersInternal(int32_t sessionId, in
     FrameCounters counters;
     if (!metrics->getFrameCounters(sessionId, sourceId, counters))
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - Source not found");
+        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - no cached metrics for sessionId: %d, sourceId: %d",
+                                sessionId, sourceId);
         return false;
     }
 
@@ -578,6 +587,11 @@ bool MediaPipelineServerInternal::getFrameCountersInternal(int32_t sessionId, in
     droppedFrames = counters.dropped;
     corruptedFrames = counters.corrupted;
     timestamp = counters.timestamp;
+    RIALTO_SERVER_LOG_DEBUG(
+        "Returning playback metrics sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, timestamp: %llu",
+        sessionId, sourceId, static_cast<unsigned long long>(renderedFrames),
+        static_cast<unsigned long long>(droppedFrames), static_cast<unsigned long long>(corruptedFrames),
+        static_cast<unsigned long long>(timestamp));
     return true;
 }
 
@@ -1709,12 +1723,22 @@ void MediaPipelineServerInternal::notifyMetricEvent(int32_t sourceId, uint64_t r
                                                     uint64_t droppedFrames, uint64_t corruptedFrames,
                                                     uint64_t ptsNs, const std::string &errorInfo)
 {
+    RIALTO_SERVER_LOG_DEBUG(
+        "Queueing playback metric event sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu, type: %s",
+        sourceId, static_cast<unsigned long long>(renderedFrames), static_cast<unsigned long long>(droppedFrames),
+        static_cast<unsigned long long>(corruptedFrames), static_cast<unsigned long long>(ptsNs), errorInfo.c_str());
     auto task = [&, sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo]()
     {
         if (m_mediaPipelineClient)
         {
+            RIALTO_SERVER_LOG_DEBUG("Forwarding queued playback metric event for sourceId: %d", sourceId);
             m_mediaPipelineClient->notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames,
                                                      ptsNs, errorInfo);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_WARN("Dropping playback metric event for sourceId: %d - pipeline client is unavailable",
+                                   sourceId);
         }
     };
 
