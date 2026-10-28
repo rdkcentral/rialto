@@ -22,7 +22,8 @@ on:
   pull_request:
     branches: ["master", "release/*", "support/*"]
 
-  workflow_dispatch:
+permissions:
+   contents: read
 
 jobs:
   select_dependency_ref:
@@ -57,6 +58,7 @@ jobs:
       - name: Checkout rialto-ocdm repo
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           repository: rdkcentral/rialto-ocdm
           ref: ${{ needs.select_dependency_ref.outputs.ref }}
           path: rialto-ocdm
@@ -137,6 +139,7 @@ jobs:
       - name: Checkout ${{ steps.select-release.outputs.release_line }} platform manifest
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           repository: rdkcentral/${{ steps.select-release.outputs.manifest_repository }}
           ref: ${{ steps.select-release.outputs.manifest_ref }}
           path: platform-manifest
@@ -159,6 +162,7 @@ jobs:
       - name: Checkout rialto-ocdm ${{ steps.select-release.outputs.release_line }} pin
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           repository: rdkcentral/rialto-ocdm
           ref: ${{ steps.resolve-pins.outputs.ocdm_ref }}
           path: rialto-ocdm
