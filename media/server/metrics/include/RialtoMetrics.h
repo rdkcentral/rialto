@@ -24,28 +24,7 @@ struct ParsedMetricMessage
     FrameCounters counters;
 };
 
-inline const char *metricTypeToString(std::uint32_t type)
-{
-    switch (type)
-    {
-    case 0:
-        return "METRIC_VIDEO_FRAME_DROP";
-    case 1:
-        return "METRIC_AUDIO_FRAME_DROP";
-    case 2:
-        return "METRIC_VIDEO_DECODE_ERROR";
-    case 3:
-        return "METRIC_AUDIO_DECODE_ERROR";
-    case 4:
-        return "METRIC_VIDEO_FRAME_REPEAT";
-    case 5:
-        return "METRIC_AUDIO_GAP";
-    case 6:
-        return "METRIC_BUFFER_UNDERFLOW";
-    default:
-        return "METRIC_UNKNOWN";
-    }
-}
+const char *metricTypeToString(std::uint32_t type);
 
 class RialtoMetrics
 {

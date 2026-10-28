@@ -351,17 +351,21 @@ bool MediaPipelineService::getFrameCounters(int sessionId, int32_t sourceId, uin
                                             uint64_t &droppedFrames, uint64_t &corruptedFrames,
                                             uint64_t &timestamp)
 {
-    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested frame counters, session id: %d", sessionId);
+    RIALTO_SERVER_LOG_DEBUG("Looking up playback metrics sessionId: %d, sourceId: %d", sessionId, sourceId);
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        RIALTO_SERVER_LOG_ERROR("No session for playback metrics request, sessionId: %d, sourceId: %d", sessionId,
+                                sourceId);
         return false;
     }
-    return mediaPipelineIter->second->getFrameCounters(sessionId, sourceId, renderedFrames, droppedFrames,
-                                                       corruptedFrames, timestamp);
+    const bool success = mediaPipelineIter->second->getFrameCounters(sessionId, sourceId, renderedFrames,
+                                                                      droppedFrames, corruptedFrames, timestamp);
+    RIALTO_SERVER_LOG_DEBUG("Playback metrics lookup %s for sessionId: %d, sourceId: %d",
+                            success ? "succeeded" : "failed", sessionId, sourceId);
+    return success;
 }
 
 bool MediaPipelineService::setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,

@@ -351,6 +351,7 @@ GstGenericPlayer::GstGenericPlayer(
         RIALTO_SERVER_LOG_MIL("Primary video playback selected");
     }
 
+    RIALTO_SERVER_LOG_DEBUG("Creating playback metrics handler");
     m_metrics = std::make_shared<RialtoMetricsImpl>();
     m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline,
                                                                                   m_context.flushOnPrerollController,
@@ -3196,6 +3197,7 @@ void GstGenericPlayer::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
 
 std::shared_ptr<RialtoMetrics> GstGenericPlayer::getRialtoMetrics() const
 {
+    RIALTO_SERVER_LOG_DEBUG("Returning RialtoMetrics instance, available: %s", m_metrics ? "true" : "false");
     return m_metrics;
 }
 
@@ -3206,16 +3208,36 @@ void GstGenericPlayer::handleBusMessage(GstMessage *message)
 
 void GstGenericPlayer::handleMetricMessage(GstMessage *message)
 {
-    if (m_metrics)
+    RIALTO_SERVER_LOG_DEBUG("Handling playback metric message");
+    if (!m_metrics)
     {
-        const auto metric = m_metrics->onMetricMessage(message);
-        if (metric && m_gstPlayerClient)
-        {
-            m_gstPlayerClient->notifyMetricEvent(metric->sourceId, metric->counters.rendered,
-                                                 metric->counters.dropped, metric->counters.corrupted,
-                                                 metric->counters.timestamp, metricTypeToString(metric->type));
-        }
+        RIALTO_SERVER_LOG_WARN("Cannot handle playback metric message - RialtoMetrics is unavailable");
+        return;
     }
+
+    const auto metric = m_metrics->onMetricMessage(message);
+    if (!metric)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Playback metric message was ignored by RialtoMetrics");
+        return;
+    }
+
+    const char *metricType = metricTypeToString(metric->type);
+    RIALTO_SERVER_LOG_DEBUG(
+        "Parsed playback metric sourceId: %d, type: %s, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu",
+        metric->sourceId, metricType, static_cast<unsigned long long>(metric->counters.rendered),
+        static_cast<unsigned long long>(metric->counters.dropped),
+        static_cast<unsigned long long>(metric->counters.corrupted),
+        static_cast<unsigned long long>(metric->counters.timestamp));
+    if (!m_gstPlayerClient)
+    {
+        RIALTO_SERVER_LOG_WARN("Cannot forward playback metric - player client is unavailable");
+        return;
+    }
+
+    RIALTO_SERVER_LOG_DEBUG("Forwarding playback metric event for sourceId: %d", metric->sourceId);
+    m_gstPlayerClient->notifyMetricEvent(metric->sourceId, metric->counters.rendered, metric->counters.dropped,
+                                         metric->counters.corrupted, metric->counters.timestamp, metricType);
 }
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)

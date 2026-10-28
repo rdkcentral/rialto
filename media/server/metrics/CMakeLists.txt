@@ -26,6 +26,7 @@ target_link_libraries(
         PRIVATE
         PkgConfig::RialtoMetricsGStreamer
         protobuf::libprotobuf
+        RialtoLogging
 )
 
 install(

@@ -880,12 +880,19 @@ void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
 void MediaPipeline::notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames, uint64_t droppedFrames,
                                       uint64_t corruptedFrames, uint64_t ptsNs, const std::string &errorInfo)
 {
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    RIALTO_CLIENT_LOG_DEBUG(
+        "Forwarding playback metric event sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu, type: %s",
+        sourceId, static_cast<unsigned long long>(renderedFrames), static_cast<unsigned long long>(droppedFrames),
+        static_cast<unsigned long long>(corruptedFrames), static_cast<unsigned long long>(ptsNs), errorInfo.c_str());
 
     std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
     if (client)
     {
         client->notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo);
+    }
+    else
+    {
+        RIALTO_CLIENT_LOG_DEBUG("Dropping playback metric event for sourceId: %d - client is unavailable", sourceId);
     }
 }
 
