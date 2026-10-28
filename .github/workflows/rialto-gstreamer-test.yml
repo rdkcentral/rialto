@@ -20,7 +20,7 @@ name: Rialto GStreamer Test
 
 on:
   pull_request:
-    branches: ["master", "release/*", "support/*"]
+    branches: ["master", "release/*"]
 
 permissions:
   contents: read
