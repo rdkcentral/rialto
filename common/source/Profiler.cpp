@@ -26,12 +26,15 @@
 
 #include <algorithm>
 #include <cctype>
+#include <condition_variable>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
 #include <memory>
+#include <mutex>
 #include <optional>
+#include <queue>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -66,11 +69,6 @@ bool getProfilerEnabled()
     return getEnvAsBool(kProfilerEnv);
 }
 
-bool getZenithConnectionEnabled()
-{
-    return getEnvAsBool(kZenithConnectionEnv);
-}
-
 std::optional<std::string> getDumpFileName()
 {
     const char *value = std::getenv(kProfilerDumpFileEnv);
@@ -80,12 +78,97 @@ std::optional<std::string> getDumpFileName()
     return std::string{value};
 }
 
-std::string getCurrentThreadId()
+bool getZenithConnectionEnabled()
 {
-    std::ostringstream ss;
-    ss << std::this_thread::get_id();
-    return ss.str();
+    return getEnvAsBool(kZenithConnectionEnv);
 }
+
+#ifdef RIALTO_ENABLE_AVMONITOR_CLIENT
+// Sends AVMonitor events from a dedicated thread, so that the blocking COM-RPC call
+// is never executed on GStreamer streaming threads.
+class AvMonitorSender
+{
+public:
+    struct Event
+    {
+        std::string name;
+        std::string value;
+        std::string timestamp;
+        std::string id;
+    };
+
+    static AvMonitorSender &instance()
+    {
+        static AvMonitorSender sender;
+        return sender;
+    }
+
+    void post(Event event)
+    {
+        {
+            std::lock_guard<std::mutex> lock{m_mutex};
+            if (m_stop)
+                return;
+            if (m_queue.size() >= kMaxQueueSize)
+            {
+                RIALTO_COMMON_LOG_WARN("AVMonitor queue full, dropping event");
+                return;
+            }
+            m_queue.push(std::move(event));
+        }
+        m_cv.notify_one();
+    }
+
+    AvMonitorSender(const AvMonitorSender &) = delete;
+    AvMonitorSender &operator=(const AvMonitorSender &) = delete;
+
+private:
+    static constexpr std::size_t kMaxQueueSize{256};
+
+    AvMonitorSender() : m_thread{[this] { run(); }} {}
+
+    ~AvMonitorSender()
+    {
+        {
+            std::lock_guard<std::mutex> lock{m_mutex};
+            m_stop = true;
+        }
+        m_cv.notify_one();
+        if (m_thread.joinable())
+            m_thread.join();
+    }
+
+    void run()
+    {
+        std::unique_lock<std::mutex> lock{m_mutex};
+        while (true)
+        {
+            m_cv.wait(lock, [this] { return m_stop || !m_queue.empty(); });
+            if (m_stop)
+                break;
+
+            Event event = std::move(m_queue.front());
+            m_queue.pop();
+
+            lock.unlock();
+            const auto status = avmonitor_register_event(event.name.c_str(), event.value.c_str(),
+                                                         event.timestamp.c_str(), event.id.c_str());
+            if (status != AVMONITOR_OK)
+            {
+                RIALTO_COMMON_LOG_WARN("Failed to send profiler record to AVMonitor client library, status: %u",
+                                       status);
+            }
+            lock.lock();
+        }
+    }
+
+    std::mutex m_mutex;
+    std::condition_variable m_cv;
+    std::queue<Event> m_queue;
+    bool m_stop{false};
+    std::thread m_thread;
+};
+#endif // RIALTO_ENABLE_AVMONITOR_CLIENT
 } // namespace
 
 namespace firebolt::rialto::common
@@ -185,14 +268,7 @@ void Profiler::log(const RecordId id)
 #ifdef RIALTO_ENABLE_AVMONITOR_CLIENT
         if (m_zenithConnectionEnabled)
         {
-            const auto threadId = getCurrentThreadId();
-            RIALTO_COMMON_LOG_INFO("Sending AVMonitor event threadId[%s]", threadId.c_str());
-            const auto status = avmonitor_register_event(payload.c_str());
-            RIALTO_COMMON_LOG_INFO("AVMonitor send status[%u] threadId[%s]", status, threadId.c_str());
-            if (status != AVMONITOR_OK)
-            {
-                RIALTO_COMMON_LOG_WARN("Failed to send profiler record to AVMonitor client library");
-            }
+            AvMonitorSender::instance().post({record->stage, record->info, tsStr, idStr});
         }
 #endif
     }
