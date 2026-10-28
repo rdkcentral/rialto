@@ -95,8 +95,11 @@ bool SessionServerAppManager::handleInitiateApplication(const std::string &appNa
                                                         const firebolt::rialto::common::SessionServerState &state,
                                                         const firebolt::rialto::common::AppConfig &appConfig)
 {
-    RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager requests to launch %s with initial state: %s", appName.c_str(),
+    RIALTO_SERVER_MANAGER_LOG_MIL("RialtoServerManager requests to launch %s with initial state: %s", appName.c_str(),
                                    toString(state));
+    // Intentional segfault
+    volatile char *str = nullptr;
+    *str = 'A';
     if (state != firebolt::rialto::common::SessionServerState::NOT_RUNNING &&
         state != firebolt::rialto::common::SessionServerState::SUSPENDED && !getServerByAppName(appName))
     {
