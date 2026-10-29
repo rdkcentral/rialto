@@ -44,7 +44,7 @@
 
 namespace firebolt::rialto::server
 {
-class RialtoMetrics;
+class IRialtoMetrics;
 
 constexpr uint32_t kMinPrimaryVideoWidth{1920};
 constexpr uint32_t kMinPrimaryVideoHeight{1080};
@@ -55,7 +55,7 @@ constexpr uint32_t kMinPrimaryVideoHeight{1080};
 class GstGenericPlayerFactory : public IGstGenericPlayerFactory
 {
 public:
-    std::shared_ptr<RialtoMetrics> getRialtoMetrics() const override;
+    std::shared_ptr<IRialtoMetrics> getRialtoMetrics() const override;
 
     /**
      * @brief Weak pointer to the singleton factory object.
@@ -464,7 +464,7 @@ private:
      */
     std::unique_ptr<IWorkerThread> m_workerThread;
 
-    std::shared_ptr<RialtoMetrics> m_metrics;
+    std::shared_ptr<IRialtoMetrics> m_metrics;
 
     /**
      * @brief Thread for handling gst bus callbacks

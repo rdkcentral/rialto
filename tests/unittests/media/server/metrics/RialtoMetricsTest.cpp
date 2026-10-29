@@ -1,4 +1,4 @@
-#include "RialtoMetricsImpl.h"
+#include "RialtoMetrics.h"
 #include <atomic>
 #include <gtest/gtest.h>
 #include <gst/gst.h>
@@ -23,7 +23,7 @@ TEST(RialtoMetricsTest, ParsesElementMetricMessageAndUpdatesFrameCounters)
     gst_object_unref(source);
     ASSERT_NE(nullptr, message);
 
-    RialtoMetricsImpl metrics;
+    RialtoMetrics metrics;
     metrics.setSessionId(7);
     const auto parsed = metrics.onMetricMessage(message);
     gst_message_unref(message);
@@ -53,7 +53,7 @@ TEST(RialtoMetricsTest, IgnoresMalformedElementMetricMessage)
     gst_object_unref(source);
     ASSERT_NE(nullptr, message);
 
-    RialtoMetricsImpl metrics;
+    RialtoMetrics metrics;
     metrics.setSessionId(7);
     const auto parsed = metrics.onMetricMessage(message);
     gst_message_unref(message);
@@ -65,7 +65,7 @@ TEST(RialtoMetricsTest, IgnoresMalformedElementMetricMessage)
 
 TEST(RialtoMetricsTest, ReturnsLatestSnapshotForSessionAndSource)
 {
-    RialtoMetricsImpl metrics;
+    RialtoMetrics metrics;
     metrics.updateFrameCounters(7, 11, FrameCounters{1, 2, 3, 4});
     metrics.updateFrameCounters(7, 11, FrameCounters{5, 6, 7, 8});
 
@@ -85,7 +85,7 @@ TEST(RialtoMetricsTest, ConcurrentQueriesReadConsistentSnapshots)
     constexpr std::uint64_t kIterations{10000};
     constexpr unsigned int kReaderCount{4};
 
-    RialtoMetricsImpl metrics;
+    RialtoMetrics metrics;
     metrics.updateFrameCounters(kSessionId, kSourceId, FrameCounters{0, 1, 2, 3});
 
     std::atomic<unsigned int> ready{0};
