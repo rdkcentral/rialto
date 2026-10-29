@@ -35,7 +35,7 @@
 
 namespace firebolt::rialto::server
 {
-class RialtoMetrics;
+class IRialtoMetrics;
 class IGstGenericPlayer;
 
 /**
@@ -87,7 +87,7 @@ public:
     IGstGenericPlayer(IGstGenericPlayer &&) = delete;
     IGstGenericPlayer &operator=(IGstGenericPlayer &&) = delete;
 
-    virtual std::shared_ptr<RialtoMetrics> getRialtoMetrics() const = 0;
+    virtual std::shared_ptr<IRialtoMetrics> getRialtoMetrics() const = 0;
 
     /**
      * @brief Attaches a source to gstreamer.
