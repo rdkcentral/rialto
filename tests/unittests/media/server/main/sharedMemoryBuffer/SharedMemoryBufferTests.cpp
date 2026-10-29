@@ -20,6 +20,8 @@
 #include "SharedMemoryBufferTestsFixture.h"
 #include <cstring>
 #include <sys/mman.h>
+#include "ShmUtils.h"
+#include <algorithm>
 
 TEST_F(SharedMemoryBufferTests, shouldMapGenericPlaybackSession)
 {
@@ -297,6 +299,51 @@ TEST_F(SharedMemoryBufferTests, shouldNotClearSubtitleDataForNotMappedGenericPla
     constexpr int kSession1{0};
     initialize();
     shouldFailToClearSubtitleData(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
+}
+
+TEST_F(SharedMemoryBufferTests, shouldClearOnlyMetadataBytesOfVideoRegionForGenericPlaybackSession)
+{
+    constexpr int kSession1{0};
+    constexpr std::uint32_t kExpectedClearedLen{
+        std::min(m_videoBufferLen, firebolt::rialto::server::getMaxMetadataBytes())};
+    static_assert(kExpectedClearedLen < m_videoBufferLen, "payload must be preserved");
+    initialize();
+    mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
+    shouldZeroOnlyLeadingBytesOnClear(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
+                                      kSession1, firebolt::rialto::MediaSourceType::VIDEO, kExpectedClearedLen);
+}
+
+TEST_F(SharedMemoryBufferTests, shouldClearOnlyMetadataBytesOfAudioRegionForGenericPlaybackSession)
+{
+    constexpr int kSession1{0};
+    constexpr std::uint32_t kExpectedClearedLen{
+        std::min(m_audioBufferLen, firebolt::rialto::server::getMaxMetadataBytes())};
+    static_assert(kExpectedClearedLen < m_audioBufferLen, "payload must be preserved");
+    initialize();
+    mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
+    shouldZeroOnlyLeadingBytesOnClear(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
+                                      kSession1, firebolt::rialto::MediaSourceType::AUDIO, kExpectedClearedLen);
+}
+
+TEST_F(SharedMemoryBufferTests, shouldClearOnlyMetadataBytesOfSubtitleRegionForGenericPlaybackSession)
+{
+    constexpr int kSession1{0};
+    constexpr std::uint32_t kExpectedClearedLen{
+        std::min(m_subtitleBufferLen, firebolt::rialto::server::getMaxMetadataBytes())};
+    static_assert(kExpectedClearedLen < m_subtitleBufferLen, "payload must be preserved");
+    initialize();
+    mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
+    shouldZeroOnlyLeadingBytesOnClear(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
+                                      kSession1, firebolt::rialto::MediaSourceType::SUBTITLE, kExpectedClearedLen);
+}
+
+TEST_F(SharedMemoryBufferTests, shouldClearWholeAudioRegionForWebAudioPlayer)
+{
+    constexpr int kHandle1{0};
+    initialize();
+    mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, kHandle1);
+    shouldZeroOnlyLeadingBytesOnClear(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
+                                      kHandle1, firebolt::rialto::MediaSourceType::AUDIO, m_webAudioBufferLen);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldFailToReturnVideoDataOffsetForGenericPlaybackSession)

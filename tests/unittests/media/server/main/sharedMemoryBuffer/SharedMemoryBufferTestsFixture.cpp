@@ -19,6 +19,12 @@
 
 #include "SharedMemoryBufferTestsFixture.h"
 #include <sys/stat.h>
+#include <algorithm>
+
+namespace
+{
+constexpr std::uint8_t kSentinel{0xAB};
+} // namespace
 
 void SharedMemoryBufferTests::initialize(int maxPlaybacks, int maxWebAudioPlayers)
 {
@@ -168,6 +174,28 @@ void SharedMemoryBufferTests::shouldFailToClearSubtitleData(
 {
     ASSERT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->clearData(playbackType, id, firebolt::rialto::MediaSourceType::SUBTITLE));
+}
+
+void SharedMemoryBufferTests::shouldZeroOnlyLeadingBytesOnClear(
+    firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id,
+    const firebolt::rialto::MediaSourceType &mediaSourceType, std::uint32_t expectedClearedLen)
+{
+    ASSERT_TRUE(m_sut);
+    const std::uint32_t kRegionLen{m_sut->getMaxDataLen(playbackType, id, mediaSourceType)};
+    ASSERT_GT(kRegionLen, 0U);
+    ASSERT_LE(expectedClearedLen, kRegionLen);
+    std::uint8_t *region = m_sut->getDataPtr(playbackType, id, mediaSourceType);
+    ASSERT_NE(nullptr, region);
+
+    std::fill_n(region, kRegionLen, kSentinel);
+    EXPECT_TRUE(m_sut->clearData(playbackType, id, mediaSourceType));
+
+    const auto kNotZeroedInCleared{
+        std::count_if(region, region + expectedClearedLen, [](std::uint8_t byte) { return byte != 0x00; })};
+    const auto kModifiedInPreserved{std::count_if(region + expectedClearedLen, region + kRegionLen,
+                                                  [](std::uint8_t byte) { return byte != kSentinel; })};
+    EXPECT_EQ(0, kNotZeroedInCleared) << "bytes in [0, " << expectedClearedLen << ") were not zeroed";
+    EXPECT_EQ(0, kModifiedInPreserved) << "bytes in [" << expectedClearedLen << ", " << kRegionLen << ") were modified";
 }
 
 uint8_t *
