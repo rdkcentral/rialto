@@ -30,9 +30,13 @@ namespace
 class Service : public ::rialto::ServerManagerModule
 {
     StubResponse m_programmedResponse;
+    uint32_t m_expectedPlaybackInfoTimerMs;
 
 public:
-    explicit Service(StubResponse resp) : m_programmedResponse{resp} {}
+    Service(StubResponse resp, uint32_t expectedPlaybackInfoTimerMs)
+        : m_programmedResponse{resp}, m_expectedPlaybackInfoTimerMs{expectedPlaybackInfoTimerMs}
+    {
+    }
 
     virtual ~Service() = default;
 
@@ -59,6 +63,8 @@ public:
     void setConfiguration(::google::protobuf::RpcController *controller, const ::rialto::SetConfigurationRequest *request,
                           ::rialto::SetConfigurationResponse *response, ::google::protobuf::Closure *done) override
     {
+        EXPECT_TRUE(request->has_playbackinfotimerms());
+        EXPECT_EQ(request->playbackinfotimerms(), m_expectedPlaybackInfoTimerMs);
         if (m_programmedResponse != StubResponse::OK)
         {
             controller->SetFailed("Failed for some reason ...");
@@ -105,13 +111,13 @@ RialtoSessionServerStub::~RialtoSessionServerStub()
     m_client.reset();
 }
 
-void RialtoSessionServerStub::start(StubResponse stubResponse)
+void RialtoSessionServerStub::start(StubResponse stubResponse, uint32_t expectedPlaybackInfoTimerMs)
 {
     // give one socket to the server
     m_client = m_server->addClient(m_socks[0], &clientDisconnected);
     EXPECT_TRUE(m_client);
     // export the example service to the m_client
-    m_client->exportService(std::make_shared<Service>(stubResponse));
+    m_client->exportService(std::make_shared<Service>(stubResponse, expectedPlaybackInfoTimerMs));
     m_serverThread = std::thread(
         [this]()
         {

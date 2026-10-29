@@ -23,6 +23,7 @@
 #include "IController.h"
 #include "RialtoSessionServerStub.h"
 #include "SessionServerAppManagerMock.h"
+#include <chrono>
 #include <condition_variable>
 #include <gtest/gtest.h>
 #include <memory>
@@ -36,7 +37,7 @@ public:
     IpcTests();
     virtual ~IpcTests() = default;
 
-    void configureServerToSendOkResponses();
+    void configureServerToSendOkResponses(uint32_t expectedPlaybackInfoTimerMs = 32);
     void configureServerToSendFailResponses();
 
     void simulateStateChangedEventInactive();
@@ -52,8 +53,8 @@ public:
     bool triggerCreateClientConnectToFakeSocket();
     bool triggerCreateClient();
     void triggerRemoveClient();
-    bool triggerPerformSetConfiguration();
-    bool triggerPerformSetConfigurationWithFd();
+    bool triggerPerformSetConfiguration(std::chrono::milliseconds playbackInfoTimer = std::chrono::milliseconds{32});
+    bool triggerPerformSetConfigurationWithFd(std::chrono::milliseconds playbackInfoTimer = std::chrono::milliseconds{32});
     bool triggerPerformPing();
     bool triggerPerformSetState(const firebolt::rialto::common::SessionServerState &state);
     bool triggerSetLogLevels();

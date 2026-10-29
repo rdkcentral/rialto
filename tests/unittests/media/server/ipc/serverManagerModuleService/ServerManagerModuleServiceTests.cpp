@@ -27,6 +27,26 @@ TEST_F(ServerManagerModuleServiceTests, shouldSetConfiguration)
     sendSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE);
 }
 
+TEST_F(ServerManagerModuleServiceTests, shouldPassPlaybackInfoTimerToSessionServerManager)
+{
+    constexpr std::chrono::milliseconds kPlaybackInfoTimer{75};
+    sessionServerManagerWillHandleRequestSuccess();
+    sessionServerManagerWillSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE, kPlaybackInfoTimer);
+    sessionServerManagerWillSetLogLevels();
+    sendSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE,
+                         std::optional<std::chrono::milliseconds>{kPlaybackInfoTimer});
+}
+
+TEST_F(ServerManagerModuleServiceTests, shouldUseDefaultPlaybackInfoTimerWhenConfiguredIntervalIsZero)
+{
+    constexpr std::chrono::milliseconds kZeroPlaybackInfoTimer{0};
+    sessionServerManagerWillHandleRequestSuccess();
+    sessionServerManagerWillSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE);
+    sessionServerManagerWillSetLogLevels();
+    sendSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE,
+                         std::optional<std::chrono::milliseconds>{kZeroPlaybackInfoTimer});
+}
+
 TEST_F(ServerManagerModuleServiceTests, shouldSetConfigurationWithFd)
 {
     sessionServerManagerWillHandleRequestSuccess();

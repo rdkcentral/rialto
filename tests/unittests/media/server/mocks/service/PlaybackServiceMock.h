@@ -35,6 +35,7 @@ public:
     MOCK_METHOD(void, switchToInactive, (), (override));
     MOCK_METHOD(void, setMaxPlaybacks, (int maxPlaybacks), (override));
     MOCK_METHOD(void, setMaxWebAudioPlayers, (int maxWebAudio), (override));
+    MOCK_METHOD(void, setPlaybackInfoTimer, (std::chrono::milliseconds playbackInfoTimer), (override));
     MOCK_METHOD(void, setClientDisplayName, (const std::string &clientDisplayName), (const, override));
     MOCK_METHOD(void, setResourceManagerAppName, (const std::string &appName), (const, override));
     MOCK_METHOD(bool, isActive, (), (const, override));

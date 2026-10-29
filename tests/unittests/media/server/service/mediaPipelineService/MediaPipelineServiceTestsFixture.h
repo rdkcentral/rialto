@@ -124,7 +124,8 @@ public:
 
     void mediaPipelineWillPing();
 
-    void mediaPipelineFactoryWillCreateMediaPipeline();
+    void mediaPipelineFactoryWillCreateMediaPipeline(
+        std::chrono::milliseconds playbackInfoTimer = std::chrono::milliseconds{32});
     void mediaPipelineFactoryWillReturnNullptr();
 
     void playbackServiceWillReturnActive();
@@ -133,6 +134,7 @@ public:
     void playbackServiceWillReturnSharedMemoryBuffer();
 
     void createMediaPipelineShouldSuccess();
+    void configurePlaybackInfoTimer(std::chrono::milliseconds playbackInfoTimer);
     void createMediaPipelineShouldFailWhenMediaPipelineCapabilitiesFactoryReturnsNullptr();
 
     void createSessionShouldSucceed();

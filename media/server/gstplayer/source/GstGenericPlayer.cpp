@@ -206,7 +206,7 @@ std::shared_ptr<IGstGenericPlayerFactory> IGstGenericPlayerFactory::getFactory()
 
 std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlayer(
     IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-    const VideoRequirements &videoRequirements, bool isLive,
+    const VideoRequirements &videoRequirements, bool isLive, std::chrono::milliseconds playbackInfoTimer,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory,
     const std::shared_ptr<IGstProfilerFactory> &gstProfilerFactory)
 {
@@ -245,10 +245,10 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
         }
 
         gstPlayer = std::make_unique<
-            GstGenericPlayer>(client, decryptionService, type, videoRequirements, isLive, gstWrapper, glibWrapper,
-                              rdkGstreamerUtilsWrapper, IGstInitialiser::instance(), std::make_unique<FlushWatcher>(),
-                              IGstSrcFactory::getFactory(), resolvedGstProfilerFactory,
-                              common::ITimerFactory::getFactory(),
+            GstGenericPlayer>(client, decryptionService, type, videoRequirements, isLive, playbackInfoTimer, gstWrapper,
+                              glibWrapper, rdkGstreamerUtilsWrapper, IGstInitialiser::instance(),
+                              std::make_unique<FlushWatcher>(), IGstSrcFactory::getFactory(),
+                              resolvedGstProfilerFactory, common::ITimerFactory::getFactory(),
                               std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
                                                                          rdkGstreamerUtilsWrapper,
                                                                          IGstTextTrackSinkFactory::createFactory()),
@@ -265,7 +265,7 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
 
 GstGenericPlayer::GstGenericPlayer(
     IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-    const VideoRequirements &videoRequirements, bool isLive,
+    const VideoRequirements &videoRequirements, bool isLive, std::chrono::milliseconds playbackInfoTimer,
     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
@@ -275,7 +275,8 @@ GstGenericPlayer::GstGenericPlayer(
     std::unique_ptr<IGenericPlayerTaskFactory> taskFactory, std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
     std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
     std::shared_ptr<IGstProtectionMetadataHelperFactory> gstProtectionMetadataFactory)
-    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
+    : m_playbackInfoTimerInterval{playbackInfoTimer.count() > 0 ? playbackInfoTimer : std::chrono::milliseconds{32}},
+      m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
       m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_gstProfilerFactory{gstProfilerFactory},
       m_timerFactory{timerFactory}, m_taskFactory{std::move(taskFactory)}, m_flushWatcher{std::move(flushWatcher)}
 {
@@ -718,13 +719,13 @@ void GstGenericPlayer::notifyPlaybackInfo(bool force)
     // that case burns CPU on both the server side (serialisation, IPC) and the client side
     // (deserialisation + downstream listeners) without delivering any new information. This check
     // does not change playback semantics - it only elides redundant notifications.
-    if (!force && m_context.lastReportedPlaybackInfo.has_value() &&
-        m_context.lastReportedPlaybackInfo->currentPosition == info.currentPosition &&
-        m_context.lastReportedPlaybackInfo->volume == info.volume)
+    if (!force && m_lastReportedPlaybackInfo.has_value() &&
+        m_lastReportedPlaybackInfo->currentPosition == info.currentPosition &&
+        m_lastReportedPlaybackInfo->volume == info.volume)
     {
         return;
     }
-    m_context.lastReportedPlaybackInfo = info;
+    m_lastReportedPlaybackInfo = info;
     m_gstPlayerClient->notifyPlaybackInfo(info);
 }
 
@@ -2775,32 +2776,6 @@ void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
 
 void GstGenericPlayer::startNotifyPlaybackInfoTimer()
 {
-    // Read the PlaybackInfo timer interval from the RIALTO_PLAYBACK_INFO_TIMER_MS environment variable,
-    // which is set during session initialization from firebolt::rialto::common::AppConfig::playbackInfoTimerMs.
-    // This value is hardcoded (32ms) in entservices-appmanagers and flows through to here via the
-    // RialtoSessionServer initialization.
-    // Default fallback is 32ms if not set.
-    std::chrono::milliseconds playbackInfoTimerMs{32};
-    if (const auto kEnvValue = std::getenv("RIALTO_PLAYBACK_INFO_TIMER_MS"))
-    {
-        char *endPtr = nullptr;
-        errno = 0;
-        const int64_t parsed = std::strtoll(kEnvValue, &endPtr, 10);
-        if (endPtr != kEnvValue && *endPtr == '\0' && errno == 0 && parsed > 0)
-        {
-            playbackInfoTimerMs = std::chrono::milliseconds{parsed};
-        }
-        RIALTO_SERVER_LOG_INFO("RIALTO_PLAYBACK_INFO_TIMER_MS env='%s', using PlaybackInfo timer interval=%" PRId64
-                               " ms",
-                               kEnvValue, static_cast<int64_t>(playbackInfoTimerMs.count()));
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_INFO("RIALTO_PLAYBACK_INFO_TIMER_MS not set, using default PlaybackInfo timer "
-                               "interval=%" PRId64 " ms",
-                               static_cast<int64_t>(playbackInfoTimerMs.count()));
-    }
-
     // A PAUSED state transition requires a PlaybackInfo event even if its values are unchanged.
     notifyPlaybackInfo(true);
 
@@ -2810,7 +2785,7 @@ void GstGenericPlayer::startNotifyPlaybackInfoTimer()
     }
 
     const auto kNotifyPlaybackInfo = [this]() { notifyPlaybackInfo(); };
-    m_playbackInfoTimer = m_timerFactory->createTimer(playbackInfoTimerMs, kNotifyPlaybackInfo,
+    m_playbackInfoTimer = m_timerFactory->createTimer(m_playbackInfoTimerInterval, kNotifyPlaybackInfo,
                                                       firebolt::rialto::common::TimerType::PERIODIC);
 }
 

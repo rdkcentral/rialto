@@ -27,8 +27,10 @@
 #include "RpcControllerMock.h"
 #include "SessionServerCommon.h"
 #include "SessionServerManagerMock.h"
+#include <chrono>
 #include <gtest/gtest.h>
 #include <memory>
+#include <optional>
 
 using testing::StrictMock;
 
@@ -46,7 +48,9 @@ public:
     void sessionServerManagerWillHandleRequestSuccess();
     void sessionServerManagerWillHandleRequestFailure();
     void sessionServerManagerWillHandleRequestFailureWithInvalidController();
-    void sessionServerManagerWillSetConfiguration(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerManagerWillSetConfiguration(const firebolt::rialto::common::SessionServerState &state,
+                                                  std::chrono::milliseconds playbackInfoTimer = std::chrono::milliseconds{
+                                                      32});
     void sessionServerManagerWillSetConfigurationWithFd(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerManagerWillSetConfigurationWithCapabilities(
         const firebolt::rialto::common::SessionServerState &state,
@@ -68,7 +72,8 @@ public:
     void sessionServerManagerWillPing();
     void sessionServerManagerWillFailToPing();
 
-    void sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state);
+    void sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state,
+                              std::optional<std::chrono::milliseconds> playbackInfoTimer = std::nullopt);
     void sendSetConfigurationWithFd(const firebolt::rialto::common::SessionServerState &state);
     void sendSetConfigurationWithCapabilities(const firebolt::rialto::common::SessionServerState &state,
                                               const firebolt::rialto::common::AudioDecoderCapabilities &audioCaps,

@@ -26,6 +26,7 @@
 #include "Utils.h"
 #include "servermanagermodule.pb.h"
 #include <cstring>
+#include <limits>
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -35,6 +36,13 @@ using firebolt::rialto::ipc::common::serialiseVideoCapabilities;
 
 namespace
 {
+uint32_t toProtoPlaybackInfoTimerMs(std::chrono::milliseconds playbackInfoTimer)
+{
+    const auto timerCount = playbackInfoTimer.count();
+    return static_cast<uint32_t>(timerCount > std::numeric_limits<uint32_t>::max() ? std::numeric_limits<uint32_t>::max()
+                                                                                   : timerCount);
+}
+
 firebolt::rialto::common::SessionServerState convert(const rialto::SessionServerState &sessionServerState)
 {
     switch (sessionServerState)
@@ -224,7 +232,7 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
                                      const std::string &socketGroup, const std::string &appName,
                                      const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
                                      const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps,
-                                     uint32_t playbackInfoTimerMs) const
+                                     std::chrono::milliseconds playbackInfoTimer) const
 {
     if (!m_ipcLoop || !m_serviceStub)
     {
@@ -242,12 +250,9 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     request.set_socketowner(socketOwner);
     request.set_socketgroup(socketGroup);
     request.set_appname(appName);
-    if (playbackInfoTimerMs != 0)
+    if (playbackInfoTimer.count() > 0)
     {
-        request.set_playbackinfotimerms(playbackInfoTimerMs);
-        RIALTO_SERVER_MANAGER_LOG_INFO("Sending playbackInfoTimerMs=%u in SetConfiguration (socketName) for serverId: "
-                                       "%d",
-                                       playbackInfoTimerMs, m_serverId);
+        request.set_playbackinfotimerms(toProtoPlaybackInfoTimerMs(playbackInfoTimer));
     }
     *(request.mutable_loglevels()) = getCurrentLogLevels();
     request.set_initialsessionserverstate(convert(initialState));
@@ -287,7 +292,7 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
                                      const std::string &appName,
                                      const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
                                      const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps,
-                                     uint32_t playbackInfoTimerMs) const
+                                     std::chrono::milliseconds playbackInfoTimer) const
 {
     if (!m_ipcLoop || !m_serviceStub)
     {
@@ -302,11 +307,9 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     request.mutable_resources()->set_maxplaybacks(maxResource.maxPlaybacks);
     request.mutable_resources()->set_maxwebaudioplayers(maxResource.maxWebAudioPlayers);
     request.set_appname(appName);
-    if (playbackInfoTimerMs != 0)
+    if (playbackInfoTimer.count() > 0)
     {
-        request.set_playbackinfotimerms(playbackInfoTimerMs);
-        RIALTO_SERVER_MANAGER_LOG_INFO("Sending playbackInfoTimerMs=%u in SetConfiguration (socketFd) for serverId: %d",
-                                       playbackInfoTimerMs, m_serverId);
+        request.set_playbackinfotimerms(toProtoPlaybackInfoTimerMs(playbackInfoTimer));
     }
     *(request.mutable_loglevels()) = getCurrentLogLevels();
     request.set_initialsessionserverstate(convert(initialState));

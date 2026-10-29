@@ -103,8 +103,6 @@ message SetConfigurationRequest {
     optional uint32 subtitleClockResyncInterval = 11;
     optional firebolt.rialto.AudioCapabilities audiocapabilities = 12;
     optional firebolt.rialto.VideoCapabilities videocapabilities = 13;
-    // Interval (in ms) at which the RialtoServer should emit PlaybackInfo updates.
-    // Sourced from firebolt::rialto::common::AppConfig::playbackInfoTimerMs.
     optional uint32 playbackInfoTimerMs = 14;
 }
 message SetConfigurationResponse {

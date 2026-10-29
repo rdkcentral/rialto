@@ -110,7 +110,7 @@ SessionServerApp::SessionServerApp(const std::string &appName,
                                    std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket)
     : m_kServerId{generateServerId()}, m_appName{appName}, m_initialState{initialState},
       m_sessionManagementSocketName{getSessionManagementSocketPath(appConfig)},
-      m_clientDisplayName{appConfig.clientDisplayName}, m_playbackInfoTimerMs{appConfig.playbackInfoTimerMs},
+      m_clientDisplayName{appConfig.clientDisplayName}, m_playbackInfoTimer{appConfig.playbackInfoTimer},
       m_socks{-1, -1}, m_linuxWrapper{linuxWrapper}, m_timerFactory{timerFactory},
       m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false},
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
@@ -192,7 +192,7 @@ bool SessionServerApp::configure(const std::string &appName,
     m_initialState = initialState;
     m_sessionManagementSocketName = getSessionManagementSocketPath(appConfig);
     m_clientDisplayName = appConfig.clientDisplayName;
-    m_playbackInfoTimerMs = appConfig.playbackInfoTimerMs;
+    m_playbackInfoTimer = appConfig.playbackInfoTimer;
     m_isPreloaded = false;
     m_expectedState = initialState;
     if (m_namedSocket)
@@ -237,9 +237,9 @@ std::string SessionServerApp::getClientDisplayName() const
     return m_clientDisplayName;
 }
 
-uint32_t SessionServerApp::getPlaybackInfoTimerMs() const
+std::chrono::milliseconds SessionServerApp::getPlaybackInfoTimer() const
 {
-    return m_playbackInfoTimerMs;
+    return m_playbackInfoTimer;
 }
 
 firebolt::rialto::common::SessionServerState SessionServerApp::getInitialState() const

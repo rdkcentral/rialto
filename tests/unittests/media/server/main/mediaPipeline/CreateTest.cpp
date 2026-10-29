@@ -36,9 +36,10 @@ TEST_F(RialtoServerCreateMediaPipelineTest, Create)
     EXPECT_NO_THROW(
         m_mediaPipeline =
             std::make_unique<MediaPipelineServerInternal>(m_mediaPipelineClientMock, m_videoReq, m_gstPlayerFactoryMock,
-                                                          m_kSessionId, m_sharedMemoryBufferMock, m_mainThreadFactoryMock,
-                                                          m_timerFactoryMock, std::move(m_dataReaderFactory),
-                                                          std::move(m_activeRequests), m_decryptionServiceMock));
+                                                          m_kSessionId, m_sharedMemoryBufferMock,
+                                                          m_mainThreadFactoryMock, m_timerFactoryMock,
+                                                          std::move(m_dataReaderFactory), std::move(m_activeRequests),
+                                                          m_decryptionServiceMock, std::chrono::milliseconds{32}));
     EXPECT_NE(m_mediaPipeline, nullptr);
 
     EXPECT_CALL(*m_sharedMemoryBufferMock, unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId))
@@ -74,7 +75,8 @@ TEST_F(RialtoServerCreateMediaPipelineTest, InternalFactoryCreatesObject)
     std::unique_ptr<server::IMediaPipelineServerInternal> mediaPipelineServer;
     EXPECT_NO_THROW(mediaPipelineServer =
                         factory->createMediaPipelineServerInternal(m_mediaPipelineClientMock, m_videoReq, m_kSessionId,
-                                                                   m_sharedMemoryBufferMock, m_decryptionServiceMock));
+                                                                   m_sharedMemoryBufferMock, m_decryptionServiceMock,
+                                                                   std::chrono::milliseconds{32}));
 
     EXPECT_CALL(*m_sharedMemoryBufferMock, unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId))
         .WillOnce(Return(true));

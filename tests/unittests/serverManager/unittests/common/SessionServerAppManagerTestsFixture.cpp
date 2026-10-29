@@ -53,7 +53,7 @@ constexpr int kSecondServerId{4};
 constexpr unsigned kNumOfPreloadedServers{1};
 const int kAppMgmtSocket{0};
 const std::string kSessionServerSocketName{getenv("RIALTO_SOCKET_PATH")};
-constexpr uint32_t kPlaybackInfoTimerMs{250};
+constexpr std::chrono::milliseconds kPlaybackInfoTimerMs{250};
 constexpr int kMaxSessions{2};
 constexpr int kMaxWebAudioPlayers{3};
 constexpr rialto::servermanager::service::LoggingLevels
@@ -72,7 +72,7 @@ constexpr int kSessionServerSocketFd{342};
 
 template <typename SessionServerAppPtr> void expectPlaybackInfoTimerMs(SessionServerAppPtr &sessionServerApp)
 {
-    EXPECT_CALL(*sessionServerApp, getPlaybackInfoTimerMs())
+    EXPECT_CALL(*sessionServerApp, getPlaybackInfoTimer())
         .Times(testing::AnyNumber())
         .WillRepeatedly(Return(kPlaybackInfoTimerMs));
 }

@@ -61,6 +61,11 @@ void MediaPipelineService::clearMediaPipelines()
     m_mediaPipelines.clear();
 }
 
+void MediaPipelineService::setPlaybackInfoTimer(std::chrono::milliseconds playbackInfoTimer)
+{
+    m_playbackInfoTimer = playbackInfoTimer;
+}
+
 bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IMediaPipelineClient> &mediaPipelineClient,
                                          std::uint32_t maxWidth, std::uint32_t maxHeight)
 {
@@ -92,7 +97,7 @@ bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IM
                                                                                                    mediaPipelineClient,
                                                                                                    m_metricsService),
                                                                    VideoRequirements{maxWidth, maxHeight}, sessionId,
-                                                                   shmBuffer, m_decryptionService)));
+                                                                   shmBuffer, m_decryptionService, m_playbackInfoTimer)));
         if (!m_mediaPipelines.at(sessionId))
         {
             RIALTO_SERVER_LOG_ERROR("Could not create MediaPipeline for session with id: %d", sessionId);

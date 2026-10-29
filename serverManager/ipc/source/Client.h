@@ -26,6 +26,7 @@
 #include "LoggingLevels.h"
 #include <AudioDecoderCapabilities.h>
 #include <VideoDecoderCapabilities.h>
+#include <chrono>
 #include <memory>
 #include <optional>
 #include <string>
@@ -59,14 +60,14 @@ public:
                                  const std::string &socketGroup, const std::string &appName,
                                  const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
                                  const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps,
-                                 uint32_t playbackInfoTimerMs = 0) const;
+                                 std::chrono::milliseconds playbackInfoTimer = std::chrono::milliseconds{32}) const;
     bool performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState, int socketFd,
                                  const std::string &clientDisplayName,
                                  const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                  const std::string &appName,
                                  const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
                                  const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps,
-                                 uint32_t playbackInfoTimerMs = 0) const;
+                                 std::chrono::milliseconds playbackInfoTimer = std::chrono::milliseconds{32}) const;
     bool performPing(int pingId) const;
     bool setLogLevels(const service::LoggingLevels &logLevels) const;
     void onDisconnected() const;

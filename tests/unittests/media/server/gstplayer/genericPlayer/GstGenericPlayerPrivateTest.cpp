@@ -24,7 +24,6 @@
 #include "PlayerTaskMock.h"
 #include "TimerMock.h"
 
-#include <cstdlib>
 #include <gst/audio/audio.h>
 
 using testing::_;
@@ -40,7 +39,6 @@ namespace
 {
 constexpr std::chrono::milliseconds kPositionReportTimerMs{250};
 constexpr std::chrono::milliseconds kPlaybackInfoTimerMs{32};
-constexpr char kPlaybackInfoTimerEnv[] = "RIALTO_PLAYBACK_INFO_TIMER_MS";
 constexpr int32_t kSampleRate{13};
 constexpr int32_t kNumberOfChannels{4};
 constexpr int32_t kInvalidSampleRate{0};
@@ -89,46 +87,6 @@ constexpr double kVolume{0.5};
 constexpr firebolt::rialto::PlaybackInfo kPlaybackInfo{kPosition, kVolume};
 constexpr bool kIsLive{false};
 
-class PlaybackInfoTimerEnvGuard
-{
-public:
-    PlaybackInfoTimerEnvGuard()
-    {
-        if (const char *value = std::getenv(kPlaybackInfoTimerEnv))
-        {
-            m_wasSet = true;
-            m_originalValue = value;
-        }
-    }
-
-    ~PlaybackInfoTimerEnvGuard()
-    {
-        if (m_wasSet)
-        {
-            setenv(kPlaybackInfoTimerEnv, m_originalValue.c_str(), 1);
-        }
-        else
-        {
-            unsetenv(kPlaybackInfoTimerEnv);
-        }
-    }
-
-    void set(const char *value)
-    {
-        if (value)
-        {
-            setenv(kPlaybackInfoTimerEnv, value, 1);
-        }
-        else
-        {
-            unsetenv(kPlaybackInfoTimerEnv);
-        }
-    }
-
-private:
-    bool m_wasSet{false};
-    std::string m_originalValue;
-};
 } // namespace
 
 bool operator==(const GstRialtoProtectionData &lhs, const GstRialtoProtectionData &rhs)
@@ -158,13 +116,15 @@ protected:
     GParamSpec m_showVideoWindowSpec{};
     GstEvent m_event{};
 
-    GstGenericPlayerPrivateTest()
+    GstGenericPlayerPrivateTest() : GstGenericPlayerPrivateTest{kPlaybackInfoTimerMs} {}
+
+    explicit GstGenericPlayerPrivateTest(std::chrono::milliseconds playbackInfoTimer)
     {
         gstPlayerWillBeCreated();
         m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
-                                                   m_videoReq, kIsLive, m_gstWrapperMock, m_glibWrapperMock,
-                                                   m_rdkGstreamerUtilsWrapperMock, m_gstInitialiserMock,
-                                                   std::move(m_flushWatcher), m_gstSrcFactoryMock,
+                                                   m_videoReq, kIsLive, playbackInfoTimer, m_gstWrapperMock,
+                                                   m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
+                                                   m_gstInitialiserMock, std::move(m_flushWatcher), m_gstSrcFactoryMock,
                                                    m_gstProfilerFactoryMock, m_timerFactoryMock, std::move(m_taskFactory),
                                                    std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
                                                    m_gstProtectionMetadataFactoryMock);
@@ -303,6 +263,18 @@ protected:
 
         EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(kPlaybackInfo));
     }
+};
+
+class GstGenericPlayerPrivateConfiguredTimerTest : public GstGenericPlayerPrivateTest
+{
+protected:
+    GstGenericPlayerPrivateConfiguredTimerTest() : GstGenericPlayerPrivateTest{std::chrono::milliseconds{75}} {}
+};
+
+class GstGenericPlayerPrivateInvalidTimerTest : public GstGenericPlayerPrivateTest
+{
+protected:
+    GstGenericPlayerPrivateInvalidTimerTest() : GstGenericPlayerPrivateTest{std::chrono::milliseconds{0}} {}
 };
 
 TEST_F(GstGenericPlayerPrivateTest, shouldScheduleNeedData)
@@ -2091,28 +2063,28 @@ TEST_F(GstGenericPlayerPrivateTest, shouldStartPlaybackInfoTimer)
     m_sut->startNotifyPlaybackInfoTimer();
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldUseConfiguredPlaybackInfoTimerIntervalOrFallback)
+TEST_F(GstGenericPlayerPrivateConfiguredTimerTest, shouldUseConfiguredPlaybackInfoTimerInterval)
 {
-    const std::vector<std::pair<const char *, std::chrono::milliseconds>> timerValues{
-        {nullptr, kPlaybackInfoTimerMs},
-        {"invalid", kPlaybackInfoTimerMs},
-        {"9223372036854775808", kPlaybackInfoTimerMs},
-        {"0", kPlaybackInfoTimerMs},
-        {"-1", kPlaybackInfoTimerMs},
-        {"75", std::chrono::milliseconds{75}},
-    };
-    PlaybackInfoTimerEnvGuard envGuard;
+    willNotifyPlaybackInfo();
+    auto playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
+    EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), isActive()).WillOnce(Return(true));
+    EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), cancel());
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(std::chrono::milliseconds{75}, _, common::TimerType::PERIODIC))
+        .WillOnce(Return(ByMove(std::move(playbackInfoTimerMock))));
 
-    for (const auto &[envValue, expectedInterval] : timerValues)
-    {
-        envGuard.set(envValue);
-        willNotifyPlaybackInfo();
-        auto timerMock = std::make_unique<NiceMock<TimerMock>>();
-        EXPECT_CALL(*m_timerFactoryMock, createTimer(expectedInterval, _, common::TimerType::PERIODIC))
-            .WillOnce(Return(ByMove(std::move(timerMock))));
+    m_sut->startNotifyPlaybackInfoTimer();
+}
 
-        m_sut->startNotifyPlaybackInfoTimer();
-    }
+TEST_F(GstGenericPlayerPrivateInvalidTimerTest, shouldFallbackForInvalidPlaybackInfoTimerInterval)
+{
+    willNotifyPlaybackInfo();
+    auto playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
+    EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), isActive()).WillOnce(Return(true));
+    EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), cancel());
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(kPlaybackInfoTimerMs, _, common::TimerType::PERIODIC))
+        .WillOnce(Return(ByMove(std::move(playbackInfoTimerMock))));
+
+    m_sut->startNotifyPlaybackInfoTimer();
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotifyPlaybackInfoWithAudioFade)

@@ -29,6 +29,7 @@
 #include "IPrivateMetricsService.h"
 #include "ISharedMemoryBuffer.h"
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <functional>
 #include <map>
@@ -112,6 +113,7 @@ public:
     void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) override;
 
     void clearMediaPipelines();
+    void setPlaybackInfoTimer(std::chrono::milliseconds playbackInfoTimer);
     common::AudioDecoderCapabilities getSupportedAudioCapabilities() override;
     common::VideoDecoderCapabilities getSupportedVideoCapabilities() override;
     void setPreloadedCapabilities(const std::optional<common::AudioDecoderCapabilities> &audioCaps,
@@ -123,6 +125,7 @@ private:
     std::unique_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
     std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternal> m_mediaCapabilities;
     IDecryptionService &m_decryptionService;
+    std::chrono::milliseconds m_playbackInfoTimer{32};
     IPrivateMetricsService &m_metricsService;
     std::map<int, std::unique_ptr<IMediaPipelineServerInternal>> m_mediaPipelines;
     std::mutex m_mediaPipelineMutex;
