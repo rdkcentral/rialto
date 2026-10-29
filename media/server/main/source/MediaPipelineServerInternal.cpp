@@ -183,17 +183,15 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
                 timer.second->cancel();
             }
         }
+        if (!m_shmBuffer->unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId))
+        {
+            RIALTO_SERVER_LOG_ERROR("Unable to unmap shm partition");
+        }
+
+        m_shmBuffer.reset();
         m_mainThread->unregisterClient(m_mainThreadClientId);
     };
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-
-    // m_gstPlayer and m_shmBuffer are used in the main thread, so we can reset them here, because main thread is no longer active
-    m_gstPlayer.reset();
-    if (!m_shmBuffer->unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId))
-    {
-        RIALTO_SERVER_LOG_ERROR("Unable to unmap shm partition");
-    }
-    m_shmBuffer.reset();
 }
 
 bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive)
