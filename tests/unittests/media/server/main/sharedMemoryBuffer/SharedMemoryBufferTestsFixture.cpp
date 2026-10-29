@@ -19,6 +19,7 @@
 
 #include "SharedMemoryBufferTestsFixture.h"
 #include <algorithm>
+#include <sys/stat.h>
 
 namespace
 {
