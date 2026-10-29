@@ -27,7 +27,7 @@
 #include "ISharedMemoryBuffer.h"
 #include "MediaPipelineServerInternal.h"
 #include "NeedMediaData.h"
-#include "RialtoMetrics.h"
+#include "IRialtoMetrics.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
 

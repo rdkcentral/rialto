@@ -1,4 +1,4 @@
-#include "RialtoMetricsImpl.h"
+#include "RialtoMetrics.h"
 #include "RialtoLogging.h"
 #include <gst/gst.h>
 #include <limits>
@@ -30,31 +30,31 @@ const char *metricTypeToString(std::uint32_t type)
 	}
 }
 
-RialtoMetricsImpl::~RialtoMetricsImpl()
+RialtoMetrics::~RialtoMetrics()
 {
-	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetricsImpl destroyed");
+	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics destroyed");
 }
 
-void RialtoMetricsImpl::setSessionId(int32_t sessionId)
+void RialtoMetrics::setSessionId(int32_t sessionId)
 {
-	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetricsImpl::setSessionId sessionId: %d", sessionId);
+	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics::setSessionId sessionId: %d", sessionId);
 	std::lock_guard<std::mutex> lock{m_counterMutex};
 	m_sessionId = sessionId;
 }
 
-std::optional<ParsedMetricMessage> RialtoMetricsImpl::onMetricMessage(GstMessage *message)
+std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(GstMessage *message)
 {
-	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetricsImpl::onMetricMessage received message: %p", message);
+	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics::onMetricMessage received message: %p", message);
 	if (!message)
 	{
-		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetricsImpl::onMetricMessage ignored null message");
+		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics::onMetricMessage ignored null message");
 		return std::nullopt;
 	}
 
 	const GstStructure *structure = gst_message_get_structure(message);
 	if (!structure || !gst_structure_has_name(structure, "media-pipeline-metric"))
 	{
-		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetricsImpl::onMetricMessage ignored non-metric message");
+		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics::onMetricMessage ignored non-metric message");
 		return std::nullopt;
 	}
 
@@ -72,7 +72,7 @@ std::optional<ParsedMetricMessage> RialtoMetricsImpl::onMetricMessage(GstMessage
 		!gst_structure_get_uint64(structure, "pts_ns", &ptsNs) ||
 		sourceId > static_cast<guint>(std::numeric_limits<int32_t>::max()))
 	{
-		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetricsImpl::onMetricMessage ignored malformed metric message");
+		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics::onMetricMessage ignored malformed metric message");
 		return std::nullopt;
 	}
 
@@ -84,14 +84,14 @@ std::optional<ParsedMetricMessage> RialtoMetricsImpl::onMetricMessage(GstMessage
 	if (sessionId < 0)
 	{
 		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
-						 "RialtoMetricsImpl::onMetricMessage ignored metric without a valid session");
+						 "RialtoMetrics::onMetricMessage ignored metric without a valid session");
 		return std::nullopt;
 	}
 
 	ParsedMetricMessage parsedMessage{metricType, static_cast<int32_t>(sourceId),
 									 FrameCounters{renderedFrames, droppedFrames, corruptedFrames, ptsNs}};
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
-					 "RialtoMetricsImpl::onMetricMessage parsed sessionId: %d, sourceId: %d, type: %u, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu",
+					 "RialtoMetrics::onMetricMessage parsed sessionId: %d, sourceId: %d, type: %u, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu",
 					 sessionId, parsedMessage.sourceId, metricType, static_cast<unsigned long long>(renderedFrames),
 					 static_cast<unsigned long long>(droppedFrames), static_cast<unsigned long long>(corruptedFrames),
 					 static_cast<unsigned long long>(ptsNs));
@@ -99,10 +99,10 @@ std::optional<ParsedMetricMessage> RialtoMetricsImpl::onMetricMessage(GstMessage
 	return parsedMessage;
 }
 
-void RialtoMetricsImpl::updateFrameCounters(int32_t sessionId, int32_t sourceId, const FrameCounters &counters)
+void RialtoMetrics::updateFrameCounters(int32_t sessionId, int32_t sourceId, const FrameCounters &counters)
 {
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
-					 "RialtoMetricsImpl::updateFrameCounters sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, timestamp: %llu",
+					 "RialtoMetrics::updateFrameCounters sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, timestamp: %llu",
 					 sessionId, sourceId, static_cast<unsigned long long>(counters.rendered),
 					 static_cast<unsigned long long>(counters.dropped),
 					 static_cast<unsigned long long>(counters.corrupted),
@@ -111,10 +111,10 @@ void RialtoMetricsImpl::updateFrameCounters(int32_t sessionId, int32_t sourceId,
 	m_counterCache[{sessionId, sourceId}] = counters;
 }
 
-bool RialtoMetricsImpl::getFrameCounters(int32_t sessionId, int32_t sourceId, FrameCounters &counters) const
+bool RialtoMetrics::getFrameCounters(int32_t sessionId, int32_t sourceId, FrameCounters &counters) const
 {
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
-					 "RialtoMetricsImpl::getFrameCounters sessionId: %d, sourceId: %d", sessionId, sourceId);
+					 "RialtoMetrics::getFrameCounters sessionId: %d, sourceId: %d", sessionId, sourceId);
 	bool found = false;
 	{
 		std::lock_guard<std::mutex> lock{m_counterMutex};
@@ -127,12 +127,12 @@ bool RialtoMetricsImpl::getFrameCounters(int32_t sessionId, int32_t sourceId, Fr
 	}
 	if (!found)
 	{
-		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetricsImpl::getFrameCounters no snapshot found");
+		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics::getFrameCounters no snapshot found");
 		return false;
 	}
 
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
-					 "RialtoMetricsImpl::getFrameCounters found rendered: %llu, dropped: %llu, corrupted: %llu, timestamp: %llu",
+					 "RialtoMetrics::getFrameCounters found rendered: %llu, dropped: %llu, corrupted: %llu, timestamp: %llu",
 					 static_cast<unsigned long long>(counters.rendered),
 					 static_cast<unsigned long long>(counters.dropped),
 					 static_cast<unsigned long long>(counters.corrupted),
