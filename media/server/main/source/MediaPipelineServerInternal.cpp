@@ -183,7 +183,6 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
                 timer.second->cancel();
             }
         }
-        m_gstPlayer.reset();
         if (!m_shmBuffer->unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId))
         {
             RIALTO_SERVER_LOG_ERROR("Unable to unmap shm partition");
