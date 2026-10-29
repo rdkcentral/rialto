@@ -19,7 +19,7 @@
 
 #include "HeartbeatHandlerMock.h"
 #include "MediaPipelineTestBase.h"
-#include "RialtoMetricsImpl.h"
+#include "RialtoMetrics.h"
 #include <thread>
 
 using ::testing::ByMove;
@@ -539,7 +539,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersSucc
 {
     loadGstPlayer();
     const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
-    auto metrics = std::make_shared<RialtoMetricsImpl>();
+    auto metrics = std::make_shared<RialtoMetrics>();
     metrics->updateFrameCounters(m_kSessionId, sourceId, FrameCounters{3141, 95, 7, 1234});
 
     mainThreadWillEnqueueTaskAndWait();

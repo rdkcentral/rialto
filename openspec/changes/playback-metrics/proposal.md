@@ -48,8 +48,8 @@ RialtoMSE Sink (consumer apps)
 **High-Level Modifications:**
 
 ### 1. **Create RialtoMetrics Module** (New)
-- **Files:** `rialto/media/server/metrics/include/RialtoMetrics.h` (interface) / `RialtoMetricsImpl.h` (implementation)
-- **File:** `rialto/media/server/metrics/source/RialtoMetricsImpl.cpp` (implementation)
+- **Files:** `rialto/media/server/metrics/include/IRialtoMetrics.h` (interface) / `RialtoMetrics.h` (implementation)
+- **File:** `rialto/media/server/metrics/source/RialtoMetrics.cpp` (implementation)
 - **Responsibilities:**
   - Listen to GStreamer bus messages (`media-pipeline-metric` custom messages)
   - Accumulate and cache frame counters (rendered, dropped, corrupted)
@@ -67,10 +67,10 @@ RialtoMSE Sink (consumer apps)
 ### 2. **Update GstGenericPlayer** (Modification)
 - **File:** `rialto/media/server/gstplayer/source/GstGenericPlayer.cpp` / `.h`
 - **Changes:**
-  - Add member variable: `std::shared_ptr<RialtoMetrics> m_metrics`
-  - In constructor, instantiate RialtoMetrics: `m_metrics = std::make_shared<RialtoMetricsImpl>()`
+  - Add member variable: `std::shared_ptr<IRialtoMetrics> m_metrics`
+  - In constructor, instantiate RialtoMetrics: `m_metrics = std::make_shared<RialtoMetrics>()`
   - Route application messages from the existing dispatcher to `RialtoMetrics`; do not register a second bus watch
-  - Add accessor method: `std::shared_ptr<RialtoMetrics> getRialtoMetrics() const { return m_metrics; }`
+  - Add accessor method: `std::shared_ptr<IRialtoMetrics> getRialtoMetrics() const { return m_metrics; }`
   - No other changes to GstGenericPlayer; metrics handling delegated to RialtoMetrics
 
 ### 3. **Update MediaPipelineServerInternal** (Modification)
@@ -195,11 +195,11 @@ message NotifyMetricEvent {
 
 | Component | Impact Type | Location / Path | Details |
 |-----------|------------|-----------------|---------|
-| **RialtoMetrics Module (PRIMARY)** | New Module | `rialto/media/server/metrics/include/RialtoMetrics.h`, `RialtoMetricsImpl.h`, `source/RialtoMetricsImpl.cpp` | Core metrics processor: GStreamer bus callback, counter caching, metric forwarding (Phase 1: no subscription storage) |
-| **GstGenericPlayer** | Modification | `rialto/media/server/gstplayer/source/GstGenericPlayer.cpp/.h` | Add member: `std::shared_ptr<RialtoMetrics> m_metrics`; instantiate in constructor; route dispatcher-delivered metric messages to RialtoMetrics |
+| **RialtoMetrics Module (PRIMARY)** | New Module | `rialto/media/server/metrics/include/IRialtoMetrics.h`, `RialtoMetrics.h`, `source/RialtoMetrics.cpp` | Core metrics processor: GStreamer bus callback, counter caching, metric forwarding (Phase 1: no subscription storage) |
+| **GstGenericPlayer** | Modification | `rialto/media/server/gstplayer/source/GstGenericPlayer.cpp/.h` | Add member: `std::shared_ptr<IRialtoMetrics> m_metrics`; instantiate `RialtoMetrics` in constructor; route dispatcher-delivered metric messages to RialtoMetrics |
 | **MediaPipelineServerInternal** | Modification | `rialto/media/server/main/source/MediaPipelineServerInternal.cpp/.h` | Add public method: `getFrameCounters()` that delegates to RialtoMetrics; add accessor `getRialtoMetrics()` (Phase 1: no setMetricSubscription) |
 
-| **Counter Cache** | Data Structure (owned by RialtoMetrics) | `rialto/media/server/metrics/source/RialtoMetricsImpl.cpp` | Thread-safe map: `std::map<std::pair<int32_t, int32_t>, FrameCounters>` (sessionId+sourceId → rendered/dropped/decoded/timestamp) |
+| **Counter Cache** | Data Structure (owned by RialtoMetrics) | `rialto/media/server/metrics/source/RialtoMetrics.cpp` | Thread-safe map: `std::map<std::pair<int32_t, int32_t>, FrameCounters>` (sessionId+sourceId → rendered/dropped/decoded/timestamp) |
 | **Protobuf Messages** | New Message Definitions | `rialto/proto/mediapipelinemodule.proto` | Add enum (MetricType 0-6), messages (GetFrameCounters*, NotifyMetricEvent with frame_counters embedded) |
 | **IPC Service Handlers** | New RPC Methods | `rialto/media/server/ipc/source/MediaPipelineModuleService.cpp` | Implement two RPC handler methods: `getFrameCounters()`, async `NotifyMetricEvent` callback delivery (Phase 1) |
 | **Client-Side IPC Callers** | New RPC Stubs | `rialto/media/server/ipc/source/MediaPipelineClient.cpp/.h` | Implement `callGetFrameCounters()` and async callback handler registration for NotifyMetricEvent (Phase 1) |

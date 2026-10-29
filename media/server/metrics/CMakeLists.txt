@@ -5,7 +5,7 @@ add_library(
         RialtoMetrics
         STATIC
 
-        source/RialtoMetricsImpl.cpp
+        source/RialtoMetrics.cpp
 )
 
 target_include_directories(

@@ -37,7 +37,7 @@
 #include "IGstTextTrackSinkFactory.h"
 #include "IMediaPipeline.h"
 #include "ITimer.h"
-#include "RialtoMetricsImpl.h"
+#include "RialtoMetrics.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
 #include "Utils.h"
@@ -352,7 +352,7 @@ GstGenericPlayer::GstGenericPlayer(
     }
 
     RIALTO_SERVER_LOG_DEBUG("Creating playback metrics handler");
-    m_metrics = std::make_shared<RialtoMetricsImpl>();
+    m_metrics = std::make_shared<RialtoMetrics>();
     m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline,
                                                                                   m_context.flushOnPrerollController,
                                                                                   m_gstWrapper, m_glibWrapper);
@@ -3195,7 +3195,7 @@ void GstGenericPlayer::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
     }
 }
 
-std::shared_ptr<RialtoMetrics> GstGenericPlayer::getRialtoMetrics() const
+std::shared_ptr<IRialtoMetrics> GstGenericPlayer::getRialtoMetrics() const
 {
     RIALTO_SERVER_LOG_DEBUG("Returning RialtoMetrics instance, available: %s", m_metrics ? "true" : "false");
     return m_metrics;
