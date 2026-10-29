@@ -143,12 +143,20 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
     {
         throw std::runtime_error("Web audio player ipc could not be created");
     }
+
+    m_shmHandleObserverId = m_clientController.subscribeSharedMemoryHandle(
+        [this](const std::shared_ptr<ISharedMemoryHandle> &handle)
+        {
+            std::lock_guard<std::mutex> lock{m_shmHandleMutex};
+            m_shmHandle = handle;
+        });
 }
 
 WebAudioPlayer::~WebAudioPlayer()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
+    m_clientController.unsubscribeSharedMemoryHandle(m_shmHandleObserverId);
     m_webAudioPlayerIpc.reset();
 }
 
@@ -216,7 +224,11 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
         return false;
     }
 
-    std::shared_ptr<ISharedMemoryHandle> shmHandle = m_clientController.getSharedMemoryHandle();
+    std::shared_ptr<ISharedMemoryHandle> shmHandle;
+    {
+        std::lock_guard<std::mutex> shmLock{m_shmHandleMutex};
+        shmHandle = m_shmHandle;
+    }
     if (nullptr == shmHandle || nullptr == shmHandle->getShm())
     {
         RIALTO_CLIENT_LOG_ERROR("Shared buffer no longer valid");
