@@ -18,8 +18,8 @@
  */
 
 #include "SharedMemoryBufferTestsFixture.h"
-#include <sys/stat.h>
 #include <algorithm>
+#include <sys/stat.h>
 
 namespace
 {

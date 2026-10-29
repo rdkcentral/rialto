@@ -18,10 +18,10 @@
  */
 
 #include "SharedMemoryBufferTestsFixture.h"
-#include <cstring>
-#include <sys/mman.h>
 #include "ShmUtils.h"
 #include <algorithm>
+#include <cstring>
+#include <sys/mman.h>
 
 TEST_F(SharedMemoryBufferTests, shouldMapGenericPlaybackSession)
 {
