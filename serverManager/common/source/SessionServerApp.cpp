@@ -111,8 +111,9 @@ SessionServerApp::SessionServerApp(const std::string &appName,
                                    std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket)
     : m_kServerId{generateServerId()}, m_appName{appName}, m_initialState{initialState},
       m_sessionManagementSocketName{getSessionManagementSocketPath(appConfig)},
-      m_clientDisplayName{appConfig.clientDisplayName}, m_socks{-1, -1}, m_linuxWrapper{linuxWrapper},
-      m_timerFactory{timerFactory}, m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false},
+      m_clientDisplayName{appConfig.clientDisplayName}, m_playbackInfoTimerMs{appConfig.playbackInfoTimerMs},
+      m_socks{-1, -1}, m_linuxWrapper{linuxWrapper}, m_timerFactory{timerFactory},
+      m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false},
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
       m_kSessionManagementSocketPermissions{socketPermissions}, m_kSessionManagementSocketOwner{socketOwner},
       m_kSessionManagementSocketGroup{socketGroup}, m_childInitialized{false}, m_expectedState{initialState},
@@ -195,6 +196,7 @@ bool SessionServerApp::configure(const std::string &appName,
     m_initialState = initialState;
     m_sessionManagementSocketName = getSessionManagementSocketPath(appConfig);
     m_clientDisplayName = appConfig.clientDisplayName;
+    m_playbackInfoTimerMs = appConfig.playbackInfoTimerMs;
     m_isPreloaded = false;
     m_expectedState = initialState;
     if (m_namedSocket)
@@ -237,6 +239,11 @@ std::string SessionServerApp::getSessionManagementSocketGroup() const
 std::string SessionServerApp::getClientDisplayName() const
 {
     return m_clientDisplayName;
+}
+
+uint32_t SessionServerApp::getPlaybackInfoTimerMs() const
+{
+    return m_playbackInfoTimerMs;
 }
 
 firebolt::rialto::common::SessionServerState SessionServerApp::getInitialState() const
