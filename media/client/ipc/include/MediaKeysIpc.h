@@ -115,7 +115,7 @@ private:
     /**
      * @brief The media key handle for the current session.
      */
-    std::atomic<int> m_mediaKeysHandle;
+    std::atomic<int> m_mediaKeysHandle{-1};
 
     /**
      * @brief Thread for handling media player events from the server.
