@@ -21,6 +21,7 @@
 #include <limits.h>
 #include <mutex>
 #include <stdexcept>
+#include <utility>
 
 #include "IWebAudioPlayerIpc.h"
 #include "IWebAudioPlayerIpcClient.h"
@@ -112,7 +113,7 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
                                const uint32_t priority, std::weak_ptr<const WebAudioConfig> webAudioConfig,
                                const std::shared_ptr<IWebAudioPlayerIpcFactory> &webAudioPlayerIpcFactory,
                                IClientController &clientController)
-    : m_webAudioPlayerClient(client), m_clientController{clientController}, m_bytesPerFrame{0},
+    : m_webAudioPlayerClient(std::move(client)), m_clientController{clientController}, m_bytesPerFrame{0},
       m_currentAppState{ApplicationState::UNKNOWN}
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
