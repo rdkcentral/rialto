@@ -103,6 +103,7 @@ message SetConfigurationRequest {
     optional uint32 subtitleClockResyncInterval = 11;
     optional firebolt.rialto.AudioCapabilities audiocapabilities = 12;
     optional firebolt.rialto.VideoCapabilities videocapabilities = 13;
+    optional uint32 playbackInfoTimerMs = 14;
 }
 message SetConfigurationResponse {
 }

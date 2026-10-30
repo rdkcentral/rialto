@@ -65,6 +65,13 @@ TEST_F(SessionServerAppTests, ShouldCreateSutForAppWithClientSocketName)
     EXPECT_EQ(kClientDisplayName, m_sut->getClientDisplayName());
 }
 
+TEST_F(SessionServerAppTests, ShouldReturnConfiguredPlaybackInfoTimer)
+{
+    constexpr std::chrono::milliseconds kPlaybackInfoTimer{75};
+    createAppSut(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName, kPlaybackInfoTimer});
+    EXPECT_EQ(kPlaybackInfoTimer, m_sut->getPlaybackInfoTimer());
+}
+
 TEST_F(SessionServerAppTests, ShouldCreateSutForAppWithFullPathClientSocketName)
 {
     createAppSut(firebolt::rialto::common::AppConfig{kFullPathClientIpcSocketName, kClientDisplayName});

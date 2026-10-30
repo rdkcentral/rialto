@@ -18,6 +18,14 @@
  */
 
 #include "IpcTestsFixture.h"
+#include <limits>
+
+namespace
+{
+constexpr uint32_t kMaxPlaybackInfoTimerMs{std::numeric_limits<uint32_t>::max()};
+const std::chrono::milliseconds kPlaybackInfoTimerAboveMax{
+    static_cast<std::chrono::milliseconds::rep>(kMaxPlaybackInfoTimerMs) + 1};
+} // namespace
 
 TEST_F(IpcTests, PerformSetStateShouldReturnFalseWhenNoAppIsConnected)
 {
@@ -133,6 +141,13 @@ TEST_F(IpcTests, ShouldSuccessfullySetConfiguration)
     ASSERT_TRUE(triggerPerformSetConfiguration());
 }
 
+TEST_F(IpcTests, ShouldSaturatePlaybackInfoTimerForSocketNameConfiguration)
+{
+    configureServerToSendOkResponses(kMaxPlaybackInfoTimerMs);
+    ASSERT_TRUE(triggerCreateClient());
+    ASSERT_TRUE(triggerPerformSetConfiguration(kPlaybackInfoTimerAboveMax));
+}
+
 TEST_F(IpcTests, ShouldFailToSetConfiguration)
 {
     configureServerToSendFailResponses();
@@ -145,6 +160,13 @@ TEST_F(IpcTests, ShouldSuccessfullySetConfigurationWithFd)
     configureServerToSendOkResponses();
     ASSERT_TRUE(triggerCreateClient());
     ASSERT_TRUE(triggerPerformSetConfigurationWithFd());
+}
+
+TEST_F(IpcTests, ShouldSaturatePlaybackInfoTimerForSocketFdConfiguration)
+{
+    configureServerToSendOkResponses(kMaxPlaybackInfoTimerMs);
+    ASSERT_TRUE(triggerCreateClient());
+    ASSERT_TRUE(triggerPerformSetConfigurationWithFd(kPlaybackInfoTimerAboveMax));
 }
 
 TEST_F(IpcTests, ShouldFailToSetConfigurationWithFd)

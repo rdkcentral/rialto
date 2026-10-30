@@ -22,6 +22,7 @@
 
 #include "Client.h"
 #include "IController.h"
+#include <chrono>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -50,17 +51,21 @@ public:
 
     bool createClient(int serverId, int appMgmtSocket) override;
     void removeClient(int serverId) override;
-    bool performSetConfiguration(
-        int serverId, const firebolt::rialto::common::SessionServerState &initialState, const std::string &socketName,
-        const std::string &clientDisplayName, const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
-        const unsigned int socketPermissions, const std::string &socketOwner, const std::string &socketGroup,
-        const std::string &appName, const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
-        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) override;
-    bool performSetConfiguration(
-        int serverId, const firebolt::rialto::common::SessionServerState &initialState, int socketFd,
-        const std::string &clientDisplayName, const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
-        const std::string &appName, const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
-        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) override;
+    bool performSetConfiguration(int serverId, const firebolt::rialto::common::SessionServerState &initialState,
+                                 const std::string &socketName, const std::string &clientDisplayName,
+                                 const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
+                                 const unsigned int socketPermissions, const std::string &socketOwner,
+                                 const std::string &socketGroup, const std::string &appName,
+                                 const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                                 const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps,
+                                 std::chrono::milliseconds playbackInfoTimer = std::chrono::milliseconds{32}) override;
+    bool performSetConfiguration(int serverId, const firebolt::rialto::common::SessionServerState &initialState,
+                                 int socketFd, const std::string &clientDisplayName,
+                                 const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
+                                 const std::string &appName,
+                                 const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                                 const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps,
+                                 std::chrono::milliseconds playbackInfoTimer = std::chrono::milliseconds{32}) override;
     bool performPing(int serverId, int pingId) override;
     bool performSetState(int serverId, const firebolt::rialto::common::SessionServerState &state) override;
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;

@@ -25,6 +25,7 @@
 #include "ISharedMemoryBuffer.h"
 #include "IWebAudioPlayerService.h"
 #include "MediaCommon.h"
+#include <chrono>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -47,6 +48,7 @@ public:
     virtual void switchToInactive() = 0;
     virtual void setMaxPlaybacks(int maxPlaybacks) = 0;
     virtual void setMaxWebAudioPlayers(int maxWebAudio) = 0;
+    virtual void setPlaybackInfoTimer(std::chrono::milliseconds playbackInfoTimer) = 0;
     virtual void setClientDisplayName(const std::string &clientDisplayName) const = 0;
     virtual void setResourceManagerAppName(const std::string &appName) const = 0;
 

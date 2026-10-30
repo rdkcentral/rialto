@@ -101,7 +101,8 @@ MediaPipelineServerInternalFactory::createMediaPipeline(std::weak_ptr<IMediaPipe
 
 std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInternalFactory::createMediaPipelineServerInternal(
     std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements, int sessionId,
-    const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService) const
+    const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService,
+    std::chrono::milliseconds playbackInfoTimer) const
 {
     std::shared_ptr<IMediaPipelineClient> sharedClient = client.lock();
     if (!sharedClient)
@@ -120,7 +121,8 @@ std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInterna
                                                                   server::IMainThreadFactory::createFactory(),
                                                                   common::ITimerFactory::getFactory(),
                                                                   std::make_unique<DataReaderFactory>(),
-                                                                  std::make_unique<ActiveRequests>(), decryptionService);
+                                                                  std::make_unique<ActiveRequests>(), decryptionService,
+                                                                  playbackInfoTimer);
     }
     catch (const std::exception &e)
     {
@@ -135,10 +137,12 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
     const std::shared_ptr<IGstGenericPlayerFactory> &gstPlayerFactory, int sessionId,
     const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     const std::shared_ptr<common::ITimerFactory> &timerFactory, std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
-    std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService)
+    std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService,
+    std::chrono::milliseconds playbackInfoTimer)
     : m_mediaPipelineClient(client), m_kGstPlayerFactory(gstPlayerFactory), m_kVideoRequirements(videoRequirements),
-      m_sessionId{sessionId}, m_shmBuffer{shmBuffer}, m_dataReaderFactory{std::move(dataReaderFactory)},
-      m_timerFactory{timerFactory}, m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService},
+      m_kPlaybackInfoTimer{playbackInfoTimer}, m_sessionId{sessionId}, m_shmBuffer{shmBuffer},
+      m_dataReaderFactory{std::move(dataReaderFactory)}, m_timerFactory{timerFactory},
+      m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService},
       m_currentPlaybackState{PlaybackState::UNKNOWN}, m_wasAllSourcesAttachedCalled{false}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -217,7 +221,7 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
 
     m_gstPlayer =
         m_kGstPlayerFactory
-            ->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements, isLive,
+            ->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements, isLive, m_kPlaybackInfoTimer,
                                      firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory::getFactory());
     if (!m_gstPlayer)
     {

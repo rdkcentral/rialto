@@ -22,6 +22,7 @@
 
 #include "IIpcServer.h"
 #include <array>
+#include <cstdint>
 #include <memory>
 #include <thread>
 
@@ -37,7 +38,7 @@ public:
     RialtoSessionServerStub();
     ~RialtoSessionServerStub();
 
-    void start(StubResponse stubResponse);
+    void start(StubResponse stubResponse, uint32_t expectedPlaybackInfoTimerMs = 32);
     int getClientSocket() const;
     void sendStateChangedEvent();
     void sendAckEvent(int pingId, bool success);
