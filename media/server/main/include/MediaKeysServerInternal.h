@@ -83,7 +83,7 @@ public:
                                         const std::vector<uint8_t> &initData,
                                         const LimitedDurationLicense &ldlState) override;
 
-    MediaKeyErrorStatus loadSession(int32_t keySessionId) override;
+    MediaKeyErrorStatus loadSession(int32_t keySessionId, const std::string &cdmKeySessionId) override;
 
     MediaKeyErrorStatus updateSession(int32_t keySessionId, const std::vector<uint8_t> &responseData) override;
 
@@ -177,11 +177,12 @@ private:
     /**
      * @brief Load internally, only to be called on the main thread.
      *
-     * @param[in] keySessionId : The key session id for the session.
+     * @param[in] keySessionId    : The key session id for the session.
+     * @param[in] cdmKeySessionId : The internal CDM key session ID.
      *
      * @retval an error status.
      */
-    MediaKeyErrorStatus loadSessionInternal(int32_t keySessionId);
+    MediaKeyErrorStatus loadSessionInternal(int32_t keySessionId, const std::string &cdmKeySessionId);
 
     /**
      * @brief Update internally, only to be called on the main thread.

@@ -90,7 +90,10 @@ namespace firebolt::rialto::server::ct
 // media keys module
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestWidevine();
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestNetflix();
-::firebolt::rialto::CreateKeySessionRequest createCreateKeySessionRequest(int mediaKeysHandle);
+::firebolt::rialto::CreateKeySessionRequest
+createCreateKeySessionRequest(int mediaKeysHandle,
+                              ::firebolt::rialto::CreateKeySessionRequest_KeySessionType keySessionType =
+                                  ::firebolt::rialto::CreateKeySessionRequest_KeySessionType_TEMPORARY);
 ::firebolt::rialto::GenerateRequestRequest createGenerateRequestRequest(int mediaKeysHandle, int keySessionId,
                                                                         const std::vector<unsigned char> &initData,
                                                                         bool extendedInterface = false);
@@ -99,7 +102,8 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::ContainsKeyRequest createContainsKeyRequest(int mediaKeysHandle, int keySessionId,
                                                                 const std::vector<unsigned char> &keyId);
 ::firebolt::rialto::RemoveKeySessionRequest createRemoveKeySessionRequest(int mediaKeysHandle, int keySessionId);
-::firebolt::rialto::LoadSessionRequest createLoadSessionRequest(int mediaKeysHandle, int keySessionId);
+::firebolt::rialto::LoadSessionRequest createLoadSessionRequest(int mediaKeysHandle, int keySessionId,
+                                                                const std::string &cdmSessionId);
 ::firebolt::rialto::CloseKeySessionRequest createCloseKeySessionRequest(int mediaKeysHandle, int keySessionId);
 ::firebolt::rialto::SetDrmHeaderRequest createSetDrmHeaderRequest(int mediaKeysHandle, int keySessionId,
                                                                   const std::vector<unsigned char> &keyId);

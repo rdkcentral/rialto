@@ -50,6 +50,7 @@ const std::vector<unsigned char> kLicenseRequestMessage{3, 2, 1};
 const std::vector<unsigned char> kLicenseRenewalMessage{0, 4, 8};
 const std::string kUrl{"http://"};
 constexpr firebolt::rialto::LimitedDurationLicense kLdlState{firebolt::rialto::LimitedDurationLicense::NOT_SPECIFIED};
+const std::string kCdmKeySessionId{"cdm_session_id"};
 } // namespace
 
 MATCHER_P4(LicenseRequestEventMatcher, kKeySessionId, mediaKeysHandle, requestMessage, kUrl, "")
@@ -173,14 +174,15 @@ void MediaKeysModuleServiceTests::cdmServiceWillFailToGenerateRequest()
 void MediaKeysModuleServiceTests::cdmServiceWillLoadSession()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_cdmServiceMock, loadSession(kHardcodedMediaKeysHandle, kKeySessionId))
+    EXPECT_CALL(m_cdmServiceMock, loadSession(kHardcodedMediaKeysHandle, kKeySessionId, kCdmKeySessionId))
         .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
 }
 
 void MediaKeysModuleServiceTests::cdmServiceWillFailToLoadSession()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_cdmServiceMock, loadSession(kHardcodedMediaKeysHandle, kKeySessionId)).WillOnce(Return(kErrorStatus));
+    EXPECT_CALL(m_cdmServiceMock, loadSession(kHardcodedMediaKeysHandle, kKeySessionId, kCdmKeySessionId))
+        .WillOnce(Return(kErrorStatus));
 }
 
 void MediaKeysModuleServiceTests::cdmServiceWillUpdateSession()
@@ -560,6 +562,7 @@ void MediaKeysModuleServiceTests::sendLoadSessionRequestAndReceiveResponse()
 
     request.set_media_keys_handle(kHardcodedMediaKeysHandle);
     request.set_key_session_id(kKeySessionId);
+    request.set_cdm_key_session_id(kCdmKeySessionId);
 
     m_service->loadSession(m_controllerMock.get(), &request, &response, m_closureMock.get());
     EXPECT_EQ(firebolt::rialto::MediaKeyErrorStatus::OK, convertMediaKeyErrorStatus(response.error_status()));
@@ -572,6 +575,7 @@ void MediaKeysModuleServiceTests::sendLoadSessionRequestAndReceiveErrorResponse(
 
     request.set_media_keys_handle(kHardcodedMediaKeysHandle);
     request.set_key_session_id(kKeySessionId);
+    request.set_cdm_key_session_id(kCdmKeySessionId);
 
     m_service->loadSession(m_controllerMock.get(), &request, &response, m_closureMock.get());
     EXPECT_EQ(kErrorStatus, convertMediaKeyErrorStatus(response.error_status()));
