@@ -837,11 +837,6 @@ public:
          * @param[in] displayOffset : The offset in the source file of the beginning of the media segment.
          */
         void setDisplayOffset(uint64_t displayOffset) { m_displayOffset = displayOffset; }
-
-        /**
-         * @brief Copies the data from other to this.
-         */
-        void copy(const MediaSegment &other);
     };
 
     /**
@@ -875,6 +870,8 @@ public:
         {
             m_sampleRate = other.m_sampleRate;
             m_numberOfChannels = other.m_numberOfChannels;
+            m_clippingStart = other.m_clippingStart;
+            m_clippingEnd = other.m_clippingEnd;
         }
 
         /**
@@ -919,16 +916,15 @@ public:
          */
         MediaSegmentAudio &operator=(const MediaSegmentAudio &other)
         {
-            copy(other);
+            MediaSegment::operator=(other);
+            m_sampleRate = other.m_sampleRate;
+            m_numberOfChannels = other.m_numberOfChannels;
+            m_clippingStart = other.m_clippingStart;
+            m_clippingEnd = other.m_clippingEnd;
             return *this;
         }
 
     protected:
-        /**
-         * @brief Copies the data from other to this.
-         */
-        void copy(const MediaSegmentAudio &other);
-
         /**
          * @brief The audio sample rate.
          */
@@ -942,12 +938,12 @@ public:
         /**
          * @brief The amount of audio to clip from start of buffer
          */
-        uint64_t m_clippingStart;
+        uint64_t m_clippingStart = 0;
 
         /**
          * @brief The amount of audio to clip from end of buffer
          */
-        uint64_t m_clippingEnd;
+        uint64_t m_clippingEnd = 0;
     };
 
     /**
@@ -1021,16 +1017,14 @@ public:
          */
         MediaSegmentVideo &operator=(const MediaSegmentVideo &other)
         {
-            copy(other);
+            MediaSegment::operator=(other);
+            m_width = other.m_width;
+            m_height = other.m_height;
+            m_frameRate = other.m_frameRate;
             return *this;
         }
 
     protected:
-        /**
-         * @brief Copies the data from other to this.
-         */
-        void copy(const MediaSegmentVideo &other);
-
         /**
          * @brief The video width in pixels.
          */
