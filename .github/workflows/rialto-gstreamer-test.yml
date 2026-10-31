@@ -19,7 +19,7 @@ name: Rialto GStreamer Test
 
 on:
   pull_request:
-    branches: ["master", "release/*", "support/*"]
+    branches: ["master", "release/*"]
   workflow_dispatch:
 
 permissions:
