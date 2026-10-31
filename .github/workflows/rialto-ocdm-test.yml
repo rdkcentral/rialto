@@ -20,6 +20,7 @@ name: Rialto OCDM Test
 on:
   pull_request:
     branches: ["master", "release/*", "support/*"]
+  workflow_dispatch:
 
 permissions:
    contents: read
@@ -48,7 +49,7 @@ jobs:
           echo "No matching dependency branch; release-pin fallback will run instead"
           echo "ref=" >> "$GITHUB_OUTPUT"
 
-  build-and-test:
+  build-and-test-branch:
     needs: select_dependency_ref
     if: needs.select_dependency_ref.outputs.ref != ''
     runs-on: ubuntu-24.04
@@ -87,6 +88,31 @@ jobs:
           path: |
             rialto-ocdm/gtest_result.log
             rialto-ocdm/build/*gtest_result.xml
+
+  build-and-test:
+    if: ${{ always() }}
+    needs: [select_dependency_ref, build-and-test-branch, build-and-test-release-pins]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Require selected dependency tests to pass
+        env:
+          SELECT_RESULT: ${{ needs.select_dependency_ref.result }}
+          SELECTED_REF: ${{ needs.select_dependency_ref.outputs.ref }}
+          BRANCH_RESULT: ${{ needs.build-and-test-branch.result }}
+          PIN_RESULT: ${{ needs.build-and-test-release-pins.result }}
+        run: |
+          if [ "$SELECT_RESULT" != success ]; then
+            echo "Dependency selection did not succeed" >&2
+            exit 1
+          fi
+          result="$PIN_RESULT"
+          if [ -n "$SELECTED_REF" ]; then
+            result="$BRANCH_RESULT"
+          fi
+          if [ "$result" != success ]; then
+            echo "Selected dependency tests did not succeed: $result" >&2
+            exit 1
+          fi
 
 
   build-and-test-release-pins:
