@@ -14,13 +14,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#Fix test on test
 
 name: Rialto GStreamer Test
 
 on:
   pull_request:
-    branches: ["master", "release/*", "support/*"]
+    branches: ["master", "release/*"]
   workflow_dispatch:
 
 permissions:
@@ -41,10 +40,17 @@ jobs:
         run: |
           repo="https://github.com/rdkcentral/rialto-gstreamer.git"
           for candidate in "$PR_BRANCH" "$BASE_BRANCH"; do
-            if [ -n "$candidate" ] && git ls-remote --exit-code --heads "$repo" "refs/heads/$candidate" > /dev/null; then
+            [ -n "$candidate" ] || continue
+            if git ls-remote --exit-code --heads "$repo" "refs/heads/$candidate" > /dev/null; then
               echo "Using rialto-gstreamer branch: $candidate"
               echo "ref=$candidate" >> "$GITHUB_OUTPUT"
               exit 0
+            else
+              status=$?
+              if [ "$status" -ne 2 ]; then
+                echo "Could not query dependency branch: $candidate" >&2
+                exit "$status"
+              fi
             fi
           done
           echo "No matching dependency branch; release-pin fallback will run instead"
@@ -63,6 +69,14 @@ jobs:
           repository: rdkcentral/rialto-gstreamer
           ref: ${{ needs.select_dependency_ref.outputs.ref }}
           path: rialto-gstreamer
+
+      - name: Checkout Rialto headers under test
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: rialto-under-test
+          persist-credentials: false
           
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -75,11 +89,11 @@ jobs:
           sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
 
       - name: Run tests
-        env:
-          RIALTO_BUILD_BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
+          mkdir -p rialto-gstreamer/tests/third-party/include
+          cp -R rialto-under-test/media/public/include/. rialto-gstreamer/tests/third-party/include/
           cd rialto-gstreamer
-          python build_ut.py -c -xml -f -b "$RIALTO_BUILD_BRANCH"
+          python build_ut.py -xml -f -b "${{ github.event.pull_request.head.sha || github.sha }}"
         
       - name: Upload logs
         uses: actions/upload-artifact@v4
@@ -192,6 +206,14 @@ jobs:
           ref: ${{ steps.resolve-pins.outputs.gstreamer_ref }}
           path: rialto-gstreamer
 
+      - name: Checkout Rialto headers under test
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: rialto-under-test
+          persist-credentials: false
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -203,11 +225,11 @@ jobs:
           sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
 
       - name: Run tests against Rialto PR branch
-        env:
-          RIALTO_BUILD_BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
+          mkdir -p rialto-gstreamer/tests/third-party/include
+          cp -R rialto-under-test/media/public/include/. rialto-gstreamer/tests/third-party/include/
           cd rialto-gstreamer
-          python build_ut.py -c -xml -f -b "$RIALTO_BUILD_BRANCH"
+          python build_ut.py -xml -f -b "${{ github.event.pull_request.head.sha || github.sha }}"
 
       - name: Upload release-pin logs
         uses: actions/upload-artifact@v4
