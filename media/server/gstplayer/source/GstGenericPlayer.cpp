@@ -315,44 +315,52 @@ GstGenericPlayer::GstGenericPlayer(
         throw std::runtime_error("Failed to create the worker thread");
     }
 
-    // Initialise pipeline
-    switch (type)
+    // Initialise pipeline and dispatcher. Any failure after resources are created (inside initMsePipeline or
+    // createGstDispatcherThread) must unwind through cleanup - the destructor does not run on a ctor throw.
+    try
     {
-    case MediaType::MSE:
-    {
-        initMsePipeline();
-        break;
+        switch (type)
+        {
+        case MediaType::MSE:
+        {
+            initMsePipeline();
+            break;
+        }
+        default:
+        {
+            throw std::runtime_error("Media type not supported");
+        }
+        }
+
+        // Check the video requirements for a limited video.
+        // If the video requirements are set to anything lower than the minimum, this playback is assumed to be a
+        // secondary video in a dual video scenario.
+        if ((kMinPrimaryVideoWidth > videoRequirements.maxWidth) || (kMinPrimaryVideoHeight > videoRequirements.maxHeight))
+        {
+            RIALTO_SERVER_LOG_MIL("Secondary video playback selected");
+            bool westerossinkSecondaryVideoResult = setWesterossinkSecondaryVideo();
+            bool ermContextResult = setErmContext();
+            if (!westerossinkSecondaryVideoResult && !ermContextResult)
+            {
+                throw std::runtime_error("Could not set secondary video");
+            }
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_MIL("Primary video playback selected");
+        }
+
+        m_gstDispatcherThread =
+            gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline,
+                                                                  m_context.flushOnPrerollController, m_gstWrapper,
+                                                                  m_glibWrapper);
     }
-    default:
+    catch (...)
     {
         resetWorkerThread();
-        throw std::runtime_error("Media type not supported");
+        termPipeline();
+        throw;
     }
-    }
-
-    // Check the video requirements for a limited video.
-    // If the video requirements are set to anything lower than the minimum, this playback is assumed to be a secondary
-    // video in a dual video scenario.
-    if ((kMinPrimaryVideoWidth > videoRequirements.maxWidth) || (kMinPrimaryVideoHeight > videoRequirements.maxHeight))
-    {
-        RIALTO_SERVER_LOG_MIL("Secondary video playback selected");
-        bool westerossinkSecondaryVideoResult = setWesterossinkSecondaryVideo();
-        bool ermContextResult = setErmContext();
-        if (!westerossinkSecondaryVideoResult && !ermContextResult)
-        {
-            resetWorkerThread();
-            termPipeline();
-            throw std::runtime_error("Could not set secondary video");
-        }
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_MIL("Primary video playback selected");
-    }
-
-    m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline,
-                                                                                  m_context.flushOnPrerollController,
-                                                                                  m_gstWrapper, m_glibWrapper);
 }
 
 GstGenericPlayer::~GstGenericPlayer()
@@ -443,6 +451,9 @@ void GstGenericPlayer::initMsePipeline()
 
 void GstGenericPlayer::resetWorkerThread()
 {
+    if (!m_workerThread)
+        return;
+
     // Shutdown task thread
     m_workerThread->enqueueTask(m_taskFactory->createShutdown(*this));
     m_workerThread->join();
@@ -472,39 +483,47 @@ void GstGenericPlayer::termPipeline()
         streamInfo.buffers.clear();
     }
 
-    m_taskFactory->createStop(m_context, *this)->execute();
-    GstBus *bus = m_gstWrapper->gstPipelineGetBus(GST_PIPELINE(m_context.pipeline));
-    m_gstWrapper->gstBusSetSyncHandler(bus, nullptr, nullptr, nullptr);
-    m_gstWrapper->gstObjectUnref(bus);
-
-    if (m_context.source)
+    if (m_context.pipeline)
     {
-        m_gstWrapper->gstObjectUnref(m_context.source);
-    }
-    if (m_context.subtitleSink)
-    {
-        m_gstWrapper->gstObjectUnref(m_context.subtitleSink);
-        m_context.subtitleSink = nullptr;
-    }
+        m_taskFactory->createStop(m_context, *this)->execute();
+        GstBus *bus = m_gstWrapper->gstPipelineGetBus(GST_PIPELINE(m_context.pipeline));
+        m_gstWrapper->gstBusSetSyncHandler(bus, nullptr, nullptr, nullptr);
+        m_gstWrapper->gstObjectUnref(bus);
 
-    if (m_context.videoSink)
-    {
-        m_gstWrapper->gstObjectUnref(m_context.videoSink);
-        m_context.videoSink = nullptr;
-    }
-    if (m_context.playbackGroup.m_curAudioPlaysinkBin)
-    {
-        m_gstWrapper->gstObjectUnref(m_context.playbackGroup.m_curAudioPlaysinkBin);
-        m_context.playbackGroup.m_curAudioPlaysinkBin = nullptr;
-    }
+        if (m_context.source)
+        {
+            m_gstWrapper->gstObjectUnref(m_context.source);
+            m_context.source = nullptr;
+        }
+        if (m_context.subtitleSink)
+        {
+            m_gstWrapper->gstObjectUnref(m_context.subtitleSink);
+            m_context.subtitleSink = nullptr;
+        }
 
-    auto recordId = m_context.gstProfiler->createRecord("Pipeline Terminated");
-    if (recordId)
-        m_context.gstProfiler->logRecord(recordId.value());
-    m_context.gstProfiler->dumpToFile();
+        if (m_context.videoSink)
+        {
+            m_gstWrapper->gstObjectUnref(m_context.videoSink);
+            m_context.videoSink = nullptr;
+        }
+        if (m_context.playbackGroup.m_curAudioPlaysinkBin)
+        {
+            m_gstWrapper->gstObjectUnref(m_context.playbackGroup.m_curAudioPlaysinkBin);
+            m_context.playbackGroup.m_curAudioPlaysinkBin = nullptr;
+        }
 
-    // Delete the pipeline
-    m_gstWrapper->gstObjectUnref(m_context.pipeline);
+        if (m_context.gstProfiler)
+        {
+            auto recordId = m_context.gstProfiler->createRecord("Pipeline Terminated");
+            if (recordId)
+                m_context.gstProfiler->logRecord(recordId.value());
+            m_context.gstProfiler->dumpToFile();
+        }
+
+        // Delete the pipeline
+        m_gstWrapper->gstObjectUnref(m_context.pipeline);
+        m_context.pipeline = nullptr;
+    }
 
     m_glibWrapper->gThreadPoolStopUnusedThreads();
     malloc_trim(0);

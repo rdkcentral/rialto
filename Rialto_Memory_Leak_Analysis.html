@@ -1,0 +1,287 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<title>Rialto Comprehensive Memory Leak Analysis</title>
+<style>
+body{font-family:'Segoe UI',sans-serif;background:#f5f6f8;color:#333;margin:0;line-height:1.6}
+.w{max-width:1050px;margin:0 auto;padding:20px}
+header{background:linear-gradient(135deg,#0072c6,#004a80);color:#fff;padding:36px 0;text-align:center}
+header h1{font-size:1.7rem}header p{opacity:.8;margin-top:6px}
+s2{display:block;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.07);margin:20px 0;padding:24px 28px}
+h2{color:#0072c6;font-size:1.2rem;border-bottom:2px solid #e9ecef;padding-bottom:6px;margin-bottom:14px}
+h3{color:#444;font-size:1rem;margin:14px 0 6px}
+.bh,.bm,.bl{display:inline-block;padding:2px 9px;border-radius:11px;font-size:.76rem;font-weight:600;color:#fff}
+.bh{background:#d9534f}.bm{background:#f0ad4e;color:#333}.bl{background:#5cb85c}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:.9rem}
+th{background:#f1f3f5;text-align:left;padding:8px 10px;border-bottom:2px solid #dee2e6}
+td{padding:8px 10px;border-bottom:1px solid #eee;vertical-align:top}
+code{background:#f1f3f5;padding:1px 5px;border-radius:3px;font-size:.86em}
+pre{background:#2d2d2d;color:#f8f8f2;padding:14px;border-radius:5px;overflow-x:auto;font-size:.83rem;margin:8px 0}
+.f{border-left:4px solid #0072c6;padding:10px 14px;margin:10px 0;background:#f8f9fa;border-radius:0 5px 5px 0}
+.fh{border-left-color:#d9534f}.fm{border-left-color:#f0ad4e}.fl{border-left-color:#5cb85c}
+</style></head><body>
+<header><h1>Rialto Comprehensive Memory Leak Analysis</h1>
+<p>rialto (server) + rialto-gstreamer (client plugin) + rialto-ocdm (DRM shim)</p>
+<p style="font-size:.85rem;opacity:.75">Version v0.15.2-r17 | Commit 684b94e0 | September 2026 | Full Codebase Scope</p>
+</header>
+<div class="w">
+<s2><h2>Executive Summary</h2>
+<p>This report presents a <strong>comprehensive memory leak analysis</strong> of the entire Rialto ecosystem at version v0.15.2-r17, covering three repositories:</p>
+<ul style="margin:10px 0 10px 20px">
+<li><strong>rialto</strong> &mdash; Server-side GStreamer player, worker thread tasks, GstSrc, pipeline management</li>
+<li><strong>rialto-gstreamer</strong> &mdash; Client-side GStreamer plugin (MSE sinks, pull-mode delegates, buffer parser)</li>
+<li><strong>rialto-ocdm</strong> &mdash; OpenCDM DRM shim (session lifecycle, protection metadata, active sessions)</li>
+</ul>
+<p><strong>5 memory leak findings</strong> were identified (3 HIGH, 1 MEDIUM, 1 LOW). All are pre-existing issues present across releases, not introduced by the r16&rarr;r17 change. The leaks compound on every channel change, causing steady memory growth in the RialtoServer process.</p>
+</s2>
+
+<s2><h2>Findings Summary</h2>
+<table>
+<tr><th>#</th><th>Repo</th><th>Severity</th><th>Finding</th><th>Impact</th></tr>
+<tr><td>1</td><td>rialto</td><td><span class="bh">HIGH</span></td><td>WorkerThread task queue not drained on shutdown</td><td>Leaked GstElement/GstMessage per channel change</td></tr>
+<tr><td>2</td><td>rialto</td><td><span class="bh">HIGH</span></td><td>SetupElement destructor missing gstObjectUnref</td><td>Leaked GstElement if task not executed</td></tr>
+<tr><td>3</td><td>rialto</td><td><span class="bh">HIGH</span></td><td>SetupSource destructor missing gstObjectUnref</td><td>Leaked GstElement if task not executed</td></tr>
+<tr><td>4</td><td>rialto</td><td><span class="bm">MEDIUM</span></td><td>HandleBusMessage destructor missing gstMessageUnref</td><td>Leaked GstMessage + embedded objects</td></tr>
+<tr><td>5</td><td>rialto</td><td><span class="bl">LOW</span></td><td>SynchroniseSubtitleClock: GstStructure leaked when gstEventNewCustom fails</td><td>Leaked GstStructure on error path</td></tr>
+</table>
+</s2>
+<s2><h2>Finding #1 &mdash; WorkerThread Task Queue Not Drained on Shutdown <span class="bh">HIGH</span></h2>
+<p><strong>Repository:</strong> rialto &nbsp;|&nbsp; <strong>File:</strong> <code>media/server/main/source/WorkerThread.cpp</code></p>
+<h3>Description</h3>
+<p>When <code>WorkerThread::shutdown()</code> is called during pipeline teardown (every channel change), it sets <code>m_isTaskThreadActive = false</code> and notifies the condition variable. The <code>taskHandler()</code> loop then exits. However, any tasks still queued in <code>m_taskQueue</code> are <strong>never executed</strong> &mdash; they are simply destroyed when the queue goes out of scope.</p>
+<h3>Root Cause Code</h3>
+<pre>// WorkerThread.cpp - taskHandler()
+void WorkerThread::taskHandler()
+{
+    while (m_isTaskThreadActive) // exits immediately on shutdown
+    {
+        std::unique_lock lock(m_taskMutex);
+        m_cv.wait(lock, [&] { return !m_taskQueue.empty() || !m_isTaskThreadActive; });
+        if (!m_isTaskThreadActive) break; // &lt;-- remaining tasks abandoned
+        auto task = std::move(m_taskQueue.front());
+        m_taskQueue.pop();
+        lock.unlock();
+        task-&gt;execute();
+    }
+    // m_taskQueue destroyed here with unexecuted tasks still in it
+}</pre>
+<h3>Why This Leaks</h3>
+<p>Tasks like <code>SetupElement</code>, <code>SetupSource</code>, and <code>HandleBusMessage</code> hold <strong>referenced GStreamer objects</strong> (GstElement*, GstMessage*) that are only unreffed inside <code>execute()</code>. When these tasks are destroyed without execution, their destructors run but do NOT unref the GStreamer objects &mdash; causing permanent leaks.</p>
+<h3>Trigger</h3>
+<p>Every pipeline teardown / channel change. The GstDispatcherThread and GStreamer callbacks may enqueue tasks right up until the worker thread exits. Any task enqueued after the last <code>taskHandler()</code> iteration is leaked.</p>
+</s2>
+<s2><h2>Finding #2 &mdash; SetupElement Destructor Missing gstObjectUnref <span class="bh">HIGH</span></h2>
+<p><strong>Repository:</strong> rialto &nbsp;|&nbsp; <strong>File:</strong> <code>media/server/gstplayer/source/tasks/generic/SetupElement.cpp</code></p>
+<h3>Description</h3>
+<p>The <code>SetupElement</code> task takes ownership of a <code>GstElement*</code> (via <code>gst_object_ref</code> at the call site). The element is only unreffed inside <code>execute()</code>. The destructor does NOT unref it.</p>
+<pre>// SetupElement constructor - takes ownership of referenced GstElement*
+SetupElement::SetupElement(..., GstElement *element)
+    : ..., m_element{element}  // holds the ref
+{ }
+
+// Destructor - NO UNREF
+SetupElement::~SetupElement()
+{
+    RIALTO_SERVER_LOG_DEBUG("SetupElement finished");
+    // m_element is NOT unreffed here!
+}
+
+// execute() - unrefs only here
+void SetupElement::execute() const
+{
+    // ... uses m_element ...
+    m_gstWrapper-&gt;gstObjectUnref(m_element); // line ~343
+}</pre>
+<h3>Correct Pattern (DeepElementAdded)</h3>
+<pre>// DeepElementAdded destructor - CORRECTLY unrefs
+DeepElementAdded::~DeepElementAdded()
+{
+    m_glibWrapper-&gt;gFree(m_elementName);
+    m_gstWrapper-&gt;gstObjectUnref(m_element); // Always unrefs
+}</pre>
+<h3>Impact</h3>
+<p>Combined with Finding #1: if a <code>SetupElement</code> task is in the worker queue when shutdown occurs, the <code>GstElement*</code> is permanently leaked. Each leaked element holds its entire sub-pipeline tree.</p>
+</s2>
+<s2><h2>Finding #3 &mdash; SetupSource Destructor Missing gstObjectUnref <span class="bh">HIGH</span></h2>
+<p><strong>Repository:</strong> rialto &nbsp;|&nbsp; <strong>File:</strong> <code>media/server/gstplayer/source/tasks/generic/SetupSource.cpp</code></p>
+<h3>Description</h3>
+<p>The <code>SetupSource</code> task takes ownership of a <code>GstElement*</code> (<code>m_source</code>) but does NOT unref it in either the destructor OR <code>execute()</code>. The source element is eventually unreffed in <code>termPipeline()</code>, but only if the task was executed and the source was stored in the context.</p>
+<pre>// SetupSource - no unref anywhere in the task
+SetupSource::SetupSource(..., GstElement *source)
+    : ..., m_source{source}  // holds the ref
+{ }
+
+SetupSource::~SetupSource()
+{
+    RIALTO_SERVER_LOG_DEBUG("SetupSource finished");
+    // m_source NOT unreffed!
+}
+
+void SetupSource::execute() const
+{
+    m_context.source = m_source; // transfers to context, no unref
+    // ...
+}</pre>
+<h3>Impact</h3>
+<p>If <code>SetupSource</code> is destroyed without <code>execute()</code> (Finding #1), the <code>GstElement*</code> ref is permanently leaked. The source element (rialto GstSrc) is a significant allocation holding the entire source bin.</p>
+</s2>
+<s2><h2>Finding #4 &mdash; HandleBusMessage Destructor Missing gstMessageUnref <span class="bm">MEDIUM</span></h2>
+<p><strong>Repository:</strong> rialto &nbsp;|&nbsp; <strong>File:</strong> <code>media/server/gstplayer/source/tasks/generic/HandleBusMessage.cpp</code></p>
+<h3>Description</h3>
+<p>The <code>HandleBusMessage</code> task takes ownership of a <code>GstMessage*</code> (the constructor receives an already-reffed message). The message is unreffed only inside <code>execute()</code>. The destructor does NOT unref it.</p>
+<pre>// Constructor - takes ownership of reffed GstMessage*
+HandleBusMessage::HandleBusMessage(..., GstMessage *message, ...)
+    : ..., m_message{message}
+{ }
+
+// Destructor - NO UNREF
+HandleBusMessage::~HandleBusMessage()
+{
+    RIALTO_SERVER_LOG_DEBUG("HandleBusMessage finished");
+    // m_message NOT unreffed!
+}
+
+// execute() - unrefs only here (line ~306)
+void HandleBusMessage::execute() const
+{
+    // ... processes message ...
+    m_gstWrapper-&gt;gstMessageUnref(m_message);
+}</pre>
+<h3>Severity Rationale</h3>
+<p>Rated MEDIUM (not HIGH) because the <code>GstDispatcherThread</code> is reset <strong>before</strong> the <code>WorkerThread</code> in the GstGenericPlayer destructor. This narrows the race window, but does not eliminate it entirely. GstMessages can carry embedded GstBuffers, GstCaps, GstStructures, and GstTagLists &mdash; all of which leak with the message.</p>
+</s2>
+<s2><h2>Finding #5 &mdash; SynchroniseSubtitleClock: GstStructure Leak on Error Path <span class="bl">LOW</span></h2>
+<p><strong>Repository:</strong> rialto &nbsp;|&nbsp; <strong>File:</strong> <code>media/server/gstplayer/source/tasks/generic/SynchroniseSubtitleClock.cpp</code></p>
+<h3>Description</h3>
+<p>In <code>SynchroniseSubtitleClock::execute()</code>, a <code>GstStructure</code> is created, then passed to <code>gstEventNewCustom()</code>. If the event creation fails (returns NULL), the structure is leaked because the code only logs an error and returns.</p>
+<pre>GstStructure *structure = m_gstWrapper-&gt;gstStructureNew("current-pts", ...);
+GstEvent *event = m_gstWrapper-&gt;gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, structure);
+
+if (event)
+{
+    // gst_element_send_event takes ownership of event (and its structure)
+    m_gstWrapper-&gt;gstElementSendEvent(source, event);
+}
+else
+{
+    // ERROR: structure is leaked here!
+    RIALTO_SERVER_LOG_ERROR("Failed to create current-pts event");
+}</pre>
+<h3>Note</h3>
+<p>Per GStreamer API: <code>gst_event_new_custom()</code> takes ownership of the structure on success. On failure (NULL return), ownership is NOT transferred, so the caller must free it. The same pattern exists in <code>SetPlaybackRate.cpp</code> but there the event creation is unlikely to fail since the pipeline is valid.</p>
+<h3>Severity Rationale</h3>
+<p>Rated LOW because <code>gst_event_new_custom()</code> rarely fails in practice, and the leaked structure is small. However, it is still a correctness issue.</p>
+</s2>
+<s2><h2>rialto-gstreamer &mdash; Analysis Results</h2>
+<p>The entire <code>rialto-gstreamer</code> client plugin was analyzed. <strong>No memory leaks were found.</strong></p>
+<table>
+<tr><th>Component</th><th>Status</th><th>Notes</th></tr>
+<tr><td><code>PullModePlaybackDelegate</code></td><td style="color:green">Clean</td><td>Destructor unrefs <code>m_caps</code>, <code>clearBuffersUnlocked()</code> drains <code>m_samples</code> queue with <code>gst_sample_unref</code>, <code>setLastBuffer(nullptr)</code> unrefs <code>m_lastBuffer</code></td></tr>
+<tr><td><code>PullModePlaybackDelegate::handleEvent</code></td><td style="color:green">Clean</td><td>All event paths call <code>gst_event_unref(event)</code> at line 773. <code>GST_EVENT_STREAM_COLLECTION</code> correctly unrefs <code>streamCollection</code></td></tr>
+<tr><td><code>PullModePlaybackDelegate::handleSendEvent</code></td><td style="color:green">Clean</td><td>All early-return paths call <code>gst_event_unref</code>. <code>gst_pad_push_event</code> takes ownership on forward path</td></tr>
+<tr><td><code>GStreamerMSEMediaPlayerClient</code></td><td style="color:green">Clean</td><td>Destructor calls <code>stopStreaming()</code> which stops backend queue and all buffer pullers. <code>handlePlaybackError</code> uses <code>gst_message_new_application</code> which transfers ownership to <code>gst_element_post_message</code></td></tr>
+<tr><td><code>BufferParser</code></td><td style="color:green">Clean</td><td>No GStreamer object allocation &mdash; only reads from existing caps/structures. <code>GstMappedBuffer</code> RAII wrapper auto-unmaps</td></tr>
+<tr><td><code>GStreamerEMEUtils</code></td><td style="color:green">Clean</td><td><code>ProcessProtectionMetadata</code> only reads fields from existing protection meta, no allocations</td></tr>
+<tr><td><code>RialtoGStreamerMSEBaseSink</code></td><td style="color:green">Clean</td><td><code>rialto_mse_base_sink_finalize</code> explicitly destructs <code>RialtoMSEBaseSinkPrivate</code> then chains to parent finalize</td></tr>
+<tr><td><code>RialtoGStreamerWebAudioSink</code></td><td style="color:green">Clean</td><td>Same pattern &mdash; finalize destructs private, chains to parent. <code>rialto_web_audio_sink_chain</code> unrefs buffer on error path</td></tr>
+<tr><td><code>GStreamerMSEUtils</code></td><td style="color:green">Clean</td><td><code>rialto_mse_sink_setup_supported_caps</code> properly unrefs caps after creating pad template. <code>gst_caps_append</code> takes ownership of appended caps</td></tr>
+<tr><td><code>MediaPlayerManager</code></td><td style="color:green">Clean</td><td>Uses <code>shared_ptr</code>/<code>weak_ptr</code> with ref-counted client info map. <code>releaseMediaPlayerClient</code> deletes when refcount reaches 0</td></tr>
+<tr><td><code>GstRefSample</code> (RAII wrapper)</td><td style="color:green">Clean</td><td>Constructor refs, destructor unrefs. Used consistently for sample access</td></tr>
+<tr><td><code>GstMappedBuffer</code> (RAII wrapper)</td><td style="color:green">Clean</td><td>Constructor maps, destructor unmaps. No leak possible</td></tr>
+</table>
+</s2>
+<s2><h2>rialto-ocdm &mdash; Analysis Results</h2>
+<p>The entire <code>rialto-ocdm</code> OpenCDM shim was analyzed. <strong>No memory leaks were found.</strong></p>
+<table>
+<tr><th>Component</th><th>Status</th><th>Notes</th></tr>
+<tr><td><code>ActiveSessions</code></td><td style="color:green">Clean</td><td>Uses manual ref-counting map. <code>create()</code> inserts with refcount=1, <code>get()</code> increments, <code>remove()</code> decrements and <code>delete</code>s at 0. No orphan path</td></tr>
+<tr><td><code>OpenCDMSessionPrivate</code></td><td style="color:green">Clean</td><td>Destructor calls <code>releaseSession()</code> if initialized. <code>closeSession()</code> resets <code>m_messageDispatcherClient</code>. Shared pointers for <code>m_cdmBackend</code> and <code>m_messageDispatcher</code></td></tr>
+<tr><td><code>OpenCDMSessionPrivate::addProtectionMeta</code> (6-arg)</td><td style="color:green">Clean</td><td>Creates <code>GstStructure</code> and passes to <code>rialto_mse_add_protection_metadata</code> (transfers ownership). Playready keyID buffer created and unreffed with <code>shouldReleaseKey</code> flag</td></tr>
+<tr><td><code>OpenCDMSessionPrivate::addProtectionMeta</code> (1-arg)</td><td style="color:green">Clean</td><td>Copies protection info structure, passes to <code>rialto_mse_add_protection_metadata</code> (transfers ownership). Playready keyID buffer created and unreffed</td></tr>
+<tr><td><code>RialtoGStreamerEMEProtectionMetadata</code></td><td style="color:green">Clean</td><td><code>rialto_eme_protection_metadata_free</code> properly frees <code>emeta-&gt;info</code> GstStructure. <code>rialto_mse_add_protection_metadata</code> transfers structure ownership to metadata</td></tr>
+<tr><td><code>OpenCDMSystemPrivate</code></td><td style="color:green">Clean</td><td>Created via <code>new</code>, destroyed via <code>delete</code> in <code>opencdm_destruct_system</code>. Shared pointers for all members</td></tr>
+<tr><td><code>MessageDispatcher</code></td><td style="color:green">Clean</td><td>RAII client via <code>unique_ptr&lt;MessageDispatcherClient&gt;</code> &mdash; destructor auto-removes from dispatcher</td></tr>
+<tr><td><code>open_cdm.cpp</code> session lifecycle</td><td style="color:green">Clean</td><td><code>opencdm_construct_session</code> error paths call <code>ActiveSessions::remove</code> or <code>opencdm_session_close</code>+<code>opencdm_destruct_session</code></td></tr>
+<tr><td><code>open_cdm_adapter.cpp</code></td><td style="color:green">Clean</td><td>Only adds protection metadata to buffers, no allocations that need cleanup</td></tr>
+</table>
+</s2>
+<s2><h2>rialto (server) &mdash; Verified Clean Areas</h2>
+<table>
+<tr><th>Component</th><th>Status</th><th>Notes</th></tr>
+<tr><td><code>GstGenericPlayer::termPipeline</code></td><td style="color:green">Clean</td><td>Unrefs all GstBuffers in streamInfo, pipeline, bus, source, sinks</td></tr>
+<tr><td><code>GstGenericPlayer::getSink</code></td><td style="color:green">Clean</td><td>All callers properly unref returned GstElement*</td></tr>
+<tr><td><code>GstGenericPlayer::reattachSource</code></td><td style="color:green">Clean</td><td>GstCaps created and unreffed on all paths</td></tr>
+<tr><td><code>GstGenericPlayer::createBuffer</code></td><td style="color:green">Clean</td><td>GstBuffer unreffed on failure; ownership transferred to streamInfo on success</td></tr>
+<tr><td><code>GstGenericPlayer::pushSampleIfRequired</code></td><td style="color:green">Clean</td><td>GstSegment, GstSample, GstCaps properly freed/unreffed</td></tr>
+<tr><td><code>GstGenericPlayer::performAudioTrackCodecChannelSwitch</code></td><td style="color:green">Clean</td><td>GstCaps unreffed correctly</td></tr>
+<tr><td><code>GstGenericPlayer::switchAudioCodec</code></td><td style="color:green">Clean</td><td>All GstPad refs unreffed</td></tr>
+<tr><td><code>GstGenericPlayer::setErmContext</code></td><td style="color:green">Clean</td><td>GstContext created and unreffed after set</td></tr>
+<tr><td><code>GstGenericPlayer::getStats</code></td><td style="color:green">Clean</td><td>GstStructure freed, sink unreffed</td></tr>
+<tr><td><code>GstGenericPlayer::getTextTrackIdentifier</code></td><td style="color:green">Clean</td><td>gchar* freed with g_free</td></tr>
+<tr><td><code>DeepElementAdded</code> task</td><td style="color:green">Clean</td><td>Destructor unrefs element and frees name (correct pattern)</td></tr>
+<tr><td><code>UpdatePlaybackGroup</code> task</td><td style="color:green">Clean</td><td>Destructor unrefs typefind element and caps</td></tr>
+<tr><td><code>Flush</code> task</td><td style="color:green">Clean</td><td>Proper buffer unref during flush</td></tr>
+<tr><td><code>RemoveSource</code> task</td><td style="color:green">Clean</td><td>Proper cleanup of removed source</td></tr>
+<tr><td><code>AttachSource</code> task</td><td style="color:green">Clean</td><td>Buffer management correct</td></tr>
+<tr><td><code>GstProtectionMetadata</code></td><td style="color:green">Clean</td><td>Nested GstBuffers freed in metadata free function</td></tr>
+<tr><td><code>GstDecryptor</code></td><td style="color:green">Clean</td><td>Proper buffer and structure management</td></tr>
+<tr><td><code>GstDispatcherThread</code></td><td style="color:green">Clean</td><td>Bus message handling properly refs for task creation</td></tr>
+<tr><td><code>SetPlaybackRate</code></td><td style="color:green">Clean</td><td>GstSegment freed, audioSink unreffed. Same event pattern risk as #5 but lower probability</td></tr>
+</table>
+</s2>
+<s2><h2>Recommended Fixes</h2>
+<h3>Fix 1: Add unref to task destructors (Findings #2, #3, #4)</h3>
+<pre>// SetupElement.cpp - add to destructor:
+SetupElement::~SetupElement()
+{
+    RIALTO_SERVER_LOG_DEBUG("SetupElement finished");
+    if (m_element)
+        m_gstWrapper-&gt;gstObjectUnref(m_element);
+}
+
+// SetupSource.cpp - add to destructor:
+SetupSource::~SetupSource()
+{
+    RIALTO_SERVER_LOG_DEBUG("SetupSource finished");
+    // Only unref if execute() was not called (source not transferred to context)
+    // Use a flag or check m_context.source != m_source
+}
+
+// HandleBusMessage.cpp - add to destructor:
+HandleBusMessage::~HandleBusMessage()
+{
+    RIALTO_SERVER_LOG_DEBUG("HandleBusMessage finished");
+    if (m_message)
+        m_gstWrapper-&gt;gstMessageUnref(m_message);
+}
+// Also: set m_message = nullptr after unref in execute()</pre>
+
+<h3>Fix 2: Drain task queue on WorkerThread shutdown (Finding #1)</h3>
+<pre>// WorkerThread.cpp - after taskHandler loop exits:
+void WorkerThread::taskHandler()
+{
+    while (m_isTaskThreadActive) { /* ... existing loop ... */ }
+
+    // Drain remaining tasks so their destructors run
+    // (destructors must unref their GStreamer objects per Fix 1)
+    std::lock_guard lock(m_taskMutex);
+    while (!m_taskQueue.empty())
+    {
+        m_taskQueue.pop(); // destructor runs, unrefs resources
+    }
+}</pre>
+
+<h3>Fix 3: Free GstStructure on event creation failure (Finding #5)</h3>
+<pre>// SynchroniseSubtitleClock.cpp:
+GstEvent *event = m_gstWrapper-&gt;gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, structure);
+if (!event)
+{
+    m_gstWrapper-&gt;gstStructureFree(structure); // prevent leak
+    RIALTO_SERVER_LOG_ERROR("Failed to create current-pts event");
+    return;
+}</pre>
+</s2>
+
+<s2><h2>Key Observation: v0.15.2-r17 Change Does NOT Introduce Leaks</h2>
+<p>The single-line change in r17 (adding <code>m_context.audioSourceRemoved</code> condition to <code>reattachSource()</code>) was verified and does <strong>not</strong> introduce any new memory leak. All GstCaps objects on all code paths are properly unreffed. The memory leak issues identified in this report are <strong>pre-existing</strong> across all previous releases.</p>
+</s2>
+</div>
+</body></html>

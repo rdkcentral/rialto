@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rialto Server — Memory Consumption Analysis &amp; Optimization Recommendations</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-orange: #f59e0b;
+            --accent-purple: #a855f7;
+            --accent-cyan: #06b6d4;
+            --border-color: #475569;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 2rem;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+        h2 {
+            font-size: 1.4rem;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+            padding-bottom: 0.3rem;
+            border-bottom: 2px solid var(--accent-cyan);
+        }
+        h3 {
+            font-size: 1.15rem;
+            color: var(--accent-orange);
+            margin: 1.2rem 0 0.6rem;
+        }
+        .section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+        th, td {
+            padding: 0.6rem 0.8rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+        th {
+            background: var(--bg-tertiary);
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+        tr:hover { background: rgba(59,130,246,0.05); }
+        code {
+            background: var(--bg-tertiary);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--accent-green);
+        }
+        pre {
+            background: #0b1120;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            font-size: 0.82rem;
+            line-height: 1.5;
+            margin: 0.8rem 0;
+        }
+        .tag {
+            display: inline-block;
+            padding: 0.15rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+        .tag-green { background: rgba(34,197,94,0.15); color: var(--accent-green); }
+        .tag-red { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+        .tag-orange { background: rgba(245,158,11,0.15); color: var(--accent-orange); }
+        .tag-blue { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+        .tag-purple { background: rgba(168,85,247,0.15); color: var(--accent-purple); }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .metric-box {
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            padding: 1.2rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+        .metric-box .value {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+        .metric-box .label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+        }
+        .verdict {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        .verdict-high { background: rgba(239,68,68,0.1); border-left: 4px solid var(--accent-red); }
+        .verdict-medium { background: rgba(245,158,11,0.1); border-left: 4px solid var(--accent-orange); }
+        .verdict-low { background: rgba(34,197,94,0.1); border-left: 4px solid var(--accent-green); }
+        .verdict-info { background: rgba(59,130,246,0.1); border-left: 4px solid var(--accent-blue); }
+        ul { margin: 0.5rem 0 0.5rem 1.2rem; }
+        li { margin-bottom: 0.3rem; }
+        .callout {
+            background: rgba(168,85,247,0.08);
+            border: 1px solid var(--accent-purple);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .flow-arrow { color: var(--accent-cyan); font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+<h1>Rialto Server &mdash; Memory Consumption Analysis</h1>
+<p class="subtitle">Comprehensive breakdown of memory usage across lifecycle states, with short-term and long-term optimization recommendations</p>
+
+<!-- ===================== SECTION 1: MEMORY BY STATE ===================== -->
+<div class="section">
+    <h2>1. Memory Consumption by Lifecycle State</h2>
+    <p>The following estimates are based on code analysis of the Rialto source tree. Actual values vary by platform (Broadcom SoC, GStreamer plugin set, etc.). Estimates assume <code>maxPlaybacks=2</code>, <code>maxWebAudioPlayers=1</code>.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>State</th>
+                <th>Component</th>
+                <th>Est. Memory</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- INACTIVE -->
+            <tr><td rowspan="5" style="vertical-align:middle; font-weight:bold; color:var(--accent-green);">INACTIVE<br><span class="tag tag-green">~12&ndash;18 MB</span></td>
+                <td>Process baseline (code, stack, libs)</td>
+                <td>~5&ndash;8 MB</td>
+                <td>Rialto binary + libstdc++ + IPC libs + protobuf</td>
+            </tr>
+            <tr>
+                <td>GStreamer <code>gst_init()</code> registry</td>
+                <td>~5&ndash;8 MB</td>
+                <td>Plugin scanner results cached in memory. <strong>Never freed</strong> &mdash; process lifetime. <code>gst_deinit()</code> only called if <code>FREE_MEM_BEFORE_EXIT</code> is defined (test builds only)</td>
+            </tr>
+            <tr>
+                <td>IPC threads (2)</td>
+                <td>~1&ndash;2 MB</td>
+                <td><code>ApplicationManagementServer</code> + <code>SessionManagementServer</code> event loops</td>
+            </tr>
+            <tr>
+                <td>MainThread (1)</td>
+                <td>~0.5 MB</td>
+                <td>Singleton task queue thread, persists for process lifetime</td>
+            </tr>
+            <tr>
+                <td>SHM buffer</td>
+                <td><strong>0 MB</strong></td>
+                <td>Not allocated. <code>m_shmBuffer</code> is null.</td>
+            </tr>
+
+            <!-- ACTIVE, NO PLAYBACK -->
+            <tr><td rowspan="5" style="vertical-align:middle; font-weight:bold; color:var(--accent-orange);">ACTIVE<br>(idle, no pipeline)<br><span class="tag tag-orange">~30&ndash;36 MB</span></td>
+                <td>Process baseline</td>
+                <td>~5&ndash;8 MB</td>
+                <td>Same as INACTIVE</td>
+            </tr>
+            <tr>
+                <td>GStreamer registry</td>
+                <td>~5&ndash;8 MB</td>
+                <td>Same as INACTIVE</td>
+            </tr>
+            <tr>
+                <td>IPC + MainThread</td>
+                <td>~1.5&ndash;2.5 MB</td>
+                <td>Same as INACTIVE</td>
+            </tr>
+            <tr>
+                <td><strong>SHM buffer (memfd)</strong></td>
+                <td><strong>~16.5 MB</strong></td>
+                <td><code>2 &times; (7MB video + 1MB audio + 256KB subtitle) + 1 &times; 10KB web_audio</code><br>Allocated on <code>switchToActive()</code>, even if no pipeline is created!</td>
+            </tr>
+            <tr>
+                <td>GLib capabilities init thread</td>
+                <td>~0.5 MB</td>
+                <td><code>GstCapabilities::m_initialisationThread</code></td>
+            </tr>
+
+            <!-- ACTIVE, PLAYBACK RUNNING -->
+            <tr><td rowspan="8" style="vertical-align:middle; font-weight:bold; color:var(--accent-red);">ACTIVE<br>(playback running)<br><span class="tag tag-red">~65&ndash;85 MB</span></td>
+                <td>Process baseline</td>
+                <td>~5&ndash;8 MB</td>
+                <td>Same</td>
+            </tr>
+            <tr>
+                <td>GStreamer registry</td>
+                <td>~5&ndash;8 MB</td>
+                <td>Same (plus additional plugin element classes loaded on demand)</td>
+            </tr>
+            <tr>
+                <td>IPC + MainThread</td>
+                <td>~1.5&ndash;2.5 MB</td>
+                <td>Same</td>
+            </tr>
+            <tr>
+                <td>SHM buffer</td>
+                <td>~16.5 MB</td>
+                <td>Same (full buffer allocated regardless of active session count)</td>
+            </tr>
+            <tr>
+                <td><strong>GStreamer pipeline (playbin + elements)</strong></td>
+                <td><strong>~15&ndash;25 MB</strong></td>
+                <td><code>playbin</code> &rarr; <code>uridecodebin</code> &rarr; <code>rialtosrc</code> + <code>playsink</code> + <code>westerossink</code> + audio/video bins. Includes internal queues, pad allocators, GstBuffer pools</td>
+            </tr>
+            <tr>
+                <td><strong>GLib thread pool + worker threads</strong></td>
+                <td><strong>~2&ndash;4 MB</strong></td>
+                <td>Per pipeline: 1 WorkerThread + 1 GstDispatcherThread + GLib thread pool threads (max 2 idle, 5s timeout)</td>
+            </tr>
+            <tr>
+                <td>GstBuffer / frame data in transit</td>
+                <td>~2&ndash;5 MB</td>
+                <td>Pending buffers in appsrc queues and decoder input queues</td>
+            </tr>
+            <tr>
+                <td>malloc arena fragmentation overhead</td>
+                <td>~8&ndash;15 MB</td>
+                <td>glibc allocator retains freed pages in per-thread arenas. Only reclaimed via <code>malloc_trim(0)</code></td>
+            </tr>
+
+            <!-- ACTIVE, PLAYBACK STOPPED (session not destroyed) -->
+            <tr><td rowspan="7" style="vertical-align:middle; font-weight:bold; color:var(--accent-orange);">ACTIVE<br>(stopped, session alive)<br><span class="tag tag-orange">~55&ndash;75 MB</span></td>
+                <td>Process baseline</td>
+                <td>~5&ndash;8 MB</td>
+                <td>Same</td>
+            </tr>
+            <tr>
+                <td>GStreamer registry</td>
+                <td>~5&ndash;8 MB</td>
+                <td>Same</td>
+            </tr>
+            <tr>
+                <td>IPC + MainThread</td>
+                <td>~1.5&ndash;2.5 MB</td>
+                <td>Same</td>
+            </tr>
+            <tr>
+                <td>SHM buffer</td>
+                <td>~16.5 MB</td>
+                <td>Same &mdash; <strong>still allocated</strong></td>
+            </tr>
+            <tr>
+                <td><strong>GStreamer pipeline in NULL state</strong></td>
+                <td><strong>~10&ndash;18 MB</strong></td>
+                <td><code>stop()</code> sets <code>GST_STATE_NULL</code> but does NOT <code>gst_object_unref(pipeline)</code>. All GstElement objects, pads, and plugin class instances remain allocated.</td>
+            </tr>
+            <tr>
+                <td>Worker + Dispatcher threads</td>
+                <td>~2&ndash;3 MB</td>
+                <td>Still running (WorkerThread waiting on task queue, GstDispatcherThread polling bus)</td>
+            </tr>
+            <tr>
+                <td>malloc arena fragmentation</td>
+                <td>~10&ndash;20 MB</td>
+                <td><strong><code>malloc_trim(0)</code> is NOT called on <code>stop()</code></strong> &mdash; only in <code>termPipeline()</code> (destructor path)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="callout">
+        <strong>Key Insight:</strong> The jump from ~30MB (ACTIVE idle) to ~70&ndash;80MB (ACTIVE with stopped playback) is primarily:<br>
+        <strong>1)</strong> GStreamer pipeline objects lingering in NULL state (~10&ndash;18MB)<br>
+        <strong>2)</strong> malloc arena fragmentation (~10&ndash;20MB, never trimmed until <code>destroySession</code>)<br>
+        <strong>3)</strong> Thread stacks for WorkerThread + GstDispatcherThread (~2MB) that remain active
+    </div>
+</div>
+
+<!-- ===================== SECTION 2: MEMORY MAP ===================== -->
+<div class="section">
+    <h2>2. Visual Memory Breakdown</h2>
+    <div class="metrics">
+        <div class="metric-box">
+            <div class="value" style="color: var(--accent-green);">~15 MB</div>
+            <div class="label">INACTIVE<br>(no SHM, no pipeline)</div>
+        </div>
+        <div class="metric-box">
+            <div class="value" style="color: var(--accent-orange);">~33 MB</div>
+            <div class="label">ACTIVE (idle)<br>(+16.5MB SHM)</div>
+        </div>
+        <div class="metric-box">
+            <div class="value" style="color: var(--accent-red);">~75 MB</div>
+            <div class="label">ACTIVE (playing)<br>(+pipeline+buffers+frag)</div>
+        </div>
+        <div class="metric-box">
+            <div class="value" style="color: var(--accent-orange);">~65 MB</div>
+            <div class="label">ACTIVE (stopped)<br>(pipeline NULL, no trim)</div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== SECTION 3: THREAD INVENTORY ===================== -->
+<div class="section">
+    <h2>3. Thread Inventory Per State</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Thread</th>
+                <th>Created By</th>
+                <th>Stack</th>
+                <th>INACTIVE</th>
+                <th>ACTIVE (idle)</th>
+                <th>ACTIVE (playing)</th>
+                <th>ACTIVE (stopped)</th>
+                <th>Destroyed When</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Main process thread</td>
+                <td>OS</td>
+                <td>~1MB</td>
+                <td>&check;</td><td>&check;</td><td>&check;</td><td>&check;</td>
+                <td>Process exit</td>
+            </tr>
+            <tr>
+                <td><code>GstInitialiser</code> thread</td>
+                <td><code>GstInitialiser::initialise()</code></td>
+                <td>~0.5MB</td>
+                <td>&check;</td><td>&check;</td><td>&check;</td><td>&check;</td>
+                <td>Joinable at exit (runs once, but thread object persists)</td>
+            </tr>
+            <tr>
+                <td><code>GstCapabilities</code> init thread</td>
+                <td><code>GstCapabilities</code> ctor</td>
+                <td>~0.5MB</td>
+                <td>&check;</td><td>&check;</td><td>&check;</td><td>&check;</td>
+                <td>Process exit (joins in dtor)</td>
+            </tr>
+            <tr>
+                <td><code>MainThread</code> (singleton)</td>
+                <td><code>MainThreadFactory::getMainThread()</code></td>
+                <td>~0.5MB</td>
+                <td>&check;</td><td>&check;</td><td>&check;</td><td>&check;</td>
+                <td>Process exit (weak_ptr, lives as long as any client holds shared_ptr)</td>
+            </tr>
+            <tr>
+                <td><code>ApplicationManagementServer</code> IPC</td>
+                <td><code>start()</code></td>
+                <td>~0.5MB</td>
+                <td>&check;</td><td>&check;</td><td>&check;</td><td>&check;</td>
+                <td><code>stop()</code> / process exit</td>
+            </tr>
+            <tr>
+                <td><code>SessionManagementServer</code> IPC</td>
+                <td><code>start()</code></td>
+                <td>~0.5MB</td>
+                <td>&check;</td><td>&check;</td><td>&check;</td><td>&check;</td>
+                <td><code>stop()</code> / process exit</td>
+            </tr>
+            <tr style="background: rgba(245,158,11,0.05);">
+                <td><code>WorkerThread</code> (per pipeline)</td>
+                <td><code>GstGenericPlayer</code> ctor</td>
+                <td>~0.5MB</td>
+                <td>&cross;</td><td>&cross;</td><td>&check;</td><td><strong>&check; LEAK</strong></td>
+                <td><code>~GstGenericPlayer</code> &rarr; <code>resetWorkerThread()</code><br><strong>NOT released on stop()</strong></td>
+            </tr>
+            <tr style="background: rgba(245,158,11,0.05);">
+                <td><code>GstDispatcherThread</code> (per pipeline)</td>
+                <td><code>GstGenericPlayer</code> ctor</td>
+                <td>~0.5MB</td>
+                <td>&cross;</td><td>&cross;</td><td>&check;</td><td><strong>&check; LEAK</strong></td>
+                <td><code>~GstGenericPlayer</code> destructor<br><strong>NOT released on stop()</strong></td>
+            </tr>
+            <tr>
+                <td>GLib thread pool (up to 2 idle)</td>
+                <td>GStreamer internals</td>
+                <td>~0.5MB each</td>
+                <td>&cross;</td><td>&cross;</td><td>&check;</td><td>&check; (idle, 5s timeout)</td>
+                <td><code>gThreadPoolStopUnusedThreads()</code> in <code>termPipeline()</code></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="verdict verdict-medium">
+        <strong>Thread observation:</strong> After <code>stop()</code>, <strong>2 threads per pipeline remain alive</strong> (WorkerThread + GstDispatcherThread) doing nothing. These are only cleaned up when <code>destroySession()</code> is called, which triggers <code>~GstGenericPlayer</code>. This is not a leak per se (they are properly joined on destroy), but it is wasteful memory retention during the stopped state.
+    </div>
+</div>
+
+<!-- ===================== SECTION 4: SHM ANALYSIS ===================== -->
+<div class="section">
+    <h2>4. SHM Optimization: Reduce maxPlaybacks from 2 to 1</h2>
+
+    <h3>Current SHM Layout (maxPlaybacks=2)</h3>
+    <table>
+        <thead><tr><th>Partition</th><th>Video</th><th>Audio</th><th>Subtitle</th><th>Total</th></tr></thead>
+        <tbody>
+            <tr><td>GENERIC #0</td><td>7 MB</td><td>1 MB</td><td>256 KB</td><td>8.25 MB</td></tr>
+            <tr><td>GENERIC #1</td><td>7 MB</td><td>1 MB</td><td>256 KB</td><td>8.25 MB</td></tr>
+            <tr><td>WEB_AUDIO #0</td><td>0</td><td>10 KB</td><td>0</td><td>10 KB</td></tr>
+            <tr style="font-weight:bold;"><td colspan="4">Total</td><td>~16.51 MB</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Proposed SHM Layout (maxPlaybacks=1)</h3>
+    <table>
+        <thead><tr><th>Partition</th><th>Video</th><th>Audio</th><th>Subtitle</th><th>Total</th></tr></thead>
+        <tbody>
+            <tr><td>GENERIC #0</td><td>7 MB</td><td>1 MB</td><td>256 KB</td><td>8.25 MB</td></tr>
+            <tr><td>WEB_AUDIO #0</td><td>0</td><td>10 KB</td><td>0</td><td>10 KB</td></tr>
+            <tr style="font-weight:bold;"><td colspan="4">Total</td><td>~8.26 MB</td></tr>
+        </tbody>
+    </table>
+
+    <div class="metrics">
+        <div class="metric-box">
+            <div class="value" style="color: var(--accent-green);">8.25 MB</div>
+            <div class="label">Memory Saved<br>(one fewer GENERIC partition)</div>
+        </div>
+        <div class="metric-box">
+            <div class="value" style="color: var(--accent-green);">50%</div>
+            <div class="label">SHM Reduction</div>
+        </div>
+    </div>
+
+    <h3>Negative Impact Assessment</h3>
+    <table>
+        <thead><tr><th>Concern</th><th>Impact</th><th>Details</th></tr></thead>
+        <tbody>
+            <tr>
+                <td>Single playback at a time</td>
+                <td><span class="tag tag-orange">MEDIUM</span></td>
+                <td>Only 1 <code>MediaPipeline</code> can be active. <code>createSession()</code> will fail if one already exists: <code>"Max session number reached"</code>. No PiP, no dual-video.</td>
+            </tr>
+            <tr>
+                <td>Seamless channel change</td>
+                <td><span class="tag tag-red">HIGH</span></td>
+                <td>Some implementations create a second pipeline before destroying the first for seamless transitions. With <code>maxPlaybacks=1</code>, the old session must be destroyed <em>before</em> the new one starts, causing a visual gap.</td>
+            </tr>
+            <tr>
+                <td>WebAudio concurrent with video</td>
+                <td><span class="tag tag-green">NONE</span></td>
+                <td><code>maxWebAudioPlayers</code> is separate and unaffected.</td>
+            </tr>
+            <tr>
+                <td>Existing applications</td>
+                <td><span class="tag tag-orange">MEDIUM</span></td>
+                <td>Any app that relies on 2 concurrent Rialto sessions (e.g., background pre-tuning + foreground playback) will break.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="verdict verdict-info">
+        <strong>Recommendation:</strong> If the platform never uses dual-video or seamless channel change via Rialto, reducing to <code>maxPlaybacks=1</code> is safe and saves 8.25MB instantly. This is a <strong>server-side configuration change</strong> set by the RialtoServerManager via <code>SetConfiguration</code> IPC &mdash; no code change needed.
+    </div>
+</div>
+
+<!-- ===================== SECTION 5: GST MEMORY ===================== -->
+<div class="section">
+    <h2>5. GStreamer Memory Reduction Without Impacting Performance</h2>
+
+    <h3>5.1 Problem: <code>gst_deinit()</code> is never called in production</h3>
+<pre>
+// GstInitialiser.cpp
+~GstInitialiser()
+{
+    if (m_thread.joinable()) m_thread.join();
+
+<strong>#ifdef FREE_MEM_BEFORE_EXIT</strong>    // &larr; only defined in CMakeLists.txt for TEST builds!
+    if (m_gstWrapper) {
+        m_gstWrapper-&gt;gstDeinit();
+        m_gstWrapper.reset();
+    }
+#endif
+}
+</pre>
+    <p>In production, the GStreamer registry (~5&ndash;8MB) and all loaded plugin type classes are <strong>never freed</strong>. This is by design (GStreamer does not fully support re-initialization), but it means the baseline is permanently inflated.</p>
+
+    <h3>5.2 Problem: Pipeline objects survive <code>stop()</code></h3>
+    <p><code>stop()</code> only calls <code>gst_element_set_state(pipeline, GST_STATE_NULL)</code>. The pipeline and all its child elements remain allocated:</p>
+<pre>
+// Stop.cpp &mdash; execute()
+m_player.changePipelineState(GST_STATE_NULL);    // Sets state only
+// &uarr; NO gst_object_unref, NO gst_bin_remove, NO element teardown
+
+// termPipeline() &mdash; ONLY called from ~GstGenericPlayer
+m_gstWrapper-&gt;gstObjectUnref(m_context.pipeline); // Actually frees elements
+m_glibWrapper-&gt;gThreadPoolStopUnusedThreads();
+malloc_trim(0);                                    // Reclaims fragmented heap
+</pre>
+
+    <h3>5.3 Actionable Solutions</h3>
+    <table>
+        <thead><tr><th>Action</th><th>Saving</th><th>Risk</th><th>Complexity</th></tr></thead>
+        <tbody>
+            <tr>
+                <td><strong>A. Call <code>malloc_trim(0)</code> after <code>stop()</code></strong></td>
+                <td>~5&ndash;15 MB</td>
+                <td><span class="tag tag-green">LOW</span></td>
+                <td>1-line change in <code>Stop::execute()</code></td>
+            </tr>
+            <tr>
+                <td><strong>B. Destroy pipeline on stop (not just NULL state)</strong></td>
+                <td>~10&ndash;18 MB</td>
+                <td><span class="tag tag-orange">MEDIUM</span></td>
+                <td>Requires new <code>stop()</code> → <code>termPipeline()</code> path. Must handle re-<code>load()</code> re-creating the pipeline. Impacts latency of next play.</td>
+            </tr>
+            <tr>
+                <td><strong>C. Lazy SHM allocation (on first <code>createSession</code>, not on ACTIVE)</strong></td>
+                <td>~8&ndash;16 MB (when idle)</td>
+                <td><span class="tag tag-orange">MEDIUM</span></td>
+                <td>Decouple SHM creation from <code>switchToActive()</code>. Create on first <code>mapPartition()</code> call. Must handle client <code>getSharedMemory()</code> timing.</td>
+            </tr>
+            <tr>
+                <td><strong>D. Reduce video partition from 7MB to 4MB</strong></td>
+                <td>~3&ndash;6 MB</td>
+                <td><span class="tag tag-orange">MEDIUM</span></td>
+                <td>May cause buffer underruns for UHD content. Safe for HD-only platforms.</td>
+            </tr>
+            <tr>
+                <td><strong>E. Stop GLib idle threads immediately on pipeline stop</strong></td>
+                <td>~0.5&ndash;1 MB</td>
+                <td><span class="tag tag-green">LOW</span></td>
+                <td>Call <code>g_thread_pool_stop_unused_threads()</code> in <code>Stop::execute()</code></td>
+            </tr>
+            <tr>
+                <td><strong>F. Set <code>MALLOC_ARENA_MAX=2</code> env var</strong></td>
+                <td>~5&ndash;10 MB</td>
+                <td><span class="tag tag-green">LOW</span></td>
+                <td>Limits glibc per-thread arenas. Reduces fragmentation at slight contention cost. Set in service file.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- ===================== SECTION 6: SHORT TERM ===================== -->
+<div class="section">
+    <h2>6. Short-Term Solutions (Low Risk, Immediate Deployment)</h2>
+
+    <div class="verdict verdict-low">
+        <strong>S1. Reduce <code>maxPlaybacks</code> to 1</strong> &mdash; <span class="tag tag-green">CONFIG CHANGE</span><br>
+        Save ~8.25 MB of SHM. Set via <code>SetConfiguration</code> IPC from RialtoServerManager. No code change required.<br>
+        <em>Pre-requisite: Confirm no dual-video or seamless-switch use case on target platform.</em>
+    </div>
+
+    <div class="verdict verdict-low">
+        <strong>S2. Add <code>malloc_trim(0)</code> in <code>Stop::execute()</code></strong> &mdash; <span class="tag tag-green">1-LINE FIX</span><br>
+        Save ~5&ndash;15 MB immediately after playback stops. Reclaims fragmented glibc heap pages.<br>
+<pre>
+// Stop.cpp &mdash; execute()
+void Stop::execute() const
+{
+    ...
+    m_player.changePipelineState(GST_STATE_NULL);
+    ...
+    RIALTO_SERVER_LOG_MIL("State change to NULL requested");
+    <strong>malloc_trim(0);  // &larr; ADD THIS</strong>
+}
+</pre>
+        <em>Risk: Negligible. <code>malloc_trim(0)</code> is safe to call at any time. It only returns unused pages to the OS.</em>
+    </div>
+
+    <div class="verdict verdict-low">
+        <strong>S3. Add <code>gThreadPoolStopUnusedThreads()</code> in <code>Stop::execute()</code></strong> &mdash; <span class="tag tag-green">1-LINE FIX</span><br>
+        Immediately reclaims GLib thread pool threads after stop instead of waiting for the 5s idle timeout.<br>
+        <em>Risk: Negligible. Threads will be recreated on next <code>play()</code> if needed.</em>
+    </div>
+
+    <div class="verdict verdict-low">
+        <strong>S4. Set <code>MALLOC_ARENA_MAX=2</code></strong> &mdash; <span class="tag tag-green">ENV VAR</span><br>
+        Add to the RialtoServer systemd service file. Limits glibc to 2 memory arenas instead of 8&times;ncores.<br>
+        Save ~5&ndash;10 MB from reduced fragmentation overhead.<br>
+        <em>Risk: Minor. Slight thread contention on malloc under heavy multi-threaded allocation &mdash; unlikely to be measurable for Rialto's workload.</em>
+    </div>
+
+    <div class="callout">
+        <strong>Combined short-term saving: ~20&ndash;35 MB</strong> with zero to negligible risk. This alone should bring idle-after-playback from ~70MB down to ~40&ndash;50MB range.
+    </div>
+</div>
+
+<!-- ===================== SECTION 7: LONG TERM ===================== -->
+<div class="section">
+    <h2>7. Long-Term Solutions (Higher Impact, Requires Design Changes)</h2>
+
+    <div class="verdict verdict-medium">
+        <strong>L1. Destroy pipeline on stop (aggressive teardown)</strong> &mdash; <span class="tag tag-orange">DESIGN CHANGE</span><br>
+        Instead of keeping the GstGenericPlayer alive after <code>stop()</code>, destroy it immediately. The <code>MediaPipelineServerInternal</code> session would persist (SHM partition stays mapped), but the heavyweight GStreamer pipeline, WorkerThread, and GstDispatcherThread would be freed.<br><br>
+        <strong>Saving:</strong> ~15&ndash;25 MB after stop<br>
+        <strong>Trade-off:</strong> Next <code>play()</code> / <code>load()</code> must re-create the pipeline from scratch, adding ~50&ndash;200ms latency to tune start. Requires refactoring <code>MediaPipelineServerInternal</code> to support lazy GstPlayer creation.<br>
+        <strong>Approach:</strong><br>
+        <ul>
+            <li>On <code>stop()</code>: call <code>m_gstPlayer.reset()</code> (triggers <code>~GstGenericPlayer</code> &rarr; <code>termPipeline()</code> &rarr; <code>malloc_trim(0)</code>)</li>
+            <li>On next <code>load()</code>: re-create GstGenericPlayer if null</li>
+            <li>WorkerThread and GstDispatcherThread die with the GstPlayer</li>
+        </ul>
+    </div>
+
+    <div class="verdict verdict-medium">
+        <strong>L2. Lazy / on-demand SHM allocation</strong> &mdash; <span class="tag tag-orange">DESIGN CHANGE</span><br>
+        Currently, SHM is allocated on <code>switchToActive()</code> with ALL partitions pre-sized. Instead:<br>
+        <ul>
+            <li>Create memfd with size 0 on <code>switchToActive()</code></li>
+            <li>Grow (ftruncate) when <code>mapPartition()</code> is called</li>
+            <li>Shrink (or skip) when <code>unmapPartition()</code> is called</li>
+        </ul>
+        <strong>Saving:</strong> ~8&ndash;16 MB when ACTIVE but idle<br>
+        <strong>Trade-off:</strong> Requires removing <code>F_SEAL_GROW | F_SEAL_SHRINK</code> seals (security concern), or using a different allocation strategy. Client must re-mmap on resize. Complex IPC coordination.
+    </div>
+
+    <div class="verdict verdict-medium">
+        <strong>L3. Dynamic video partition sizing</strong> &mdash; <span class="tag tag-blue">OPTIMIZATION</span><br>
+        The 7MB video region is sized for worst-case (UHD). For HD-only playback, 3&ndash;4MB is sufficient.<br>
+        <ul>
+            <li>Accept a <code>resolution</code> parameter in <code>createSession()</code></li>
+            <li>Size the video partition accordingly (see code comment: <em>"As (for now) resolution of playback is not known"</em>)</li>
+        </ul>
+        <strong>Saving:</strong> ~3&ndash;4 MB per partition for HD content<br>
+        <strong>Trade-off:</strong> Requires API change. May need re-allocation on resolution change.
+    </div>
+
+    <div class="verdict verdict-medium">
+        <strong>L4. Process recycling on INACTIVE</strong> &mdash; <span class="tag tag-purple">ARCHITECTURE</span><br>
+        Instead of keeping the same RialtoServer process across ACTIVE&rarr;INACTIVE&rarr;ACTIVE cycles, kill and respawn it. This guarantees a clean memory state.<br>
+        <strong>Saving:</strong> Full reclamation of all fragmented/leaked memory<br>
+        <strong>Trade-off:</strong> ~200&ndash;500ms cold start time for new process + GStreamer re-initialization. May be acceptable if INACTIVE periods are infrequent.
+    </div>
+</div>
+
+<!-- ===================== SECTION 8: THREAD CLEANUP ===================== -->
+<div class="section">
+    <h2>8. Thread Cleanup Assessment</h2>
+
+    <h3>Are there thread leaks?</h3>
+    <div class="verdict verdict-info">
+        <strong>No actual thread leaks.</strong> All threads are properly joined in their respective destructors. However, thread <strong>lifetime is overly long</strong>:
+    </div>
+
+    <table>
+        <thead><tr><th>Thread</th><th>Issue</th><th>Fix</th></tr></thead>
+        <tbody>
+            <tr>
+                <td><code>WorkerThread</code></td>
+                <td>Lives from <code>createSession</code> to <code>destroySession</code>. Idle during stopped state.</td>
+                <td><strong>L1:</strong> Destroy GstPlayer on stop, which joins this thread</td>
+            </tr>
+            <tr>
+                <td><code>GstDispatcherThread</code></td>
+                <td>Polls GstBus even when pipeline is in NULL state. Wastes CPU + memory.</td>
+                <td><strong>L1:</strong> Destroy GstPlayer on stop, or stop polling when state is NULL</td>
+            </tr>
+            <tr>
+                <td><code>GstInitialiser</code> thread</td>
+                <td>Runs once but <code>std::thread</code> object persists (joinable). Thread is finished but stack not freed until join.</td>
+                <td>Call <code>m_thread.join()</code> after <code>m_isInitialised = true</code> to free the thread stack immediately</td>
+            </tr>
+            <tr>
+                <td><code>GstCapabilities</code> init thread</td>
+                <td>Same pattern &mdash; runs once, joins only on destruction</td>
+                <td>Join after initialization completes</td>
+            </tr>
+            <tr>
+                <td>GLib thread pool</td>
+                <td>Max 2 idle threads with 5s timeout. After stop, they may persist.</td>
+                <td><strong>S3:</strong> Call <code>gThreadPoolStopUnusedThreads()</code> on stop</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- ===================== SECTION 9: SUMMARY ===================== -->
+<div class="section">
+    <h2>9. Recommended Implementation Priority</h2>
+    <table>
+        <thead><tr><th>Priority</th><th>Action</th><th>Saving</th><th>Effort</th></tr></thead>
+        <tbody>
+            <tr>
+                <td><span class="tag tag-red">P0</span></td>
+                <td><strong>S2:</strong> <code>malloc_trim(0)</code> in <code>Stop::execute()</code></td>
+                <td>~5&ndash;15 MB</td>
+                <td>1 line</td>
+            </tr>
+            <tr>
+                <td><span class="tag tag-red">P0</span></td>
+                <td><strong>S1:</strong> Reduce maxPlaybacks to 1</td>
+                <td>~8.25 MB</td>
+                <td>Config change</td>
+            </tr>
+            <tr>
+                <td><span class="tag tag-orange">P1</span></td>
+                <td><strong>S4:</strong> <code>MALLOC_ARENA_MAX=2</code></td>
+                <td>~5&ndash;10 MB</td>
+                <td>Service file change</td>
+            </tr>
+            <tr>
+                <td><span class="tag tag-orange">P1</span></td>
+                <td><strong>S3:</strong> Stop GLib idle threads on stop</td>
+                <td>~0.5&ndash;1 MB</td>
+                <td>1 line</td>
+            </tr>
+            <tr>
+                <td><span class="tag tag-blue">P2</span></td>
+                <td><strong>L1:</strong> Destroy pipeline on stop</td>
+                <td>~15&ndash;25 MB</td>
+                <td>Moderate refactor</td>
+            </tr>
+            <tr>
+                <td><span class="tag tag-blue">P2</span></td>
+                <td><strong>L2:</strong> Lazy SHM allocation</td>
+                <td>~8&ndash;16 MB (idle)</td>
+                <td>Significant refactor</td>
+            </tr>
+            <tr>
+                <td><span class="tag tag-purple">P3</span></td>
+                <td><strong>L3:</strong> Dynamic video partition sizing</td>
+                <td>~3&ndash;4 MB per session</td>
+                <td>API change</td>
+            </tr>
+            <tr>
+                <td><span class="tag tag-purple">P3</span></td>
+                <td><strong>L4:</strong> Process recycling on INACTIVE</td>
+                <td>Full reclaim</td>
+                <td>Architecture change</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="callout">
+        <strong>Target outcome with P0+P1 changes:</strong><br>
+        <ul>
+            <li>ACTIVE idle: ~33 MB &rarr; <strong>~25 MB</strong> (with maxPlaybacks=1)</li>
+            <li>ACTIVE stopped: ~70 MB &rarr; <strong>~40&ndash;45 MB</strong> (with malloc_trim + arena limit)</li>
+            <li>ACTIVE playing: ~75 MB &rarr; <strong>~55&ndash;65 MB</strong> (reduced SHM + arena limit)</li>
+        </ul>
+    </div>
+</div>
+
+<p style="color: var(--text-secondary); text-align: center; margin-top: 2rem; font-size: 0.85rem;">
+    Report generated from Rialto source tree analysis &mdash; September 2026
+</p>
+
+</div>
+</body>
+</html>

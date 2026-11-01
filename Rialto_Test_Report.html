@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Rialto Test Coverage Analysis</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;max-width:1100px;margin:auto;padding:20px;background:#f5f7fa;color:#333}
+h1{color:#1a237e;border-bottom:3px solid #3f51b5;padding-bottom:8px}
+h2{color:#283593;margin-top:28px;border-left:4px solid #3f51b5;padding-left:10px}
+h3{color:#455a64}
+table{border-collapse:collapse;width:100%;margin:10px 0}
+th,td{border:1px solid #ccc;padding:7px 10px;text-align:left;font-size:.92em}
+th{background:#e8eaf6;color:#1a237e}
+code{background:#eceff1;padding:1px 5px;border-radius:3px;font-size:.88em}
+pre{background:#263238;color:#eeffff;padding:12px;border-radius:6px;overflow-x:auto;font-size:.82em;line-height:1.4}
+ul{margin:5px 0;padding-left:22px}
+li{margin:3px 0}
+.s{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:18px;margin:14px 0}
+.hi{color:#d32f2f;font-weight:bold}.med{color:#ef6c00;font-weight:bold}.lo{color:#1565c0;font-weight:bold}
+hr{border:none;border-top:2px solid #e0e0e0;margin:25px 0}
+</style>
+</head>
+<body>
+<h1>Rialto Master Branch &mdash; Test Coverage &amp; Testability Analysis</h1>
+<p><strong>Date:</strong> September 2026 &nbsp;|&nbsp; <strong>Scope:</strong> <code>rialto</code> (master) <code>tests/</code> folder</p>
+<hr>
+<div class="s">
+<h2>1. Executive Summary</h2>
+<p>Rialto has a solid two-tier test infrastructure:</p>
+<ul>
+<li><strong>L1 (Unit Tests)</strong> &mdash; <code>tests/unittests/</code> &mdash; GTest+GMock, per-class isolation with comprehensive mocks</li>
+<li><strong>L2 (Component Tests)</strong> &mdash; <code>tests/componenttests/</code> &mdash; End-to-end server and client component tests with stubs</li>
+</ul>
+<p><strong>No L3 integration tests, no contract testing framework, and no E2E tests exist.</strong></p>
+<table>
+<tr><th>Area</th><th>Current State</th><th>Verdict</th></tr>
+<tr><td>L1 Unit Tests</td><td>Good coverage, but gaps exist</td><td><span class="med">CAN BE IMPROVED</span></td></tr>
+<tr><td>L2 Component Tests</td><td>Good scenario coverage</td><td><span class="med">CAN BE IMPROVED</span></td></tr>
+<tr><td>Contract Testing</td><td><strong>Does not exist</strong></td><td><span class="hi">SHOULD BE ADDED</span></td></tr>
+<tr><td>CI Integration</td><td><code>COVERAGE_ENABLED</code> flag exists, no CI YAML in repo</td><td><span class="med">SHOULD BE ENHANCED</span></td></tr>
+</table>
+</div>
+<hr>
+<div class="s">
+<h2>2. Current Test Architecture</h2>
+<h3>2.1 Test Structure</h3>
+<pre>tests/
+  unittests/           # L1 - Unit tests (GTest + GMock)
+    media/
+      client/          # Client-side unit tests
+      common/          # Shared media types, frame writers, schema version
+      server/
+        gstplayer/     # GstGenericPlayer, tasks, WebAudioPlayer, GstSrc, decryptor
+        ipc/           # IPC module services (control, mediaKeys, mediaPipeline, etc.)
+        main/          # MediaPipelineServerInternal, MediaKeySession, MainThread, etc.
+        service/       # CdmService, PlaybackService, SessionServerManager
+        mocks/         # GMock mocks for all interfaces
+    ipc/               # IPC transport layer tests
+    logging/           # Logging framework tests
+    wrappers/          # GstWrapper, GlibWrapper tests
+    serverManager/     # Server manager tests
+  componenttests/      # L2 - Component tests
+    server/            # Server-side component tests with GStreamer stub
+      fixtures/        # RialtoServerComponentTest base fixture
+      stubs/           # ClientStub, GstreamerStub, ServerManagerStub
+      tests/           # Test scenarios
+    client/            # Client-side component tests
+      stubs/           # Server stubs for client testing
+      tests/           # Test scenarios (mse, eme, control, webaudio, metrics)</pre>
+<h3>2.2 Build Configuration</h3>
+<ul>
+<li>Unit tests: <code>cmake -DCMAKE_BUILD_FLAG=UnitTests</code></li>
+<li>Component tests: <code>cmake -DCMAKE_BUILD_FLAG=ComponentTests</code></li>
+<li>Coverage: <code>cmake -DCOVERAGE_ENABLED=ON</code> (gcov/lcov)</li>
+<li>Proto contract: Client and server share <strong>identical</strong> <code>.proto</code> files (verified: no drift)</li>
+</ul>
+</div>
+<hr>
+<div class="s">
+<h2>3. L1 Unit Test Analysis &mdash; Coverage Gaps</h2>
+<h3>3.1 GstPlayer Tasks &mdash; Good, But Missing Scenarios</h3>
+<p>The task tests in <code>unittests/media/server/gstplayer/genericPlayer/tasksTests/</code> cover 44 task files. Each production task in <code>source/tasks/generic/</code> has a corresponding test file.</p>
+<p><strong>GAPS IDENTIFIED:</strong></p>
+<table>
+<tr><th>#</th><th>Gap</th><th>Source File</th><th>Missing Test Scenario</th></tr>
+<tr><td>1</td><td><strong>No subtitle flush test</strong></td><td><code>Flush.cpp</code> handles AUDIO, VIDEO, UNKNOWN but tests only cover Audio/Video</td><td><code>FlushTest.cpp</code></td></tr>
+<tr><td>2</td><td><strong>No async flush test</strong></td><td><code>Flush.cpp</code> line 101-104: <code>m_isAsync</code> triggers <code>flushOnPrerollController-&gt;setFlushing()</code></td><td><code>FlushTest.cpp</code></td></tr>
+<tr><td>3</td><td><strong>No resetTime=true test</strong></td><td><code>Flush.cpp</code> line 116-119: <code>m_resetTime</code> resets <code>streamPosition</code> to -1</td><td><code>FlushTest.cpp</code></td></tr>
+<tr><td>4</td><td><strong>EOS re-set after subtitle flush not tested</strong></td><td>Known Subtitle EOS bug (VIPA video freeze) &mdash; Flush erases <code>endOfStreamInfo[SUBTITLE]</code></td><td><code>FlushTest.cpp</code>, <code>EosTest.cpp</code></td></tr>
+<tr><td>5</td><td><strong>No destructor leak tests</strong></td><td><code>SetupElement</code>, <code>SetupSource</code>, <code>HandleBusMessage</code> destructors leak GStreamer refs</td><td><code>SetupElementTest.cpp</code>, etc.</td></tr>
+<tr><td>6</td><td><strong>WorkerThread task drain on shutdown</strong></td><td>Tasks holding GstElement refs destroyed without execute() on shutdown</td><td><code>WorkerThreadTest.cpp</code></td></tr>
+<tr><td>7</td><td><strong>SynchroniseSubtitleClock leak path</strong></td><td>When <code>gstEventNewCustom</code> fails, GstStructure is leaked</td><td>No test file</td></tr>
+</table>
+<h3>3.2 CdmService &mdash; Missing Cleanup Verification</h3>
+<table>
+<tr><th>#</th><th>Gap</th><th>Details</th></tr>
+<tr><td>8</td><td><strong>switchToInactive doesn't clear m_sessionInfo</strong></td><td>Only clears <code>m_mediaKeys</code> but leaves <code>m_sessionInfo</code> and <code>m_mediaKeysClients</code> populated. No test verifies cleanup.</td></tr>
+<tr><td>9</td><td><strong>No test for client disconnect without destroyMediaKeys</strong></td><td>If IPC client disconnects without calling <code>destroyMediaKeys()</code>, session maps leak.</td></tr>
+<tr><td>10</td><td><strong>releaseKeySession deferred path undertested</strong></td><td><code>decrementSessionIdUsageCounter</code> can trigger deferred release &mdash; minimal test coverage.</td></tr>
+</table>
+<h3>3.3 MediaPipelineServerInternal &mdash; Missing Edge Cases</h3>
+<table>
+<tr><th>#</th><th>Gap</th><th>Details</th></tr>
+<tr><td>11</td><td><strong>No test for addSegment NO_SPACE after partial fill</strong></td><td>Tests cover NO_SPACE for single segment, but not partial buffer fill triggering NO_SPACE.</td></tr>
+<tr><td>12</td><td><strong>notifyNeedMediaData concurrent access</strong></td><td>No test for race condition between <code>notifyNeedMediaData</code> and <code>haveData</code>.</td></tr>
+</table>
+<h3>3.4 GstGenericPlayer &mdash; Missing Lifecycle Tests</h3>
+<table>
+<tr><th>#</th><th>Gap</th><th>Details</th></tr>
+<tr><td>13</td><td><strong>No test for pipeline teardown with queued buffers</strong></td><td><code>streamInfo.buffers</code> may contain GstBuffers when pipeline is torn down.</td></tr>
+<tr><td>14</td><td><strong>No test for double-stop</strong></td><td>Calling <code>stop()</code> twice in succession is not tested.</td></tr>
+<tr><td>15</td><td><strong>No test for play after EOS without reset</strong></td><td>Attempting <code>play()</code> after EOS without a <code>setPosition()</code> reset is not covered.</td></tr>
+</table>
+<h3>3.5 SchemaVersion &mdash; Well Tested (No Gaps)</h3>
+<p><code>SchemaVersionTest.cpp</code> covers: initialization, current version, equality, compatibility (major/minor/patch), string conversion. <strong>No gaps.</strong></p>
+</div>
+<hr>
+<div class="s">
+<h2>4. L2 Component Test Analysis</h2>
+<h3>4.1 Server Component Tests &mdash; Current Coverage</h3>
+<p>27 mediaPipeline test files, 12 mediaKeys test files, 2 control tests, 1 recovery test, 3 webAudio test files, 1 mediaPipelineCapabilities, 1 mediaKeysCapabilities, 3 sessionServer tests.</p>
+<p><strong>WELL COVERED:</strong></p>
+<ul>
+<li>Playback lifecycle (create/load/play/pause/stop/destroy)</li>
+<li>Encrypted playback with DRM sessions</li>
+<li>Dual video playback</li>
+<li>Audio source switching</li>
+<li>Flush, SetPosition, SetSourcePosition</li>
+<li>Volume, Mute, PlaybackRate</li>
+<li>QoS updates, position updates, underflow notifications</li>
+<li>Non-fatal player errors, first frame notification</li>
+<li>Healthcheck, state changes, recovery</li>
+<li>WebAudio play/pause/stop/failures</li>
+</ul>
+<h3>4.2 Server Component Test Gaps</h3>
+<table>
+<tr><th>#</th><th>Missing Scenario</th><th>Impact</th></tr>
+<tr><td>1</td><td><strong>Subtitle playback end-to-end</strong></td><td>No component test creates a subtitle source and verifies subtitle EOS handling. This is the exact scenario that caused the VIPA video freeze bug.</td></tr>
+<tr><td>2</td><td><strong>Period transition with flush+reattach</strong></td><td>No test simulates: play period 1 &rarr; flush all sources &rarr; reattach &rarr; play period 2 &rarr; verify EOS fires for all sources.</td></tr>
+<tr><td>3</td><td><strong>Multiple channel changes (rapid retune)</strong></td><td>No test creates session, plays, destroys, then creates a new session. Memory/resource cleanup between sessions is untested at L2.</td></tr>
+<tr><td>4</td><td><strong>Client disconnect during playback</strong></td><td>No test simulates IPC client disconnecting mid-playback to verify server-side cleanup.</td></tr>
+<tr><td>5</td><td><strong>Concurrent dual DRM sessions</strong></td><td><code>DualVideoPlaybackTest</code> exists but doesn't test two independent DRM key systems simultaneously.</td></tr>
+<tr><td>6</td><td><strong>Buffer overflow / backpressure</strong></td><td>No test pushes segments faster than pipeline consumes to verify EnoughData/flow-control behavior end-to-end.</td></tr>
+<tr><td>7</td><td><strong>Error recovery mid-playback</strong></td><td><code>RecoveryTest.cpp</code> tests healthcheck-based recovery but not recovery from GStreamer pipeline errors (e.g., decoder failure).</td></tr>
+</table>
+<h3>4.3 Client Component Tests &mdash; Good Coverage</h3>
+<p>26 MSE test files, 13 EME test files, control/webaudio/metrics tests present. Client-side coverage is strong for the IPC-to-server path. Same gaps as server side for subtitle and period transition scenarios.</p>
+</div>
+<hr>
+<div class="s">
+<h2>5. Contract Testing &mdash; DOES NOT EXIST (Recommended)</h2>
+<h3>5.1 Current State</h3>
+<p>Rialto uses protobuf-based IPC between client (<code>librialto</code>) and server (<code>RialtoServer</code>). The proto files are currently <strong>duplicated</strong> in three locations:</p>
+<ul>
+<li><code>proto/</code> (canonical source)</li>
+<li><code>media/client/ipc/proto/</code> (client copy)</li>
+<li><code>media/server/ipc/proto/</code> (server copy)</li>
+</ul>
+<p>Currently identical (verified), but there is <strong>no automated mechanism</strong> to detect proto drift or breaking changes.</p>
+<p>The <code>SchemaVersion</code> mechanism in <code>controlmodule.proto</code> exists (major/minor/patch with compatibility check), but there is <strong>no test that validates the full contract</strong> between a real client message and real server handler.</p>
+<h3>5.2 Recommended Contract Testing Framework</h3>
+<p><strong>Option A: Proto-based Contract Tests (Recommended)</strong></p>
+<p>Add a new test target <code>ContractTests</code> that:</p>
+<ol>
+<li><strong>Proto Schema Validation</strong> &mdash; Verify client and server proto files are byte-identical at build time:
+<pre>add_test(NAME ProtoContractCheck
+  COMMAND ${CMAKE_COMMAND} -E compare_files
+    ${CMAKE_SOURCE_DIR}/proto/mediapipelinemodule.proto
+    ${CMAKE_SOURCE_DIR}/media/client/ipc/proto/mediapipelinemodule.proto)</pre></li>
+<li><strong>Wire Format Compatibility</strong> &mdash; Serialize a message with client proto, deserialize with server proto, verify all fields round-trip correctly. This catches field renumbering, type changes, and removed fields.</li>
+<li><strong>Schema Version Gate</strong> &mdash; Test that RegisterClient rejects incompatible schema versions and accepts compatible ones (partially exists in <code>ControlModuleServiceTests</code>).</li>
+<li><strong>Backward Compatibility</strong> &mdash; Store golden proto binary snapshots per release tag. On each new build, verify new server can still deserialize old client messages.</li>
+</ol>
+<p><strong>Option B: Pact-style Consumer-Driven Contract Tests</strong></p>
+<p>For cross-repo validation (rialto-gstreamer &harr; rialto server), consider a Pact-like framework:</p>
+<ul>
+<li>Consumer (rialto-gstreamer) defines expected IPC interactions</li>
+<li>Provider (rialto server) verifies it can satisfy those interactions</li>
+<li>Contract artifacts stored in a shared location and validated in CI</li>
+</ul>
+<h3>5.3 Implementation Plan for Contract Tests</h3>
+<pre>tests/
+  contracttests/
+    CMakeLists.txt
+    proto_identity/          # Verify proto files are identical across copies
+      ProtoIdentityTest.cpp
+    wire_compat/             # Serialize with client proto, deserialize with server proto
+      MediaPipelineWireTest.cpp
+      MediaKeysWireTest.cpp
+      ControlModuleWireTest.cpp
+    schema_version/          # Version negotiation tests
+      SchemaCompatTest.cpp
+    golden_snapshots/        # Binary proto snapshots per release
+      v0.15.2/
+        CreateSessionRequest.bin
+        AttachSourceRequest.bin
+        ...</pre>
+<p>Add to root <code>CMakeLists.txt</code>:</p>
+<pre>if( CMAKE_BUILD_FLAG STREQUAL "ContractTests" )
+    include( cmake/build_google_test.cmake )
+    add_subdirectory( tests/common EXCLUDE_FROM_ALL )
+    add_subdirectory( tests/contracttests EXCLUDE_FROM_ALL )
+endif()</pre>
+</div>
+<hr>
+<div class="s">
+<h2>6. Recommended L1 Test Improvements &mdash; Specific New Tests</h2>
+<h3>6.1 FlushTest.cpp &mdash; Add These Tests</h3>
+<pre>// Test subtitle flush
+TEST_F(FlushTest, ShouldFlushSubtitle)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::SUBTITLE);
+    shouldFlushSubtitle();
+    shouldFlushSubtitleSrcSuccess();
+    setPipelinePlaying();
+    triggerFlush(firebolt::rialto::MediaSourceType::SUBTITLE);
+    checkSubtitleFlushed();
+}
+
+// Test async flush sets flushing state
+TEST_F(FlushTest, ShouldSetFlushingOnAsyncFlush)
+{
+    shouldFlushAudio();
+    shouldFlushAudioSrcSuccess();
+    setPipelinePlaying();
+    triggerAsyncFlush(firebolt::rialto::MediaSourceType::AUDIO);
+    checkFlushOnPrerollControllerFlushingSet(firebolt::rialto::MediaSourceType::AUDIO);
+    checkAudioFlushed();
+}
+
+// Test resetTime resets stream position
+TEST_F(FlushTest, ShouldResetStreamPositionWhenResetTimeTrue)
+{
+    shouldFlushAudio();
+    shouldFlushAudioSrcSuccess();
+    setContextStreamPosition(1000);
+    setPipelinePlaying();
+    triggerFlushWithResetTime(firebolt::rialto::MediaSourceType::AUDIO, true);
+    checkStreamPositionReset();
+    checkAudioFlushed();
+}
+
+// Test subtitle flush clears EOS (regression for VIPA freeze)
+TEST_F(FlushTest, ShouldClearSubtitleEosOnFlush)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::SUBTITLE);
+    setContextEndOfStream(firebolt::rialto::MediaSourceType::SUBTITLE);
+    shouldFlushSubtitle();
+    shouldFlushSubtitleSrcSuccess();
+    setPipelinePlaying();
+    triggerFlush(firebolt::rialto::MediaSourceType::SUBTITLE);
+    checkEndOfStreamCleared(firebolt::rialto::MediaSourceType::SUBTITLE);
+}</pre>
+<h3>6.2 Destructor Leak Regression Tests</h3>
+<pre>// SetupElementTest.cpp - verify gstObjectUnref on destruction
+TEST_F(SetupElementTest, ShouldUnrefElementOnDestruction)
+{
+    // Construct SetupElement with a mock GstElement
+    // Expect gstObjectUnref called when task is destroyed without execute()
+    EXPECT_CALL(*m_gstWrapper, gstObjectUnref(&amp;m_element));
+    // Let task go out of scope
+}
+
+// HandleBusMessageTest.cpp - verify gstMessageUnref on destruction
+TEST_F(HandleBusMessageTest, ShouldUnrefMessageOnDestruction)
+{
+    EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&amp;m_message));
+    // Let task go out of scope without calling execute()
+}</pre>
+<h3>6.3 CdmService Cleanup Test</h3>
+<pre>TEST_F(CdmServiceTests, shouldClearSessionInfoOnSwitchToInactive)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillCreateKeySessionWithStatus(MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
+    triggerSwitchToInactive();
+    // Verify m_sessionInfo and m_mediaKeysClients are empty
+    // (requires either friend access or observable side-effect test)
+}</pre>
+</div>
+<hr>
+<div class="s">
+<h2>7. Recommended L2 Component Test Improvements</h2>
+<h3>7.1 New Component Test: Subtitle Period Transition</h3>
+<pre>SubtitlePeriodTransitionTest:
+  1. Create pipeline with audio + video + subtitle
+  2. Play period 1 (push segments, receive EOS for all 3 sources)
+  3. Flush all 3 sources (period transition)
+  4. Reattach sources
+  5. Push segments for audio + video only (subtitle has no content)
+  6. Send EOS for audio + video
+  7. VERIFY: Pipeline EOS fires (not stuck due to missing subtitle EOS)</pre>
+<h3>7.2 New Component Test: Rapid Channel Change</h3>
+<pre>RapidChannelChangeTest:
+  1. Create session 1, load, play, push segments
+  2. Stop and destroy session 1
+  3. Immediately create session 2, load, play
+  4. VERIFY: Session 2 plays successfully with no leaked resources
+  5. Repeat 3 times to catch accumulation</pre>
+<h3>7.3 New Component Test: Client Disconnect Cleanup</h3>
+<pre>ClientDisconnectTest:
+  1. Create session, load, start playback
+  2. Disconnect IPC client (simulate crash)
+  3. VERIFY: Server cleans up pipeline, DRM sessions, shared memory
+  4. New client can connect and create a new session</pre>
+<h3>7.4 New Component Test: Buffer Backpressure</h3>
+<pre>BufferBackpressureTest:
+  1. Create session, attach audio+video, play
+  2. Push segments rapidly without consuming (stub GStreamer doesn't pull)
+  3. VERIFY: EnoughData signal fires, client stops receiving NeedMediaData
+  4. VERIFY: After consuming, NeedData resumes</pre>
+</div>
+<hr>
+<div class="s">
+<h2>8. CI/Release Gate Recommendations</h2>
+<h3>8.1 Tag Release Validation Pipeline</h3>
+<p>For every tag release, the CI should run:</p>
+<table>
+<tr><th>Step</th><th>Gate</th><th>Criteria</th></tr>
+<tr><td>1</td><td>Unit Tests (L1)</td><td>All must pass, coverage &ge; threshold</td></tr>
+<tr><td>2</td><td>Component Tests (L2)</td><td>All must pass</td></tr>
+<tr><td>3</td><td>Contract Tests (new)</td><td>Proto identity + wire compat + golden snapshots</td></tr>
+<tr><td>4</td><td>Coverage Report</td><td>gcov/lcov, fail if coverage drops below baseline</td></tr>
+<tr><td>5</td><td>Static Analysis</td><td>cppcheck or clang-tidy for leak patterns</td></tr>
+<tr><td>6</td><td>Valgrind/ASan run</td><td>At least on component tests to catch memory leaks</td></tr>
+</table>
+<h3>8.2 Per-PR Validation</h3>
+<table>
+<tr><th>Step</th><th>Gate</th><th>Criteria</th></tr>
+<tr><td>1</td><td>Unit Tests (L1)</td><td>Must pass</td></tr>
+<tr><td>2</td><td>Component Tests (L2)</td><td>Must pass</td></tr>
+<tr><td>3</td><td>Proto Identity Check</td><td>Fail if client/server protos diverge</td></tr>
+<tr><td>4</td><td>Coverage delta</td><td>Warn if new code has &lt; 80% line coverage</td></tr>
+</table>
+</div>
+<hr>
+<div class="s">
+<h2>9. Summary of All Recommendations</h2>
+<table>
+<tr><th>Priority</th><th>Recommendation</th><th>Type</th><th>Effort</th></tr>
+<tr><td><span class="hi">HIGH</span></td><td>Add subtitle flush + EOS regression tests (L1)</td><td>L1 gap fix</td><td>1 day</td></tr>
+<tr><td><span class="hi">HIGH</span></td><td>Add destructor leak regression tests for SetupElement/SetupSource/HandleBusMessage</td><td>L1 gap fix</td><td>0.5 day</td></tr>
+<tr><td><span class="hi">HIGH</span></td><td>Add contract test framework with proto identity checks</td><td>New framework</td><td>2-3 days</td></tr>
+<tr><td><span class="hi">HIGH</span></td><td>Add subtitle period transition component test (L2)</td><td>L2 gap fix</td><td>1 day</td></tr>
+<tr><td><span class="med">MEDIUM</span></td><td>Add CdmService switchToInactive cleanup verification</td><td>L1 gap fix</td><td>0.5 day</td></tr>
+<tr><td><span class="med">MEDIUM</span></td><td>Add rapid channel change component test</td><td>L2 gap fix</td><td>1 day</td></tr>
+<tr><td><span class="med">MEDIUM</span></td><td>Add client disconnect cleanup component test</td><td>L2 gap fix</td><td>1 day</td></tr>
+<tr><td><span class="med">MEDIUM</span></td><td>Add wire format backward compatibility tests</td><td>Contract test</td><td>2 days</td></tr>
+<tr><td><span class="med">MEDIUM</span></td><td>Add Valgrind/ASan CI gate for component tests</td><td>CI enhancement</td><td>1 day</td></tr>
+<tr><td><span class="lo">LOW</span></td><td>Add buffer backpressure component test</td><td>L2 gap fix</td><td>1 day</td></tr>
+<tr><td><span class="lo">LOW</span></td><td>Add golden proto snapshot mechanism per release</td><td>Contract test</td><td>1 day</td></tr>
+<tr><td><span class="lo">LOW</span></td><td>Add double-stop and play-after-EOS unit tests</td><td>L1 gap fix</td><td>0.5 day</td></tr>
+</table>
+<p><strong>Total estimated effort: ~12-14 engineering days</strong></p>
+</div>
+<hr>
+<p style="text-align:center;color:#888;font-size:.85em"><em>Report generated from code inspection of rialto master branch, September 2026.</em></p>
+</body>
+</html>
