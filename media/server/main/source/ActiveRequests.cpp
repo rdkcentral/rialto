@@ -25,10 +25,11 @@
 
 namespace firebolt::rialto::server
 {
-ActiveRequests::ActiveRequestsData::~ActiveRequestsData() {}
+ActiveRequestsData::~ActiveRequestsData() {}
 
-AddSegmentStatus ActiveRequests::ActiveRequestsData::addSegment(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment)
+AddSegmentStatus ActiveRequestsData::addSegment(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment)
 {
+    std::unique_lock<std::mutex> lock{m_dataMutex};
     if (m_bytesWritten + segment->getDataLength() > m_maxMediaBytes)
         return AddSegmentStatus::NO_SPACE;
 
@@ -44,6 +45,12 @@ AddSegmentStatus ActiveRequests::ActiveRequestsData::addSegment(const std::uniqu
     return AddSegmentStatus::OK;
 }
 
+void ActiveRequestsData::withSegments(const std::function<void(const IMediaPipeline::MediaSegmentVector &)> &func)
+{
+    std::unique_lock<std::mutex> lock{m_dataMutex};
+    func(m_segments);
+}
+
 ActiveRequests::ActiveRequests() : m_currentId{0} {}
 
 std::uint32_t ActiveRequests::insert(const MediaSourceType &mediaSourceType, std::uint32_t maxMediaBytes,
@@ -56,8 +63,8 @@ std::uint32_t ActiveRequests::insert(const MediaSourceType &mediaSourceType, std
         m_currentId = 1;
     }
 
-    auto [it, inserted] =
-        m_requestMap.emplace(m_currentId, ActiveRequestsData(mediaSourceType, maxMediaBytes, maxFrames));
+    auto [it, inserted] = m_requestMap.emplace(
+        m_currentId, std::make_shared<ActiveRequestsData>(mediaSourceType, maxMediaBytes, maxFrames));
     if (!inserted)
     {
         do
@@ -65,7 +72,8 @@ std::uint32_t ActiveRequests::insert(const MediaSourceType &mediaSourceType, std
             ++m_currentId;
         } while (m_requestMap.find(m_currentId) != m_requestMap.end());
 
-        m_requestMap.emplace(m_currentId, ActiveRequestsData(mediaSourceType, maxMediaBytes, maxFrames));
+        m_requestMap.emplace(m_currentId,
+                             std::make_shared<ActiveRequestsData>(mediaSourceType, maxMediaBytes, maxFrames));
     }
 
     return m_currentId++;
@@ -77,7 +85,7 @@ MediaSourceType ActiveRequests::getType(std::uint32_t requestId) const
     auto requestIter{m_requestMap.find(requestId)};
     if (requestIter != m_requestMap.end())
     {
-        return requestIter->second.getType();
+        return requestIter->second->getType();
     }
     return MediaSourceType::UNKNOWN;
 }
@@ -89,7 +97,7 @@ std::uint32_t ActiveRequests::getMaxFrames(std::uint32_t requestId) const
     auto requestIter{m_requestMap.find(requestId)};
     if (requestIter != m_requestMap.end())
     {
-        return requestIter->second.getMaxFrames();
+        return requestIter->second->getMaxFrames();
     }
     return kDefaultMaxFrames;
 }
@@ -105,7 +113,7 @@ void ActiveRequests::erase(const MediaSourceType &mediaSourceType)
     std::unique_lock<std::mutex> lock{m_mutex};
     for (auto it = m_requestMap.begin(); it != m_requestMap.end();)
     {
-        if (it->second.getType() == mediaSourceType)
+        if (it->second->getType() == mediaSourceType)
         {
             it = m_requestMap.erase(it);
         }
@@ -130,25 +138,33 @@ AddSegmentStatus ActiveRequests::addSegment(std::uint32_t requestId,
         return AddSegmentStatus::ERROR;
     }
 
-    std::unique_lock<std::mutex> lock{m_mutex};
-    auto requestIter{m_requestMap.find(requestId)};
-    if (requestIter != m_requestMap.end())
+    std::shared_ptr<ActiveRequestsData> requestData;
     {
-        return requestIter->second.addSegment(segment);
+        std::unique_lock<std::mutex> lock{m_mutex};
+        auto requestIter{m_requestMap.find(requestId)};
+        if (requestIter != m_requestMap.end())
+        {
+            requestData = requestIter->second;
+        }
+    }
+
+    if (requestData)
+    {
+        return requestData->addSegment(segment);
     }
 
     return AddSegmentStatus::ERROR;
 }
 
-const IMediaPipeline::MediaSegmentVector &ActiveRequests::getSegments(std::uint32_t requestId) const
+std::shared_ptr<ActiveRequestsData> ActiveRequests::getRequest(std::uint32_t requestId) const
 {
     std::unique_lock<std::mutex> lock{m_mutex};
     auto requestIter{m_requestMap.find(requestId)};
     if (requestIter != m_requestMap.end())
     {
-        return requestIter->second.getSegments();
+        return requestIter->second;
     }
 
-    throw std::runtime_error("No segments for request id " + std::to_string(requestId));
+    return nullptr;
 }
 } // namespace firebolt::rialto::server

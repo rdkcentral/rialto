@@ -20,7 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_ACTIVE_REQUESTS_MOCK_H_
 #define FIREBOLT_RIALTO_SERVER_ACTIVE_REQUESTS_MOCK_H_
 
-#include "IActiveRequests.h"
+#include "ActiveRequests.h"
 #include <gmock/gmock.h>
 #include <memory>
 
@@ -39,7 +39,7 @@ public:
     MOCK_METHOD(void, clear, (), (override));
     MOCK_METHOD(AddSegmentStatus, addSegment,
                 (std::uint32_t requestId, const std::unique_ptr<IMediaPipeline::MediaSegment> &segment), (override));
-    MOCK_METHOD(const IMediaPipeline::MediaSegmentVector &, getSegments, (std::uint32_t requestId), (const, override));
+    MOCK_METHOD(std::shared_ptr<ActiveRequestsData>, getRequest, (std::uint32_t requestId), (const, override));
 };
 } // namespace firebolt::rialto::server
 

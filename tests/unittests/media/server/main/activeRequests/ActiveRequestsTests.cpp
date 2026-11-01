@@ -37,9 +37,9 @@ TEST_F(ActiveRequestsTests, getTypeShouldReturnUnknownForInvalidId)
     EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(123));
 }
 
-TEST_F(ActiveRequestsTests, getSegmentsShouldThrowForInvalidId)
+TEST_F(ActiveRequestsTests, getRequestShouldReturnNullForInvalidId)
 {
-    EXPECT_THROW(m_sut.getSegments(123), std::runtime_error);
+    EXPECT_EQ(nullptr, m_sut.getRequest(123));
 }
 
 TEST_F(ActiveRequestsTests, addSegmentShouldReturnFalseForNullSegment)
@@ -169,9 +169,14 @@ TEST_F(ActiveRequestsTests, shouldAddAndGetSegments)
     EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max(),
                               kMaxFrames));
     EXPECT_EQ(m_sut.addSegment(0, segment), firebolt::rialto::AddSegmentStatus::OK);
-    const firebolt::rialto::IMediaPipeline::MediaSegmentVector &kSegments = m_sut.getSegments(0);
-    ASSERT_EQ(1, kSegments.size());
-    EXPECT_EQ(kSegments[0]->getType(), firebolt::rialto::MediaSourceType::AUDIO);
+    std::shared_ptr<firebolt::rialto::server::ActiveRequestsData> requestData = m_sut.getRequest(0);
+    ASSERT_NE(nullptr, requestData);
+    requestData->withSegments(
+        [](const firebolt::rialto::IMediaPipeline::MediaSegmentVector &kSegments)
+        {
+            ASSERT_EQ(1, kSegments.size());
+            EXPECT_EQ(kSegments[0]->getType(), firebolt::rialto::MediaSourceType::AUDIO);
+        });
 }
 
 TEST_F(ActiveRequestsTests, insertShouldHandleDuplicateId)
@@ -207,5 +212,5 @@ TEST_F(ActiveRequestsTests, shouldAddAndRemoveSegments)
                               kMaxFrames));
     EXPECT_EQ(m_sut.addSegment(0, segment), firebolt::rialto::AddSegmentStatus::OK);
     m_sut.clear();
-    EXPECT_THROW(m_sut.getSegments(0), std::runtime_error);
+    EXPECT_EQ(nullptr, m_sut.getRequest(0));
 }
