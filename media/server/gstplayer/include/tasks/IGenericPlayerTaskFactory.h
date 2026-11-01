@@ -56,7 +56,7 @@ public:
      */
     virtual std::unique_ptr<IPlayerTask>
     createAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                        const IMediaPipeline::MediaSegmentVector &mediaSegments) const = 0;
+                        const std::shared_ptr<const IMediaPipeline::MediaSegmentVector> &mediaSegments) const = 0;
 
     /**
      * @brief Creates a AttachSource task.

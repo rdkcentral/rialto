@@ -738,8 +738,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         return false;
     }
 
-    requestData->withSegments(
-        [this](const IMediaPipeline::MediaSegmentVector &segments) { m_gstPlayer->attachSamples(segments); });
+    m_gstPlayer->attachSamples(requestData->segments());
 
     m_activeRequests->erase(needDataRequestId);
     if (status == MediaSourceStatus::EOS)

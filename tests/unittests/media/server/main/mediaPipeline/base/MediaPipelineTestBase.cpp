@@ -124,7 +124,7 @@ void MediaPipelineTestBase::setEos(MediaSourceType sourceType)
     EXPECT_CALL(*m_activeRequestsMock, getRequest(kNeedDataRequestId))
         .WillOnce(Return(std::make_shared<ActiveRequestsData>(sourceType, 0, 0)));
     EXPECT_CALL(*m_activeRequestsMock, erase(kNeedDataRequestId));
-    EXPECT_CALL(*m_gstPlayerMock, attachSamples(A<const IMediaPipeline::MediaSegmentVector &>()));
+    EXPECT_CALL(*m_gstPlayerMock, attachSamples(A<const std::shared_ptr<const IMediaPipeline::MediaSegmentVector> &>()));
     EXPECT_CALL(*m_gstPlayerMock, setEos(sourceType));
     EXPECT_TRUE(m_mediaPipeline->haveData(status, kNeedDataRequestId));
 }

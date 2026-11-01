@@ -29,7 +29,7 @@
 
 namespace firebolt::rialto::server
 {
-class ActiveRequestsData
+class ActiveRequestsData : public std::enable_shared_from_this<ActiveRequestsData>
 {
 public:
     ActiveRequestsData(MediaSourceType type, std::uint32_t maxMediaBytes, std::uint32_t maxFrames)
@@ -45,6 +45,9 @@ public:
 
     AddSegmentStatus addSegment(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment);
     void withSegments(const std::function<void(const IMediaPipeline::MediaSegmentVector &)> &func);
+    // Returns a lifetime-pinning view of the segment vector. Callers must not read it concurrently
+    // with addSegment() on the same request - the protocol guarantees no addSegment after haveData.
+    std::shared_ptr<const IMediaPipeline::MediaSegmentVector> segments();
 
     MediaSourceType getType() const { return m_type; }
     std::uint32_t getMaxFrames() const { return m_maxFrames; }
@@ -84,8 +87,6 @@ private:
     mutable std::mutex m_mutex;
     std::uint32_t m_currentId;
     std::map<std::uint32_t, std::shared_ptr<ActiveRequestsData>> m_requestMap;
-    // only used in server-only mode
-    std::map<std::uint32_t, std::unique_ptr<IMediaPipeline::IMediaPipeline::MediaSegment>> m_addedSegments;
 };
 
 } // namespace firebolt::rialto::server

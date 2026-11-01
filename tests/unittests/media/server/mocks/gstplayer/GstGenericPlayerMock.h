@@ -39,7 +39,7 @@ public:
     MOCK_METHOD(void, play, (bool &async), (override));
     MOCK_METHOD(void, pause, (), (override));
     MOCK_METHOD(void, stop, (), (override));
-    MOCK_METHOD(void, attachSamples, (const IMediaPipeline::MediaSegmentVector &mediaSegments), (override));
+    MOCK_METHOD(void, attachSamples, (const std::shared_ptr<const IMediaPipeline::MediaSegmentVector> &mediaSegments), (override));
     MOCK_METHOD(void, attachSamples, (const std::shared_ptr<IDataReader> &dataReader), (override));
     MOCK_METHOD(void, setPosition, (std::int64_t position), (override));
     MOCK_METHOD(bool, getPosition, (std::int64_t & position), (override));

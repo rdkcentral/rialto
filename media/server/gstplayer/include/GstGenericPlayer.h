@@ -114,7 +114,7 @@ public:
     void play(bool &async) override;
     void pause() override;
     void stop() override;
-    void attachSamples(const IMediaPipeline::MediaSegmentVector &mediaSegments) override;
+    void attachSamples(const std::shared_ptr<const IMediaPipeline::MediaSegmentVector> &mediaSegments) override;
     void attachSamples(const std::shared_ptr<IDataReader> &dataReader) override;
     void setPosition(std::int64_t position) override;
     void setVideoGeometry(int x, int y, int width, int height) override;

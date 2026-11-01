@@ -576,7 +576,7 @@ void GstGenericPlayer::allSourcesAttached()
     }
 }
 
-void GstGenericPlayer::attachSamples(const IMediaPipeline::MediaSegmentVector &mediaSegments)
+void GstGenericPlayer::attachSamples(const std::shared_ptr<const IMediaPipeline::MediaSegmentVector> &mediaSegments)
 {
     if (m_workerThread)
     {

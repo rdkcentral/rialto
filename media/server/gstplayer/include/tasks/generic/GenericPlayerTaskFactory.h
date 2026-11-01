@@ -42,7 +42,7 @@ public:
     ~GenericPlayerTaskFactory() override = default;
 
     std::unique_ptr<IPlayerTask> createAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                     const IMediaPipeline::MediaSegmentVector &mediaSegments) const override;
+                                                     const std::shared_ptr<const IMediaPipeline::MediaSegmentVector> &mediaSegments) const override;
     std::unique_ptr<IPlayerTask>
     createAttachSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                        const std::unique_ptr<IMediaPipeline::MediaSource> &source) const override;
