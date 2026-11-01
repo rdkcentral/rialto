@@ -31,7 +31,7 @@ class GenericPlayerTaskFactoryMock : public IGenericPlayerTaskFactory
 public:
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createAttachSamples,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
-                 const IMediaPipeline::MediaSegmentVector &mediaSegments),
+                 const std::shared_ptr<const IMediaPipeline::MediaSegmentVector> &mediaSegments),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createAttachSource,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,

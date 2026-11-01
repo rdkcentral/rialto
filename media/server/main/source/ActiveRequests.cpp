@@ -51,6 +51,11 @@ void ActiveRequestsData::withSegments(const std::function<void(const IMediaPipel
     func(m_segments);
 }
 
+std::shared_ptr<const IMediaPipeline::MediaSegmentVector> ActiveRequestsData::segments()
+{
+    return std::shared_ptr<const IMediaPipeline::MediaSegmentVector>(shared_from_this(), &m_segments);
+}
+
 ActiveRequests::ActiveRequests() : m_currentId{0} {}
 
 std::uint32_t ActiveRequests::insert(const MediaSourceType &mediaSourceType, std::uint32_t maxMediaBytes,

@@ -170,7 +170,7 @@ public:
      * This method is considered to be asynchronous and MUST NOT block
      * but should request to attach new sample and then return.
      */
-    virtual void attachSamples(const IMediaPipeline::MediaSegmentVector &mediaSegments) = 0;
+    virtual void attachSamples(const std::shared_ptr<const IMediaPipeline::MediaSegmentVector> &mediaSegments) = 0;
 
     /**
      * @brief Attaches new samples

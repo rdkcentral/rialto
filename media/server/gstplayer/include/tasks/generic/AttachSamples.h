@@ -36,11 +36,13 @@ class AttachSamples : public IPlayerTask
 public:
     AttachSamples(GenericPlayerContext &context,
                   const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                  IGstGenericPlayerPrivate &player, const IMediaPipeline::MediaSegmentVector &mediaSegments);
+                  IGstGenericPlayerPrivate &player,
+                  const std::shared_ptr<const IMediaPipeline::MediaSegmentVector> &mediaSegments);
     ~AttachSamples() override;
     void execute() const override;
 
 private:
+    void extractData() const;
     void attachData(const firebolt::rialto::MediaSourceType mediaType, GstBuffer *buffer) const;
     struct AudioData
     {
@@ -63,9 +65,10 @@ private:
     GenericPlayerContext &m_context;
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     IGstGenericPlayerPrivate &m_player;
-    std::vector<AudioData> m_audioData;
-    std::vector<VideoData> m_videoData;
-    std::vector<GstBuffer *> m_subtitleData;
+    std::shared_ptr<const IMediaPipeline::MediaSegmentVector> m_mediaSegments;
+    mutable std::vector<AudioData> m_audioData;
+    mutable std::vector<VideoData> m_videoData;
+    mutable std::vector<GstBuffer *> m_subtitleData;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 

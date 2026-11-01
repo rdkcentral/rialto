@@ -28,11 +28,40 @@ namespace firebolt::rialto::server::tasks::generic
 {
 AttachSamples::AttachSamples(GenericPlayerContext &context,
                              const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                             IGstGenericPlayerPrivate &player, const IMediaPipeline::MediaSegmentVector &mediaSegments)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_player{player}
+                             IGstGenericPlayerPrivate &player,
+                             const std::shared_ptr<const IMediaPipeline::MediaSegmentVector> &mediaSegments)
+    : m_context{context}, m_gstWrapper{gstWrapper}, m_player{player}, m_mediaSegments{mediaSegments}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing AttachSamples");
-    for (const auto &mediaSegment : mediaSegments)
+}
+
+AttachSamples::~AttachSamples()
+{
+    // Unref any buffers created in execute() that were not attached - covers tasks dropped after
+    // extractData() ran as well as buffers skipped by a missing stream in attachData().
+    for (const AudioData &audioData : m_audioData)
+    {
+        m_gstWrapper->gstBufferUnref(audioData.buffer);
+    }
+    for (const VideoData &videoData : m_videoData)
+    {
+        m_gstWrapper->gstBufferUnref(videoData.buffer);
+    }
+    for (GstBuffer *buffer : m_subtitleData)
+    {
+        m_gstWrapper->gstBufferUnref(buffer);
+    }
+    RIALTO_SERVER_LOG_DEBUG("AttachSamples finished");
+}
+
+void AttachSamples::extractData() const
+{
+    if (!m_mediaSegments)
+    {
+        RIALTO_SERVER_LOG_WARN("AttachSamples executed with no media segments");
+        return;
+    }
+    for (const auto &mediaSegment : *m_mediaSegments)
     {
         GstBuffer *gstBuffer = m_player.createBuffer(*mediaSegment);
         if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::VIDEO)
@@ -80,14 +109,10 @@ AttachSamples::AttachSamples(GenericPlayerContext &context,
     }
 }
 
-AttachSamples::~AttachSamples()
-{
-    RIALTO_SERVER_LOG_DEBUG("AttachSamples finished");
-}
-
 void AttachSamples::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing AttachSamples");
+    extractData();
     for (AudioData audioData : m_audioData)
     {
         m_player.updateAudioCaps(audioData.rate, audioData.channels, audioData.codecData);
@@ -106,15 +131,22 @@ void AttachSamples::execute() const
         attachData(firebolt::rialto::MediaSourceType::SUBTITLE, buffer);
     }
 
-    if (!m_audioData.empty())
+    const bool kHadAudio{!m_audioData.empty()};
+    const bool kHadVideo{!m_videoData.empty()};
+    const bool kHadSubtitle{!m_subtitleData.empty()};
+    m_audioData.clear();
+    m_videoData.clear();
+    m_subtitleData.clear();
+
+    if (kHadAudio)
     {
         m_player.notifyNeedMediaData(firebolt::rialto::MediaSourceType::AUDIO);
     }
-    else if (!m_videoData.empty())
+    else if (kHadVideo)
     {
         m_player.notifyNeedMediaData(firebolt::rialto::MediaSourceType::VIDEO);
     }
-    else if (!m_subtitleData.empty())
+    else if (kHadSubtitle)
     {
         m_player.notifyNeedMediaData(firebolt::rialto::MediaSourceType::SUBTITLE);
     }

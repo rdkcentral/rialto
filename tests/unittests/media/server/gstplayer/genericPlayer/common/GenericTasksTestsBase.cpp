@@ -1648,7 +1648,7 @@ void GenericTasksTestsBase::shouldAttachData(firebolt::rialto::MediaSourceType s
 
 void GenericTasksTestsBase::triggerAttachSamplesAudio()
 {
-    auto samples = buildAudioSamples();
+    auto samples = std::make_shared<firebolt::rialto::IMediaPipeline::MediaSegmentVector>(buildAudioSamples());
     firebolt::rialto::server::tasks::generic::AttachSamples task{testContext->m_context, testContext->m_gstWrapper,
                                                                  testContext->m_gstPlayer, samples};
     task.execute();
@@ -1669,7 +1669,7 @@ void GenericTasksTestsBase::shouldAttachAllVideoSamples()
 
 void GenericTasksTestsBase::triggerAttachSamplesVideo()
 {
-    auto samples = buildVideoSamples();
+    auto samples = std::make_shared<firebolt::rialto::IMediaPipeline::MediaSegmentVector>(buildVideoSamples());
     firebolt::rialto::server::tasks::generic::AttachSamples task{testContext->m_context, testContext->m_gstWrapper,
                                                                  testContext->m_gstPlayer, samples};
     task.execute();
@@ -1689,7 +1689,7 @@ void GenericTasksTestsBase::shouldAttachAllSubtitleSamples()
 
 void GenericTasksTestsBase::triggerAttachSamplesSubtitle()
 {
-    auto samples = buildSubtitleSamples();
+    auto samples = std::make_shared<firebolt::rialto::IMediaPipeline::MediaSegmentVector>(buildSubtitleSamples());
     firebolt::rialto::server::tasks::generic::AttachSamples task{testContext->m_context, testContext->m_gstWrapper,
                                                                  testContext->m_gstPlayer, samples};
     task.execute();

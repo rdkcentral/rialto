@@ -76,7 +76,7 @@ GenericPlayerTaskFactory::GenericPlayerTaskFactory(
 
 std::unique_ptr<IPlayerTask>
 GenericPlayerTaskFactory::createAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                              const IMediaPipeline::MediaSegmentVector &mediaSegments) const
+                                              const std::shared_ptr<const IMediaPipeline::MediaSegmentVector> &mediaSegments) const
 {
     return std::make_unique<tasks::generic::AttachSamples>(context, m_gstWrapper, player, mediaSegments);
 }
