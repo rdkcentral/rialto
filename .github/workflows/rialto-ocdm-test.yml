@@ -27,6 +27,7 @@ permissions:
 
 jobs:
   select_dependency_ref:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     outputs:
       ref: ${{ steps.select.outputs.ref }}
@@ -58,7 +59,7 @@ jobs:
 
   build-and-test-branch:
     needs: select_dependency_ref
-    if: needs.select_dependency_ref.outputs.ref != ''
+    if: github.event_name == 'pull_request' && needs.select_dependency_ref.outputs.ref != ''
     runs-on: ubuntu-24.04
 
     steps:
@@ -73,7 +74,7 @@ jobs:
       - name: Checkout Rialto headers under test
         uses: actions/checkout@v4
         with:
-          repository: ${{ github.repository }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           path: rialto-under-test
           persist-credentials: false
@@ -106,16 +107,30 @@ jobs:
 
   build-and-test:
     if: ${{ always() }}
-    needs: [select_dependency_ref, build-and-test-branch, build-and-test-release-pins]
+    needs: [select_dependency_ref, build-and-test-branch, build-and-test-release-pins, build-and-test-manual]
     runs-on: ubuntu-24.04
     steps:
       - name: Require selected dependency tests to pass
         env:
+          EVENT_NAME: ${{ github.event_name }}
+          RUN_REF: ${{ github.ref }}
+          MANUAL_RESULT: ${{ needs.build-and-test-manual.result }}
           SELECT_RESULT: ${{ needs.select_dependency_ref.result }}
           SELECTED_REF: ${{ needs.select_dependency_ref.outputs.ref }}
           BRANCH_RESULT: ${{ needs.build-and-test-branch.result }}
           PIN_RESULT: ${{ needs.build-and-test-release-pins.result }}
         run: |
+          if [ "$EVENT_NAME" = workflow_dispatch ]; then
+            if [ "$RUN_REF" != refs/heads/master ]; then
+              echo "Manual adapter tests must be dispatched from master" >&2
+              exit 1
+            fi
+            if [ "$MANUAL_RESULT" != success ]; then
+              echo "Trusted manual adapter tests did not succeed: $MANUAL_RESULT" >&2
+              exit 1
+            fi
+            exit 0
+          fi
           if [ "$SELECT_RESULT" != success ]; then
             echo "Dependency selection did not succeed" >&2
             exit 1
@@ -132,7 +147,7 @@ jobs:
 
   build-and-test-release-pins:
     needs: select_dependency_ref
-    if: needs.select_dependency_ref.outputs.ref == ''
+    if: github.event_name == 'pull_request' && needs.select_dependency_ref.outputs.ref == ''
     runs-on: ubuntu-24.04
 
     steps:
@@ -210,7 +225,7 @@ jobs:
       - name: Checkout Rialto headers under test
         uses: actions/checkout@v4
         with:
-          repository: ${{ github.repository }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           path: rialto-under-test
           persist-credentials: false
@@ -237,6 +252,53 @@ jobs:
         if: failure()
         with:
           name: ocdm-${{ steps.select-release.outputs.release_line }}-logs
+          path: |
+            rialto-ocdm/gtest_result.log
+            rialto-ocdm/build/*gtest_result.xml
+
+  build-and-test-manual:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout fixed OCDM Master revision
+        uses: actions/checkout@v4
+        with:
+          repository: rdkcentral/rialto-ocdm
+          ref: 990e56634478bcb3d86c4e5ef18e66ce787f1245
+          path: rialto-ocdm
+          persist-credentials: false
+
+      - name: Checkout dispatched Rialto Master commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: rialto-under-test
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+
+      - name: Install GStreamer dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base
+
+      - name: Run fixed-revision tests against Rialto Master
+        env:
+          RIALTO_COMMIT: ${{ github.sha }}
+        run: |
+          mkdir -p rialto-ocdm/tests/third-party/include
+          cp -R rialto-under-test/media/public/include/. rialto-ocdm/tests/third-party/include/
+          cd rialto-ocdm
+          python build_ut.py -xml -f -b "$RIALTO_COMMIT"
+
+      - name: Upload manual build logs
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: ocdm-manual-logs
           path: |
             rialto-ocdm/gtest_result.log
             rialto-ocdm/build/*gtest_result.xml
