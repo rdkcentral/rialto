@@ -71,7 +71,10 @@ MainThread::MainThread() : m_isMainThreadRunning{true}, m_mainThreadClientId{0},
     m_thread = std::thread(std::bind(&MainThread::mainThreadLoop, this));
 
     // Register itself
-    m_registeredClients.insert(m_mainThreadClientId);
+    {
+        const std::lock_guard<std::mutex> lock(m_registeredClientsMutex);
+        m_registeredClients.insert(m_mainThreadClientId);
+    }
 }
 
 MainThread::~MainThread()
@@ -87,7 +90,12 @@ void MainThread::mainThreadLoop()
     while (m_isMainThreadRunning)
     {
         const std::shared_ptr<TaskInfo> kTaskInfo = waitForTask();
-        if (m_registeredClients.find(kTaskInfo->clientId) != m_registeredClients.end())
+        bool isClientRegistered = false;
+        {
+            const std::lock_guard<std::mutex> lock(m_registeredClientsMutex);
+            isClientRegistered = m_registeredClients.find(kTaskInfo->clientId) != m_registeredClients.end();
+        }
+        if (isClientRegistered)
         {
             kTaskInfo->task();
         }
@@ -124,6 +132,7 @@ int32_t MainThread::registerClient()
     auto task = [&, clientId]()
     {
         RIALTO_SERVER_LOG_INFO("Registering client '%u'", clientId);
+        const std::lock_guard<std::mutex> lock(m_registeredClientsMutex);
         m_registeredClients.insert(clientId);
     };
     enqueueTask(m_mainThreadClientId, task);
@@ -134,6 +143,7 @@ int32_t MainThread::registerClient()
 void MainThread::unregisterClient(uint32_t clientId)
 {
     RIALTO_SERVER_LOG_INFO("Unregistering client '%u'", clientId);
+    const std::lock_guard<std::mutex> lock(m_registeredClientsMutex);
     m_registeredClients.erase(clientId);
 }
 
