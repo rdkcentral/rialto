@@ -228,6 +228,13 @@ RialtoLoggingStatus setLogHandler(RIALTO_COMPONENT component, LogHandler handler
  */
 bool isConsoleLoggingEnabled();
 
+/**
+ * @brief Set the application name for logging.
+ *
+ * @param[in] appName   : The application name to set for logging.
+ */
+void setApplicationName(const char *appName);
+
 } // namespace firebolt::rialto::logging
 
 #endif // defined(__cplusplus)
