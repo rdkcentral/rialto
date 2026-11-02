@@ -184,7 +184,7 @@ MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const V
                              const std::shared_ptr<common::IMediaFrameWriterFactory> &mediaFrameWriterFactory,
                              IClientController &clientController)
     : m_mediaPipelineClient(client), m_clientController{clientController}, m_currentAppState{ApplicationState::UNKNOWN},
-      m_mediaFrameWriterFactory(mediaFrameWriterFactory), m_currentState(State::IDLE), m_attachingSource(false)
+                               m_mediaFrameWriterFactory(mediaFrameWriterFactory), m_currentState(State::IDLE)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
@@ -222,10 +222,9 @@ bool MediaPipeline::attachSource(const std::unique_ptr<IMediaPipeline::MediaSour
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    // We should not process needDatas while attach source is ongoing
     {
-        std::unique_lock<std::mutex> lock{m_attachSourceMutex};
-        m_attachingSource = true;
+        std::lock_guard<std::mutex> lock{m_attachSourceMutex};
+        ++m_attachSourceCount;
     }
 
     int32_t sourceId = -1;
@@ -237,11 +236,19 @@ bool MediaPipeline::attachSource(const std::unique_ptr<IMediaPipeline::MediaSour
         m_attachedSources.add(sourceId, source->getType());
     }
 
-    // Unblock needDatas
+    bool shouldDrainPendingNeedMediaData{false};
     {
-        std::unique_lock<std::mutex> lock{m_attachSourceMutex};
-        m_attachingSource = false;
-        m_attachSourceCond.notify_all();
+        std::lock_guard<std::mutex> lock{m_attachSourceMutex};
+        --m_attachSourceCount;
+        if (0 == m_attachSourceCount && !m_drainingNeedMediaData && !m_pendingNeedMediaData.empty())
+        {
+            m_drainingNeedMediaData = true;
+            shouldDrainPendingNeedMediaData = true;
+        }
+    }
+    if (shouldDrainPendingNeedMediaData)
+    {
+        drainPendingNeedMediaData();
     }
     return status;
 }
@@ -802,13 +809,46 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    // If attach source is ongoing wait till it has completed so that all sources are attached
     {
-        std::unique_lock<std::mutex> lock{m_attachSourceMutex};
-        if (m_attachingSource)
-            m_attachSourceCond.wait(lock, [this] { return !m_attachingSource; });
+        std::lock_guard<std::mutex> lock{m_attachSourceMutex};
+        if (m_attachSourceCount > 0 || m_drainingNeedMediaData)
+        {
+            m_pendingNeedMediaData.push_back({sourceId, frameCount, requestId, shmInfo});
+            return;
+        }
     }
 
+    processNeedMediaData(sourceId, frameCount, requestId, shmInfo);
+}
+
+void MediaPipeline::drainPendingNeedMediaData()
+{
+    while (true)
+    {
+        PendingNeedMediaData pending{};
+        {
+            std::lock_guard<std::mutex> lock{m_attachSourceMutex};
+            if (m_attachSourceCount > 0)
+            {
+                m_drainingNeedMediaData = false;
+                return;
+            }
+            if (m_pendingNeedMediaData.empty())
+            {
+                m_drainingNeedMediaData = false;
+                return;
+            }
+            pending = std::move(m_pendingNeedMediaData.front());
+            m_pendingNeedMediaData.pop_front();
+        }
+
+        processNeedMediaData(pending.sourceId, pending.frameCount, pending.requestId, pending.shmInfo);
+    }
+}
+
+void MediaPipeline::processNeedMediaData(int32_t sourceId, size_t frameCount, uint32_t requestId,
+                                         const std::shared_ptr<MediaPlayerShmInfo> &shmInfo)
+{
     if (MediaSourceType::UNKNOWN == m_attachedSources.getType(sourceId))
     {
         RIALTO_CLIENT_LOG_WARN("NeedMediaData received for unknown source %d, ignoring request id %u", sourceId,
