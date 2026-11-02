@@ -97,7 +97,18 @@ void WorkerThread::taskHandler()
     while (m_isTaskThreadActive)
     {
         std::unique_ptr<IPlayerTask> task = waitForTask();
-        task->execute();
+        try
+        {
+            task->execute();
+        }
+        catch (const std::exception &e)
+        {
+            RIALTO_SERVER_LOG_ERROR("Exception thrown by task on the worker thread: %s", e.what());
+        }
+        catch (...)
+        {
+            RIALTO_SERVER_LOG_ERROR("Unknown exception thrown by task on the worker thread");
+        }
     }
 }
 
