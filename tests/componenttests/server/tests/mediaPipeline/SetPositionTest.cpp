@@ -29,7 +29,7 @@ namespace
 constexpr unsigned kFramesToPush{1};
 constexpr int kPositionInPaused{10};
 constexpr int kPositionInPlaying{0};
-constexpr double kPlaybackRate{1.0};
+constexpr double kSeekPlaybackRate{1.0};
 } // namespace
 
 using testing::Return;
@@ -44,7 +44,7 @@ public:
 
     void willSetPosition(std::int64_t position)
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstElementSeek(&m_pipeline, kPlaybackRate, GST_FORMAT_TIME,
+        EXPECT_CALL(*m_gstWrapperMock, gstElementSeek(&m_pipeline, kSeekPlaybackRate, GST_FORMAT_TIME,
                                                       static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH), GST_SEEK_TYPE_SET,
                                                       position, GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE))
             .WillOnce(Return(TRUE));
@@ -99,7 +99,7 @@ public:
 
     void willFailToSetPosition()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstElementSeek(&m_pipeline, kPlaybackRate, GST_FORMAT_TIME,
+        EXPECT_CALL(*m_gstWrapperMock, gstElementSeek(&m_pipeline, kSeekPlaybackRate, GST_FORMAT_TIME,
                                                       static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH), GST_SEEK_TYPE_SET,
                                                       kPositionInPaused, GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE))
             .WillOnce(Return(FALSE));

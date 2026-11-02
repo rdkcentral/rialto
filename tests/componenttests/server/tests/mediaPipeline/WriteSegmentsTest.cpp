@@ -194,8 +194,8 @@ TEST_F(MediaPipelineTest, WriteSegments)
 
     // Step 9: Write 3 audio frames
     // Step 10: Write 3 video frames
-    pushAudioData(kFramesToPushBeforePreroll);
-    pushVideoData(kFramesToPushBeforePreroll);
+    pushAudioData(kFramesToPushBeforePreroll, kFrameCountInPlayingState);
+    pushVideoData(kFramesToPushBeforePreroll, kFrameCountInPlayingState);
 
     // Step 11: Send 4 frames and end of audio stream
     // Step 12: Send 4 frames and end of video stream

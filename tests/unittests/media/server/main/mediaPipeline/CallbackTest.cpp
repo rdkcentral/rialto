@@ -88,7 +88,7 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataInPrerollingSta
 {
     auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
     int sourceId = attachSource(mediaSourceType, "video/h264");
-    constexpr int kNumFrames{24};
+    constexpr int kNumFrames{3};
 
     expectNotifyNeedData(mediaSourceType, sourceId, kNumFrames);
 
