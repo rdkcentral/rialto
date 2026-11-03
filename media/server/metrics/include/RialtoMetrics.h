@@ -13,9 +13,11 @@ public:
     ~RialtoMetrics() override;
     void setSessionId(int32_t sessionId) override;
     std::optional<ParsedMetricMessage> onMetricMessage(
-        GstMessage *message, const std::optional<std::uint64_t> &renderedFrames) override;
+        GstMessage *message, const std::optional<std::uint64_t> &renderedFrames,
+        const std::optional<std::uint64_t> &droppedFrames) override;
     void updateFrameCounters(int32_t sessionId, int32_t sourceId, const FrameCounters &counters) override;
-    void updateRenderedFrames(int32_t sessionId, int32_t sourceId, std::uint64_t renderedFrames) override;
+    void updateSinkStats(int32_t sessionId, int32_t sourceId, std::uint64_t renderedFrames,
+                         std::uint64_t droppedFrames) override;
     bool getFrameCounters(int32_t sessionId, int32_t sourceId, FrameCounters &counters) const override;
 
 private:
