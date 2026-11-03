@@ -12,8 +12,10 @@ class RialtoMetrics final : public IRialtoMetrics
 public:
     ~RialtoMetrics() override;
     void setSessionId(int32_t sessionId) override;
-    std::optional<ParsedMetricMessage> onMetricMessage(GstMessage *message) override;
+    std::optional<ParsedMetricMessage> onMetricMessage(
+        GstMessage *message, const std::optional<std::uint64_t> &renderedFrames) override;
     void updateFrameCounters(int32_t sessionId, int32_t sourceId, const FrameCounters &counters) override;
+    void updateRenderedFrames(int32_t sessionId, int32_t sourceId, std::uint64_t renderedFrames) override;
     bool getFrameCounters(int32_t sessionId, int32_t sourceId, FrameCounters &counters) const override;
 
 private:

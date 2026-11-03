@@ -4,6 +4,19 @@
 
 Playback metrics use two IPC flows: a synchronous snapshot query and an asynchronous event notification. Both are keyed by the media pipeline session and source IDs. The IPC layer passes counter values and timestamps through without aggregation.
 
+## Westeros Bus Messages
+
+The Broadcom Westeros sink posts `media-pipeline-metric` element messages containing `metric_type`, `phase`, `source_id`,
+`session_id`, and signed `pts_ns`. Rialto validates the message fields and matches the session ID to the active pipeline.
+Snapshot queries are restricted to the active pipeline and an attached video source. Rialto interprets occurrence-phase
+video-frame-drop messages as one dropped frame and occurrence-phase video-decode-error messages as one corrupted frame.
+Started/resolved episode messages do not increment those counters. Rendered frames are read from the sink's existing
+`stats` property when processing a metric message and refreshing a snapshot query.
+
+Rialto sets the sink's `metrics-session-id` and `metrics-source-id` properties from the active media pipeline identity.
+The Westeros message does not carry cumulative frame-counter fields; drop and corruption totals are accumulated by
+Rialto from occurrence messages.
+
 ## Snapshot Query
 
 `GetFrameCounters` takes `session_id` and `source_id`. The server looks up the latest cached snapshot for that pair and returns:

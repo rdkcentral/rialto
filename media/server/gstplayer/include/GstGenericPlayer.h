@@ -55,8 +55,6 @@ constexpr uint32_t kMinPrimaryVideoHeight{1080};
 class GstGenericPlayerFactory : public IGstGenericPlayerFactory
 {
 public:
-    std::shared_ptr<IRialtoMetrics> getRialtoMetrics() const override;
-
     /**
      * @brief Weak pointer to the singleton factory object.
      */
@@ -111,6 +109,9 @@ public:
      * @brief Virtual destructor.
      */
     virtual ~GstGenericPlayer();
+
+    std::shared_ptr<IRialtoMetrics> getRialtoMetrics() const override;
+    void setMetricSessionId(int32_t sessionId) override;
 
     void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
     void removeSource(const MediaSourceType &mediaSourceType) override;
@@ -215,6 +216,11 @@ private:
     void notifyPlaybackInfo() override;
 
 private:
+    void setMetricProperty(const char *propertyName, int32_t value);
+    void setMetricSourceId(int32_t sourceId);
+    std::atomic_int32_t m_metricSessionId{-1};
+    std::atomic_int32_t m_metricSourceId{-1};
+
     /**
      * @brief Initialises the player pipeline for MSE playback.
      */
