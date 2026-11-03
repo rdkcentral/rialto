@@ -15,6 +15,7 @@ TEST(MediaPipelineClientTests, NotifyMetricEventSerializesAndPreservesPayload)
 {
     constexpr int kSessionId{8};
     constexpr int32_t kSourceId{14};
+    constexpr uint32_t kPhase{2};
     auto ipcClient = std::make_shared<StrictMock<ipc::ClientMock>>();
     MediaPipelineClient client{kSessionId, ipcClient};
 
@@ -41,8 +42,9 @@ TEST(MediaPipelineClientTests, NotifyMetricEventSerializesAndPreservesPayload)
                 EXPECT_EQ(3U, decoded.corrupted_frames());
                 EXPECT_EQ(9001U, decoded.pts_ns());
                 EXPECT_EQ("decoder error", decoded.error_info());
+                EXPECT_EQ(kPhase, decoded.phase());
                 return true;
             }));
 
-    client.notifyMetricEvent(kSourceId, 101, 7, 3, 9001, "decoder error");
+    client.notifyMetricEvent(kSourceId, 101, 7, 3, 9001, "decoder error", kPhase);
 }

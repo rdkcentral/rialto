@@ -3288,9 +3288,11 @@ void GstGenericPlayer::handleMetricMessage(GstMessage *message)
         return;
     }
 
-    RIALTO_SERVER_LOG_DEBUG("Forwarding playback metric event for sourceId: %d", metric->sourceId);
+    RIALTO_SERVER_LOG_DEBUG("Forwarding playback metric event for sourceId: %d, phase: %u", metric->sourceId,
+                            metric->phase);
     m_gstPlayerClient->notifyMetricEvent(metric->sourceId, metric->counters.rendered, metric->counters.dropped,
-                                         metric->counters.corrupted, metric->counters.timestamp, metricType);
+                                         metric->counters.corrupted, metric->counters.timestamp, metricType,
+                                         metric->phase);
 }
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
