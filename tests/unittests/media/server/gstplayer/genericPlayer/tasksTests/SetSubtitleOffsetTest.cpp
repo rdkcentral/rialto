@@ -37,3 +37,11 @@ TEST_F(SetSubtitleOffsetTest, ShouldSetSubtitleOffsetWithSubtitleSink)
     shouldSetSubtitleOffset();
     triggerSetSubtitleOffset();
 }
+
+TEST_F(SetSubtitleOffsetTest, ShouldSetNegativeSubtitleOffsetWithSubtitleSink)
+{
+    constexpr int64_t kNegativeOffset{-1000};
+    setContextSubtitleSink();
+    shouldSetSubtitleOffset();
+    triggerSetSubtitleOffset(kNegativeOffset);
+}
