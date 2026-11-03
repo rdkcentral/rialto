@@ -161,15 +161,20 @@ static gboolean gst_rialto_text_track_sink_start(GstBaseSink *sink) // NOLINT(bu
 {
     const std::string kDisplay{"westeros-asplayer-subtitles"};
     GstRialtoTextTrackSink *self = GST_RIALTO_TEXT_TRACK_SINK(sink);
+    std::shared_ptr<firebolt::rialto::server::ITextTrackSession> session;
     try
     {
-        self->priv->m_textTrackSession =
+        session =
             firebolt::rialto::server::ITextTrackSessionFactory::getFactory().createTextTrackSession(kDisplay);
     }
     catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_WARN("Failed to create TextTrack session, reason: '%s'", e.what());
         return true;
+    }
+    {
+        std::unique_lock lock{self->priv->m_mutex};
+        self->priv->m_textTrackSession = std::move(session);
     }
 
     GST_INFO_OBJECT(sink, "Successfully started TextTrack sink");
@@ -179,7 +184,10 @@ static gboolean gst_rialto_text_track_sink_start(GstBaseSink *sink) // NOLINT(bu
 static gboolean gst_rialto_text_track_sink_stop(GstBaseSink *sink) // NOLINT(build/function_format)
 {
     GstRialtoTextTrackSink *self = GST_RIALTO_TEXT_TRACK_SINK(sink);
-    self->priv->m_textTrackSession.reset();
+    {
+        std::unique_lock lock{self->priv->m_mutex};
+        self->priv->m_textTrackSession.reset();
+    }
 
     GST_INFO_OBJECT(sink, "Successfully stopped TextTrack sink");
     return true;
@@ -188,7 +196,12 @@ static gboolean gst_rialto_text_track_sink_stop(GstBaseSink *sink) // NOLINT(bui
 static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuffer *buffer) // NOLINT(build/function_format)
 {
     GstRialtoTextTrackSink *textTrackSink = GST_RIALTO_TEXT_TRACK_SINK(sink);
-    if (!textTrackSink->priv->m_textTrackSession)
+    std::shared_ptr<firebolt::rialto::server::ITextTrackSession> session;
+    {
+        std::unique_lock lock{textTrackSink->priv->m_mutex};
+        session = textTrackSink->priv->m_textTrackSession;
+    }
+    if (!session)
     {
         GST_LOG_OBJECT(textTrackSink, "No TextTrack session, dropping buffer");
         return GST_FLOW_OK;
@@ -203,7 +216,7 @@ static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuf
         {
             displayOffset = static_cast<int64_t>(GST_BUFFER_OFFSET(buffer));
         }
-        textTrackSink->priv->m_textTrackSession->sendData(data, 0 - displayOffset);
+        session->sendData(data, 0 - displayOffset);
 
         gst_buffer_unmap(buffer, &info);
     }
@@ -243,7 +256,17 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
     GstStructure *structure = gst_caps_get_structure(caps, 0);
     const gchar *mimeName = gst_structure_get_name(structure);
 
-    if (!textTrackSink->priv->m_textTrackSession)
+    std::shared_ptr<firebolt::rialto::server::ITextTrackSession> session;
+    std::string textTrackIdentifier;
+    gpointer videoDecoderIdentifier{nullptr};
+    {
+        std::unique_lock lock{textTrackSink->priv->m_mutex};
+        session = textTrackSink->priv->m_textTrackSession;
+        textTrackIdentifier = textTrackSink->priv->m_textTrackIdentifier;
+        videoDecoderIdentifier = textTrackSink->priv->m_videoDecoderIdentifier;
+    }
+
+    if (!session)
     {
         GST_WARNING_OBJECT(sink, "No TextTrack session, subtitles of type '%s' will not be displayed", mimeName);
         return TRUE;
@@ -252,30 +275,30 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
     if (g_str_has_prefix(mimeName, "text/vtt") || g_str_has_prefix(mimeName, "application/x-subtitle-vtt"))
     {
         GST_INFO_OBJECT(sink, "Setting session to WebVTT");
-        textTrackSink->priv->m_textTrackSession->setSessionWebVTTSelection();
+        session->setSessionWebVTTSelection();
     }
     else if (g_str_has_prefix(mimeName, "application/ttml+xml"))
     {
         GST_INFO_OBJECT(sink, "Setting session to TTML");
-        textTrackSink->priv->m_textTrackSession->setSessionTTMLSelection();
+        session->setSessionTTMLSelection();
     }
     else if (g_str_has_prefix(mimeName, "subtitle/x-subtitle-cc"))
     {
         GST_INFO_OBJECT(sink, "Setting session to CC");
         std::string identifier = "CC1";
-        if (textTrackSink->priv->m_textTrackIdentifier.empty())
+        if (textTrackIdentifier.empty())
         {
             GST_WARNING_OBJECT(sink, "No text track identifier set, defaulting to %s", identifier.c_str());
         }
         else
         {
-            identifier = textTrackSink->priv->m_textTrackIdentifier;
+            identifier = textTrackIdentifier;
         }
-        textTrackSink->priv->m_textTrackSession->setSessionCCSelection(identifier);
+        session->setSessionCCSelection(identifier);
 
-        if (textTrackSink->priv->m_videoDecoderIdentifier)
+        if (videoDecoderIdentifier)
         {
-            textTrackSink->priv->m_textTrackSession->associateVideoDecoder(textTrackSink->priv->m_videoDecoderIdentifier);
+            session->associateVideoDecoder(videoDecoderIdentifier);
         }
     }
     else
@@ -284,7 +307,7 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
         return FALSE;
     }
 
-    textTrackSink->priv->m_textTrackSession->mute(textTrackSink->priv->m_isMuted);
+    session->mute(textTrackSink->priv->m_isMuted);
 
     std::unique_lock lock{textTrackSink->priv->m_mutex};
     textTrackSink->priv->m_capsSet = true;
@@ -317,8 +340,12 @@ static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *ev
     {
     case GST_EVENT_FLUSH_START:
     {
-        if (textTrackSink->priv->m_textTrackSession &&
-            !textTrackSink->priv->m_textTrackSession->resetSession(textTrackSink->priv->m_isMuted))
+        std::shared_ptr<firebolt::rialto::server::ITextTrackSession> session;
+        {
+            std::unique_lock lock{textTrackSink->priv->m_mutex};
+            session = textTrackSink->priv->m_textTrackSession;
+        }
+        if (session && !session->resetSession(textTrackSink->priv->m_isMuted))
         {
             GST_ERROR_OBJECT(textTrackSink, "Failed to reset TextTrack session");
         }
@@ -387,7 +414,12 @@ gst_rialto_text_track_sink_change_state(GstElement *element, GstStateChange tran
     {
     case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
     {
-        if (textTrackSink->priv->m_textTrackSession && !textTrackSink->priv->m_textTrackSession->play())
+        std::shared_ptr<firebolt::rialto::server::ITextTrackSession> session;
+        {
+            std::unique_lock lock{textTrackSink->priv->m_mutex};
+            session = textTrackSink->priv->m_textTrackSession;
+        }
+        if (session && !session->play())
         {
             GST_ERROR_OBJECT(textTrackSink, "Failed to play textTrack session");
         }
@@ -395,7 +427,12 @@ gst_rialto_text_track_sink_change_state(GstElement *element, GstStateChange tran
     }
     case GST_STATE_CHANGE_PLAYING_TO_PAUSED:
     {
-        if (textTrackSink->priv->m_textTrackSession && !textTrackSink->priv->m_textTrackSession->pause())
+        std::shared_ptr<firebolt::rialto::server::ITextTrackSession> session;
+        {
+            std::unique_lock lock{textTrackSink->priv->m_mutex};
+            session = textTrackSink->priv->m_textTrackSession;
+        }
+        if (session && !session->pause())
         {
             GST_ERROR_OBJECT(textTrackSink, "Failed to pause textTrack session");
         }
@@ -436,6 +473,7 @@ static void gst_rialto_text_track_sink_get_property(GObject *object, guint propI
     }
     case PROP_TEXT_TRACK_IDENTIFIER:
     {
+        std::unique_lock lock{priv->m_mutex};
         g_value_set_string(value, priv->m_textTrackIdentifier.c_str());
         break;
     }
@@ -466,30 +504,46 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
     {
     case PROP_MUTE:
     {
-        priv->m_isMuted = g_value_get_boolean(value);
-        if (priv->m_textTrackSession)
+        std::shared_ptr<firebolt::rialto::server::ITextTrackSession> session;
         {
-            priv->m_textTrackSession->mute(priv->m_isMuted);
+            std::unique_lock lock{priv->m_mutex};
+            priv->m_isMuted = g_value_get_boolean(value);
+            session = priv->m_textTrackSession;
+        }
+        if (session)
+        {
+            session->mute(priv->m_isMuted);
         }
         break;
     }
     case PROP_TEXT_TRACK_IDENTIFIER:
     {
-        priv->m_textTrackIdentifier = g_value_get_string(value);
-        if (priv->m_textTrackSession && priv->m_textTrackSession->isClosedCaptions())
+        std::shared_ptr<firebolt::rialto::server::ITextTrackSession> session;
+        std::string identifier{g_value_get_string(value)};
         {
-            priv->m_textTrackSession->setSessionCCSelection(priv->m_textTrackIdentifier);
+            std::unique_lock lock{priv->m_mutex};
+            priv->m_textTrackIdentifier = identifier;
+            session = priv->m_textTrackSession;
+        }
+        if (session && session->isClosedCaptions())
+        {
+            session->setSessionCCSelection(identifier);
         }
 
         break;
     }
     case PROP_VIDEO_DECODER:
     {
-        priv->m_videoDecoderIdentifier = g_value_get_pointer(value);
-
-        if (priv->m_textTrackSession && priv->m_textTrackSession->isClosedCaptions())
+        std::shared_ptr<firebolt::rialto::server::ITextTrackSession> session;
+        gpointer videoDecoderIdentifier{g_value_get_pointer(value)};
         {
-            priv->m_textTrackSession->associateVideoDecoder(priv->m_videoDecoderIdentifier);
+            std::unique_lock lock{priv->m_mutex};
+            priv->m_videoDecoderIdentifier = videoDecoderIdentifier;
+            session = priv->m_textTrackSession;
+        }
+        if (session && session->isClosedCaptions())
+        {
+            session->associateVideoDecoder(videoDecoderIdentifier);
         }
 
         break;
