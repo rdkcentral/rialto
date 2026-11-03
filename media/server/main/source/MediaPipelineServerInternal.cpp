@@ -236,6 +236,7 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
     {
         RIALTO_SERVER_LOG_WARN("Playback metrics unavailable for sessionId: %d", m_sessionId);
     }
+    m_gstPlayer->setMetricSessionId(m_sessionId);
 
     notifyNetworkState(NetworkState::BUFFERING);
 
@@ -269,12 +270,11 @@ bool MediaPipelineServerInternal::attachSourceInternal(const std::unique_ptr<Med
         return false;
     }
 
-    m_gstPlayer->attachSource(source);
-
     const auto kSourceIter = m_attachedSources.find(source->getType());
     if (m_attachedSources.cend() == kSourceIter)
     {
         source->setId(generateSourceId());
+        m_gstPlayer->attachSource(source);
         RIALTO_SERVER_LOG_DEBUG("New ID generated for MediaSourceType: %s: %d",
                                 common::convertMediaSourceType(source->getType()), source->getId());
         m_attachedSources.emplace(source->getType(), source->getId());
@@ -568,6 +568,22 @@ bool MediaPipelineServerInternal::getFrameCountersInternal(int32_t sessionId, in
         return false;
     }
 
+    if (sessionId != m_sessionId)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - sessionId: %d does not match pipeline sessionId: %d",
+                                sessionId, m_sessionId);
+        return false;
+    }
+
+    const auto sourceIter =
+        std::find_if(m_attachedSources.begin(), m_attachedSources.end(), [sourceId](const auto &source)
+                     { return source.first == MediaSourceType::VIDEO && source.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - video sourceId: %d is not attached", sourceId);
+        return false;
+    }
+
     const auto metrics = m_gstPlayer->getRialtoMetrics();
     if (!metrics)
     {
@@ -576,7 +592,15 @@ bool MediaPipelineServerInternal::getFrameCountersInternal(int32_t sessionId, in
     }
 
     FrameCounters counters;
-    if (!metrics->getFrameCounters(sessionId, sourceId, counters))
+    bool hasCounters = metrics->getFrameCounters(sessionId, sourceId, counters);
+    uint64_t renderedFrames{0};
+    uint64_t droppedFrames{0};
+    if (m_gstPlayer->getStats(MediaSourceType::VIDEO, renderedFrames, droppedFrames))
+    {
+        metrics->updateRenderedFrames(sessionId, sourceId, renderedFrames);
+        hasCounters = metrics->getFrameCounters(sessionId, sourceId, counters);
+    }
+    if (!hasCounters)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - no cached metrics for sessionId: %d, sourceId: %d",
                                 sessionId, sourceId);
