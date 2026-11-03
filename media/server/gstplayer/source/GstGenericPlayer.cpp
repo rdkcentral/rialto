@@ -3261,14 +3261,20 @@ void GstGenericPlayer::handleMetricMessage(GstMessage *message)
     }
 
     std::optional<uint64_t> renderedFrames;
-    uint64_t droppedFrames{0};
+    std::optional<uint64_t> droppedFrames;
     uint64_t currentRenderedFrames{0};
-    if (getStats(MediaSourceType::VIDEO, currentRenderedFrames, droppedFrames))
+    uint64_t currentDroppedFrames{0};
+    if (getStats(MediaSourceType::VIDEO, currentRenderedFrames, currentDroppedFrames))
     {
         renderedFrames = currentRenderedFrames;
+        droppedFrames = currentDroppedFrames;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("Playback metric sink stats unavailable - retaining cached rendered and dropped counts");
     }
 
-    const auto metric = m_metrics->onMetricMessage(message, renderedFrames);
+    const auto metric = m_metrics->onMetricMessage(message, renderedFrames, droppedFrames);
     if (!metric)
     {
         RIALTO_SERVER_LOG_DEBUG("Playback metric message was ignored by RialtoMetrics");
