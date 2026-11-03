@@ -23,7 +23,9 @@ TEST(RialtoMetricsTest, ParsesElementMetricMessageAndUpdatesFrameCounters)
 
     RialtoMetrics metrics;
     metrics.setSessionId(7);
-    const auto parsed = metrics.onMetricMessage(message, std::uint64_t{101});
+    const auto parsed = metrics.onMetricMessage(message, std::uint64_t{101}, std::uint64_t{7});
+    const auto repeated = metrics.onMetricMessage(message, std::uint64_t{101}, std::uint64_t{7});
+    const auto withoutStats = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
     gst_message_unref(message);
 
     ASSERT_TRUE(parsed.has_value());
@@ -31,10 +33,16 @@ TEST(RialtoMetricsTest, ParsesElementMetricMessageAndUpdatesFrameCounters)
     EXPECT_EQ(0U, parsed->type);
     EXPECT_EQ(0U, parsed->phase);
     EXPECT_EQ(11, parsed->sourceId);
+    EXPECT_EQ(7U, parsed->counters.dropped);
+    ASSERT_TRUE(repeated.has_value());
+    EXPECT_EQ(7U, repeated->counters.dropped);
+    ASSERT_TRUE(withoutStats.has_value());
+    EXPECT_EQ(101U, withoutStats->counters.rendered);
+    EXPECT_EQ(7U, withoutStats->counters.dropped);
     FrameCounters counters;
     ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
     EXPECT_EQ(101U, counters.rendered);
-    EXPECT_EQ(1U, counters.dropped);
+    EXPECT_EQ(7U, counters.dropped);
     EXPECT_EQ(0U, counters.corrupted);
     EXPECT_EQ(9001U, counters.timestamp);
     EXPECT_FALSE(metrics.getFrameCounters(8, 11, counters));
@@ -54,7 +62,7 @@ TEST(RialtoMetricsTest, IgnoresMalformedElementMetricMessage)
 
     RialtoMetrics metrics;
     metrics.setSessionId(7);
-    const auto parsed = metrics.onMetricMessage(message, std::nullopt);
+    const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
     gst_message_unref(message);
 
     EXPECT_FALSE(parsed.has_value());
@@ -80,11 +88,12 @@ TEST(RialtoMetricsTest, CountsDecodeErrorsAndIgnoresEpisodeMessages)
         ASSERT_NE(nullptr, structure);
         GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
         ASSERT_NE(nullptr, message);
-        const auto parsed = metrics.onMetricMessage(message, std::nullopt);
+        const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
         gst_message_unref(message);
         ASSERT_TRUE(parsed.has_value());
     };
 
+    postMetric(0U, 0U, 9000U);
     postMetric(2U, 0U, 9100U);
     postMetric(2U, 1U, 9200U);
 
@@ -111,16 +120,23 @@ TEST(RialtoMetricsTest, ReturnsLatestSnapshotForSessionAndSource)
     EXPECT_FALSE(metrics.getFrameCounters(7, 12, counters));
 }
 
-TEST(RialtoMetricsTest, UpdatingRenderedFramesPreservesEventCounters)
+TEST(RialtoMetricsTest, UpdatingSinkStatsPreservesCorruptionAndTimestamp)
 {
     RialtoMetrics metrics;
     metrics.updateFrameCounters(7, 11, FrameCounters{1, 2, 3, 4});
-    metrics.updateRenderedFrames(7, 11, 9);
+    metrics.updateSinkStats(7, 11, 9, 6);
 
     FrameCounters counters;
     ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
     EXPECT_EQ(9U, counters.rendered);
-    EXPECT_EQ(2U, counters.dropped);
+    EXPECT_EQ(6U, counters.dropped);
+    EXPECT_EQ(3U, counters.corrupted);
+    EXPECT_EQ(4U, counters.timestamp);
+
+    metrics.updateSinkStats(7, 11, 0, 0);
+    ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
+    EXPECT_EQ(0U, counters.rendered);
+    EXPECT_EQ(0U, counters.dropped);
     EXPECT_EQ(3U, counters.corrupted);
     EXPECT_EQ(4U, counters.timestamp);
 }
