@@ -267,13 +267,15 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricEvent)
     constexpr uint64_t droppedFrames{7};
     constexpr uint64_t corruptedFrames{3};
     constexpr uint64_t ptsNs{9001};
+    constexpr uint32_t phase{2};
     const std::string errorInfo{"METRIC_BUFFER_UNDERFLOW"};
 
     mainThreadWillEnqueueTask();
     EXPECT_CALL(*m_mediaPipelineClientMock,
-                notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo));
+                notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo, phase));
 
-    m_gstPlayerCallback->notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo);
+    m_gstPlayerCallback->notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo,
+                                           phase);
 }
 
 /**

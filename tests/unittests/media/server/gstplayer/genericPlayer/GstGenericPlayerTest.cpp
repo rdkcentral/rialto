@@ -1190,11 +1190,11 @@ TEST_F(GstGenericPlayerTest, shouldCountAndNotifyWesterosMetricMessages)
     auto *dispatcherClient = dynamic_cast<IGstDispatcherThreadClient *>(m_sut.get());
     ASSERT_NE(nullptr, dispatcherClient);
 
-    const auto makeMetricMessage = [&](guint metricType)
+    const auto makeMetricMessage = [&](guint metricType, guint phase)
     {
         GstStructure *structure =
             gst_structure_new("media-pipeline-metric", "metric_type", G_TYPE_UINT, metricType, "phase", G_TYPE_UINT,
-                              0U, "source_id", G_TYPE_UINT, kSourceId, "session_id", G_TYPE_UINT, kSessionId,
+                              phase, "source_id", G_TYPE_UINT, kSourceId, "session_id", G_TYPE_UINT, kSessionId,
                               "pts_ns", G_TYPE_INT64, static_cast<gint64>(kPtsNs), nullptr);
         return gst_message_new_element(GST_OBJECT(m_element), structure);
     };
@@ -1216,16 +1216,16 @@ TEST_F(GstGenericPlayerTest, shouldCountAndNotifyWesterosMetricMessages)
 
     expectStats(101U);
     EXPECT_CALL(m_gstPlayerClient,
-                notifyMetricEvent(kSourceId, 101U, 1U, 0U, kPtsNs, std::string{"METRIC_VIDEO_FRAME_DROP"}));
-    GstMessage *dropMessage = makeMetricMessage(kVideoFrameDropMetric);
+                notifyMetricEvent(kSourceId, 101U, 1U, 0U, kPtsNs, std::string{"METRIC_VIDEO_FRAME_DROP"}, 0U));
+    GstMessage *dropMessage = makeMetricMessage(kVideoFrameDropMetric, 0U);
     ASSERT_NE(nullptr, dropMessage);
     dispatcherClient->handleMetricMessage(dropMessage);
     gst_message_unref(dropMessage);
 
     expectStats(102U);
     EXPECT_CALL(m_gstPlayerClient,
-                notifyMetricEvent(kSourceId, 102U, 1U, 0U, kPtsNs, std::string{"METRIC_BUFFER_UNDERFLOW"}));
-    GstMessage *underflowMessage = makeMetricMessage(kBufferUnderflowMetric);
+                notifyMetricEvent(kSourceId, 102U, 1U, 0U, kPtsNs, std::string{"METRIC_BUFFER_UNDERFLOW"}, 2U));
+    GstMessage *underflowMessage = makeMetricMessage(kBufferUnderflowMetric, 2U);
     ASSERT_NE(nullptr, underflowMessage);
     dispatcherClient->handleMetricMessage(underflowMessage);
     gst_message_unref(underflowMessage);
