@@ -43,7 +43,8 @@ void RialtoMetrics::setSessionId(int32_t sessionId)
 }
 
 std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
-	GstMessage *message, const std::optional<std::uint64_t> &renderedFrames)
+	GstMessage *message, const std::optional<std::uint64_t> &renderedFrames,
+	const std::optional<std::uint64_t> &droppedFrames)
 {
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics::onMetricMessage received message: %p", message);
 	if (!message)
@@ -95,16 +96,13 @@ std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
 			{
 				counters.rendered = *renderedFrames;
 			}
-			if (phase == 0)
+			if (droppedFrames)
 			{
-				if (metricType == 0)
-				{
-					++counters.dropped;
-				}
-				else if (metricType == 2)
-				{
-					++counters.corrupted;
-				}
+				counters.dropped = *droppedFrames;
+			}
+			if (phase == 0 && metricType == 2)
+			{
+				++counters.corrupted;
 			}
 			counters.timestamp = static_cast<std::uint64_t>(ptsNs);
 			m_counterCache[key] = counters;
@@ -143,13 +141,17 @@ void RialtoMetrics::updateFrameCounters(int32_t sessionId, int32_t sourceId, con
 	m_counterCache[{sessionId, sourceId}] = counters;
 }
 
-void RialtoMetrics::updateRenderedFrames(int32_t sessionId, int32_t sourceId, std::uint64_t renderedFrames)
+void RialtoMetrics::updateSinkStats(int32_t sessionId, int32_t sourceId, std::uint64_t renderedFrames,
+								   std::uint64_t droppedFrames)
 {
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
-					 "RialtoMetrics::updateRenderedFrames sessionId: %d, sourceId: %d, rendered: %llu", sessionId,
-					 sourceId, static_cast<unsigned long long>(renderedFrames));
+					 "RialtoMetrics::updateSinkStats sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu",
+					 sessionId, sourceId, static_cast<unsigned long long>(renderedFrames),
+					 static_cast<unsigned long long>(droppedFrames));
 	std::lock_guard<std::mutex> lock{m_counterMutex};
-	m_counterCache[{sessionId, sourceId}].rendered = renderedFrames;
+	auto &counters = m_counterCache[{sessionId, sourceId}];
+	counters.rendered = renderedFrames;
+	counters.dropped = droppedFrames;
 }
 
 bool RialtoMetrics::getFrameCounters(int32_t sessionId, int32_t sourceId, FrameCounters &counters) const
