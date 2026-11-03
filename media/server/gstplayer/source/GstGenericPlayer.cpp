@@ -460,6 +460,7 @@ void GstGenericPlayer::termPipeline()
 
     clearAudioFirstFrameFallbackProbe();
     stopNotifyPlaybackInfoTimer();
+    stopSubtitleClockResyncTimer();
 
     for (auto &elem : m_context.streamInfo)
     {

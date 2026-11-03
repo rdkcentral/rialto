@@ -137,6 +137,10 @@ void HandleBusMessage::execute() const
             case GST_STATE_READY:
             {
                 m_player.stopNotifyPlaybackInfoTimer();
+                if (m_player.hasSourceType(MediaSourceType::SUBTITLE))
+                {
+                    m_player.stopSubtitleClockResyncTimer();
+                }
                 break;
             }
             }
