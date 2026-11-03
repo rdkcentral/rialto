@@ -184,7 +184,7 @@ void fdLogHandler(int fd, RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, 
         std::unique_lock<std::mutex> lock{g_logHandlerMutex};
         if (!g_applicationName.empty())
         {
-            applicationName = "A: " + g_applicationName + " ";
+            applicationName = "A:" + g_applicationName + " ";
         }
     }
 
@@ -224,7 +224,7 @@ void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, co
         std::unique_lock<std::mutex> lock{g_logHandlerMutex};
         if (!g_applicationName.empty())
         {
-            applicationName = "A: " + g_applicationName + " ";
+            applicationName = "A:" + g_applicationName + " ";
         }
     }
     if (RIALTO_DEBUG_LEVEL_EXTERNAL == level)
