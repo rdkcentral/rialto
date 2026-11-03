@@ -23,6 +23,9 @@ on:
 
   workflow_dispatch:
 
+env:
+  RIALTO_GSTREAMER_FALLBACK_BRANCH: release/v0.20.1
+
 jobs:
   build-and-test:
     runs-on: ubuntu-24.04
@@ -32,7 +35,7 @@ jobs:
         id: check-branch
         shell: sh +e {0}
         run: |
-          branch="${{ github.base_ref }}"
+          branch="$RIALTO_GSTREAMER_FALLBACK_BRANCH"
           git ls-remote --exit-code --heads "https://github.com/rdkcentral/rialto-gstreamer.git" ${{ github.event.pull_request.head.ref }} > /dev/null
           if [ $? -eq 0 ]; then
             branch="${{ github.event.pull_request.head.ref }}"
@@ -69,4 +72,3 @@ jobs:
           path: |
             rialto-gstreamer/gtest_result.log
             rialto-gstreamer/build/*gtest_result.xml
-           
