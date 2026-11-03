@@ -99,7 +99,7 @@ public:
     {
         ASSERT_TRUE(m_shm);
         std::uint8_t *buffer = m_shm->getBuffer();
-        m_sut = std::make_unique<DataReaderV1>(kVideoMediaSourceType, buffer, 4, kNumFrames, kIsBufferFull);
+        m_sut = std::make_unique<DataReaderV1>(kVideoMediaSourceType, buffer, 4, kNumFrames, kIsBufferFull, 0, UINT64_MAX);
         auto result = m_sut->readData();
         EXPECT_EQ(kIsBufferFull, m_sut->isBufferFull());
         ASSERT_EQ(1, result.size());
@@ -143,7 +143,7 @@ public:
         std::uint32_t regionOffset =
             m_shm->getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSessionId, kAudioMediaSourceType);
         m_sut =
-            std::make_unique<DataReaderV1>(kAudioMediaSourceType, buffer, regionOffset + 4, kNumFrames, kIsBufferFull);
+            std::make_unique<DataReaderV1>(kAudioMediaSourceType, buffer, regionOffset + 4, kNumFrames, kIsBufferFull, 0, UINT64_MAX);
         auto result = m_sut->readData();
         ASSERT_EQ(1, result.size());
         EXPECT_EQ(kIsBufferFull, m_sut->isBufferFull());

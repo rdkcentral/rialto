@@ -36,8 +36,16 @@ namespace firebolt::rialto::server
 {
 std::shared_ptr<IDataReader> DataReaderFactory::createDataReader(const MediaSourceType &mediaSourceType,
                                                                  std::uint8_t *buffer, std::uint32_t dataOffset,
-                                                                 std::uint32_t numFrames, bool isBufferFull) const
+                                                                 std::uint32_t regionLen, std::uint32_t numFrames,
+                                                                 bool isBufferFull) const
 {
+    // The region end bounds every client-controlled size read from shared memory.
+    const std::uint64_t kRegionEnd{static_cast<std::uint64_t>(dataOffset) + regionLen};
+    if (regionLen < common::VERSION_SIZE_BYTES)
+    {
+        return nullptr;
+    }
+
     // Version is always first 4 bytes of data
     std::uint8_t *metadata = buffer + dataOffset;
     std::uint32_t version = readLEUint32(metadata);
@@ -45,12 +53,13 @@ std::shared_ptr<IDataReader> DataReaderFactory::createDataReader(const MediaSour
     {
         std::uint32_t metadataOffsetWithoutVersion = dataOffset + common::VERSION_SIZE_BYTES;
         return std::make_shared<DataReaderV1>(mediaSourceType, buffer, metadataOffsetWithoutVersion, numFrames,
-                                              isBufferFull);
+                                              isBufferFull, dataOffset, kRegionEnd);
     }
     if (2 == version)
     {
         std::uint32_t v2DataOffset = dataOffset + getMaxMetadataBytes();
-        return std::make_shared<DataReaderV2>(mediaSourceType, buffer, v2DataOffset, numFrames, isBufferFull);
+        return std::make_shared<DataReaderV2>(mediaSourceType, buffer, v2DataOffset, numFrames, isBufferFull,
+                                              kRegionEnd);
     }
     return nullptr;
 }
