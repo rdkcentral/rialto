@@ -73,14 +73,14 @@ void MediaPipelineMetricsClient::notifyQos(int32_t sourceId, const QosInfo &qosI
 }
 void MediaPipelineMetricsClient::notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames, uint64_t droppedFrames,
                                                    uint64_t corruptedFrames, uint64_t ptsNs,
-                                                   const std::string &errorInfo)
+                                                   const std::string &errorInfo, uint32_t phase)
 {
     RIALTO_SERVER_LOG_DEBUG(
-        "Relaying playback metric event sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu, type: %s",
+        "Relaying playback metric event sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu, type: %s, phase: %u",
         m_sessionId, sourceId, static_cast<unsigned long long>(renderedFrames),
         static_cast<unsigned long long>(droppedFrames), static_cast<unsigned long long>(corruptedFrames),
-        static_cast<unsigned long long>(ptsNs), errorInfo.c_str());
-    m_client->notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo);
+        static_cast<unsigned long long>(ptsNs), errorInfo.c_str(), phase);
+    m_client->notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo, phase);
 }
 void MediaPipelineMetricsClient::notifyBufferUnderflow(int32_t sourceId)
 {

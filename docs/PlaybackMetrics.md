@@ -52,23 +52,24 @@ The server sends `NotifyMetricEvent` with these fields:
 | `corrupted_frames` | `uint64` | Corrupted frame count |
 | `pts_ns` | `uint64` | Presentation timestamp (PTS) associated with the metric snapshot, in nanoseconds |
 | `error_info` | `string` | Metric type name (for example, `METRIC_VIDEO_FRAME_DROP`) |
+| `phase` | `uint32` | Westeros metric phase: 0 occurrence, 1 started, 2 resolved |
 
-The event carries the PTS as `pts_ns`. It does not carry the numeric `MetricType` enum field; the server maps the metric type to its string name in `error_info`.
+The event carries the PTS as `pts_ns` and preserves the Westeros `phase`. It does not carry the numeric `MetricType` enum field; the server maps the metric type to its string name in `error_info`.
 
 The server-side notification signature is:
 
 ```cpp
 void notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames, uint64_t droppedFrames,
-                       uint64_t corruptedFrames, uint64_t ptsNs, const std::string &errorInfo);
+                       uint64_t corruptedFrames, uint64_t ptsNs, const std::string &errorInfo, uint32_t phase);
 ```
 
-The server IPC client fills in its session ID, copies the remaining values into the event, and sends it. The client IPC layer subscribes to this event type when setting up the IPC channel. It dispatches events on its event thread, forwards events for the current session without further filtering, and passes all payload fields, including `pts_ns`, to `IMediaPipelineIpcClient::notifyMetricEvent`. `MediaPipeline` forwards that callback to the registered `IMediaPipelineClient` when it is still available.
+The server IPC client fills in its session ID, copies the remaining values into the event, and sends it. The client IPC layer subscribes to this event type when setting up the IPC channel. It dispatches events on its event thread, forwards events for the current session without further filtering, and passes all payload fields, including `pts_ns` and `phase`, to `IMediaPipelineIpcClient::notifyMetricEvent`. `MediaPipeline` forwards that callback to the registered `IMediaPipelineClient` when it is still available.
 
 Applications receive the callback as:
 
 ```cpp
 void notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames, uint64_t droppedFrames,
-                       uint64_t corruptedFrames, uint64_t ptsNs, const std::string &errorInfo);
+                       uint64_t corruptedFrames, uint64_t ptsNs, const std::string &errorInfo, uint32_t phase);
 ```
 
 ## Message Types
