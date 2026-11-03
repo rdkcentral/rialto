@@ -378,6 +378,13 @@ void GenericTasksTestsBase::setContextVideoBuffer()
     videoStreamIt->second.buffers.emplace_back(&testContext->m_videoBuffer);
 }
 
+void GenericTasksTestsBase::setContextSubtitleBuffer()
+{
+    auto subtitleStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::SUBTITLE)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), subtitleStreamIt);
+    subtitleStreamIt->second.buffers.emplace_back(&testContext->m_subtitleBuffer);
+}
+
 void GenericTasksTestsBase::setContextPlaybackRate()
 {
     testContext->m_context.playbackRate = kRate;
@@ -2753,6 +2760,14 @@ void GenericTasksTestsBase::triggerEosVideo()
     task.execute();
 }
 
+void GenericTasksTestsBase::triggerEosSubtitle()
+{
+    firebolt::rialto::server::tasks::generic::Eos task{testContext->m_context, testContext->m_gstPlayer,
+                                                       testContext->m_gstWrapper,
+                                                       firebolt::rialto::MediaSourceType::SUBTITLE};
+    task.execute();
+}
+
 void GenericTasksTestsBase::shouldGstAppSrcEndOfStreamSuccess()
 {
     EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcEndOfStream(_)).WillOnce(Return(GST_FLOW_OK));
@@ -3536,6 +3551,14 @@ void GenericTasksTestsBase::shouldFlushVideo()
     EXPECT_CALL(testContext->m_gstPlayer, setSourceFlushed(firebolt::rialto::MediaSourceType::VIDEO));
 }
 
+void GenericTasksTestsBase::shouldFlushSubtitle()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&testContext->m_subtitleBuffer));
+    EXPECT_CALL(testContext->m_gstPlayerClient, invalidateActiveRequests(firebolt::rialto::MediaSourceType::SUBTITLE));
+    EXPECT_CALL(testContext->m_gstPlayerClient, notifySourceFlushed(firebolt::rialto::MediaSourceType::SUBTITLE));
+    EXPECT_CALL(testContext->m_gstPlayer, setSourceFlushed(firebolt::rialto::MediaSourceType::SUBTITLE));
+}
+
 void GenericTasksTestsBase::triggerFlush(firebolt::rialto::MediaSourceType sourceType)
 {
     firebolt::rialto::server::tasks::generic::Flush task{testContext->m_context,
@@ -3582,11 +3605,36 @@ void GenericTasksTestsBase::checkVideoFlushed()
 void GenericTasksTestsBase::shouldFlushVideoSrcSuccess()
 {
     EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&testContext->m_event));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcVideo, &testContext->m_event))
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcVideo, &testContext->m_event2))
         .WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStop(kResetTime)).WillOnce(Return(&testContext->m_event2));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcVideo, &testContext->m_event2))
         .WillOnce(Return(TRUE));
+}
+
+void GenericTasksTestsBase::shouldFlushSubtitleSrcSuccess()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&testContext->m_event));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcSubtitle, &testContext->m_event))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStop(kResetTime)).WillOnce(Return(&testContext->m_event2));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcSubtitle, &testContext->m_event2))
+        .WillOnce(Return(TRUE));
+}
+
+void GenericTasksTestsBase::checkSubtitleFlushed()
+{
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    EXPECT_EQ(audioStreamIt->second.buffers.size(), 1);
+    auto subtitleStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::SUBTITLE)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), subtitleStreamIt);
+    EXPECT_EQ(subtitleStreamIt->second.buffers.size(), 0);
+    EXPECT_FALSE(testContext->m_context.eosNotified);
+    EXPECT_NE(testContext->m_context.endOfStreamInfo.find(firebolt::rialto::MediaSourceType::AUDIO),
+              testContext->m_context.endOfStreamInfo.end());
+    EXPECT_EQ(testContext->m_context.endOfStreamInfo.find(firebolt::rialto::MediaSourceType::SUBTITLE),
+              testContext->m_context.endOfStreamInfo.end());
 }
 
 void GenericTasksTestsBase::shouldSetSubtitleSourcePosition()
