@@ -288,6 +288,7 @@ protected:
     void sendNotifyNeedDataVideoAfterPreroll();
     void sendNotifyNeedDataVideo(uint32_t framesToWrite);
     void sendNotifyNeedDataAudio(uint32_t framesToWrite);
+    void sendNotifyNeedDataAudioWithoutWaiting(uint32_t framesToWrite);
     void sendNotifyNeedDataVideoSecondary(uint32_t framesToWrite);
     void sendNotifyNetworkStateBuffered();
     void sendNotifyNetworkStateBufferedSecondary();

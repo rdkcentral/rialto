@@ -21,7 +21,9 @@
 #include "MediaFrameWriterMock.h"
 #include "MediaPipelineTestBase.h"
 #include "SharedMemoryHandleMock.h"
+#include <chrono>
 #include <condition_variable>
+#include <future>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -275,6 +277,113 @@ TEST_F(RialtoClientMediaPipelineDataTest, AudioNeedDataEventAfterFinishOfAudioSo
 
     // Need data should be forwarded to the client.
     needDataGeneric();
+}
+
+/**
+ * Test that a need data notification blocks until a successful source attach completes.
+ */
+TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventDuringSuccessfulAttach)
+{
+    const int32_t attachedSourceId = m_sourceId + 1;
+    std::promise<void> attachEntered;
+    std::promise<void> releaseAttach;
+    std::promise<void> attachCompleted;
+    std::promise<void> eventStarted;
+    std::promise<void> eventCompleted;
+    auto releaseAttachFuture = releaseAttach.get_future();
+    auto attachEnteredFuture = attachEntered.get_future();
+    auto attachCompletedFuture = attachCompleted.get_future();
+    auto eventStartedFuture = eventStarted.get_future();
+    auto eventCompletedFuture = eventCompleted.get_future();
+
+    EXPECT_CALL(*m_mediaPipelineIpcMock, attachSource(_, _))
+        .WillOnce(Invoke([&](const auto &, int32_t &sourceId)
+                         {
+                             attachEntered.set_value();
+                             releaseAttachFuture.wait();
+                             sourceId = attachedSourceId;
+                             return true;
+                         }));
+
+    std::thread attachThread([&]
+                             {
+                                 std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+                                     std::make_unique<IMediaPipeline::MediaSourceAudio>("audio/mp4");
+                                 EXPECT_TRUE(m_mediaPipeline->attachSource(mediaSource));
+                                 attachCompleted.set_value();
+                             });
+
+    EXPECT_EQ(attachEnteredFuture.wait_for(std::chrono::seconds(1)), std::future_status::ready);
+    EXPECT_CALL(*m_mediaPipelineClientMock,
+                notifyNeedMediaData(attachedSourceId, m_frameCount, m_requestId, IsNull()));
+    std::thread eventThread([&]
+                            {
+                                eventStarted.set_value();
+                                m_mediaPipelineCallback->notifyNeedMediaData(attachedSourceId, m_frameCount, m_requestId,
+                                                                            m_shmInfo);
+                                eventCompleted.set_value();
+                            });
+
+    EXPECT_EQ(eventStartedFuture.wait_for(std::chrono::seconds(1)), std::future_status::ready);
+    EXPECT_EQ(eventCompletedFuture.wait_for(std::chrono::milliseconds(100)), std::future_status::timeout);
+
+    releaseAttach.set_value();
+    EXPECT_EQ(attachCompletedFuture.wait_for(std::chrono::seconds(1)), std::future_status::ready);
+    EXPECT_EQ(eventCompletedFuture.wait_for(std::chrono::seconds(1)), std::future_status::ready);
+    attachThread.join();
+    eventThread.join();
+}
+
+/**
+ * Test that a need data notification is ignored after the in-progress attach fails.
+ */
+TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventDuringFailedAttach)
+{
+    const int32_t unattachedSourceId = m_sourceId + 1;
+    std::promise<void> attachEntered;
+    std::promise<void> releaseAttach;
+    std::promise<void> attachCompleted;
+    std::promise<void> eventStarted;
+    std::promise<void> eventCompleted;
+    auto releaseAttachFuture = releaseAttach.get_future();
+    auto attachEnteredFuture = attachEntered.get_future();
+    auto attachCompletedFuture = attachCompleted.get_future();
+    auto eventStartedFuture = eventStarted.get_future();
+    auto eventCompletedFuture = eventCompleted.get_future();
+
+    EXPECT_CALL(*m_mediaPipelineIpcMock, attachSource(_, _))
+        .WillOnce(Invoke([&](const auto &, int32_t &)
+                         {
+                             attachEntered.set_value();
+                             releaseAttachFuture.wait();
+                             return false;
+                         }));
+
+    std::thread attachThread([&]
+                             {
+                                 std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+                                     std::make_unique<IMediaPipeline::MediaSourceAudio>("audio/mp4");
+                                 EXPECT_FALSE(m_mediaPipeline->attachSource(mediaSource));
+                                 attachCompleted.set_value();
+                             });
+
+    EXPECT_EQ(attachEnteredFuture.wait_for(std::chrono::seconds(1)), std::future_status::ready);
+    std::thread eventThread([&]
+                            {
+                                eventStarted.set_value();
+                                m_mediaPipelineCallback->notifyNeedMediaData(unattachedSourceId, m_frameCount,
+                                                                            m_requestId, m_shmInfo);
+                                eventCompleted.set_value();
+                            });
+
+    EXPECT_EQ(eventStartedFuture.wait_for(std::chrono::seconds(1)), std::future_status::ready);
+    EXPECT_EQ(eventCompletedFuture.wait_for(std::chrono::milliseconds(100)), std::future_status::timeout);
+
+    releaseAttach.set_value();
+    EXPECT_EQ(attachCompletedFuture.wait_for(std::chrono::seconds(1)), std::future_status::ready);
+    EXPECT_EQ(eventCompletedFuture.wait_for(std::chrono::seconds(1)), std::future_status::ready);
+    attachThread.join();
+    eventThread.join();
 }
 
 /**

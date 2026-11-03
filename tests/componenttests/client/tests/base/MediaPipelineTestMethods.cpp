@@ -1003,6 +1003,12 @@ void MediaPipelineTestMethods::sendNotifyNeedDataAudio(uint32_t framesToWrite)
     sendNotifyNeedDataInternal(kSessionId, kAudioSourceId, m_locationToWriteAudio[kPrimaryPartition], framesToWrite);
 }
 
+void MediaPipelineTestMethods::sendNotifyNeedDataAudioWithoutWaiting(uint32_t framesToWrite)
+{
+    getServerStub()->notifyNeedMediaDataEvent(kSessionId, kAudioSourceId, framesToWrite, m_needDataRequestId,
+                                              m_locationToWriteAudio[kPrimaryPartition]);
+}
+
 void MediaPipelineTestMethods::sendNotifyNeedDataVideoSecondary(uint32_t framesToWrite)
 {
     sendNotifyNeedDataInternal(kSessionIdSecondary, kVideoSourceId, m_locationToWriteVideo[kSecondaryPartition],

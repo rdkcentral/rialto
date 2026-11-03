@@ -18,7 +18,10 @@
  */
 
 #include "ClientComponentTest.h"
+#include <chrono>
+#include <future>
 #include <gtest/gtest.h>
+#include <thread>
 
 namespace firebolt::rialto::client::ct
 {
@@ -146,5 +149,58 @@ TEST_F(AudioSwitchingTest, multiSwitching)
 
     // Step 10: Write audio frame
     writeAudioFrames();
+}
+
+TEST_F(AudioSwitchingTest, NeedDataEventDuringAttachDoesNotBlockAttachRpc)
+{
+    constexpr uint32_t kFramesToWrite{1};
+    constexpr int32_t kNewAudioSourceId{3};
+    std::promise<void> attachRequestReceived;
+    std::promise<void> releaseAttachReply;
+    std::promise<bool> attachCompleted;
+    std::promise<void> needDataDelivered;
+    const auto attachRequestReceivedFuture = attachRequestReceived.get_future();
+    const auto releaseAttachReplyFuture = releaseAttachReply.get_future().share();
+    auto attachCompletedFuture = attachCompleted.get_future();
+    const auto needDataDeliveredFuture = needDataDelivered.get_future();
+
+    EXPECT_CALL(*m_mediaPipelineModuleMock, attachSource(_, _, _, _))
+        .WillOnce(Invoke([&](::google::protobuf::RpcController *, const ::firebolt::rialto::AttachSourceRequest *,
+                             ::firebolt::rialto::AttachSourceResponse *response, ::google::protobuf::Closure *done)
+                         {
+                             attachRequestReceived.set_value();
+                             releaseAttachReplyFuture.wait();
+                             response->set_source_id(kNewAudioSourceId);
+                             done->Run();
+                         }));
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyNeedMediaData(_, kFramesToWrite, _, _))
+        .WillOnce(InvokeWithoutArgs([&] { needDataDelivered.set_value(); }));
+
+    std::thread attachThread([&]
+                             {
+                                 std::unique_ptr<IMediaPipeline::MediaSource> source =
+                                     std::make_unique<IMediaPipeline::MediaSourceAudio>("audio/mp4");
+                                 attachCompleted.set_value(m_mediaPipeline->attachSource(source));
+                             });
+
+    const auto attachRequestStatus = attachRequestReceivedFuture.wait_for(std::chrono::seconds(1));
+    EXPECT_EQ(attachRequestStatus, std::future_status::ready);
+    if (attachRequestStatus == std::future_status::ready)
+    {
+        sendNotifyNeedDataAudioWithoutWaiting(kFramesToWrite);
+        EXPECT_EQ(needDataDeliveredFuture.wait_for(std::chrono::milliseconds(100)), std::future_status::timeout);
+        EXPECT_EQ(attachCompletedFuture.wait_for(std::chrono::milliseconds(100)), std::future_status::timeout);
+    }
+
+    releaseAttachReply.set_value();
+
+    const auto attachStatus = attachCompletedFuture.wait_for(std::chrono::seconds(1));
+    EXPECT_EQ(attachStatus, std::future_status::ready);
+    if (attachStatus == std::future_status::ready)
+    {
+        EXPECT_TRUE(attachCompletedFuture.get());
+    }
+    EXPECT_EQ(needDataDeliveredFuture.wait_for(std::chrono::seconds(1)), std::future_status::ready);
+    attachThread.join();
 }
 } // namespace firebolt::rialto::client::ct
