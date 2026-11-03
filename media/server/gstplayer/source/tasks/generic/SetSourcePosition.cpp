@@ -79,6 +79,11 @@ void SetSourcePosition::setSubtitlePosition(GstElement *source) const
     // so set position here and to not depend on any following buffers
     if (m_context.setupSourceFinished)
     {
+        if (m_position < 0)
+        {
+            RIALTO_SERVER_LOG_WARN("Invalid negative position for subtitle sink");
+            return;
+        }
         m_glibWrapper->gObjectSet(m_context.subtitleSink, "position", static_cast<guint64>(m_position), nullptr);
     }
     else
