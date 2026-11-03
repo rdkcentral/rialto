@@ -19,7 +19,9 @@ struct FrameCounters
 
 struct ParsedMetricMessage
 {
+    std::int32_t sessionId{0};
     std::uint32_t type{0};
+    std::uint32_t phase{0};
     int32_t sourceId{0};
     FrameCounters counters;
 };
@@ -31,8 +33,10 @@ class IRialtoMetrics
 public:
     virtual ~IRialtoMetrics() = default;
     virtual void setSessionId(int32_t sessionId) = 0;
-    virtual std::optional<ParsedMetricMessage> onMetricMessage(GstMessage *message) = 0;
+    virtual std::optional<ParsedMetricMessage> onMetricMessage(
+        GstMessage *message, const std::optional<std::uint64_t> &renderedFrames) = 0;
     virtual void updateFrameCounters(int32_t sessionId, int32_t sourceId, const FrameCounters &counters) = 0;
+    virtual void updateRenderedFrames(int32_t sessionId, int32_t sourceId, std::uint64_t renderedFrames) = 0;
     virtual bool getFrameCounters(int32_t sessionId, int32_t sourceId, FrameCounters &counters) const = 0;
 };
 } // namespace firebolt::rialto::server

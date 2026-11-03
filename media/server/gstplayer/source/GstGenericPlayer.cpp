@@ -559,6 +559,10 @@ void GstGenericPlayer::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
 {
     if (m_workerThread)
     {
+        if (attachedSource->getType() == MediaSourceType::VIDEO && attachedSource->getId() > 0)
+        {
+            setMetricSourceId(attachedSource->getId());
+        }
         m_workerThread->enqueueTask(m_taskFactory->createAttachSource(m_context, *this, attachedSource));
     }
 }
@@ -3201,6 +3205,47 @@ std::shared_ptr<IRialtoMetrics> GstGenericPlayer::getRialtoMetrics() const
     return m_metrics;
 }
 
+void GstGenericPlayer::setMetricSessionId(int32_t sessionId)
+{
+    m_metricSessionId = sessionId;
+    setMetricProperty("metrics-session-id", sessionId);
+}
+
+void GstGenericPlayer::setMetricSourceId(int32_t sourceId)
+{
+    m_metricSourceId = sourceId;
+    setMetricProperty("metrics-source-id", sourceId);
+}
+
+void GstGenericPlayer::setMetricProperty(const char *propertyName, int32_t value)
+{
+    if (value < 0)
+    {
+        RIALTO_SERVER_LOG_ERROR("Invalid playback metrics value %d for property '%s'", value, propertyName);
+        return;
+    }
+
+    GstElement *sink{getSink(MediaSourceType::VIDEO)};
+    if (!sink)
+    {
+        RIALTO_SERVER_LOG_WARN("Cannot set playback metrics property '%s' - video sink is unavailable", propertyName);
+        return;
+    }
+
+    if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), propertyName))
+    {
+        m_glibWrapper->gObjectSet(sink, propertyName, static_cast<guint>(value), nullptr);
+        RIALTO_SERVER_LOG_DEBUG("Set playback metrics property '%s' to %d on sink '%s'", propertyName, value,
+                                GST_ELEMENT_NAME(sink));
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("Video sink '%s' does not support playback metrics property '%s'",
+                                GST_ELEMENT_NAME(sink), propertyName);
+    }
+    m_gstWrapper->gstObjectUnref(sink);
+}
+
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
     m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message, *m_flushWatcher));
@@ -3215,7 +3260,15 @@ void GstGenericPlayer::handleMetricMessage(GstMessage *message)
         return;
     }
 
-    const auto metric = m_metrics->onMetricMessage(message);
+    std::optional<uint64_t> renderedFrames;
+    uint64_t droppedFrames{0};
+    uint64_t currentRenderedFrames{0};
+    if (getStats(MediaSourceType::VIDEO, currentRenderedFrames, droppedFrames))
+    {
+        renderedFrames = currentRenderedFrames;
+    }
+
+    const auto metric = m_metrics->onMetricMessage(message, renderedFrames);
     if (!metric)
     {
         RIALTO_SERVER_LOG_DEBUG("Playback metric message was ignored by RialtoMetrics");
@@ -3262,6 +3315,16 @@ void GstGenericPlayer::addAutoVideoSinkChild(GObject *object)
             RIALTO_SERVER_LOG_MIL("AutoVideoSink child is been overwritten");
         }
         m_context.autoVideoChildSink = GST_ELEMENT(object);
+        const int32_t sessionId = m_metricSessionId.load();
+        const int32_t sourceId = m_metricSourceId.load();
+        if (sessionId >= 0)
+        {
+            setMetricProperty("metrics-session-id", sessionId);
+        }
+        if (sourceId >= 0)
+        {
+            setMetricProperty("metrics-source-id", sourceId);
+        }
     }
 }
 

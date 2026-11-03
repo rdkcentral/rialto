@@ -42,7 +42,8 @@ void RialtoMetrics::setSessionId(int32_t sessionId)
 	m_sessionId = sessionId;
 }
 
-std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(GstMessage *message)
+std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
+	GstMessage *message, const std::optional<std::uint64_t> &renderedFrames)
 {
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics::onMetricMessage received message: %p", message);
 	if (!message)
@@ -59,43 +60,74 @@ std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(GstMessage *me
 	}
 
 	guint metricType{0};
+	guint phase{0};
 	guint sourceId{0};
-	guint64 renderedFrames{0};
-	guint64 droppedFrames{0};
-	guint64 corruptedFrames{0};
-	guint64 ptsNs{0};
+	guint sessionId{0};
+	gint64 ptsNs{0};
 	if (!gst_structure_get_uint(structure, "metric_type", &metricType) ||
+		!gst_structure_get_uint(structure, "phase", &phase) ||
 		!gst_structure_get_uint(structure, "source_id", &sourceId) ||
-		!gst_structure_get_uint64(structure, "rendered_frames", &renderedFrames) ||
-		!gst_structure_get_uint64(structure, "dropped_frames", &droppedFrames) ||
-		!gst_structure_get_uint64(structure, "corrupted_frames", &corruptedFrames) ||
-		!gst_structure_get_uint64(structure, "pts_ns", &ptsNs) ||
-		sourceId > static_cast<guint>(std::numeric_limits<int32_t>::max()))
+		!gst_structure_get_uint(structure, "session_id", &sessionId) ||
+		!gst_structure_get_int64(structure, "pts_ns", &ptsNs) ||
+		sourceId > static_cast<guint>(std::numeric_limits<int32_t>::max()) ||
+		sessionId > static_cast<guint>(std::numeric_limits<int32_t>::max()) || ptsNs < 0 || phase > 2)
 	{
 		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics::onMetricMessage ignored malformed metric message");
 		return std::nullopt;
 	}
 
-	int32_t sessionId;
+	int32_t currentSessionId{-1};
+	FrameCounters counters;
+	bool validSession{false};
 	{
 		std::lock_guard<std::mutex> lock{m_counterMutex};
-		sessionId = m_sessionId;
+		currentSessionId = m_sessionId;
+		if (currentSessionId >= 0 && static_cast<int32_t>(sessionId) == currentSessionId)
+		{
+			const auto key = std::make_pair(currentSessionId, static_cast<int32_t>(sourceId));
+			const auto it = m_counterCache.find(key);
+			if (it != m_counterCache.end())
+			{
+				counters = it->second;
+			}
+
+			if (renderedFrames)
+			{
+				counters.rendered = *renderedFrames;
+			}
+			if (phase == 0)
+			{
+				if (metricType == 0)
+				{
+					++counters.dropped;
+				}
+				else if (metricType == 2)
+				{
+					++counters.corrupted;
+				}
+			}
+			counters.timestamp = static_cast<std::uint64_t>(ptsNs);
+			m_counterCache[key] = counters;
+			validSession = true;
+		}
 	}
-	if (sessionId < 0)
+	if (!validSession)
 	{
 		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
-						 "RialtoMetrics::onMetricMessage ignored metric without a valid session");
+						 "RialtoMetrics::onMetricMessage ignored metric for sessionId: %u, current sessionId: %d",
+						 sessionId, currentSessionId);
 		return std::nullopt;
 	}
 
-	ParsedMetricMessage parsedMessage{metricType, static_cast<int32_t>(sourceId),
-									 FrameCounters{renderedFrames, droppedFrames, corruptedFrames, ptsNs}};
+	ParsedMetricMessage parsedMessage{static_cast<int32_t>(sessionId), metricType, phase,
+									  static_cast<int32_t>(sourceId), counters};
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
-					 "RialtoMetrics::onMetricMessage parsed sessionId: %d, sourceId: %d, type: %u, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu",
-					 sessionId, parsedMessage.sourceId, metricType, static_cast<unsigned long long>(renderedFrames),
-					 static_cast<unsigned long long>(droppedFrames), static_cast<unsigned long long>(corruptedFrames),
-					 static_cast<unsigned long long>(ptsNs));
-	updateFrameCounters(sessionId, parsedMessage.sourceId, parsedMessage.counters);
+					 "RialtoMetrics::onMetricMessage parsed sessionId: %d, sourceId: %d, type: %u, phase: %u, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu",
+					 parsedMessage.sessionId, parsedMessage.sourceId, metricType, phase,
+					 static_cast<unsigned long long>(counters.rendered),
+					 static_cast<unsigned long long>(counters.dropped),
+					 static_cast<unsigned long long>(counters.corrupted),
+					 static_cast<unsigned long long>(counters.timestamp));
 	return parsedMessage;
 }
 
@@ -109,6 +141,15 @@ void RialtoMetrics::updateFrameCounters(int32_t sessionId, int32_t sourceId, con
 					 static_cast<unsigned long long>(counters.timestamp));
 	std::lock_guard<std::mutex> lock{m_counterMutex};
 	m_counterCache[{sessionId, sourceId}] = counters;
+}
+
+void RialtoMetrics::updateRenderedFrames(int32_t sessionId, int32_t sourceId, std::uint64_t renderedFrames)
+{
+	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
+					 "RialtoMetrics::updateRenderedFrames sessionId: %d, sourceId: %d, rendered: %llu", sessionId,
+					 sourceId, static_cast<unsigned long long>(renderedFrames));
+	std::lock_guard<std::mutex> lock{m_counterMutex};
+	m_counterCache[{sessionId, sourceId}].rendered = renderedFrames;
 }
 
 bool RialtoMetrics::getFrameCounters(int32_t sessionId, int32_t sourceId, FrameCounters &counters) const
