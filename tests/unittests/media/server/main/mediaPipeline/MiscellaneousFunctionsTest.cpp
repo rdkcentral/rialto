@@ -544,6 +544,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersSucc
 
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getRialtoMetrics()).WillOnce(Return(metrics));
+    EXPECT_CALL(*m_gstPlayerMock, getStats(MediaSourceType::VIDEO, _, _)).WillOnce(Return(false));
 
     uint64_t renderedFrames{0};
     uint64_t droppedFrames{0};
@@ -555,6 +556,34 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersSucc
     EXPECT_EQ(95U, droppedFrames);
     EXPECT_EQ(7U, corruptedFrames);
     EXPECT_EQ(1234U, timestamp);
+}
+
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersFailsForUnknownSource)
+{
+    loadGstPlayer();
+    const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+
+    uint64_t renderedFrames{0};
+    uint64_t droppedFrames{0};
+    uint64_t corruptedFrames{0};
+    uint64_t timestamp{0};
+    EXPECT_FALSE(m_mediaPipeline->getFrameCounters(m_kSessionId, sourceId + 1, renderedFrames, droppedFrames,
+                                                   corruptedFrames, timestamp));
+}
+
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersFailsForUnknownSession)
+{
+    loadGstPlayer();
+    const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+
+    uint64_t renderedFrames{0};
+    uint64_t droppedFrames{0};
+    uint64_t corruptedFrames{0};
+    uint64_t timestamp{0};
+    EXPECT_FALSE(m_mediaPipeline->getFrameCounters(m_kSessionId + 1, sourceId, renderedFrames, droppedFrames,
+                                                   corruptedFrames, timestamp));
 }
 
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, RenderFrameSuccess)

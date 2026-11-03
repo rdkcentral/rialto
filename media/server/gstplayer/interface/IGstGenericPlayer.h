@@ -88,6 +88,7 @@ public:
     IGstGenericPlayer &operator=(IGstGenericPlayer &&) = delete;
 
     virtual std::shared_ptr<IRialtoMetrics> getRialtoMetrics() const = 0;
+    virtual void setMetricSessionId(int32_t sessionId) = 0;
 
     /**
      * @brief Attaches a source to gstreamer.
