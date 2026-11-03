@@ -227,8 +227,8 @@ TEST_F(PositionUpdatesTest, PositionUpdate)
 
     // Step 9: Write 1 audio frame
     // Step 10: Write 1 video frame
-    pushAudioData(kFramesToPush);
-    pushVideoData(kFramesToPush);
+    pushAudioData(kFramesToPush, kFrameCountInPlayingState);
+    pushVideoData(kFramesToPush, kFrameCountInPlayingState);
 
     // Step 11: Expect position update
     waitForPositionUpdate();
@@ -423,8 +423,8 @@ TEST_F(PositionUpdatesTest, GetPositionSuccess)
 
     // Step 9: Write 1 audio frame
     // Step 10: Write 1 video frame
-    pushAudioData(kFramesToPush);
-    pushVideoData(kFramesToPush);
+    pushAudioData(kFramesToPush, kFrameCountInPlayingState);
+    pushVideoData(kFramesToPush, kFrameCountInPlayingState);
 
     // Step 11: Get Position
     getPosition();
@@ -546,7 +546,7 @@ TEST_F(PositionUpdatesTest, getPositionFailure)
     willSetStateInvalidForQueryPosition();
     getPositionFailure();
 
-    // Step 7: Remove sources
+    // Step 7: Remove sources, kFrameCountInPlayingState
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 

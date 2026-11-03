@@ -23,6 +23,9 @@ on:
 
   workflow_dispatch:
 
+env:
+  RIALTO_OCDM_FALLBACK_BRANCH: release/v0.9.3
+
 jobs:
   build-and-test:
     runs-on: ubuntu-24.04
@@ -32,7 +35,7 @@ jobs:
         id: check-branch
         shell: sh +e {0}
         run: |
-          branch="${{ github.base_ref }}"
+          branch="$RIALTO_OCDM_FALLBACK_BRANCH"
           git ls-remote --exit-code --heads "https://github.com/rdkcentral/rialto-ocdm.git" ${{ github.event.pull_request.head.ref }} > /dev/null
           if [ $? -eq 0 ]; then
             branch="${{ github.event.pull_request.head.ref }}"
