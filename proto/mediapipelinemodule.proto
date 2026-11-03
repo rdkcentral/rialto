@@ -1009,6 +1009,8 @@ message NotifyMetricEvent {
     optional uint64 corrupted_frames = 5 [default = 0];
     optional string error_info = 6;
     optional uint64 pts_ns = 7 [default = 0];
+    // Westeros metric phase: 0 occurrence, 1 started, 2 resolved.
+    optional uint32 phase = 8 [default = 0];
 }
 
 /**
