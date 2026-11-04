@@ -191,17 +191,26 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
         m_shmBuffer.reset();
         m_mainThread->unregisterClient(m_mainThreadClientId);
     };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
+    {
+        RIALTO_SERVER_LOG_ERROR("~MediaPipelineServerInternal: main-thread task failed or timed out");
+        // Still need to unregister the client to prevent ID leaks
+        m_mainThread->unregisterClient(m_mainThreadClientId);
+    }
 }
 
 bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result;
+    bool result{false};
     auto task = [&]() { result = loadInternal(type, mimeType, url, isLive); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
+    {
+        RIALTO_SERVER_LOG_ERROR("load: main-thread task failed or timed out");
+        return false;
+    }
     return result;
 }
 
@@ -234,10 +243,14 @@ bool MediaPipelineServerInternal::attachSource(const std::unique_ptr<MediaSource
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result;
+    bool result{false};
     auto task = [&]() { result = attachSourceInternal(source); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
+    {
+        RIALTO_SERVER_LOG_ERROR("attachSource: main-thread task failed or timed out");
+        return false;
+    }
     return result;
 }
 

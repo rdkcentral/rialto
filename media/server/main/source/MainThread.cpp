@@ -65,53 +65,150 @@ std::shared_ptr<IMainThread> MainThreadFactory::getMainThread() const
     return mainThread;
 }
 
-MainThread::MainThread() : m_isMainThreadRunning{true}, m_mainThreadClientId{0}, m_nextClientId{1}
+MainThread::MainThread(std::chrono::milliseconds taskTimeout)
+    : m_taskTimeout(taskTimeout), m_isMainThreadRunning{true}, m_shutdown{false},
+      m_mainThreadClientId{0}, m_nextClientId{1}
 {
-    RIALTO_SERVER_LOG_DEBUG("MainThread is constructed");
+    RIALTO_SERVER_LOG_DEBUG("MainThread is constructed with timeout %lld ms", taskTimeout.count());
     m_thread = std::thread(std::bind(&MainThread::mainThreadLoop, this));
 
     // Register itself
-    m_registeredClients.insert(m_mainThreadClientId);
+    {
+        std::lock_guard<std::mutex> lock(m_registeredClientsMutex);
+        m_registeredClients.insert(m_mainThreadClientId);
+    }
 }
 
 MainThread::~MainThread()
 {
     RIALTO_SERVER_LOG_DEBUG("MainThread is destructed");
-    auto shutdownTask = [this]() { m_isMainThreadRunning = false; };
-    enqueueTask(m_mainThreadClientId, shutdownTask);
-    m_thread.join();
+
+    // Check if we're being destroyed on the main thread itself
+    if (std::this_thread::get_id() == m_threadId)
+    {
+        RIALTO_SERVER_LOG_DEBUG("MainThread destructor called on main thread, detaching");
+        m_isMainThreadRunning = false;
+        m_thread.detach();
+    }
+    else
+    {
+        // Set shutdown flag and drain pending tasks
+        {
+            std::unique_lock<std::mutex> lock(m_taskQueueMutex);
+            m_shutdown = true;
+
+            // Extract and fail all pending tasks
+            std::vector<std::shared_ptr<TaskInfo>> pendingTasks;
+            while (!m_taskQueue.empty())
+            {
+                pendingTasks.push_back(std::move(m_taskQueue.front()));
+                m_taskQueue.pop_front();
+            }
+
+            // Unlock before notifying to avoid holding lock during notifications
+            lock.unlock();
+
+            // Fail all pending tasks
+            for (auto &taskInfo : pendingTasks)
+            {
+                std::unique_lock<std::mutex> taskLock(taskInfo->mutex);
+                if (taskInfo->status == TaskStatus::Pending)
+                {
+                    taskInfo->status = TaskStatus::Cancelled;
+                }
+                taskLock.unlock();
+                taskInfo->cv.notify_all();
+            }
+
+            // Relock to notify the loop
+            lock.lock();
+        }
+
+        m_taskQueueCv.notify_one();
+        m_thread.join();
+    }
 }
 
 void MainThread::mainThreadLoop()
 {
+    // Store this thread's id
+    m_threadId = std::this_thread::get_id();
+
     while (m_isMainThreadRunning)
     {
         const std::shared_ptr<TaskInfo> kTaskInfo = waitForTask();
-        if (m_registeredClients.find(kTaskInfo->clientId) != m_registeredClients.end())
+        if (!kTaskInfo)
         {
-            kTaskInfo->task();
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_WARN("Task ignored, client '%d' not registered", kTaskInfo->clientId);
+            // Shutdown signal received
+            break;
         }
 
-        if (kTaskInfo->state)
+        // Check if client is registered
+        bool clientRegistered = false;
         {
-            std::unique_lock<std::mutex> lockTask(kTaskInfo->state->mutex);
-            kTaskInfo->state->done = true;
-            kTaskInfo->state->cv.notify_one();
+            std::lock_guard<std::mutex> lock(m_registeredClientsMutex);
+            clientRegistered = (m_registeredClients.find(kTaskInfo->clientId) != m_registeredClients.end());
         }
+
+        if (!clientRegistered)
+        {
+            RIALTO_SERVER_LOG_WARN("Task ignored, client '%u' not registered", kTaskInfo->clientId);
+            std::unique_lock<std::mutex> taskLock(kTaskInfo->mutex);
+            kTaskInfo->status = TaskStatus::Failed;
+            taskLock.unlock();
+            kTaskInfo->cv.notify_all();
+            continue;
+        }
+
+        // Run the task with exception handling
+        try
+        {
+            {
+                std::unique_lock<std::mutex> taskLock(kTaskInfo->mutex);
+                kTaskInfo->status = TaskStatus::Running;
+            }
+
+            // Execute the task (outside the lock)
+            kTaskInfo->task();
+
+            // Mark as done
+            {
+                std::unique_lock<std::mutex> taskLock(kTaskInfo->mutex);
+                if (kTaskInfo->status == TaskStatus::Running)
+                {
+                    kTaskInfo->status = TaskStatus::Done;
+                }
+            }
+        }
+        catch (const std::exception &e)
+        {
+            RIALTO_SERVER_LOG_ERROR("Task threw exception: %s", e.what());
+            std::unique_lock<std::mutex> taskLock(kTaskInfo->mutex);
+            kTaskInfo->status = TaskStatus::Failed;
+            kTaskInfo->exception = std::current_exception();
+        }
+        catch (...)
+        {
+            RIALTO_SERVER_LOG_ERROR("Task threw unknown exception");
+            std::unique_lock<std::mutex> taskLock(kTaskInfo->mutex);
+            kTaskInfo->status = TaskStatus::Failed;
+            kTaskInfo->exception = std::current_exception();
+        }
+
+        kTaskInfo->cv.notify_all();
     }
 }
 
 const std::shared_ptr<MainThread::TaskInfo> MainThread::waitForTask()
 {
     std::unique_lock<std::mutex> lock(m_taskQueueMutex);
+    m_taskQueueCv.wait(lock, [this] { return !m_taskQueue.empty() || m_shutdown; });
+
     if (m_taskQueue.empty())
     {
-        m_taskQueueCv.wait(lock, [this] { return !m_taskQueue.empty(); });
+        return nullptr; // Shutdown signal
     }
+
     auto taskInfo = std::move(m_taskQueue.front());
     m_taskQueue.pop_front();
     return taskInfo;
@@ -121,9 +218,10 @@ int32_t MainThread::registerClient()
 {
     uint32_t clientId = m_nextClientId++;
 
-    auto task = [&, clientId]()
+    auto task = [this, clientId]()
     {
         RIALTO_SERVER_LOG_INFO("Registering client '%u'", clientId);
+        std::lock_guard<std::mutex> lock(m_registeredClientsMutex);
         m_registeredClients.insert(clientId);
     };
     enqueueTask(m_mainThreadClientId, task);
@@ -134,6 +232,7 @@ int32_t MainThread::registerClient()
 void MainThread::unregisterClient(uint32_t clientId)
 {
     RIALTO_SERVER_LOG_INFO("Unregistering client '%u'", clientId);
+    std::lock_guard<std::mutex> lock(m_registeredClientsMutex);
     m_registeredClients.erase(clientId);
 }
 
@@ -141,53 +240,140 @@ void MainThread::enqueueTask(uint32_t clientId, const Task &task)
 {
     std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
     newTask->clientId = clientId;
-    newTask->task = std::move(task);
+    newTask->task = task;
+
+    try
+    {
+        {
+            std::unique_lock<std::mutex> lock(m_taskQueueMutex);
+            if (m_shutdown)
+            {
+                RIALTO_SERVER_LOG_WARN("Cannot enqueue task, main thread is shutting down");
+                return;
+            }
+            m_taskQueue.push_back(std::move(newTask));
+        }
+        m_taskQueueCv.notify_one();
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to enqueue task: %s", e.what());
+    }
+}
+
+bool MainThread::enqueueTaskAndWait(uint32_t clientId, const Task &task)
+{
+    return enqueueAndWait(clientId, task, false /* priority */);
+}
+
+bool MainThread::enqueuePriorityTaskAndWait(uint32_t clientId, const Task &task)
+{
+    return enqueueAndWait(clientId, task, true /* priority */);
+}
+
+bool MainThread::enqueueAndWait(uint32_t clientId, const Task &task, bool priority)
+{
+    // Check if we're on the main thread
+    if (std::this_thread::get_id() == m_threadId)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Self-call detected, executing task inline");
+
+        // Check if client is registered
+        {
+            std::lock_guard<std::mutex> lock(m_registeredClientsMutex);
+            if (m_registeredClients.find(clientId) == m_registeredClients.end())
+            {
+                RIALTO_SERVER_LOG_WARN("Cannot execute task, client '%u' not registered", clientId);
+                return false;
+            }
+        }
+
+        // Execute inline
+        try
+        {
+            task();
+            return true;
+        }
+        catch (const std::exception &e)
+        {
+            RIALTO_SERVER_LOG_ERROR("Inline task threw exception: %s", e.what());
+            return false;
+        }
+        catch (...)
+        {
+            RIALTO_SERVER_LOG_ERROR("Inline task threw unknown exception");
+            return false;
+        }
+    }
+
+    std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
+    newTask->clientId = clientId;
+    newTask->task = task;
+
     {
         std::unique_lock<std::mutex> lock(m_taskQueueMutex);
-        m_taskQueue.push_back(std::move(newTask));
-    }
-    m_taskQueueCv.notify_one();
-}
 
-void MainThread::enqueueTaskAndWait(uint32_t clientId, const Task &task)
-{
-    thread_local TaskState taskState;
-    taskState.done = false;
-    std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
-    newTask->clientId = clientId;
-    newTask->task = std::move(task);
-    newTask->state = &taskState;
-
-    {
-        std::unique_lock<std::mutex> lockTask(taskState.mutex);
+        if (m_shutdown)
         {
-            std::unique_lock<std::mutex> lockQueue(m_taskQueueMutex);
-            m_taskQueue.push_back(newTask);
+            RIALTO_SERVER_LOG_DEBUG("Cannot enqueue task, main thread is shutting down");
+            return false;
         }
-        m_taskQueueCv.notify_one();
 
-        newTask->state->cv.wait(lockTask, [&] { return taskState.done; });
-    }
-}
-
-void MainThread::enqueuePriorityTaskAndWait(uint32_t clientId, const Task &task)
-{
-    thread_local TaskState taskState;
-    taskState.done = false;
-    std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
-    newTask->clientId = clientId;
-    newTask->task = std::move(task);
-    newTask->state = &taskState;
-
-    {
-        std::unique_lock<std::mutex> lockTask(taskState.mutex);
+        if (priority)
         {
-            std::unique_lock<std::mutex> lockQueue(m_taskQueueMutex);
             m_taskQueue.push_front(newTask);
         }
-        m_taskQueueCv.notify_one();
-
-        newTask->state->cv.wait(lockTask, [&] { return taskState.done; });
+        else
+        {
+            m_taskQueue.push_back(newTask);
+        }
     }
+
+    m_taskQueueCv.notify_one();
+
+    // Wait for task completion with timeout
+    std::unique_lock<std::mutex> taskLock(newTask->mutex);
+
+    bool completed =
+        newTask->cv.wait_for(taskLock, m_taskTimeout, [&newTask]() { return newTask->status != TaskStatus::Pending; });
+
+    if (!completed)
+    {
+        // Timeout: task is still pending, cancel it
+        if (newTask->status == TaskStatus::Pending)
+        {
+            RIALTO_SERVER_LOG_ERROR("Task timeout after %lld ms, cancelling", m_taskTimeout.count());
+            newTask->status = TaskStatus::Cancelled;
+            return false;
+        }
+    }
+
+    // Task has reached a terminal state
+    if (newTask->status == TaskStatus::Done)
+    {
+        return true;
+    }
+
+    if (newTask->status == TaskStatus::Failed)
+    {
+        RIALTO_SERVER_LOG_ERROR("Task failed");
+        if (newTask->exception)
+        {
+            try
+            {
+                std::rethrow_exception(newTask->exception);
+            }
+            catch (const std::exception &e)
+            {
+                RIALTO_SERVER_LOG_ERROR("Task exception: %s", e.what());
+            }
+        }
+        return false;
+    }
+
+    // Cancelled or other terminal state
+    RIALTO_SERVER_LOG_DEBUG("Task did not complete successfully, status: %d", static_cast<int>(newTask->status));
+    return false;
 }
 } // namespace firebolt::rialto::server
+
