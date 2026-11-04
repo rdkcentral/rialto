@@ -31,8 +31,9 @@ TEST_F(SessionServerAppTests, ShouldConfigurePreloadedSut)
 {
     createPreloadedAppSut();
     willConfigurePreloadedServer();
-    EXPECT_TRUE(triggerConfigure(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName}));
+    EXPECT_TRUE(triggerConfigure(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName, 250}));
     EXPECT_EQ(kClientDisplayName, m_sut->getClientDisplayName());
+    EXPECT_EQ(250u, m_sut->getPlaybackInfoTimerMs());
 }
 
 TEST_F(SessionServerAppTests, ShouldFailConfigurePreloadedSutTwice)
@@ -52,9 +53,10 @@ TEST_F(SessionServerAppTests, ShouldFailToConfigureSutForApp)
 TEST_F(SessionServerAppTests, ShouldCreateSutForAppWithEmptyClientSocketName)
 {
     const std::string kExpectedPrefix{"/tmp/rialto-"};
-    createAppSut(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName});
+    createAppSut(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName, 250});
     EXPECT_EQ(kExpectedPrefix, m_sut->getSessionManagementSocketName().substr(0, kExpectedPrefix.size()));
     EXPECT_EQ(kClientDisplayName, m_sut->getClientDisplayName());
+    EXPECT_EQ(250u, m_sut->getPlaybackInfoTimerMs());
 }
 
 TEST_F(SessionServerAppTests, ShouldCreateSutForAppWithClientSocketName)

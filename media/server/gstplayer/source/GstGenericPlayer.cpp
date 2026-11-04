@@ -2313,7 +2313,19 @@ void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
 
 void GstGenericPlayer::startNotifyPlaybackInfoTimer()
 {
-    static constexpr std::chrono::milliseconds kPlaybackInfoTimerMs{32};
+    // Read the configured PlaybackInfo interval from the environment. Invalid or missing values use 32ms.
+    std::chrono::milliseconds playbackInfoTimerMs{32};
+    if (const auto kEnvValue = std::getenv("RIALTO_PLAYBACK_INFO_TIMER_MS"))
+    {
+        char *endPtr = nullptr;
+        errno = 0;
+        const auto parsed = std::strtol(kEnvValue, &endPtr, 10);
+        if (endPtr != kEnvValue && *endPtr == '\0' && errno == 0 && parsed > 0)
+        {
+            playbackInfoTimerMs = std::chrono::milliseconds{parsed};
+        }
+    }
+
     if (m_playbackInfoTimer && m_playbackInfoTimer->isActive())
     {
         return;
@@ -2323,7 +2335,7 @@ void GstGenericPlayer::startNotifyPlaybackInfoTimer()
 
     m_playbackInfoTimer =
         m_timerFactory
-            ->createTimer(kPlaybackInfoTimerMs, [this]() { notifyPlaybackInfo(); }, firebolt::rialto::common::TimerType::PERIODIC);
+            ->createTimer(playbackInfoTimerMs, [this]() { notifyPlaybackInfo(); }, firebolt::rialto::common::TimerType::PERIODIC);
 }
 
 void GstGenericPlayer::stopNotifyPlaybackInfoTimer()

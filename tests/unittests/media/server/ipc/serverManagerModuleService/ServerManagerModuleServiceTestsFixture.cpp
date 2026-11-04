@@ -19,6 +19,7 @@
 
 #include "ServerManagerModuleServiceTestsFixture.h"
 #include "ServerManagerModuleService.h"
+#include <optional>
 #include <string>
 
 using testing::_;
@@ -149,7 +150,8 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToPing()
     EXPECT_CALL(m_sessionServerManagerMock, ping(kPingId, _)).WillOnce(Return(false));
 }
 
-void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state)
+void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state,
+                                                           std::optional<uint32_t> playbackInfoTimerMs)
 {
     rialto::SetConfigurationRequest request;
     rialto::SetConfigurationResponse response;
@@ -169,6 +171,10 @@ void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialt
     request.set_socketowner(kSocketOwner);
     request.set_socketgroup(kSocketGroup);
     request.set_appname(kAppId);
+    if (playbackInfoTimerMs.has_value())
+    {
+        request.set_playbackinfotimerms(playbackInfoTimerMs.value());
+    }
 
     m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

@@ -29,6 +29,7 @@
 #include "SessionServerManagerMock.h"
 #include <gtest/gtest.h>
 #include <memory>
+#include <optional>
 
 using testing::StrictMock;
 
@@ -56,7 +57,8 @@ public:
     void sessionServerManagerWillPing();
     void sessionServerManagerWillFailToPing();
 
-    void sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state);
+    void sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state,
+                              std::optional<uint32_t> playbackInfoTimerMs = std::nullopt);
     void sendSetConfigurationWithFd(const firebolt::rialto::common::SessionServerState &state);
     void sendSetState(const firebolt::rialto::common::SessionServerState &state);
     void sendSetLogLevels();
