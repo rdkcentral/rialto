@@ -16,6 +16,10 @@ do not increment the dropped count. If sink stats are unavailable, Rialto logs a
 and dropped counts (zero until stats are first available).
 
 Rialto sets the sink's `metrics-session-id` and `metrics-source-id` properties from the active media pipeline identity.
+The session ID is stored during pipeline load and the source ID during video source attachment. If the sink does not
+yet exist, property assignment is deferred until the video sink's `element-setup` callback. Auto-video-sink children
+are configured directly when added, including replacement children. If the video sink already exists when an ID is
+assigned, its supported property is set immediately.
 The Westeros message does not carry cumulative frame-counter fields; only corruption totals are accumulated by
 Rialto from occurrence messages. Sink stats replace the cached rendered and dropped totals without changing the
 corruption count or the last metric PTS.

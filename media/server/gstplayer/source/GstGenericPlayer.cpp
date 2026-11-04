@@ -537,6 +537,11 @@ void GstGenericPlayer::setupSource(GstElement *pipeline, GstElement *source, Gst
 void GstGenericPlayer::setupElement(GstElement *pipeline, GstElement *element, GstGenericPlayer *self)
 {
     RIALTO_SERVER_LOG_DEBUG("Element %s added to the pipeline", GST_ELEMENT_NAME(element));
+    if ((self->m_metricSessionId.load() >= 0 || self->m_metricSourceId.load() >= 0) &&
+        isVideoSink(*self->m_gstWrapper, element))
+    {
+        self->setMetricProperties(element);
+    }
     self->m_gstWrapper->gstObjectRef(element);
     if (self->m_workerThread)
     {
@@ -3228,10 +3233,17 @@ void GstGenericPlayer::setMetricProperty(const char *propertyName, int32_t value
     GstElement *sink{getSink(MediaSourceType::VIDEO)};
     if (!sink)
     {
-        RIALTO_SERVER_LOG_WARN("Cannot set playback metrics property '%s' - video sink is unavailable", propertyName);
+        RIALTO_SERVER_LOG_DEBUG("Deferring playback metrics property '%s' until the video sink is created",
+                                propertyName);
         return;
     }
 
+    setMetricProperty(sink, propertyName, value);
+    m_gstWrapper->gstObjectUnref(sink);
+}
+
+void GstGenericPlayer::setMetricProperty(GstElement *sink, const char *propertyName, int32_t value)
+{
     if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), propertyName))
     {
         m_glibWrapper->gObjectSet(sink, propertyName, static_cast<guint>(value), nullptr);
@@ -3243,7 +3255,22 @@ void GstGenericPlayer::setMetricProperty(const char *propertyName, int32_t value
         RIALTO_SERVER_LOG_DEBUG("Video sink '%s' does not support playback metrics property '%s'",
                                 GST_ELEMENT_NAME(sink), propertyName);
     }
-    m_gstWrapper->gstObjectUnref(sink);
+}
+
+void GstGenericPlayer::setMetricProperties(GstElement *sink)
+{
+    const int32_t sessionId = m_metricSessionId.load();
+    const int32_t sourceId = m_metricSourceId.load();
+    RIALTO_SERVER_LOG_DEBUG("Applying stored playback metrics identity to created sink '%s': sessionId: %d, sourceId: %d",
+                            GST_ELEMENT_NAME(sink), sessionId, sourceId);
+    if (sessionId >= 0)
+    {
+        setMetricProperty(sink, "metrics-session-id", sessionId);
+    }
+    if (sourceId >= 0)
+    {
+        setMetricProperty(sink, "metrics-source-id", sourceId);
+    }
 }
 
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
@@ -3323,16 +3350,7 @@ void GstGenericPlayer::addAutoVideoSinkChild(GObject *object)
             RIALTO_SERVER_LOG_MIL("AutoVideoSink child is been overwritten");
         }
         m_context.autoVideoChildSink = GST_ELEMENT(object);
-        const int32_t sessionId = m_metricSessionId.load();
-        const int32_t sourceId = m_metricSourceId.load();
-        if (sessionId >= 0)
-        {
-            setMetricProperty("metrics-session-id", sessionId);
-        }
-        if (sourceId >= 0)
-        {
-            setMetricProperty("metrics-source-id", sourceId);
-        }
+        setMetricProperties(GST_ELEMENT(object));
     }
 }
 
