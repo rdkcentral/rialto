@@ -57,12 +57,15 @@ target_include_directories (
 )
 target_link_libraries (
         RialtoServerManager
+        
         PRIVATE
         RialtoLogging
         RialtoServerManagerCommon
         RialtoServerManagerIpc
         RialtoWrappers
         Threads::Threads
+
+        RialtoLogging
 )
 
 if( RIALTO_ENABLE_CONFIG_FILE )

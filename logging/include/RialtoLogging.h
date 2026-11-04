@@ -20,6 +20,8 @@
 #ifndef FIREBOLT_RIALTO_LOGGING_RIALTO_LOGGING_H_
 #define FIREBOLT_RIALTO_LOGGING_RIALTO_LOGGING_H_
 
+#include "RialtoTelemetry.h"
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -57,6 +59,7 @@ extern "C"
         RIALTO_COMPONENT_IPC,
         RIALTO_COMPONENT_SERVER_MANAGER,
         RIALTO_COMPONENT_COMMON,
+        RIALTO_COMPONENT_TELEMETRY,
         RIALTO_COMPONENT_EXTERNAL, // External component, like e.g. GStreamer. Keep it as last component.
         RIALTO_COMPONENT_LAST,
     };

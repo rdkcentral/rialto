@@ -87,6 +87,7 @@ target_link_libraries(
 
         Threads::Threads
 
+        RialtoLogging
         )
 
 include( GNUInstallDirs )
