@@ -720,7 +720,9 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         }
 
         m_activeRequests->erase(needDataRequestId);
-        scheduleNotifyNeedMediaData(mediaSourceType);
+        RIALTO_SERVER_LOG_DEBUG("Sample delivery: type=%s requestId=%u status=%s noAvailableCount=%u",
+                    common::convertMediaSourceType(mediaSourceType), needDataRequestId, toString(status), counter);
+	scheduleNotifyNeedMediaData(mediaSourceType);
         return true;
     }
     else
@@ -733,7 +735,14 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     try
     {
         const IMediaPipeline::MediaSegmentVector &kSegments = m_activeRequests->getSegments(needDataRequestId);
-        m_gstPlayer->attachSamples(kSegments);
+                RIALTO_SERVER_LOG_DEBUG("Sample delivery: type=%s requestId=%u status=%s segments=%zu",
+                    common::convertMediaSourceType(mediaSourceType), needDataRequestId, toString(status), kSegments.size());
+        RIALTO_SERVER_LOG_DEBUG("Sample attach begin: type=%s requestId=%u segments=%zu",
+                    common::convertMediaSourceType(mediaSourceType), needDataRequestId, kSegments.size());
+	m_gstPlayer->attachSamples(kSegments);
+	        RIALTO_SERVER_LOG_DEBUG("Sample attach complete: type=%s requestId=%u segments=%zu",
+                    common::convertMediaSourceType(mediaSourceType), needDataRequestId, kSegments.size());
+
     }
     catch (const std::runtime_error &e)
     {
@@ -799,7 +808,9 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
                                    common::convertMediaSourceType(mediaSourceType), needDataRequestId);
             counter = 0;
         }
-        scheduleNotifyNeedMediaData(mediaSourceType);
+        RIALTO_SERVER_LOG_DEBUG("Sample delivery: type=%s requestId=%u status=%s numFrames=%u noAvailableCount=%u",
+                                common::convertMediaSourceType(mediaSourceType), needDataRequestId, toString(status), numFrames, counter);
+	scheduleNotifyNeedMediaData(mediaSourceType);
         return true;
     }
     else
@@ -834,7 +845,10 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     {
         const bool kIsBufferFull = kMaxNumFrames == numFrames || status == MediaSourceStatus::NO_SPACE_FOR_SAMPLES ||
                                    status == MediaSourceStatus::EOS;
-        std::shared_ptr<IDataReader> dataReader =
+       RIALTO_SERVER_LOG_DEBUG("Sample delivery: type=%s requestId=%u status=%s numFrames=%u maxFrames=%u bufferFull=%d regionOffset=%u",
+                                common::convertMediaSourceType(mediaSourceType), needDataRequestId, toString(status), numFrames,
+                                kMaxNumFrames, kIsBufferFull, regionOffset);
+	std::shared_ptr<IDataReader> dataReader =
             m_dataReaderFactory->createDataReader(mediaSourceType, buffer, regionOffset, numFrames, kIsBufferFull);
         if (!dataReader)
         {
@@ -843,7 +857,12 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
             notifyPlaybackState(PlaybackState::FAILURE);
             return false;
         }
-        m_gstPlayer->attachSamples(dataReader);
+           RIALTO_SERVER_LOG_DEBUG("Sample attach begin: type=%s requestId=%u numFrames=%u",
+                    common::convertMediaSourceType(mediaSourceType), needDataRequestId, numFrames);
+ 
+    	m_gstPlayer->attachSamples(dataReader);
+         RIALTO_SERVER_LOG_DEBUG("Sample attach complete: type=%s requestId=%u numFrames=%u",
+                    common::convertMediaSourceType(mediaSourceType), needDataRequestId, numFrames);
     }
     if (status == MediaSourceStatus::EOS)
     {
@@ -1529,6 +1548,11 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType me
     }
     NeedMediaData event{m_mediaPipelineClient, *m_activeRequests,   *m_shmBuffer,          m_sessionId,
                         mediaSourceType,       kSourceIter->second, m_currentPlaybackState};
+    
+    RIALTO_SERVER_LOG_DEBUG("NeedMediaData send: type=%s sourceId=%d playbackState=%d",
+                            common::convertMediaSourceType(mediaSourceType), kSourceIter->second,
+                            static_cast<int>(m_currentPlaybackState));
+    
     if (!event.send())
     {
         RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed for %s",
@@ -1762,10 +1786,13 @@ void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType me
                                 common::convertMediaSourceType(mediaSourceType));
         return;
     }
-
+   const auto kDelay = getNeedMediaDataTimeout(mediaSourceType);
+    RIALTO_SERVER_LOG_DEBUG("NeedMediaData schedule: type=%s delayMs=%lld",
+                            common::convertMediaSourceType(mediaSourceType), static_cast<long long>(kDelay.count()));
+ 
     m_needMediaDataTimers[mediaSourceType] =
         m_timerFactory
-            ->createTimer(getNeedMediaDataTimeout(mediaSourceType),
+            ->createTimer(kDelay,
                           [this, mediaSourceType]()
                           {
                               m_mainThread
