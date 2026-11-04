@@ -280,6 +280,89 @@ TEST_F(GstGenericPlayerTest, shouldSetupElement)
     triggerSetupElement(&element);
 }
 
+TEST_F(GstGenericPlayerTest, shouldSetMetricSessionIdWhenVideoSinkIsCreated)
+{
+    constexpr int32_t kSessionId{7};
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
+        .WillOnce(Invoke([](gpointer, const gchar *, void *value)
+                         { *static_cast<GstElement **>(value) = nullptr; }));
+    m_sut->setMetricSessionId(kSessionId);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_element)).WillOnce(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstElementFactoryListIsType(m_factory, GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("metrics-session-id")))
+        .WillOnce(Return(&m_prop));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetUintStub(m_element, StrEq("metrics-session-id"), guint{kSessionId}));
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element));
+    EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, m_element)).WillOnce(Return(ByMove(std::move(task))));
+
+    triggerSetupElement(m_element);
+}
+
+TEST_F(GstGenericPlayerTest, shouldSetMetricSessionIdOnAlreadyCreatedVideoSink)
+{
+    constexpr int32_t kSessionId{7};
+    expectGetAVSink(kVideoSinkStr, m_element);
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("metrics-session-id")))
+        .WillOnce(Return(&m_prop));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetUintStub(m_element, StrEq("metrics-session-id"), guint{kSessionId}));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element));
+
+    m_sut->setMetricSessionId(kSessionId);
+}
+
+TEST_F(GstGenericPlayerTest, shouldSetMetricSessionIdDirectlyOnAutoVideoSinkChildren)
+{
+    constexpr int32_t kSessionId{7};
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
+        .WillOnce(Invoke([](gpointer, const gchar *, void *value)
+                         { *static_cast<GstElement **>(value) = nullptr; }));
+    m_sut->setMetricSessionId(kSessionId);
+    auto *player = dynamic_cast<IGstGenericPlayerPrivate *>(m_sut.get());
+    ASSERT_NE(nullptr, player);
+    GST_OBJECT_FLAG_SET(m_element, GST_ELEMENT_FLAG_SINK);
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("metrics-session-id")))
+        .Times(2)
+        .WillRepeatedly(Return(&m_prop));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetUintStub(m_element, StrEq("metrics-session-id"), guint{kSessionId}));
+    player->addAutoVideoSinkChild(G_OBJECT(m_element));
+
+    GstElement *replacement = fakeElement();
+    ASSERT_NE(nullptr, replacement);
+    GST_OBJECT_FLAG_SET(replacement, GST_ELEMENT_FLAG_SINK);
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetUintStub(replacement, StrEq("metrics-session-id"), guint{kSessionId}));
+    player->addAutoVideoSinkChild(G_OBJECT(replacement));
+    player->removeAutoVideoSinkChild(G_OBJECT(replacement));
+    gst_object_unref(replacement);
+}
+
+TEST_F(GstGenericPlayerTest, shouldSkipMetricSessionIdOnUnsupportedVideoSink)
+{
+    constexpr int32_t kSessionId{7};
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
+        .WillOnce(Invoke([](gpointer, const gchar *, void *value)
+                         { *static_cast<GstElement **>(value) = nullptr; }));
+    m_sut->setMetricSessionId(kSessionId);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_element)).WillOnce(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstElementFactoryListIsType(m_factory, GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("metrics-session-id")))
+        .WillOnce(Return(nullptr));
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element));
+    EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, m_element)).WillOnce(Return(ByMove(std::move(task))));
+
+    triggerSetupElement(m_element);
+}
+
 TEST_F(GstGenericPlayerTest, shouldAddDeepElement)
 {
     GstElement element{};
