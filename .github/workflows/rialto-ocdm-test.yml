@@ -23,6 +23,9 @@ on:
 
   workflow_dispatch:
 
+env:
+  RIALTO_OCDM_FALLBACK_BRANCH: release/v0.10.0
+
 jobs:
   build-and-test:
     runs-on: ubuntu-24.04
@@ -32,7 +35,7 @@ jobs:
         id: check-branch
         shell: sh +e {0}
         run: |
-          branch="${{ github.base_ref }}"
+          branch="$RIALTO_OCDM_FALLBACK_BRANCH"
           git ls-remote --exit-code --heads "https://github.com/rdkcentral/rialto-ocdm.git" ${{ github.event.pull_request.head.ref }} > /dev/null
           if [ $? -eq 0 ]; then
             branch="${{ github.event.pull_request.head.ref }}"
@@ -54,7 +57,7 @@ jobs:
       - name: Build gstreamer library
         run: |
           sudo apt-get update
-          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base 
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base
 
       - name: Run tests
         run: |
@@ -69,4 +72,3 @@ jobs:
           path: |
             rialto-ocdm/gtest_result.log
             rialto-ocdm/build/*gtest_result.xml
-           
