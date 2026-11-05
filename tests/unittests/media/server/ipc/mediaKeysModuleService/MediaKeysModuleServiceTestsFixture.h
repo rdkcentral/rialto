@@ -86,6 +86,7 @@ public:
 
     void mediaClientWillSendLicenseRequestEvent();
     void mediaClientWillSendLicenseRenewalEvent();
+    void mediaClientWillSendLicenseReleaseEvent();
     void mediaClientWillSendKeyStatusesChangedEvent();
 
     void sendClientConnected();
@@ -135,6 +136,7 @@ public:
 
     void sendLicenseRequestEvent();
     void sendLicenseRenewalEvent();
+    void sendLicenseReleaseEvent();
     void sendKeyStatusesChangedEvent();
 
     void expectInvalidControllerRequestFailure();

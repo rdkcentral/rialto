@@ -117,6 +117,12 @@ void MediaKeySessionTestBase::generateRequestPlayreadyWithTwoCalls()
                                                  firebolt::rialto::LimitedDurationLicense::DISABLED));
 }
 
+void MediaKeySessionTestBase::removeKeySession()
+{
+    EXPECT_CALL(*m_ocdmSessionMock, remove());
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->removeKeySession());
+}
+
 void MediaKeySessionTestBase::mainThreadWillEnqueueTask()
 {
     EXPECT_CALL(*m_mainThreadMock, enqueueTask(m_kMainThreadClientId, _))

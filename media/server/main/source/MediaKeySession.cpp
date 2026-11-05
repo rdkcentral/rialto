@@ -66,8 +66,8 @@ MediaKeySession::MediaKeySession(const std::string &keySystem, int32_t keySessio
                                  std::weak_ptr<IMediaKeysClient> client,
                                  const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
     : m_kKeySystem(keySystem), m_kKeySessionId(keySessionId), m_kSessionType(sessionType), m_mediaKeysClient(client),
-      m_isSessionConstructed(false), m_isSessionClosed(false), m_licenseRequested(false), m_ongoingOcdmOperation(false),
-      m_ocdmError(false), m_decryptErrorLogged(false)
+      m_isSessionConstructed(false), m_isSessionClosed(false), m_licenseRequested(false), m_licenseRemoved(false),
+      m_ongoingOcdmOperation(false), m_ocdmError(false), m_decryptErrorLogged(false)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -331,6 +331,11 @@ MediaKeyErrorStatus MediaKeySession::removeKeySession()
         status = MediaKeyErrorStatus::FAIL;
     }
 
+    if (MediaKeyErrorStatus::OK == status)
+    {
+        m_licenseRemoved = true;
+    }
+
     return status;
 }
 
@@ -441,6 +446,11 @@ void MediaKeySession::onProcessChallenge(const char url[], const uint8_t challen
             {
                 client->onLicenseRequest(m_kKeySessionId, challengeVec, urlStr);
                 m_licenseRequested = false;
+            }
+            else if (m_licenseRemoved)
+            {
+                client->onLicenseRelease(m_kKeySessionId, challengeVec, urlStr);
+                m_licenseRemoved = false;
             }
             else
             {

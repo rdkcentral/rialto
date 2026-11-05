@@ -31,9 +31,7 @@ protected:
  */
 TEST_F(RialtoServerMediaKeySessionRemoveKeySessionTest, Success)
 {
-    EXPECT_CALL(*m_ocdmSessionMock, remove()).WillOnce(Return(MediaKeyErrorStatus::OK));
-
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->removeKeySession());
+    removeKeySession();
 }
 
 /**

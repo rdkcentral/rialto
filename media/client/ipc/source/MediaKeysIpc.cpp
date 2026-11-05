@@ -231,6 +231,13 @@ bool MediaKeysIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcCh
         return false;
     m_eventTags.push_back(eventTag);
 
+    eventTag = ipcChannel->subscribe<firebolt::rialto::LicenseReleaseEvent>(
+        [this](const std::shared_ptr<firebolt::rialto::LicenseReleaseEvent> &event)
+        { m_eventThread->add(&MediaKeysIpc::onLicenseRelease, this, event); });
+    if (eventTag < 0)
+        return false;
+    m_eventTags.push_back(eventTag);
+
     eventTag = ipcChannel->subscribe<firebolt::rialto::KeyStatusesChangedEvent>(
         [this](const std::shared_ptr<firebolt::rialto::KeyStatusesChangedEvent> &event)
         { m_eventThread->add(&MediaKeysIpc::onKeyStatusesChanged, this, event); });
@@ -889,6 +896,19 @@ void MediaKeysIpc::onLicenseRenewal(const std::shared_ptr<firebolt::rialto::Lice
         std::vector<unsigned char> messageVector = std::vector<unsigned char>{event->license_renewal_message().begin(),
                                                                               event->license_renewal_message().end()};
         mediaKeysIpcClient->onLicenseRenewal(event->key_session_id(), messageVector);
+    }
+}
+
+void MediaKeysIpc::onLicenseRelease(const std::shared_ptr<firebolt::rialto::LicenseReleaseEvent> &event)
+{
+    std::shared_ptr<IMediaKeysClient> mediaKeysIpcClient = m_mediaKeysIpcClient.lock();
+
+    /* Ignore event if not for this session or no client */
+    if ((event->media_keys_handle() == m_mediaKeysHandle) && (mediaKeysIpcClient))
+    {
+        std::vector<unsigned char> messageVector = std::vector<unsigned char>{event->license_release_message().begin(),
+                                                                              event->license_release_message().end()};
+        mediaKeysIpcClient->onLicenseRelease(event->key_session_id(), messageVector, event->url());
     }
 }
 
