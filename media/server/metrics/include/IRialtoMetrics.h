@@ -23,6 +23,7 @@ struct ParsedMetricMessage
     std::uint32_t type{0};
     std::uint32_t phase{0};
     int32_t sourceId{0};
+    std::uint64_t ptsNs{0};
     FrameCounters counters;
 };
 

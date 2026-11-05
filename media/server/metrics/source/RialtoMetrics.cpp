@@ -1,10 +1,22 @@
 #include "RialtoMetrics.h"
 #include "RialtoLogging.h"
+#include <algorithm>
+#include <chrono>
 #include <gst/gst.h>
 #include <limits>
 
 namespace firebolt::rialto::server
 {
+namespace
+{
+std::uint64_t getMonotonicTimestampNs()
+{
+	return static_cast<std::uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
+	                                      std::chrono::steady_clock::now().time_since_epoch())
+	                                      .count());
+}
+} // namespace
+
 const char *metricTypeToString(std::uint32_t type)
 {
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "metricTypeToString requested for type: %u",
@@ -94,17 +106,17 @@ std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
 
 			if (renderedFrames)
 			{
-				counters.rendered = *renderedFrames;
+				counters.rendered = std::max(counters.rendered, *renderedFrames);
 			}
 			if (droppedFrames)
 			{
-				counters.dropped = *droppedFrames;
+				counters.dropped = std::max(counters.dropped, *droppedFrames);
 			}
-			if (phase == 0 && metricType == 2)
+			if (phase == 0 && metricType == 2 && counters.corrupted < std::numeric_limits<std::uint64_t>::max())
 			{
 				++counters.corrupted;
 			}
-			counters.timestamp = static_cast<std::uint64_t>(ptsNs);
+			counters.timestamp = getMonotonicTimestampNs();
 			m_counterCache[key] = counters;
 			validSession = true;
 		}
@@ -118,14 +130,14 @@ std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
 	}
 
 	ParsedMetricMessage parsedMessage{static_cast<int32_t>(sessionId), metricType, phase,
-									  static_cast<int32_t>(sourceId), counters};
+									  static_cast<int32_t>(sourceId), static_cast<std::uint64_t>(ptsNs), counters};
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
 					 "RialtoMetrics::onMetricMessage parsed sessionId: %d, sourceId: %d, type: %u, phase: %u, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu",
 					 parsedMessage.sessionId, parsedMessage.sourceId, metricType, phase,
 					 static_cast<unsigned long long>(counters.rendered),
 					 static_cast<unsigned long long>(counters.dropped),
 					 static_cast<unsigned long long>(counters.corrupted),
-					 static_cast<unsigned long long>(counters.timestamp));
+					 static_cast<unsigned long long>(parsedMessage.ptsNs));
 	return parsedMessage;
 }
 
@@ -138,7 +150,11 @@ void RialtoMetrics::updateFrameCounters(int32_t sessionId, int32_t sourceId, con
 					 static_cast<unsigned long long>(counters.corrupted),
 					 static_cast<unsigned long long>(counters.timestamp));
 	std::lock_guard<std::mutex> lock{m_counterMutex};
-	m_counterCache[{sessionId, sourceId}] = counters;
+	auto &current = m_counterCache[{sessionId, sourceId}];
+	current.rendered = std::max(current.rendered, counters.rendered);
+	current.dropped = std::max(current.dropped, counters.dropped);
+	current.corrupted = std::max(current.corrupted, counters.corrupted);
+	current.timestamp = counters.timestamp;
 }
 
 void RialtoMetrics::updateSinkStats(int32_t sessionId, int32_t sourceId, std::uint64_t renderedFrames,
@@ -150,8 +166,9 @@ void RialtoMetrics::updateSinkStats(int32_t sessionId, int32_t sourceId, std::ui
 					 static_cast<unsigned long long>(droppedFrames));
 	std::lock_guard<std::mutex> lock{m_counterMutex};
 	auto &counters = m_counterCache[{sessionId, sourceId}];
-	counters.rendered = renderedFrames;
-	counters.dropped = droppedFrames;
+	counters.rendered = std::max(counters.rendered, renderedFrames);
+	counters.dropped = std::max(counters.dropped, droppedFrames);
+	counters.timestamp = getMonotonicTimestampNs();
 }
 
 bool RialtoMetrics::getFrameCounters(int32_t sessionId, int32_t sourceId, FrameCounters &counters) const

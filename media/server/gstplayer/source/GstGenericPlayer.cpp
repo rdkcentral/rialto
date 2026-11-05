@@ -3314,7 +3314,7 @@ void GstGenericPlayer::handleMetricMessage(GstMessage *message)
         metric->sourceId, metricType, static_cast<unsigned long long>(metric->counters.rendered),
         static_cast<unsigned long long>(metric->counters.dropped),
         static_cast<unsigned long long>(metric->counters.corrupted),
-        static_cast<unsigned long long>(metric->counters.timestamp));
+        static_cast<unsigned long long>(metric->ptsNs));
     if (!m_gstPlayerClient)
     {
         RIALTO_SERVER_LOG_WARN("Cannot forward playback metric - player client is unavailable");
@@ -3324,7 +3324,7 @@ void GstGenericPlayer::handleMetricMessage(GstMessage *message)
     RIALTO_SERVER_LOG_DEBUG("Forwarding playback metric event for sourceId: %d, phase: %u", metric->sourceId,
                             metric->phase);
     m_gstPlayerClient->notifyMetricEvent(metric->sourceId, metric->counters.rendered, metric->counters.dropped,
-                                         metric->counters.corrupted, metric->counters.timestamp, metricType,
+                                         metric->counters.corrupted, metric->ptsNs, metricType,
                                          metric->phase);
 }
 
