@@ -2,7 +2,7 @@
 
 ## Overview
 
-Playback metrics use two IPC flows: a synchronous snapshot query and an asynchronous event notification. Both are keyed by the media pipeline session and source IDs. The IPC layer passes counter values and timestamps through without aggregation.
+Playback metrics use two IPC flows: a synchronous snapshot query and an asynchronous event notification. Both are keyed by the media pipeline session and source IDs. Query responses contain a server monotonic timestamp; push events preserve the producer PTS.
 
 ## Westeros Bus Messages
 
@@ -33,9 +33,9 @@ corruption count or the last metric PTS.
 | `rendered_frames` | `uint64` | Rendered frame count |
 | `dropped_frames` | `uint64` | Dropped frame count |
 | `corrupted_frames` | `uint64` | Corrupted frame count |
-| `timestamp` | `uint64` | Presentation timestamp (PTS) associated with the cached snapshot, in nanoseconds |
+| `timestamp` | `uint64` | Server monotonic time when the cached snapshot was last updated, in nanoseconds |
 
-The timestamp is taken from the metric message's `pts_ns` value and returned unchanged; the service does not convert its units. An unknown session or source, or an unavailable metrics cache, fails the RPC.
+The query timestamp is sampled from the server's monotonic clock when metric data or sink stats update the cache. It is not the producer PTS. An unknown session or non-video source, or an unavailable metrics cache, fails the RPC.
 
 The client IPC stub is:
 

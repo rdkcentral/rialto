@@ -558,6 +558,20 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersSucc
     EXPECT_EQ(1234U, timestamp);
 }
 
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersFailsForAudioSource)
+{
+    loadGstPlayer();
+    const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::AUDIO, "audio/x-opus");
+    mainThreadWillEnqueueTaskAndWait();
+
+    uint64_t renderedFrames{0};
+    uint64_t droppedFrames{0};
+    uint64_t corruptedFrames{0};
+    uint64_t timestamp{0};
+    EXPECT_FALSE(m_mediaPipeline->getFrameCounters(m_kSessionId, sourceId, renderedFrames, droppedFrames,
+                                                   corruptedFrames, timestamp));
+}
+
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersRefreshesSinkStats)
 {
     loadGstPlayer();
@@ -584,14 +598,14 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersRefr
     EXPECT_EQ(4000U, renderedFrames);
     EXPECT_EQ(120U, droppedFrames);
     EXPECT_EQ(7U, corruptedFrames);
-    EXPECT_EQ(1234U, timestamp);
+    EXPECT_GT(timestamp, 1234U);
 
     FrameCounters counters;
     ASSERT_TRUE(metrics->getFrameCounters(m_kSessionId, sourceId, counters));
     EXPECT_EQ(4000U, counters.rendered);
     EXPECT_EQ(120U, counters.dropped);
     EXPECT_EQ(7U, counters.corrupted);
-    EXPECT_EQ(1234U, counters.timestamp);
+    EXPECT_GT(counters.timestamp, 1234U);
 }
 
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersReadsSinkStatsWithoutBusMessages)
@@ -619,7 +633,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersRead
     EXPECT_EQ(101U, renderedFrames);
     EXPECT_EQ(7U, droppedFrames);
     EXPECT_EQ(0U, corruptedFrames);
-    EXPECT_EQ(0U, timestamp);
+    EXPECT_GT(timestamp, 0U);
 }
 
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersFailsForUnknownSource)
