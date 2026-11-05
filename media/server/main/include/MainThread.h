@@ -76,13 +76,20 @@ private:
     /**
      * @brief Information of a task.
      */
+    struct TaskState
+    {
+        std::mutex mutex;
+        std::condition_variable cv;
+        bool done;
+    };
     struct TaskInfo
     {
-        bool done{false};                            /**< A flag indicating whether the task has completed. */
-        uint32_t clientId;                           /**< The id of the client creating the task. */
-        Task task;                                   /**< The task to execute. */
-        std::unique_ptr<std::mutex> mutex;           /**< Mutex for the task condition variable. */
-        std::unique_ptr<std::condition_variable> cv; /**< The condition variable of the task. */
+        bool done{false};  /**< A flag indicating whether the task has completed. */
+        uint32_t clientId; /**< The id of the client creating the task. */
+        Task task;         /**< The task to execute. */
+        TaskState *state;  /**< The states maintained for task completion. */
+
+        TaskInfo() : clientId(0), state(nullptr) {}
     };
 
     /**

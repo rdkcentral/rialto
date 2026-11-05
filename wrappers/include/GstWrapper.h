@@ -277,6 +277,10 @@ public:
         return gst_bus_timed_pop_filtered(bus, timeout, types);
     }
 
+    GSource *gstBusCreateWatch(GstBus *bus) override { return gst_bus_create_watch(bus); }
+
+    GstMessage *gstMessageRef(GstMessage *msg) override { return gst_message_ref(msg); }
+
     void gstDebugBinToDotFileWithTs(GstBin *bin, GstDebugGraphDetails details, const gchar *file_name) override
     {
         GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS(bin, details, file_name);
@@ -285,6 +289,11 @@ public:
     GstElementFactory *gstElementGetFactory(GstElement *element) const override
     {
         return gst_element_get_factory(element);
+    }
+
+    const gchar *gstPluginFeatureGetName(GstElementFactory *factory) const override
+    {
+        return gst_plugin_feature_get_name(factory);
     }
 
     gboolean gstElementFactoryListIsType(GstElementFactory *factory, GstElementFactoryListType type) const override

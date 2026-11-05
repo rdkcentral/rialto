@@ -29,6 +29,7 @@
 
 #include "RialtoServerLogging.h"
 #include "SharedMemoryBuffer.h"
+#include "ShmUtils.h"
 #include "TypeConverters.h"
 
 #if !defined(SYS_memfd_create)
@@ -105,6 +106,39 @@ const char *toString(const firebolt::rialto::server::ISharedMemoryBuffer::MediaP
     }
     }
     return "UNKNOWN";
+}
+
+void releasePages(std::uint8_t *data, std::uint32_t length)
+{
+    const auto kPageSize{sysconf(_SC_PAGESIZE)};
+    if (kPageSize <= 0)
+    {
+        RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to get the page size, shm pages not released");
+        return;
+    }
+    const std::uintptr_t kPage{static_cast<std::uintptr_t>(kPageSize)};
+    const std::uintptr_t kStart{reinterpret_cast<std::uintptr_t>(data)};
+    const std::uintptr_t kBegin{(kStart + kPage - 1) / kPage * kPage};
+    const std::uintptr_t kEnd{(kStart + length) / kPage * kPage};
+    if (kEnd <= kBegin)
+    {
+        return;
+    }
+    // coverity[INTEGER_OVERFLOW:FALSE]
+    if (madvise(reinterpret_cast<void *>(kBegin), kEnd - kBegin, MADV_DONTNEED) != 0)
+    {
+        RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to release shm pages");
+    }
+}
+
+// Client frame writers re-zero the payload (V2) or only use length-addressed payload (V1), so only the header needs a reset.
+size_t getClearLen(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, uint32_t regionLen)
+{
+    if (firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC == playbackType)
+    {
+        return std::min(regionLen, firebolt::rialto::server::getMaxMetadataBytes());
+    }
+    return regionLen;
 }
 } // namespace
 
@@ -226,6 +260,12 @@ bool SharedMemoryBuffer::unmapPartition(MediaPlaybackType playbackType, int id)
         RIALTO_SERVER_LOG_WARN("Failed to unmap Shm partition for id: %d. - partition could not be found", id);
         return false;
     }
+    std::uint8_t *partitionDataPtr = nullptr;
+    if (getDataPtrForPartition(playbackType, id, &partitionDataPtr))
+    {
+        releasePages(partitionDataPtr,
+                     partition->dataBufferVideoLen + partition->dataBufferAudioLen + partition->dataBufferSubtitleLen);
+    }
     partition->id = kNoIdAssigned;
     return true;
 }
@@ -261,19 +301,19 @@ bool SharedMemoryBuffer::clearData(MediaPlaybackType playbackType, int id, const
     if (MediaSourceType::VIDEO == mediaSourceType)
     {
         std::uint8_t *videoData = partitionDataPtr;
-        memset(videoData, 0x00, partition->dataBufferVideoLen);
+        memset(videoData, 0x00, getClearLen(playbackType, partition->dataBufferVideoLen));
         return true;
     }
     if (MediaSourceType::AUDIO == mediaSourceType)
     {
         std::uint8_t *audioData = partitionDataPtr + partition->dataBufferVideoLen;
-        memset(audioData, 0x00, partition->dataBufferAudioLen);
+        memset(audioData, 0x00, getClearLen(playbackType, partition->dataBufferAudioLen));
         return true;
     }
     if (MediaSourceType::SUBTITLE == mediaSourceType)
     {
         std::uint8_t *subtitleoData = partitionDataPtr + partition->dataBufferVideoLen + partition->dataBufferAudioLen;
-        memset(subtitleoData, 0x00, partition->dataBufferSubtitleLen);
+        memset(subtitleoData, 0x00, getClearLen(playbackType, partition->dataBufferSubtitleLen));
         return true;
     }
 

@@ -23,6 +23,11 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
+namespace
+{
+constexpr int32_t kImmediateOutputSourceId{12};
+} // namespace
+
 TEST_F(MediaPipelineModuleServiceTests, shouldConnectClient)
 {
     clientWillConnect();
@@ -268,17 +273,47 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetDuration)
 TEST_F(MediaPipelineModuleServiceTests, shouldSetImmediateOutput)
 {
     mediaPipelineServiceWillCreateSession();
-    sendCreateSessionRequestAndReceiveResponse();
-    mediaPipelineServiceWillSetImmediateOutput();
-    sendSetImmediateOutputRequestAndReceiveResponse();
+    const int sessionId = sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillSetImmediateOutput(sessionId);
+    sendSetImmediateOutputRequestAndReceiveResponse(sessionId, kImmediateOutputSourceId);
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetImmediateOutputForAudioSourceInSeparateSession)
+{
+    testSetImmediateOutputForAudioSourceInSeparateSession();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldApplyPendingImmediateOutputWhenPeerAudioSourceAttachesLater)
+{
+    testApplyPendingImmediateOutputWhenPeerAudioSourceAttachesLater();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldNotGuessAudioSessionWhenMultiplePeerAudioSessionsExist)
+{
+    testDoNotGuessAudioSessionWhenMultiplePeerAudioSessionsExist();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldApplyPendingImmediateOutputWhenAudioSourceAttachesLater)
+{
+    testApplyPendingImmediateOutputWhenAudioSourceAttachesLater();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldPreserveTrackedSourceIdWhenSwitchingAudioSource)
+{
+    testPreserveTrackedSourceIdWhenSwitchingAudioSource();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetVideoImmediateOutputWhenMultipleAudioSourcesExist)
+{
+    testSetVideoImmediateOutputWhenMultipleAudioSourcesExist();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetImmediateOutput)
 {
     mediaPipelineServiceWillCreateSession();
-    sendCreateSessionRequestAndReceiveResponse();
-    mediaPipelineServiceWillFailToSetImmediateOutput();
-    sendSetImmediateOutputRequestAndReceiveFail();
+    const int sessionId = sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToSetImmediateOutput(sessionId);
+    sendSetImmediateOutputRequestAndReceiveFail(sessionId);
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldGetImmediateOutput)

@@ -124,6 +124,7 @@ TEST_F(ApplicationStateChangeTest, lifecycle)
     // Step 6: Change state to RUNNING
     ControlTestMethods::shouldNotifyApplicationStateRunning();
     ControlTestMethods::sendNotifyApplicationStateRunning();
+    ControlTestMethods::checkSharedMemoryHandleIsValid();
 
     // Step 7: Destroy web audio player session
     WebAudioPlayerTestMethods::shouldDestroyWebAudioPlayer();
@@ -136,6 +137,7 @@ TEST_F(ApplicationStateChangeTest, lifecycle)
     // Step 9: Change state to INACTIVE
     ControlTestMethods::shouldNotifyApplicationStateInactive();
     ControlTestMethods::sendNotifyApplicationStateInactive();
+    ControlTestMethods::checkSharedMemoryHandleIsNull();
 
     // Step 10: Disconnect the server
     ControlTestMethods::shouldNotifyApplicationStateUnknown();
