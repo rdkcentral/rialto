@@ -57,7 +57,7 @@ classDef VL stroke:#808080,fill:#F2F2F2,stroke-width:2px
 - **Web Audio Playback**: Exposes `IWebAudioPlayer` for mixing PCM audio streams into the current audio output, with priority-based resource allocation for platforms with a limited number of concurrent audio mixers.
 - **Shared Memory Data Channel**: Provides a shared memory buffer whose file descriptor is passed from server to client via the `GetSharedMemory` control RPC, allowing media segment data to be transferred without redundant data copies across process boundaries.
 - **Container Lifecycle Management**: `RialtoServerManager` spawns and manages one `RialtoServer` process per application, applies resource limits (maximum simultaneous playback sessions and web audio players), manages session server states (UNINITIALIZED, INACTIVE, ACTIVE, NOT_RUNNING, SUSPENDED, ERROR), and performs periodic health checks via a ping/ack protocol.
-- **Capability Discovery**: Exposes `IMediaPipelineCapabilities` and `IMediaKeysCapabilities` for querying supported MIME types and DRM key systems at runtime.
+- **Capability Discovery**: Exposes `IMediaCapabilities` — a unified capabilities interface (`mediacapabilitiesmodule.proto`) that reports audio and video decoder capabilities (`getSupportedAudioCapabilities()` / `getSupportedVideoCapabilities()`) — alongside the older `IMediaPipelineCapabilities` and `IMediaKeysCapabilities` interfaces for querying supported MIME types and DRM key systems at runtime. `IMediaCapabilities` supersedes the capability methods of `IMediaPipelineCapabilities`.
 - **Subtitle and Text Track Support**: When the platform provides a text track plugin, Rialto attaches a dedicated GStreamer text track sink and manages subtitle rendering through a `TextTrackAccessor`.
 
 ---
@@ -311,9 +311,17 @@ Rialto interacts with platform and system components through three main paths: I
 | `PositionChangeEvent`         | `mediapipelinemodule.proto` | Periodic playback position update (~every 250 ms)                          | `RialtoClient` → `IMediaPipelineClient::notifyPosition()`        |
 | `QosEvent`                    | `mediapipelinemodule.proto` | Video frame or audio sample dropped                                        | `RialtoClient` → `IMediaPipelineClient::notifyQos()`             |
 | `BufferUnderflowEvent`        | `mediapipelinemodule.proto` | Audio or video buffer underflow detected                                   | `RialtoClient` → `IMediaPipelineClient::notifyBufferUnderflow()` |
+| `PlaybackInfoEvent`           | `mediapipelinemodule.proto` | Periodic playback info sent ~every 32 ms while in PLAYING state            | `RialtoClient` → `IMediaPipelineClient::notifyPlaybackInfo()`    |
+| `SourceFlushedEvent`          | `mediapipelinemodule.proto` | Source flush completed                                                     | `RialtoClient` → `IMediaPipelineClient::notifySourceFlushed()`   |
+| `PlaybackErrorEvent`          | `mediapipelinemodule.proto` | Non-fatal per-source playback error (playback state unchanged)             | `RialtoClient` → `IMediaPipelineClient::notifyPlaybackError()`   |
+| `FirstFrameReceivedEvent`     | `mediapipelinemodule.proto` | First frame received for a source                                          | `RialtoClient` → `IMediaPipelineClient::notifyFirstFrameReceived()` |
+| `SetLogLevelsEvent`           | `mediapipelinemodule.proto` | Server requests new component log levels                                   | `RialtoClient` (applied to client logging)                       |
+| `LicenseRequestEvent`         | `mediakeysmodule.proto`     | DRM licence request challenge generated for a key session                  | `RialtoClient` → `IMediaKeysClient::onLicenseRequest()`          |
 | `KeyStatusesChangedEvent`     | `mediakeysmodule.proto`     | DRM key status updated for a key session                                   | `RialtoClient` → `IMediaKeysClient::onKeyStatusesChanged()`      |
 | `LicenseRenewalEvent`         | `mediakeysmodule.proto`     | DRM licence renewal required                                               | `RialtoClient` → `IMediaKeysClient::onLicenseRenewal()`          |
+| `WebAudioPlayerStateEvent`    | `webaudioplayermodule.proto`| Web audio player state change (IDLE / PLAYING / PAUSED / EOS / FAILURE)    | `RialtoClient` → `IWebAudioPlayerClient::notifyState()`          |
 | `ApplicationStateChangeEvent` | `controlmodule.proto`       | Server application state transitions (RUNNING / INACTIVE / UNKNOWN)        | `RialtoClient` → `IControlClient::notifyApplicationState()`      |
+| `PingEvent`                   | `controlmodule.proto`       | Periodic server→client keepalive ping                                      | `RialtoClient` control module (responds automatically)           |
 | `StateChangedEvent`           | `servermanagermodule.proto` | `RialtoServer` session state changes                                       | `RialtoServerManager` → `IStateObserver::stateChanged()`         |
 | `AckEvent`                    | `servermanagermodule.proto` | Response to periodic server health-check ping                              | `RialtoServerManager` health-check handler                       |
 
