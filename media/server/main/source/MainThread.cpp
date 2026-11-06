@@ -151,6 +151,13 @@ void MainThread::enqueueTask(uint32_t clientId, const Task &task)
 
 void MainThread::enqueueTaskAndWait(uint32_t clientId, const Task &task)
 {
+    if (std::this_thread::get_id() == m_thread.get_id())
+    {
+        // Called from the main thread itself: enqueue-and-wait can never
+        // complete (the waiter IS the dispatcher), so run the task inline.
+        task();
+        return;
+    }
     thread_local TaskState taskState;
     taskState.done = false;
     std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
@@ -172,6 +179,13 @@ void MainThread::enqueueTaskAndWait(uint32_t clientId, const Task &task)
 
 void MainThread::enqueuePriorityTaskAndWait(uint32_t clientId, const Task &task)
 {
+    if (std::this_thread::get_id() == m_thread.get_id())
+    {
+        // Called from the main thread itself: enqueue-and-wait can never
+        // complete (the waiter IS the dispatcher), so run the task inline.
+        task();
+        return;
+    }
     thread_local TaskState taskState;
     taskState.done = false;
     std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
