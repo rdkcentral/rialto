@@ -76,7 +76,6 @@ void Flush::execute() const
 
     if (GST_STATE(m_context.pipeline) >= GST_STATE_PAUSED)
     {
-        m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
         m_context.flushOnPrerollController->waitIfRequired(m_type);
 
         RIALTO_SERVER_LOG_MIL("Sending flush event for %s source.", common::convertMediaSourceType(m_type));

@@ -87,6 +87,8 @@ private:
     void initShm();
     void mayReceivePositionUpdates();
     void positionUpdatesShouldNotBeReceivedFromNow();
+    void mayReceivePlaybackInfoUpdates();
+    void playbackInfoUpdatesShouldNotBeReceivedFromNow();
 
 protected:
     int m_sessionId{-1};
@@ -119,6 +121,7 @@ protected:
     GstSample *m_sample{nullptr};
     std::shared_ptr<::firebolt::rialto::NeedMediaDataEvent> m_lastAudioNeedData{nullptr};
     std::shared_ptr<::firebolt::rialto::NeedMediaDataEvent> m_lastVideoNeedData{nullptr};
+    GstElement *m_audioSink{nullptr};
 
     // Position Update events may be received in PLAYING state. We have to suppress them
     // to avoid occassional test failures
