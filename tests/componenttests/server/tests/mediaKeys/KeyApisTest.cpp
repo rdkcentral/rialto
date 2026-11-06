@@ -46,9 +46,6 @@ public:
     void willRemoveKeySession();
     void removeKeySession();
 
-    void willLoadKeySession();
-    void loadKeySession();
-
     const std::vector<unsigned char> m_kKeyId1{'a', 'z', 'q', 'l', 'K'};
     const std::vector<unsigned char> m_kKeyId2{'a', 'x', 'v'};
 };
@@ -94,21 +91,6 @@ void KeyApisTest::removeKeySession()
         .send(request)
         .expectSuccess()
         .matchResponse([&](const firebolt::rialto::RemoveKeySessionResponse &resp)
-                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
-}
-
-void KeyApisTest::willLoadKeySession()
-{
-    EXPECT_CALL(m_ocdmSessionMock, load()).WillOnce(Return(MediaKeyErrorStatus::OK));
-}
-void KeyApisTest::loadKeySession()
-{
-    auto request{createLoadSessionRequest(m_mediaKeysHandle, m_mediaKeySessionId)};
-
-    ConfigureAction<LoadSession>(m_clientStub)
-        .send(request)
-        .expectSuccess()
-        .matchResponse([&](const firebolt::rialto::LoadSessionResponse &resp)
                        { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
 }
 
