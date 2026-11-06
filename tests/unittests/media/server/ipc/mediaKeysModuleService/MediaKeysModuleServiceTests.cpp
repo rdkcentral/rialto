@@ -297,6 +297,12 @@ TEST_F(MediaKeysModuleServiceTests, shouldSendLicenseRenewal)
     sendLicenseRenewalEvent();
 }
 
+TEST_F(MediaKeysModuleServiceTests, shouldSendLicenseRelease)
+{
+    mediaClientWillSendLicenseReleaseEvent();
+    sendLicenseReleaseEvent();
+}
+
 TEST_F(MediaKeysModuleServiceTests, shouldSendKeyStatusChanged)
 {
     mediaClientWillSendKeyStatusesChangedEvent();

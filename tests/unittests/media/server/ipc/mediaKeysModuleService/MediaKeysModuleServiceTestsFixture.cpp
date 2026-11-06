@@ -48,6 +48,7 @@ const std::vector<uint8_t> kKeyId{1, 2, 3};
 const std::vector<uint8_t> kDrmHeader{6, 3, 8};
 const std::vector<unsigned char> kLicenseRequestMessage{3, 2, 1};
 const std::vector<unsigned char> kLicenseRenewalMessage{0, 4, 8};
+const std::vector<unsigned char> kLicenseReleaseMessage{5, 6, 7};
 const std::string kUrl{"http://"};
 constexpr firebolt::rialto::LimitedDurationLicense kLdlState{firebolt::rialto::LimitedDurationLicense::NOT_SPECIFIED};
 const std::string kCdmKeySessionId{"cdm_session_id"};
@@ -71,6 +72,16 @@ MATCHER_P3(LicenseRenewalEventMatcher, kKeySessionId, mediaKeysHandle, renewalMe
         std::vector<unsigned char>{event->license_renewal_message().begin(), event->license_renewal_message().end()};
     return ((kKeySessionId == event->key_session_id()) && (mediaKeysHandle == event->media_keys_handle()) &&
             (renewalMessage == messageVector));
+}
+
+MATCHER_P4(LicenseReleaseEventMatcher, kKeySessionId, mediaKeysHandle, releaseMessage, url, "")
+{
+    std::shared_ptr<firebolt::rialto::LicenseReleaseEvent> event =
+        std::dynamic_pointer_cast<firebolt::rialto::LicenseReleaseEvent>(arg);
+    std::vector<unsigned char> messageVector =
+        std::vector<unsigned char>{event->license_release_message().begin(), event->license_release_message().end()};
+    return ((kKeySessionId == event->key_session_id()) && (mediaKeysHandle == event->media_keys_handle()) &&
+            (releaseMessage == messageVector) && (url == event->url()));
 }
 
 MATCHER_P3(KeyStatusesChangedEventMatcher, kKeySessionId, mediaKeysHandle, keyStatuses, "")
@@ -393,6 +404,12 @@ void MediaKeysModuleServiceTests::mediaClientWillSendLicenseRenewalEvent()
 {
     EXPECT_CALL(*m_clientMock,
                 sendEvent(LicenseRenewalEventMatcher(kKeySessionId, kHardcodedMediaKeysHandle, kLicenseRenewalMessage)));
+}
+
+void MediaKeysModuleServiceTests::mediaClientWillSendLicenseReleaseEvent()
+{
+    EXPECT_CALL(*m_clientMock, sendEvent(LicenseReleaseEventMatcher(kKeySessionId, kHardcodedMediaKeysHandle,
+                                                                    kLicenseReleaseMessage, kUrl)));
 }
 
 void MediaKeysModuleServiceTests::mediaClientWillSendKeyStatusesChangedEvent()
@@ -939,6 +956,11 @@ void MediaKeysModuleServiceTests::sendLicenseRequestEvent()
 void MediaKeysModuleServiceTests::sendLicenseRenewalEvent()
 {
     m_client->onLicenseRenewal(kKeySessionId, kLicenseRenewalMessage);
+}
+
+void MediaKeysModuleServiceTests::sendLicenseReleaseEvent()
+{
+    m_client->onLicenseRelease(kKeySessionId, kLicenseReleaseMessage, kUrl);
 }
 
 void MediaKeysModuleServiceTests::sendKeyStatusesChangedEvent()

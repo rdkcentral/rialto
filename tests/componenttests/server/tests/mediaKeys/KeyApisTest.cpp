@@ -21,6 +21,7 @@
 
 #include "ActionTraits.h"
 #include "ConfigureAction.h"
+#include "ExpectMessage.h"
 #include "Matchers.h"
 #include "MediaKeysTestMethods.h"
 
@@ -45,6 +46,8 @@ public:
 
     void willRemoveKeySession();
     void removeKeySession();
+
+    void licenseRelease();
 
     const std::vector<unsigned char> m_kKeyId1{'a', 'z', 'q', 'l', 'K'};
     const std::vector<unsigned char> m_kKeyId2{'a', 'x', 'v'};
@@ -92,6 +95,27 @@ void KeyApisTest::removeKeySession()
         .expectSuccess()
         .matchResponse([&](const firebolt::rialto::RemoveKeySessionResponse &resp)
                        { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
+}
+
+void KeyApisTest::licenseRelease()
+{
+    ExpectMessage<::firebolt::rialto::LicenseReleaseEvent> expectedMessage(m_clientStub);
+
+    const std::string kUrl{"http://some.url"};
+    const std::vector<unsigned char> kLicenseReleaseMessage{'x', 'u', 'A'};
+
+    m_ocdmSessionClient->onProcessChallenge(kUrl.c_str(), &kLicenseReleaseMessage[0], kLicenseReleaseMessage.size());
+
+    auto message = expectedMessage.getMessage();
+    ASSERT_TRUE(message);
+    ASSERT_EQ(message->media_keys_handle(), m_mediaKeysHandle);
+    ASSERT_EQ(message->key_session_id(), m_mediaKeySessionId);
+    const unsigned int kMax = message->license_release_message_size();
+    ASSERT_EQ(kMax, kLicenseReleaseMessage.size());
+    for (unsigned int i = 0; i < kMax; ++i)
+    {
+        ASSERT_EQ(message->license_release_message(i), kLicenseReleaseMessage[i]);
+    }
 }
 
 /*
@@ -150,7 +174,7 @@ void KeyApisTest::removeKeySession()
  */
 TEST_F(KeyApisTest, keyManagement)
 {
-    createMediaKeysNetflix();
+    createMediaKeysWidevine();
     ocdmSessionWillBeCreated();
     createKeySession();
 
@@ -169,6 +193,8 @@ TEST_F(KeyApisTest, keyManagement)
     // Step 4: Remove session
     willRemoveKeySession();
     removeKeySession();
+
+    licenseRelease();
 }
 
 } // namespace firebolt::rialto::server::ct

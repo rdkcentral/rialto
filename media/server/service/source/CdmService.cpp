@@ -217,6 +217,11 @@ MediaKeyErrorStatus CdmService::closeKeySession(int mediaKeysHandle, int32_t key
         mediaKeysHandleIter->second.shouldBeClosed = true;
         return MediaKeyErrorStatus::OK;
     }
+    auto mediaKeysClientsIter = m_mediaKeysClients.find(keySessionId);
+    if (mediaKeysClientsIter != m_mediaKeysClients.end())
+    {
+        m_mediaKeysClients.erase(mediaKeysClientsIter);
+    }
     return m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->closeKeySession(keySessionId);
 }
 
@@ -238,15 +243,6 @@ MediaKeyErrorStatus CdmService::removeKeySessionInternal(int mediaKeysHandle, in
     }
 
     MediaKeyErrorStatus status = mediaKeysIter->second->removeKeySession(keySessionId);
-    if (MediaKeyErrorStatus::OK == status)
-    {
-        auto mediaKeysClientsIter = m_mediaKeysClients.find(keySessionId);
-        if (mediaKeysClientsIter != m_mediaKeysClients.end())
-        {
-            m_mediaKeysClients.erase(mediaKeysClientsIter);
-        }
-    }
-
     return status;
 }
 
@@ -599,6 +595,11 @@ void CdmService::decrementSessionIdUsageCounter(int32_t keySessionId)
         if (mediaKeysHandleIter->second.shouldBeClosed)
         {
             RIALTO_SERVER_LOG_INFO("Deferred closing of mksId %d", keySessionId);
+            auto mediaKeysClientsIter = m_mediaKeysClients.find(keySessionId);
+            if (mediaKeysClientsIter != m_mediaKeysClients.end())
+            {
+                m_mediaKeysClients.erase(mediaKeysClientsIter);
+            }
             if (MediaKeyErrorStatus::OK !=
                 m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->closeKeySession(keySessionId))
             {

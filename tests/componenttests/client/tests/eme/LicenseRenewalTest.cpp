@@ -71,6 +71,10 @@ public:
  *   Server notifies the client of key statuses changed.
  *   Expect that the key statuses changed notification is propagated to the client.
  *
+ *  Step 4: Notify license release
+ *   Server notifies the client of license release.
+ *   Expect that the license release notification is propagated to the client.
+ *
  * Test Teardown:
  *  Terminate MediaKeys.
  *  Server is terminated.
@@ -93,5 +97,9 @@ TEST_F(LicenseRenewalTest, licenseRenewal)
     // Step 3: Notify key statuses changed
     MediaKeysTestMethods::shouldNotifyKeyStatusesChanged();
     MediaKeysTestMethods::sendNotifyKeyStatusesChanged();
+
+    // Step 4: Notify license release
+    MediaKeysTestMethods::shouldNotifyLicenseRelease();
+    MediaKeysTestMethods::sendNotifyLicenseRelease();
 }
 } // namespace firebolt::rialto::client::ct
