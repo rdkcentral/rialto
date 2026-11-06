@@ -37,6 +37,8 @@ public:
         ActiveRequestsData(MediaSourceType type, std::uint32_t maxMediaBytes, std::uint32_t maxFrames)
             : m_type(type), m_bytesWritten(0), m_maxMediaBytes(maxMediaBytes), m_maxFrames(maxFrames)
         {
+            m_segments.reserve(maxFrames);
+            m_segmentBuffers.reserve(maxFrames);
         }
         ~ActiveRequestsData();
         ActiveRequestsData(ActiveRequestsData &&) = default;
