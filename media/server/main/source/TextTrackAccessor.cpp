@@ -19,9 +19,262 @@
 
 #include "TextTrackAccessor.h"
 
+#include <algorithm>
+#include <cctype>
+#include <cerrno>
 #include <cinttypes>
+#include <cstdlib>
+#include <cstring>
+#include <fcntl.h>
+#include <filesystem>
+#include <fstream>
+#include <mutex>
 #include <stdexcept>
 #include <string>
+#include <sys/stat.h>
+#include <unistd.h>
+
+namespace
+{
+constexpr char kSubtitleDataEnv[] = "RIALTO_SHOW_SUBTITLE_DATA";
+constexpr char kSubtitleLogPathEnv[] = "RIALTO_SUBTITLE_LOG_PATH";
+constexpr std::size_t kSubtitleLogChunkSize{400};
+constexpr const char *kSubtitleLogDirectories[]{"/opt/logs", "/tmp"};
+
+bool isValidSubtitleLogFileName(const std::string &fileName)
+{
+    return !fileName.empty() && fileName != "." && fileName != ".." && fileName.find("..") == std::string::npos &&
+           std::all_of(fileName.begin(), fileName.end(),
+                       [](unsigned char ch) { return std::isalnum(ch) || ch == '.' || ch == '_' || ch == '-'; });
+}
+
+bool isEnvironmentVariableEnabled(const char *name)
+{
+    const char *value = std::getenv(name);
+    if (!value || value[0] == '\0')
+    {
+        return false;
+    }
+
+    std::string stringValue(value);
+    std::transform(stringValue.begin(), stringValue.end(), stringValue.begin(),
+                   [](char character)
+                   {
+                       if (character >= 'A' && character <= 'Z')
+                       {
+                           return static_cast<char>(character + ('a' - 'A'));
+                       }
+                       return character;
+                   });
+    return stringValue == "1" || stringValue == "true" || stringValue == "yes" || stringValue == "on";
+}
+
+#ifdef RIALTO_LOG_DEBUG_ENABLED
+bool isSubtitleDebugLoggingEnabled()
+{
+    const RIALTO_DEBUG_LEVEL logLevels = firebolt::rialto::logging::getLogLevels(RIALTO_COMPONENT_SERVER);
+    return logLevels == RIALTO_DEBUG_LEVEL_EXTERNAL || (logLevels & RIALTO_DEBUG_LEVEL_DEBUG) != 0;
+}
+#endif
+
+#ifdef RIALTO_LOG_DEBUG_ENABLED
+std::string escapeNullBytes(const std::string &data)
+{
+    std::string escaped;
+    escaped.reserve(data.size());
+    for (char ch : data)
+    {
+        if (ch == '\0')
+        {
+            escaped += "\\0";
+        }
+        else
+        {
+            escaped += ch;
+        }
+    }
+    return escaped;
+}
+#endif
+
+void logSubtitleData(const std::string &data)
+{
+#ifdef RIALTO_LOG_DEBUG_ENABLED
+    if (!isSubtitleDebugLoggingEnabled())
+    {
+        return;
+    }
+
+    const std::string logData{escapeNullBytes(data)};
+    if (logData.empty())
+    {
+        RIALTO_SERVER_LOG_DEBUG("Subtitle data: ");
+        return;
+    }
+
+    std::size_t offset{};
+    bool firstChunk{true};
+    while (offset < logData.size())
+    {
+        std::size_t chunkEnd{std::min(offset + kSubtitleLogChunkSize, logData.size())};
+        while (chunkEnd < logData.size() && chunkEnd > offset &&
+               (static_cast<unsigned char>(logData[chunkEnd]) & 0xc0) == 0x80)
+        {
+            --chunkEnd;
+        }
+        if (chunkEnd == offset)
+        {
+            chunkEnd = std::min(offset + kSubtitleLogChunkSize, logData.size());
+        }
+
+        const std::string chunk{logData.substr(offset, chunkEnd - offset)};
+        if (firstChunk)
+        {
+            RIALTO_SERVER_LOG_DEBUG("Subtitle data: %s\n", chunk.c_str());
+            firstChunk = false;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_DEBUG("Subtitle data (continued): %s\n", chunk.c_str());
+        }
+        offset = chunkEnd;
+    }
+#else
+    static_cast<void>(data);
+#endif
+}
+
+bool writeSubtitleDataToFile(const char *path, const std::string &data, std::string &error)
+{
+    namespace fs = std::filesystem;
+    const fs::path configuredPath{path};
+    if (!configuredPath.is_absolute())
+    {
+        error = "path must be absolute";
+        return false;
+    }
+
+    const fs::path fileName{configuredPath.filename()};
+    const std::string fileNameString{fileName.string()};
+    if (!isValidSubtitleLogFileName(fileNameString))
+    {
+        error = "filename must contain only letters, digits, '.', '_' or '-' and must not contain '..'";
+        return false;
+    }
+
+    const fs::path parentDirectory{configuredPath.parent_path()};
+    const char *allowedDirectory{};
+    for (const char *allowedRoot : kSubtitleLogDirectories)
+    {
+        if (parentDirectory == fs::path{allowedRoot})
+        {
+            allowedDirectory = allowedRoot;
+            break;
+        }
+    }
+    if (!allowedDirectory)
+    {
+        error = "directory must be exactly /opt/logs or /tmp";
+        return false;
+    }
+
+    static std::mutex logMutex;
+    const std::lock_guard<std::mutex> lock{logMutex};
+    const int directoryFd{open(allowedDirectory, O_RDONLY | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW)};
+    if (directoryFd < 0)
+    {
+        error = "cannot open log directory: " + std::string{std::strerror(errno)};
+        return false;
+    }
+
+    const int logFileFd{openat(directoryFd, fileNameString.c_str(),
+                               O_WRONLY | O_APPEND | O_CREAT | O_CLOEXEC | O_NOFOLLOW | O_NONBLOCK, 0664)};
+    const int openError{errno};
+    if (close(directoryFd) != 0 && logFileFd >= 0)
+    {
+        const int closeError{errno};
+        close(logFileFd);
+        error = "cannot close log directory: " + std::string{std::strerror(closeError)};
+        return false;
+    }
+    if (logFileFd < 0)
+    {
+        error = "cannot open log file: " + std::string{std::strerror(openError)};
+        return false;
+    }
+
+    struct stat fileStatus
+    {
+    };
+    if (fstat(logFileFd, &fileStatus) != 0)
+    {
+        const int statError{errno};
+        close(logFileFd);
+        error = "cannot inspect log file: " + std::string{std::strerror(statError)};
+        return false;
+    }
+    if (!S_ISREG(fileStatus.st_mode))
+    {
+        close(logFileFd);
+        error = "log path must refer to a regular file";
+        return false;
+    }
+    if (fileStatus.st_nlink != 1)
+    {
+        close(logFileFd);
+        error = "log file must not have hard links";
+        return false;
+    }
+    if (fileStatus.st_uid != geteuid())
+    {
+        close(logFileFd);
+        error = "log file must be owned by the Rialto process user";
+        return false;
+    }
+
+    const std::string logEntry{"Subtitle data: " + data + '\n'};
+    const char *nextByte{logEntry.data()};
+    std::size_t remaining{logEntry.size()};
+    while (remaining > 0)
+    {
+        const ssize_t result{write(logFileFd, nextByte, remaining)};
+        if (result < 0 && errno == EINTR)
+        {
+            continue;
+        }
+        if (result < 0)
+        {
+            const int writeError{errno};
+            close(logFileFd);
+            error = "cannot write log file: " + std::string{std::strerror(writeError)};
+            return false;
+        }
+        if (result == 0)
+        {
+            close(logFileFd);
+            error = "write returned zero bytes";
+            return false;
+        }
+
+        const std::size_t bytesWritten{static_cast<std::size_t>(result)};
+        if (bytesWritten > remaining)
+        {
+            close(logFileFd);
+            error = "write returned more bytes than requested";
+            return false;
+        }
+        nextByte += bytesWritten;
+        remaining -= bytesWritten;
+    }
+
+    if (close(logFileFd) != 0)
+    {
+        error = "cannot close log file: " + std::string{std::strerror(errno)};
+        return false;
+    }
+    return true;
+}
+} // namespace
 
 namespace firebolt::rialto::server
 {
@@ -164,6 +417,24 @@ bool TextTrackAccessor::setPosition(uint32_t sessionId, uint64_t mediaTimestampM
 
 bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, DataType datatype, int64_t displayOffsetMs)
 {
+    const char *subtitleLogPath = std::getenv(kSubtitleLogPathEnv);
+    if (subtitleLogPath && subtitleLogPath[0] != '\0')
+    {
+        std::string error;
+        if (!writeSubtitleDataToFile(subtitleLogPath, data, error))
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to capture subtitle data to '%s': %s", subtitleLogPath, error.c_str());
+            if (isEnvironmentVariableEnabled(kSubtitleDataEnv))
+            {
+                logSubtitleData(data);
+            }
+        }
+    }
+    else if (isEnvironmentVariableEnabled(kSubtitleDataEnv))
+    {
+        logSubtitleData(data);
+    }
+
     firebolt::rialto::wrappers::ITextTrackWrapper::DataType wrapperDataType{};
     if (datatype == DataType::WebVTT)
     {
