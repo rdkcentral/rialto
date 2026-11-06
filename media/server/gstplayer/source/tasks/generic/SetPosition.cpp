@@ -45,6 +45,7 @@ void SetPosition::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing SetPosition");
     if (!m_gstPlayerClient)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::SEEK_FAIL);
         RIALTO_SERVER_LOG_ERROR("Seek failed - GstPlayerClient is NULL");
         return;
     }
@@ -72,6 +73,7 @@ void SetPosition::execute() const
 
     if (!m_context.pipeline)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::SEEK_FAIL);
         RIALTO_SERVER_LOG_ERROR("Seek failed - pipeline is null");
         m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
         return;
@@ -80,6 +82,7 @@ void SetPosition::execute() const
                                       static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH), GST_SEEK_TYPE_SET, m_position,
                                       GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE))
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::SEEK_FAIL);
         RIALTO_SERVER_LOG_ERROR("Seek failed - gstreamer error");
         m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
         return;

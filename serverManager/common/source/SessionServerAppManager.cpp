@@ -399,6 +399,7 @@ bool SessionServerAppManager::changeSessionServerState(const std::string &appNam
     }
     if (!m_ipcController->performSetState(sessionServer->getServerId(), newState))
     {
+        TELEMETRY_EVENT_INT("RIALTO_SM_STATE_FAIL", T2::SERVERMGR::STATE_CHANGE_FAIL);
         RIALTO_SERVER_MANAGER_LOG_ERROR("Change state of %s to %s failed.", appName.c_str(), toString(newState));
         handleStateChangeFailure(sessionServer, newState);
         return false;

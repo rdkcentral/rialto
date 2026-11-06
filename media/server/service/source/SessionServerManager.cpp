@@ -212,11 +212,13 @@ bool SessionServerManager::switchToActive()
     }
     if (!m_playbackService.switchToActive())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::PLAYER_SERVICE_INACTIVE);
         RIALTO_SERVER_LOG_ERROR("Player service failed to switch to active state");
         return false;
     }
     if (!m_cdmService.switchToActive())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::CDM_SERVICE_INACTIVE);
         RIALTO_SERVER_LOG_ERROR("Cdm service failed to switch to active state");
         m_playbackService.switchToInactive();
         return false;

@@ -155,6 +155,7 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
     {
         if (!m_shmBuffer->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId))
         {
+            TELEMETRY_EVENT_INT("RIALTO_S_SHM_FAIL", T2::SERVER::SHM::MAP_FAIL);
             RIALTO_SERVER_LOG_ERROR("Unable to map shm partition");
         }
         else
@@ -221,6 +222,7 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
                                      firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory::getFactory());
     if (!m_gstPlayer)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PL_FAIL", T2::SERVER::PIPELINE::LOAD_GST_PLAYER_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to load gstreamer player");
         return false;
     }
@@ -1266,6 +1268,7 @@ bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, in
 {
     if (!m_gstPlayer)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::SET_SRC_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to set source position - Gstreamer player has not been loaded");
         return false;
     }
@@ -1273,6 +1276,7 @@ bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, in
                                    [sourceId](const auto &src) { return src.second == sourceId; });
     if (sourceIter == m_attachedSources.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::SET_SRC_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to set source position - Source with id: %d not found", sourceId);
         return false;
     }

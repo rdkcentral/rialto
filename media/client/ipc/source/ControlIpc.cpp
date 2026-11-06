@@ -114,6 +114,7 @@ bool ControlIpc::getSharedMemory(int32_t &fd, uint32_t &size)
     // check the result
     if (ipcController->Failed())
     {
+        TELEMETRY_EVENT_INT("RIALTO_C_SHM_FAIL", T2::CLIENT::SHM::GET_FAIL);
         RIALTO_CLIENT_LOG_ERROR("failed to get the shared memory due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }

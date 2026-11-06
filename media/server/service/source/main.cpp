@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
         RIALTO_SERVER_LOG_WARN("Failed to get git commit ID!");
     }
 
+    TELEMETRY_INIT("rialtoServer");
     firebolt::rialto::server::IGstInitialiser::instance().initialise(&argc, &argv);
 
     auto appSessionServer =
@@ -54,6 +55,7 @@ int main(int argc, char *argv[])
 
     if (!appSessionServer->init(argc, argv))
     {
+        TELEMETRY_UNINIT();
         return EXIT_FAILURE;
     }
     appSessionServer->startService();
@@ -63,5 +65,6 @@ int main(int argc, char *argv[])
     google::protobuf::ShutdownProtobufLibrary();
 #endif
 
+    TELEMETRY_UNINIT();
     return EXIT_SUCCESS;
 }

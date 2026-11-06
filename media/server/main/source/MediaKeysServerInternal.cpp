@@ -181,6 +181,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::selectKeyIdInternal(int32_t keySess
     MediaKeyErrorStatus status = sessionIter->second->selectKeyId(keyId);
     if (MediaKeyErrorStatus::OK != status)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_OCDM_FAIL", T2::SERVER::OCDM::KEY_SELECT_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to select key id");
         return status;
     }
@@ -270,6 +271,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::generateRequestInternal(int32_t key
     MediaKeyErrorStatus status = sessionIter->second->generateRequest(initDataType, initData, ldlState);
     if (MediaKeyErrorStatus::OK != status)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_OCDM_FAIL", T2::SERVER::OCDM::GEN_REQ_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to generate request for the key session %d", keySessionId);
         return status;
     }
@@ -299,6 +301,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::loadSessionInternal(int32_t keySess
     MediaKeyErrorStatus status = sessionIter->second->loadSession();
     if (MediaKeyErrorStatus::OK != status)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_OCDM_FAIL", T2::SERVER::OCDM::LOAD_SESH_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to load the session %d", keySessionId);
         return status;
     }

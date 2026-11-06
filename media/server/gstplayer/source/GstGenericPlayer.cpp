@@ -853,6 +853,7 @@ GstGenericPlayer::createAudioAttributes(const std::unique_ptr<IMediaPipeline::Me
     }
     else
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PL_FAIL", T2::SERVER::PIPELINE::CAST_SRC_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to cast source");
     }
 
@@ -2049,6 +2050,7 @@ GstStateChangeReturn GstGenericPlayer::changePipelineState(GstState newState)
 {
     if (!m_context.pipeline)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PL_FAIL", T2::SERVER::PIPELINE::PIPELINE_NULL);
         RIALTO_SERVER_LOG_ERROR("Change state failed - pipeline is nullptr");
         if (m_gstPlayerClient)
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
@@ -2058,6 +2060,7 @@ GstStateChangeReturn GstGenericPlayer::changePipelineState(GstState newState)
     const GstStateChangeReturn result{m_gstWrapper->gstElementSetState(m_context.pipeline, newState)};
     if (result == GST_STATE_CHANGE_FAILURE)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PL_FAIL", T2::SERVER::PIPELINE::GST_ERR);
         RIALTO_SERVER_LOG_ERROR("Change state failed - Gstreamer returned an error");
         if (m_gstPlayerClient)
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);

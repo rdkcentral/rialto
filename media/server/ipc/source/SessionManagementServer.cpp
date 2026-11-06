@@ -92,6 +92,7 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
     RIALTO_SERVER_LOG_INFO("Initializing Session Management Server. Socket name: '%s'", socketName.c_str());
     if (!m_ipcServer)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_INIT_FAIL", T2::SERVER::INIT::SMS_SERVER_NULL);
         RIALTO_SERVER_LOG_ERROR("Failed to initialize SessionManagementServer - Ipc server instance is NULL");
         return false;
     }
@@ -101,6 +102,7 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
                                 std::bind(&SessionManagementServer::onClientConnected, this, std::placeholders::_1),
                                 std::bind(&SessionManagementServer::onClientDisconnected, this, std::placeholders::_1)))
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_INIT_FAIL", T2::SERVER::INIT::SMS_ADD_SOCKET_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to initialize SessionManagementServer - can't add socket '%s' to the ipc "
                                 "server",
                                 socketName.c_str());
@@ -128,6 +130,7 @@ bool SessionManagementServer::initialize(int32_t socketFd)
     RIALTO_SERVER_LOG_INFO("Initializing Session Management Server. Socket fd: %d", m_socketFd);
     if (!m_ipcServer)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_INIT_FAIL", T2::SERVER::INIT::SMS_SERVER_NULL);
         RIALTO_SERVER_LOG_ERROR("Failed to initialize SessionManagementServer - Ipc server instance is NULL");
         return false;
     }
@@ -137,6 +140,7 @@ bool SessionManagementServer::initialize(int32_t socketFd)
                                 std::bind(&SessionManagementServer::onClientConnected, this, std::placeholders::_1),
                                 std::bind(&SessionManagementServer::onClientDisconnected, this, std::placeholders::_1)))
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_INIT_FAIL", T2::SERVER::INIT::SMS_ADD_SOCKET_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to initialize SessionManagementServer - can't add socket fd %d to the ipc "
                                 "server",
                                 m_socketFd);

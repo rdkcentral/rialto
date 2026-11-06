@@ -229,6 +229,7 @@ void ClientController::notifyApplicationState(ApplicationState state)
     {
         if (!initSharedMemory())
         {
+            TELEMETRY_EVENT_INT("RIALTO_C_SHM_FAIL", T2::CLIENT::SHM::INIT_FAIL);
             RIALTO_CLIENT_LOG_ERROR("Could not initalise the shared memory");
             return;
         }

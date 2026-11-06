@@ -55,6 +55,7 @@ MediaKeySessionFactory::createMediaKeySession(const std::string &keySystem, int3
     }
     catch (const std::exception &e)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_OCDM_FAIL", T2::SERVER::OCDM::MEDIA_SESH_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to create the media key session, reason: %s", e.what());
     }
 
@@ -374,6 +375,7 @@ MediaKeyErrorStatus MediaKeySession::setDrmHeader(const std::vector<uint8_t> &re
     MediaKeyErrorStatus status = m_ocdmSession->setDrmHeader(requestData.data(), requestData.size());
     if (MediaKeyErrorStatus::OK != status)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_OCDM_FAIL", T2::SERVER::OCDM::DRM_HDR_SET_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to set drm header");
     }
 
@@ -509,6 +511,7 @@ bool MediaKeySession::checkForOcdmErrors(const char *operationStr)
     std::lock_guard<std::mutex> lock(m_ocdmErrorMutex);
     if (m_ocdmError)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_OCDM_FAIL", T2::SERVER::OCDM::ERR_CALLBACK);
         RIALTO_SERVER_LOG_ERROR("MediaKeySession received an onError callback, operation '%s' failed", operationStr);
         error = true;
     }

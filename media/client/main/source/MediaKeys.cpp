@@ -69,6 +69,7 @@ MediaKeysFactory::createMediaKeys(const std::string &keySystem,
     }
     catch (const std::exception &e)
     {
+        TELEMETRY_EVENT_INT("RIALTO_C_IPC_FAIL", T2::CLIENT::IPC::MEDIA_KEY_CREATE_FAIL);
         RIALTO_CLIENT_LOG_ERROR("Failed to create the media keys, reason: %s", e.what());
     }
 

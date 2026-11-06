@@ -150,6 +150,7 @@ bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
     m_context.pipeline = m_gstWrapper->gstPipelineNew(std::string("webaudiopipeline" + std::to_string(priority)).c_str());
     if (!m_context.pipeline)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::WEB_AUDIO_PIPELINE_CREATE_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to create the webaudiopipeline");
         return false;
     }
@@ -160,6 +161,7 @@ bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
     m_context.source = m_gstWrapper->gstElementFactoryMake("appsrc", "audsrc");
     if (!m_context.source)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::APPSRC_CREATE_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to create the appsrc");
         return false;
     }
@@ -442,6 +444,7 @@ bool GstWebAudioPlayer::changePipelineState(GstState newState)
 {
     if (m_gstWrapper->gstElementSetState(m_context.pipeline, newState) == GST_STATE_CHANGE_FAILURE)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PL_FAIL", T2::SERVER::PIPELINE::GST_ERR);
         RIALTO_SERVER_LOG_ERROR("Change state failed - Gstreamer returned an error");
         if (m_gstPlayerClient)
             m_gstPlayerClient->notifyState(WebAudioPlayerState::FAILURE);

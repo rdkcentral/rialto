@@ -69,6 +69,7 @@ bool ApplicationManagementServer::initialize(int socket)
     RIALTO_SERVER_LOG_INFO("Initializing ApplicationManagementServer, socket: %d", socket);
     if (!m_ipcServer)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_INIT_FAIL", T2::SERVER::INIT::AMS_SERVER_NULL);
         RIALTO_SERVER_LOG_ERROR("Failed to initialize ApplicationManagementServer - Ipc server instance is NULL");
         return false;
     }
@@ -77,6 +78,7 @@ bool ApplicationManagementServer::initialize(int socket)
                                                            std::placeholders::_1));
     if (!m_ipcClient)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_INIT_FAIL", T2::SERVER::INIT::AMS_CLIENT_NULL);
         RIALTO_SERVER_LOG_ERROR("Failed to initialize ApplicationManagementServer - Client is NULL");
         return false;
     }
