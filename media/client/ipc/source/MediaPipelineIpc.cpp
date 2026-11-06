@@ -1654,16 +1654,17 @@ void MediaPipelineIpc::onQos(const std::shared_ptr<firebolt::rialto::QosEvent> &
 void MediaPipelineIpc::onMetricEvent(const std::shared_ptr<firebolt::rialto::NotifyMetricEvent> &event)
 {
     RIALTO_CLIENT_LOG_DEBUG(
-        "Dispatching playback metric event sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu, type: %s, phase: %u",
+        "Dispatching playback metric event sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu, type: %s, phase: %u, count: %llu, durationNs: %llu",
         event->session_id(), event->source_id(), static_cast<unsigned long long>(event->rendered_frames()),
         static_cast<unsigned long long>(event->dropped_frames()),
         static_cast<unsigned long long>(event->corrupted_frames()),
-        static_cast<unsigned long long>(event->pts_ns()), event->error_info().c_str(), event->phase());
+        static_cast<unsigned long long>(event->pts_ns()), event->error_info().c_str(), event->phase(),
+        static_cast<unsigned long long>(event->count()), static_cast<unsigned long long>(event->duration_ns()));
     if (event->session_id() == m_sessionId)
     {
         m_mediaPipelineIpcClient->notifyMetricEvent(event->source_id(), event->rendered_frames(), event->dropped_frames(),
                                                     event->corrupted_frames(), event->pts_ns(), event->error_info(),
-                                                    event->phase());
+                                                    event->phase(), event->count(), event->duration_ns());
     }
     else
     {

@@ -1749,21 +1749,23 @@ void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, con
 
 void MediaPipelineServerInternal::notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames,
                                                     uint64_t droppedFrames, uint64_t corruptedFrames,
-                                                    uint64_t ptsNs, const std::string &errorInfo, uint32_t phase)
+                                                    uint64_t ptsNs, const std::string &errorInfo, uint32_t phase,
+                                                    uint64_t count, uint64_t durationNs)
 {
     RIALTO_SERVER_LOG_DEBUG(
-        "Queueing playback metric event sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu, type: %s, phase: %u",
+        "Queueing playback metric event sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu, type: %s, phase: %u, count: %llu, durationNs: %llu",
         sourceId, static_cast<unsigned long long>(renderedFrames), static_cast<unsigned long long>(droppedFrames),
         static_cast<unsigned long long>(corruptedFrames), static_cast<unsigned long long>(ptsNs), errorInfo.c_str(),
-        phase);
-    auto task = [&, sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo, phase]()
+        phase, static_cast<unsigned long long>(count), static_cast<unsigned long long>(durationNs));
+    auto task = [&, sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo, phase, count,
+                 durationNs]()
     {
         if (m_mediaPipelineClient)
         {
             RIALTO_SERVER_LOG_DEBUG("Forwarding queued playback metric event for sourceId: %d, phase: %u", sourceId,
                                     phase);
             m_mediaPipelineClient->notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames,
-                                                     ptsNs, errorInfo, phase);
+                                                     ptsNs, errorInfo, phase, count, durationNs);
         }
         else
         {
