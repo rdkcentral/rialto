@@ -25,6 +25,8 @@ struct ParsedMetricMessage
     int32_t sourceId{0};
     std::uint64_t ptsNs{0};
     FrameCounters counters;
+    std::uint64_t count{0};
+    std::uint64_t durationNs{0};
 };
 
 const char *metricTypeToString(std::uint32_t type);

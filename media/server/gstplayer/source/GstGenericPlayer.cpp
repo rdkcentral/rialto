@@ -3324,8 +3324,8 @@ void GstGenericPlayer::handleMetricMessage(GstMessage *message)
     RIALTO_SERVER_LOG_DEBUG("Forwarding playback metric event for sourceId: %d, phase: %u", metric->sourceId,
                             metric->phase);
     m_gstPlayerClient->notifyMetricEvent(metric->sourceId, metric->counters.rendered, metric->counters.dropped,
-                                         metric->counters.corrupted, metric->ptsNs, metricType,
-                                         metric->phase);
+                                         metric->counters.corrupted, metric->ptsNs, metricType, metric->phase,
+                                         metric->count, metric->durationNs);
 }
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
