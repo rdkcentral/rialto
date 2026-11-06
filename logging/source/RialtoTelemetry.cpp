@@ -19,6 +19,18 @@
 
 #include "RialtoLogging.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#define RIALTO_TELEMETRY_LOG_MIL(fmt, args...) RIALTO_LOG_MIL(RIALTO_COMPONENT_TELEMETRY, fmt, ##args)
+#define RIALTO_TELEMETRY_LOG_DEBUG(fmt, args...) RIALTO_LOG_DEBUG(RIALTO_COMPONENT_TELEMETRY, fmt, ##args)
+
+#ifdef __cplusplus
+}
+#endif
+
 #ifdef TELEMETRY_ENABLED
 
 void TELEMETRY_INIT(const char* component)
@@ -45,16 +57,16 @@ void TELEMETRY_EVENT_FLOAT(const char* marker, float value)
     t2_event_f(const_cast<char*>(marker), static_cast<double>(value));
 }
 
-void TELEMETRY_EVENT_INT(const char* marker, int value)
+void TELEMETRY_EVENT_INT_IMPL(const char* marker, int value)
 {
     RIALTO_TELEMETRY_LOG_DEBUG("T2Int Event marker: %s, value: %d", marker, value);
-    t2_event_d(const_cast<char*>(marker), static_cast<int>(value));
+    t2_event_d(const_cast<char*>(marker), value);
 }
 
 void TELEMETRY_EVENT_COUNT(const char* marker)
 {
     RIALTO_TELEMETRY_LOG_DEBUG("T2Count Event marker: %s", marker);
-    TELEMETRY_EVENT_INT(marker, 1);
+    TELEMETRY_EVENT_INT_IMPL(marker, 1);
 }
 
 #else
@@ -79,7 +91,7 @@ void TELEMETRY_EVENT_FLOAT(const char* marker, float value)
     RIALTO_TELEMETRY_LOG_DEBUG("Stub-Impl: T2Float Event marker: %s, value: %f", marker, value);
 }
 
-void TELEMETRY_EVENT_INT(const char* marker, int value)
+void TELEMETRY_EVENT_INT_IMPL(const char* marker, int value)
 {
     RIALTO_TELEMETRY_LOG_DEBUG("Stub-Impl: T2Int Event marker: %s, value: %d", marker, value);
 }

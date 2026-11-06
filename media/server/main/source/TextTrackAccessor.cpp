@@ -54,6 +54,7 @@ TextTrackAccessor::TextTrackAccessor(
 {
     if (!createTextTrackControlInterface())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_TT_FAIL", T2::SERVER::TEXTTRACK::CREATE_INTERFACE_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to create TextTrack interfaces");
         throw std::runtime_error("Failed to create TextTrack interfaces");
     }
@@ -71,6 +72,7 @@ std::optional<uint32_t> TextTrackAccessor::openSession(const std::string &displa
         return sessionId;
     }
 
+    TELEMETRY_EVENT_INT("RIALTO_S_TT_FAIL", T2::SERVER::TEXTTRACK::DISPLAY_SESSION_FAIL);
     RIALTO_SERVER_LOG_ERROR("Failed to create TextTrack session with display '%s'; error '%s'", displayName.c_str(),
                             m_thunderWrapper->errorToString(result));
     return std::nullopt;
@@ -99,6 +101,7 @@ bool TextTrackAccessor::pause(uint32_t sessionId)
         return true;
     }
 
+    TELEMETRY_EVENT_INT("RIALTO_S_TT_FAIL", T2::SERVER::TEXTTRACK::PAUSE_FAIL);
     RIALTO_SERVER_LOG_ERROR("Failed to pause TextTrack session %u; error %s", sessionId,
                             m_thunderWrapper->errorToString(result));
     return false;
@@ -113,6 +116,7 @@ bool TextTrackAccessor::play(uint32_t sessionId)
         return true;
     }
 
+    TELEMETRY_EVENT_INT("RIALTO_S_TT_FAIL", T2::SERVER::TEXTTRACK::RESUME_FAIL);
     RIALTO_SERVER_LOG_ERROR("Failed to resume TextTrack session %u; error %s", sessionId,
                             m_thunderWrapper->errorToString(result));
     return false;
@@ -129,6 +133,7 @@ bool TextTrackAccessor::mute(uint32_t sessionId, bool mute)
             return true;
         }
 
+        TELEMETRY_EVENT_INT("RIALTO_S_TT_FAIL", T2::SERVER::TEXTTRACK::MUTE_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to mute TextTrack session %u; error %s", sessionId,
                                 m_thunderWrapper->errorToString(result));
     }
@@ -141,6 +146,7 @@ bool TextTrackAccessor::mute(uint32_t sessionId, bool mute)
             return true;
         }
 
+        TELEMETRY_EVENT_INT("RIALTO_S_TT_FAIL", T2::SERVER::TEXTTRACK::UNMUTE_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to unmute TextTrack session %u; error %s", sessionId,
                                 m_thunderWrapper->errorToString(result));
     }
@@ -157,6 +163,7 @@ bool TextTrackAccessor::setPosition(uint32_t sessionId, uint64_t mediaTimestampM
         return true;
     }
 
+    TELEMETRY_EVENT_INT("RIALTO_S_TT_FAIL", T2::SERVER::TEXTTRACK::SET_POSITION_FAIL);
     RIALTO_SERVER_LOG_ERROR("Failed to set position of TextTrack session %u to  %" PRIu64 "; error %s", sessionId,
                             mediaTimestampMs, m_thunderWrapper->errorToString(result));
     return false;
@@ -191,6 +198,7 @@ bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, Da
         return true;
     }
 
+    TELEMETRY_EVENT_INT("RIALTO_S_TT_FAIL", T2::SERVER::TEXTTRACK::SEND_DATA_FAIL);
     RIALTO_SERVER_LOG_ERROR("Failed to send data to TextTrack session %u; error %s", sessionId,
                             m_thunderWrapper->errorToString(result));
     return false;
@@ -245,6 +253,7 @@ bool TextTrackAccessor::setSessionWebVTTSelection(uint32_t sessionId)
         return true;
     }
 
+    TELEMETRY_EVENT_INT("RIALTO_S_TT_FAIL", T2::SERVER::TEXTTRACK::SET_WEBVTT_FAIL);
     RIALTO_SERVER_LOG_ERROR("Failed to set WebVTT selection for session %u; error %s", sessionId,
                             m_thunderWrapper->errorToString(result));
     return false;
@@ -259,6 +268,7 @@ bool TextTrackAccessor::setSessionTTMLSelection(uint32_t sessionId)
         return true;
     }
 
+    TELEMETRY_EVENT_INT("RIALTO_S_TT_FAIL", T2::SERVER::TEXTTRACK::SET_TTML_FAIL);
     RIALTO_SERVER_LOG_ERROR("Failed to set TTML selection for session %u; error %s", sessionId,
                             m_thunderWrapper->errorToString(result));
     return false;
@@ -274,6 +284,7 @@ bool TextTrackAccessor::setSessionCCSelection(uint32_t sessionId, const std::str
         return true;
     }
 
+    TELEMETRY_EVENT_INT("RIALTO_S_TT_FAIL", T2::SERVER::TEXTTRACK::SET_CC_FAIL);
     RIALTO_SERVER_LOG_ERROR("Failed to set CC selection service '%s' for session %u; error %s", service.c_str(),
                             sessionId, m_thunderWrapper->errorToString(result));
     return false;

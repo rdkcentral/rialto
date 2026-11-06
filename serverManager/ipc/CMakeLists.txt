@@ -59,4 +59,5 @@ target_link_libraries (
         RialtoIpcCommon
         RialtoServerManagerCommon
         RialtoProtobuf
+        RialtoLogging
 )

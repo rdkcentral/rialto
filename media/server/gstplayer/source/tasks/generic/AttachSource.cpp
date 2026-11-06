@@ -74,6 +74,7 @@ void AttachSource::addSource() const
     GstCaps *caps = createCapsFromMediaSource(m_gstWrapper, m_glibWrapper, m_attachedSource);
     if (!caps)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PL_FAIL", T2::SERVER::PIPELINE::CAPS_CREATE_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to create caps from media source");
         return;
     }

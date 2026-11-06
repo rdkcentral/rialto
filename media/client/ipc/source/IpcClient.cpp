@@ -158,6 +158,7 @@ void IpcClient::processIpcThread()
 
     if (!m_disconnecting)
     {
+        TELEMETRY_EVENT_INT("RIALTO_C_IPC_FAIL", T2::CLIENT::IPC::SERVER_CRASH);
         RIALTO_CLIENT_LOG_ERROR("The ipc channel unexpectedly disconnected, destroying the channel");
 
         // Safe to destroy the ipc objects in the ipc thread as the client has already disconnected.

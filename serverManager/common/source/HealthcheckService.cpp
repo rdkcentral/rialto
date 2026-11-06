@@ -151,6 +151,7 @@ void HealthcheckService::handleError(int serverId)
     failedPings.insert(m_currentPingId);
     if (failedPings.size() >= m_kNumOfFailedPingsBeforeRecovery)
     {
+        TELEMETRY_EVENT_INT("RIALTO_SM_FAIL", T2::SERVERMGR::SERVER_DEADLOCK);
         RIALTO_SERVER_MANAGER_LOG_WARN(
             "Max num of failed pings reached for server with id: %d. Starting recovery action", serverId);
         failedPings.clear();

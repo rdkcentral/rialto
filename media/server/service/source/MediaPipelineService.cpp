@@ -75,6 +75,7 @@ bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IM
         std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
         if (m_mediaPipelines.size() == static_cast<size_t>(m_playbackService.getMaxPlaybacks()))
         {
+            TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::CREATE_FAIL);
             RIALTO_SERVER_LOG_ERROR("Unable to create a session with id: %d. Max session number reached.", sessionId);
             return false;
         }
@@ -113,6 +114,7 @@ bool MediaPipelineService::destroySession(int sessionId)
         auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
         if (mediaPipelineIter == m_mediaPipelines.end())
         {
+            TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
             RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
             return false;
         }
@@ -131,6 +133,7 @@ bool MediaPipelineService::load(int sessionId, MediaType type, const std::string
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -145,6 +148,7 @@ bool MediaPipelineService::attachSource(int sessionId, const std::unique_ptr<IMe
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -159,6 +163,7 @@ bool MediaPipelineService::removeSource(int sessionId, std::int32_t sourceId)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -173,6 +178,7 @@ bool MediaPipelineService::allSourcesAttached(int sessionId)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -187,6 +193,7 @@ bool MediaPipelineService::play(int sessionId, bool &async)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -201,6 +208,7 @@ bool MediaPipelineService::pause(int sessionId)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -215,6 +223,7 @@ bool MediaPipelineService::stop(int sessionId)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -229,6 +238,7 @@ bool MediaPipelineService::setPlaybackRate(int sessionId, double rate)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -243,6 +253,7 @@ bool MediaPipelineService::setPosition(int sessionId, std::int64_t position)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -257,6 +268,7 @@ bool MediaPipelineService::getPosition(int sessionId, std::int64_t &position)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -271,6 +283,7 @@ bool MediaPipelineService::getDuration(int sessionId, std::int64_t &duration)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -285,6 +298,7 @@ bool MediaPipelineService::setImmediateOutput(int sessionId, int32_t sourceId, b
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -299,6 +313,7 @@ bool MediaPipelineService::setReportDecodeErrors(int sessionId, int32_t sourceId
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -313,6 +328,7 @@ bool MediaPipelineService::getQueuedFrames(int sessionId, int32_t sourceId, uint
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -327,6 +343,7 @@ bool MediaPipelineService::getImmediateOutput(int sessionId, int32_t sourceId, b
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -341,6 +358,7 @@ bool MediaPipelineService::getStats(int sessionId, int32_t sourceId, uint64_t &r
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -356,6 +374,7 @@ bool MediaPipelineService::setVideoWindow(int sessionId, std::uint32_t x, std::u
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -371,6 +390,7 @@ bool MediaPipelineService::haveData(int sessionId, MediaSourceStatus status, std
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -385,6 +405,7 @@ bool MediaPipelineService::renderFrame(int sessionId)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -398,6 +419,7 @@ bool MediaPipelineService::setVolume(int sessionId, double targetVolume, uint32_
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -412,6 +434,7 @@ bool MediaPipelineService::getVolume(int sessionId, double &volume)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
@@ -426,6 +449,7 @@ bool MediaPipelineService::setMute(int sessionId, std::int32_t sourceId, bool mu
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -440,6 +464,7 @@ bool MediaPipelineService::getMute(int sessionId, std::int32_t sourceId, bool &m
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -454,6 +479,7 @@ bool MediaPipelineService::setTextTrackIdentifier(int sessionId, const std::stri
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -468,6 +494,7 @@ bool MediaPipelineService::getTextTrackIdentifier(int sessionId, std::string &te
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -482,6 +509,7 @@ bool MediaPipelineService::setLowLatency(int sessionId, bool lowLatency)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -496,6 +524,7 @@ bool MediaPipelineService::setSync(int sessionId, bool sync)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -510,6 +539,7 @@ bool MediaPipelineService::getSync(int sessionId, bool &sync)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -524,6 +554,7 @@ bool MediaPipelineService::setSyncOff(int sessionId, bool syncOff)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -538,6 +569,7 @@ bool MediaPipelineService::setStreamSyncMode(int sessionId, int32_t sourceId, in
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -552,6 +584,7 @@ bool MediaPipelineService::getStreamSyncMode(int sessionId, int32_t &streamSyncM
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -566,6 +599,7 @@ bool MediaPipelineService::flush(int sessionId, std::int32_t sourceId, bool rese
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -581,6 +615,7 @@ bool MediaPipelineService::setSourcePosition(int sessionId, int32_t sourceId, in
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -595,6 +630,7 @@ bool MediaPipelineService::setSubtitleOffset(int sessionId, int32_t sourceId, in
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -610,6 +646,7 @@ bool MediaPipelineService::processAudioGap(int sessionId, int64_t position, uint
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -624,6 +661,7 @@ bool MediaPipelineService::setBufferingLimit(int sessionId, uint32_t limitBuffer
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -638,6 +676,7 @@ bool MediaPipelineService::getBufferingLimit(int sessionId, uint32_t &limitBuffe
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -652,6 +691,7 @@ bool MediaPipelineService::setUseBuffering(int sessionId, bool useBuffering)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -666,6 +706,7 @@ bool MediaPipelineService::getUseBuffering(int sessionId, bool &useBuffering)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
@@ -680,6 +721,7 @@ bool MediaPipelineService::switchSource(int sessionId, const std::unique_ptr<IMe
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::NOT_EXIST);
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }

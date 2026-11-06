@@ -47,6 +47,7 @@ AttachSamples::AttachSamples(GenericPlayerContext &context,
             }
             catch (const std::exception &e)
             {
+                TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::GET_VIDEO_SEG_FAIL);
                 // Catching error, but continuing as best as we can
                 RIALTO_SERVER_LOG_ERROR("Failed to get the video segment, reason: %s", e.what());
                 m_gstWrapper->gstBufferUnref(gstBuffer);
@@ -68,6 +69,7 @@ AttachSamples::AttachSamples(GenericPlayerContext &context,
             }
             catch (const std::exception &e)
             {
+                TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::GET_AUDIO_SEG_FAIL);
                 // Catching error, but continuing as best as we can
                 RIALTO_SERVER_LOG_ERROR("Failed to get the audio segment, reason: %s", e.what());
                 m_gstWrapper->gstBufferUnref(gstBuffer);

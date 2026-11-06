@@ -40,6 +40,7 @@ void SwitchSource::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing SwitchSource");
     if (!m_player.reattachSource(m_source))
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::SWITCH_AUDIO_FAIL);
         RIALTO_SERVER_LOG_WARN("Switch audio source failed");
         return;
     }

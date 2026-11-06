@@ -149,6 +149,7 @@ MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> cl
     }
     catch (const std::exception &e)
     {
+        TELEMETRY_EVENT_INT("RIALTO_C_IPC_FAIL", T2::CLIENT::IPC::MEDIA_PLAYER_CREATE_FAIL);
         RIALTO_CLIENT_LOG_ERROR("Failed to create the media player, reason: %s", e.what());
     }
 

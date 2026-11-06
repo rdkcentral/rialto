@@ -306,6 +306,7 @@ bool SessionServerAppManager::connectSessionServer(const std::shared_ptr<ISessio
 {
     if (!kSessionServer)
     {
+        TELEMETRY_EVENT_INT("RIALTO_SM_FAIL", T2::SERVERMGR::SERVER_NULL);
         RIALTO_SERVER_MANAGER_LOG_ERROR("Unable to connect Session Server - pointer is null!");
         return false;
     }
@@ -399,6 +400,7 @@ bool SessionServerAppManager::changeSessionServerState(const std::string &appNam
     }
     if (!m_ipcController->performSetState(sessionServer->getServerId(), newState))
     {
+        TELEMETRY_EVENT_INT("RIALTO_SM_FAIL", T2::SERVERMGR::STATE_CHANGE_FAIL);
         RIALTO_SERVER_MANAGER_LOG_ERROR("Change state of %s to %s failed.", appName.c_str(), toString(newState));
         handleStateChangeFailure(sessionServer, newState);
         return false;

@@ -382,6 +382,8 @@ void Client::onDisconnected() const
         RIALTO_SERVER_MANAGER_LOG_DEBUG("Connection to serverId: %d broken, but server is shutting down", m_serverId);
         return;
     }
+    
+    TELEMETRY_EVENT_INT("RIALTO_SM_FAIL", T2::SERVERMGR::SERVER_CRASH);
     RIALTO_SERVER_MANAGER_LOG_WARN("Connection to serverId: %d broken, server probably crashed. Starting recovery",
                                    m_serverId);
     m_sessionServerAppManager->restartServer(m_serverId);

@@ -81,6 +81,7 @@ std::unique_ptr<IWebAudioPlayerServerInternal> WebAudioPlayerServerInternalFacto
     }
     catch (const std::exception &e)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::WEB_AUDIO_PLAYER_CREATE_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to create the web audio player, reason: %s", e.what());
     }
 
@@ -140,6 +141,7 @@ bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(
 {
     if (!m_shmBuffer->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId))
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_SHM_FAIL", T2::SERVER::SHM::MAP_FAIL);
         RIALTO_SERVER_LOG_ERROR("Unable to map shm partition");
         return false;
     }
@@ -254,6 +256,7 @@ bool WebAudioPlayerServerInternal::getBufferAvailable(uint32_t &availableFrames,
 
     if (!webAudioShmInfo)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::WEBAUDIO_SHM_INFO_NULL);
         RIALTO_SERVER_LOG_ERROR("WebAudioShmInfo is null");
         return false;
     }
@@ -283,6 +286,7 @@ bool WebAudioPlayerServerInternal::getBufferDelay(uint32_t &delayFrames)
         uint64_t queuedFrames = (m_gstPlayer->getQueuedBytes() / m_bytesPerFrame) + getQueuedFramesInShm();
         if (queuedFrames > std::numeric_limits<uint32_t>::max())
         {
+            TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::LARGE_QUEUED_FRAMES);
             RIALTO_SERVER_LOG_ERROR("Queued frames are larger than the max uint32_t");
         }
         else
@@ -316,6 +320,7 @@ bool WebAudioPlayerServerInternal::writeBufferInternal(const uint32_t numberOfFr
 {
     if (!m_expectWriteBuffer)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::BUFFER_FAIL);
         RIALTO_SERVER_LOG_ERROR("No getBufferAvailable to match with this writeBuffer call");
         return false;
     }
@@ -531,6 +536,7 @@ bool WebAudioPlayerServerInternal::initGstWebAudioPlayer(const std::string &audi
     m_gstPlayer = gstPlayerFactory->createGstWebAudioPlayer(this, m_priority);
     if (!m_gstPlayer)
     {
+        TELEMETRY_EVENT_INT("RIALTO_S_PL_FAIL", T2::SERVER::PIPELINE::LOAD_GST_PLAYER_FAIL);
         RIALTO_SERVER_LOG_ERROR("Failed to load gstreamer player");
         return false;
     }

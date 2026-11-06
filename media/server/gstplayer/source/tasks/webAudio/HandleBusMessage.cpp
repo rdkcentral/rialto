@@ -122,6 +122,7 @@ void HandleBusMessage::execute() const
         gchar *debug = nullptr;
         m_gstWrapper->gstMessageParseError(m_message, &err, &debug);
 
+        TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::GST_OBJ_ERR);
         RIALTO_SERVER_LOG_ERROR("Error from %s - %d: %s (%s)", GST_OBJECT_NAME(GST_MESSAGE_SRC(m_message)), err->code,
                                 err->message, debug);
         m_gstPlayerClient->notifyState(WebAudioPlayerState::FAILURE);

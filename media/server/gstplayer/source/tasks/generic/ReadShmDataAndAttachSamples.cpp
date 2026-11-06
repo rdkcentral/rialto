@@ -71,6 +71,7 @@ void ReadShmDataAndAttachSamples::execute() const
             }
             catch (const std::exception &e)
             {
+                TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::GET_VIDEO_SEG_FAIL);
                 RIALTO_SERVER_LOG_ERROR("Failed to get the video segment, reason: %s", e.what());
             }
         }
@@ -87,6 +88,7 @@ void ReadShmDataAndAttachSamples::execute() const
             }
             catch (const std::exception &e)
             {
+                TELEMETRY_EVENT_INT("RIALTO_S_PB_FAIL", T2::SERVER::PLAYBACK::GET_AUDIO_SEG_FAIL);
                 RIALTO_SERVER_LOG_ERROR("Failed to get the audio segment, reason: %s", e.what());
             }
         }

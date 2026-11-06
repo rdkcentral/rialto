@@ -69,6 +69,7 @@ bool WebAudioPlayerService::createWebAudioPlayer(int handle,
         std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
         if (m_webAudioPlayers.size() == static_cast<size_t>(m_playbackService.getMaxWebAudioPlayers()))
         {
+            TELEMETRY_EVENT_INT("RIALTO_S_SESH_FAIL", T2::SERVER::SESSION::CREATE_WEBAUDIO_FAIL);
             RIALTO_SERVER_LOG_ERROR("Unable to create WebAudioPlayer with id: %d. Max instance number reached.", handle);
             return false;
         }

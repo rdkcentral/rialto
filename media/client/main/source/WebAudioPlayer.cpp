@@ -78,6 +78,7 @@ WebAudioPlayerFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient>
     }
     catch (const std::exception &e)
     {
+        TELEMETRY_EVENT_INT("RIALTO_C_IPC_FAIL", T2::CLIENT::IPC::WEB_AUDIO_PLAYER_CREATE_FAIL);
         RIALTO_CLIENT_LOG_ERROR("Failed to create the web audio player, reason: %s", e.what());
     }
 
