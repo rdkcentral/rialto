@@ -71,7 +71,8 @@ void MediaKeySessionTestBase::generateRequest()
     InitDataType m_initDataType = InitDataType::CENC;
     std::vector<uint8_t> m_initData{1, 2, 3};
 
-    EXPECT_CALL(*m_ocdmSessionMock, constructSession(m_keySessionType, m_initDataType, &m_initData[0], m_initData.size()))
+    EXPECT_CALL(*m_ocdmSessionMock,
+                constructSession(m_keySessionType, m_initDataType, &m_initData[0], m_initData.size(), nullptr, 0))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_initDataType, m_initData, m_kLdlState));
@@ -80,7 +81,7 @@ void MediaKeySessionTestBase::generateRequest()
 void MediaKeySessionTestBase::generateRequestPlayready()
 {
     EXPECT_CALL(*m_ocdmSessionMock,
-                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size(), nullptr, 0))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
     mainThreadWillEnqueueTask();
     EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, nullptrMatcher(), _))
@@ -98,7 +99,7 @@ void MediaKeySessionTestBase::generateRequestPlayready()
 void MediaKeySessionTestBase::generateRequestPlayreadyWithTwoCalls()
 {
     EXPECT_CALL(*m_ocdmSessionMock,
-                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size(), nullptr, 0))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK,

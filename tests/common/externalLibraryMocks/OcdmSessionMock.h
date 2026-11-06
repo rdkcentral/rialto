@@ -31,7 +31,8 @@ class OcdmSessionMock : public IOcdmSession
 {
 public:
     MOCK_METHOD(MediaKeyErrorStatus, constructSession,
-                (KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[], uint32_t initDataSize),
+                (KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[], uint32_t initDataSize,
+                 const uint8_t cdmData[], const uint16_t cdmDataLength),
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, getChallengeData, (bool isLDL, uint8_t *challenge, uint32_t *challengeSize),
                 (override));
