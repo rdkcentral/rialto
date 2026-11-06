@@ -44,7 +44,7 @@ public:
     ~BlockingClosurePoll() final = default;
 
     void Run() final;
-    void wait() final;
+    bool wait() final;
 
 private:
     const std::shared_ptr<::firebolt::rialto::ipc::IChannel> m_kChannel;
@@ -58,7 +58,7 @@ public:
     ~BlockingClosureSemaphore() final;
 
     void Run() final;
-    void wait() final;
+    bool wait() final;
 
 private:
     sem_t m_sem;
