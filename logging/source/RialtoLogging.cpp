@@ -79,6 +79,7 @@ void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, co
 
 firebolt::rialto::logging::LogHandler g_logHandler[RIALTO_COMPONENT_LAST] = {};
 bool g_ignoreLogLevels[RIALTO_COMPONENT_LAST] = {};
+std::string g_applicationName{};
 std::mutex g_logHandlerMutex;
 
 std::string componentToString(RIALTO_COMPONENT component);
@@ -178,18 +179,27 @@ void fdLogHandler(int fd, RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, 
     char fbuf[180];
     iov[3].iov_base = reinterpret_cast<void *>(fbuf);
 
+    std::string applicationName{};
+    {
+        std::unique_lock<std::mutex> lock{g_logHandlerMutex};
+        if (!g_applicationName.empty())
+        {
+            applicationName = "A:" + g_applicationName + " ";
+        }
+    }
+
     if (RIALTO_DEBUG_LEVEL_EXTERNAL == level)
     {
-        iov[3].iov_len = snprintf(fbuf, sizeof(fbuf), "< T:%d >", threadId);
+        iov[3].iov_len = snprintf(fbuf, sizeof(fbuf), "< %sT:%d >", applicationName.c_str(), threadId);
     }
     else if (!file || !function || (line <= 0))
     {
-        iov[3].iov_len = snprintf(fbuf, sizeof(fbuf), "< T:%d M:? F:? L:? > ", threadId);
+        iov[3].iov_len = snprintf(fbuf, sizeof(fbuf), "< %sT:%d M:? F:? L:? > ", applicationName.c_str(), threadId);
     }
     else
     {
-        iov[3].iov_len =
-            snprintf(fbuf, sizeof(fbuf), "< T:%d M:%.*s F:%.*s L:%d > ", threadId, 64, file, 64, function, line);
+        iov[3].iov_len = snprintf(fbuf, sizeof(fbuf), "< %sT:%d M:%.*s F:%.*s L:%d > ", applicationName.c_str(),
+                                  threadId, 64, file, 64, function, line);
     }
     iov[3].iov_len = std::min(iov[3].iov_len, sizeof(fbuf));
     iov[4].iov_base = const_cast<void *>(reinterpret_cast<const void *>(message));
@@ -209,20 +219,28 @@ void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, co
     if (threadId <= 0)
         threadId = syscall(SYS_gettid);
     char fbuf[180];
+    std::string applicationName{};
+    {
+        std::unique_lock<std::mutex> lock{g_logHandlerMutex};
+        if (!g_applicationName.empty())
+        {
+            applicationName = "A:" + g_applicationName + " ";
+        }
+    }
     if (RIALTO_DEBUG_LEVEL_EXTERNAL == level)
     {
-        snprintf(fbuf, sizeof(fbuf), "%s: %s: < T:%d >", levelToString(level).c_str(),
-                 componentToString(component).c_str(), threadId);
+        snprintf(fbuf, sizeof(fbuf), "%s: %s: < %sT:%d >", levelToString(level).c_str(),
+                 componentToString(component).c_str(), applicationName.c_str(), threadId);
     }
     else if (!file || !function || (line <= 0))
     {
-        snprintf(fbuf, sizeof(fbuf), "%s: %s: < T:%d M:? F:? L:? >", levelToString(level).c_str(),
-                 componentToString(component).c_str(), threadId);
+        snprintf(fbuf, sizeof(fbuf), "%s: %s: < %sT:%d M:? F:? L:? >", levelToString(level).c_str(),
+                 componentToString(component).c_str(), applicationName.c_str(), threadId);
     }
     else
     {
-        snprintf(fbuf, sizeof(fbuf), "%s: %s: < T:%d M:%.*s F:%.*s L:%d >", levelToString(level).c_str(),
-                 componentToString(component).c_str(), threadId, 64, file, 64, function, line);
+        snprintf(fbuf, sizeof(fbuf), "%s: %s: < %sT:%d M:%.*s F:%.*s L:%d >", levelToString(level).c_str(),
+                 componentToString(component).c_str(), applicationName.c_str(), threadId, 64, file, 64, function, line);
     }
 
     switch (level)
@@ -410,4 +428,9 @@ bool isConsoleLoggingEnabled()
     return g_envVariableParser.isConsoleLoggingEnabled();
 }
 
+void setApplicationName(const char *appName)
+{
+    std::unique_lock<std::mutex> lock{g_logHandlerMutex};
+    g_applicationName = appName;
+}
 } // namespace firebolt::rialto::logging
