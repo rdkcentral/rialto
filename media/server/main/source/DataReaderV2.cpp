@@ -214,6 +214,7 @@ DataReaderV2::DataReaderV2(const MediaSourceType &mediaSourceType, std::uint8_t 
 IMediaPipeline::MediaSegmentVector DataReaderV2::readData() const
 {
     IMediaPipeline::MediaSegmentVector mediaSegments;
+    mediaSegments.reserve(m_numFrames);
     uint8_t *currentReadPosition{m_buffer + m_dataOffset};
     for (auto i = 0U; i < m_numFrames; ++i)
     {
