@@ -91,6 +91,8 @@ std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
 
 	int32_t currentSessionId{-1};
 	FrameCounters counters;
+	std::uint64_t count{0};
+	std::uint64_t durationNs{0};
 	bool validSession{false};
 	{
 		std::lock_guard<std::mutex> lock{m_counterMutex};
@@ -118,6 +120,34 @@ std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
 			}
 			counters.timestamp = getMonotonicTimestampNs();
 			m_counterCache[key] = counters;
+
+			auto &episode = m_metricEpisodes[{currentSessionId, static_cast<int32_t>(sourceId), metricType}];
+			if (phase == 0U)
+			{
+				if (!episode.active)
+				{
+					episode.startPtsNs = static_cast<std::uint64_t>(ptsNs);
+					episode.active = true;
+					episode.count = 1;
+					episode.durationNs = 0;
+				}
+				else
+				{
+					++episode.count;
+					episode.durationNs = 0;
+				}
+			}
+			else
+			{
+				++episode.count;
+				if (episode.active && ptsNs >= static_cast<gint64>(episode.startPtsNs))
+				{
+					episode.durationNs = static_cast<std::uint64_t>(ptsNs) - episode.startPtsNs;
+				}
+				episode.active = false;
+			}
+			count = episode.count;
+			durationNs = episode.durationNs;
 			validSession = true;
 		}
 	}
@@ -130,16 +160,17 @@ std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
 	}
 
 	ParsedMetricMessage parsedMessage{static_cast<int32_t>(sessionId), metricType, phase,
-									  static_cast<int32_t>(sourceId), static_cast<std::uint64_t>(ptsNs), counters};
+							  static_cast<int32_t>(sourceId), static_cast<std::uint64_t>(ptsNs), counters,
+							  count, durationNs};
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
-					 "RialtoMetrics::onMetricMessage parsed sessionId: %d, sourceId: %d, type: %u, phase: %u, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu",
+					 "RialtoMetrics::onMetricMessage parsed sessionId: %d, sourceId: %d, type: %u, phase: %u, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu, count: %llu, durationNs: %llu",
 					 parsedMessage.sessionId, parsedMessage.sourceId, metricType, phase,
 					 static_cast<unsigned long long>(counters.rendered),
 					 static_cast<unsigned long long>(counters.dropped),
 					 static_cast<unsigned long long>(counters.corrupted),
-					 static_cast<unsigned long long>(parsedMessage.ptsNs));
-	return parsedMessage;
-}
+					 static_cast<unsigned long long>(parsedMessage.ptsNs),
+					 static_cast<unsigned long long>(parsedMessage.count),
+					 static_cast<unsigned long long>(parsedMessage.durationNs));
 
 void RialtoMetrics::updateFrameCounters(int32_t sessionId, int32_t sourceId, const FrameCounters &counters)
 {
