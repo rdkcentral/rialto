@@ -22,6 +22,7 @@
 #include "ShmCommon.h"
 #include "TypeConverters.h"
 #include "metadata.pb.h"
+#include <cstring>
 
 namespace
 {
@@ -203,9 +204,9 @@ createSegment(const firebolt::rialto::MediaSegmentMetadata &metadata, const fire
 namespace firebolt::rialto::server
 {
 DataReaderV2::DataReaderV2(const MediaSourceType &mediaSourceType, std::uint8_t *buffer, std::uint32_t dataOffset,
-                           std::uint32_t numFrames, bool isBufferFull)
+                           std::uint32_t numFrames, bool isBufferFull, std::uint64_t regionEnd)
     : m_mediaSourceType{mediaSourceType}, m_buffer{buffer}, m_dataOffset{dataOffset}, m_numFrames{numFrames},
-      m_isBufferFull{isBufferFull}
+      m_isBufferFull{isBufferFull}, m_regionEnd{regionEnd}
 {
     RIALTO_SERVER_LOG_DEBUG("Detected Metadata in Version 2. Media source type: %s",
                             common::convertMediaSourceType(m_mediaSourceType));
@@ -214,13 +215,28 @@ DataReaderV2::DataReaderV2(const MediaSourceType &mediaSourceType, std::uint8_t 
 IMediaPipeline::MediaSegmentVector DataReaderV2::readData() const
 {
     IMediaPipeline::MediaSegmentVector mediaSegments;
+    uint8_t *const kDataEnd{m_buffer + m_regionEnd};
     uint8_t *currentReadPosition{m_buffer + m_dataOffset};
     for (auto i = 0U; i < m_numFrames; ++i)
     {
-        std::uint32_t *metadataSize{reinterpret_cast<uint32_t *>(currentReadPosition)};
-        currentReadPosition += sizeof(uint32_t);
+        // All sizes below are written by the client into shared memory - bound
+        // every advance against the region end before use.
+        if (kDataEnd - currentReadPosition < static_cast<ptrdiff_t>(sizeof(std::uint32_t)))
+        {
+            RIALTO_SERVER_LOG_ERROR("Truncated frame %u metadata size field", i);
+            return IMediaPipeline::MediaSegmentVector{};
+        }
+        // memcpy rather than a reinterpret_cast: the data is not guaranteed aligned.
+        std::uint32_t metadataSize;
+        std::memcpy(&metadataSize, currentReadPosition, sizeof(metadataSize));
+        currentReadPosition += sizeof(metadataSize);
+        if (kDataEnd - currentReadPosition < static_cast<ptrdiff_t>(metadataSize))
+        {
+            RIALTO_SERVER_LOG_ERROR("Truncated frame %u metadata", i);
+            return IMediaPipeline::MediaSegmentVector{};
+        }
         MediaSegmentMetadata metadata;
-        if (!metadata.ParseFromArray(currentReadPosition, *metadataSize))
+        if (!metadata.ParseFromArray(currentReadPosition, metadataSize))
         {
             RIALTO_SERVER_LOG_ERROR("Metadata parsing failed!");
             return IMediaPipeline::MediaSegmentVector{};
@@ -231,7 +247,12 @@ IMediaPipeline::MediaSegmentVector DataReaderV2::readData() const
             RIALTO_SERVER_LOG_ERROR("Segment parsing failed!");
             return IMediaPipeline::MediaSegmentVector{};
         }
-        currentReadPosition += *metadataSize;
+        currentReadPosition += metadataSize;
+        if (kDataEnd - currentReadPosition < static_cast<ptrdiff_t>(metadata.length()))
+        {
+            RIALTO_SERVER_LOG_ERROR("Truncated frame %u media data", i);
+            return IMediaPipeline::MediaSegmentVector{};
+        }
         newSegment->setData(metadata.length(), currentReadPosition);
         currentReadPosition += metadata.length();
         mediaSegments.emplace_back(std::move(newSegment));

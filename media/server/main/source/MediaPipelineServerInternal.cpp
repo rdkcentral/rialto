@@ -818,10 +818,13 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     }
 
     std::uint32_t regionOffset = 0;
+    std::uint32_t regionLen = 0;
     try
     {
         regionOffset =
             m_shmBuffer->getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
+        regionLen =
+            m_shmBuffer->getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
     }
     catch (const std::runtime_error &e)
     {
@@ -830,12 +833,21 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         return false;
     }
 
+    // numFrames is a client-supplied IPC field - clamp it to the frame count the
+    // request actually provisioned, or it can drive an OOB walk in the reader.
+    if (numFrames > kMaxNumFrames)
+    {
+        RIALTO_SERVER_LOG_ERROR("haveData numFrames %u exceeds requested max %u - clamping", numFrames, kMaxNumFrames);
+        numFrames = kMaxNumFrames;
+    }
+
     if (0 != numFrames)
     {
         const bool kIsBufferFull = kMaxNumFrames == numFrames || status == MediaSourceStatus::NO_SPACE_FOR_SAMPLES ||
                                    status == MediaSourceStatus::EOS;
         std::shared_ptr<IDataReader> dataReader =
-            m_dataReaderFactory->createDataReader(mediaSourceType, buffer, regionOffset, numFrames, kIsBufferFull);
+            m_dataReaderFactory->createDataReader(mediaSourceType, buffer, regionOffset, regionLen, numFrames,
+                                                  kIsBufferFull);
         if (!dataReader)
         {
             RIALTO_SERVER_LOG_ERROR("Metadata version not supported for %s request id: %u",
