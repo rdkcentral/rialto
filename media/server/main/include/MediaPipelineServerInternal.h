@@ -174,6 +174,8 @@ public:
 
     bool getUseBuffering(bool &useBuffering) override;
 
+    bool setBatchDecryption(bool batchDecryption) override;
+
     bool switchSource(const std::unique_ptr<MediaSource> &source) override;
 
     bool getDuration(int64_t &duration) override;
@@ -748,6 +750,15 @@ protected:
      * @retval true on success.
      */
     bool getUseBufferingInternal(bool &useBuffering);
+
+    /**
+     * @brief Enables/disables batch decryption internally, only to be called on the main thread.
+     *
+     * @param[in] batchDecryption      : true if batch decryption enabled.
+     *
+     * @retval true on success.
+     */
+    bool setBatchDecryptionInternal(bool batchDecryption);
 
     /**
      * @brief Switches a source.

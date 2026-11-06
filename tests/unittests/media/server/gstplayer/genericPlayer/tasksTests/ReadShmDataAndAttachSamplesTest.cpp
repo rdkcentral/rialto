@@ -72,3 +72,29 @@ TEST_F(ReadShmDataAndAttachSamplesTest, shouldAttachAllAudioSamplesWithDelay)
     shouldAttachAllAudioSamplesWithDelay();
     triggerReadShmDataAndAttachSamplesAudio();
 }
+
+TEST_F(ReadShmDataAndAttachSamplesTest, shouldAttachAllAudioSamplesInBatch)
+{
+    setContextBatchDecryption();
+    shouldReadAudioData();
+    shouldAttachAllAudioSamplesInBatch();
+    triggerReadShmDataAndAttachSamplesAudio();
+}
+
+TEST_F(ReadShmDataAndAttachSamplesTest, shouldAttachAllVideoSamplesInBatch)
+{
+    setContextBatchDecryption();
+    shouldReadVideoData();
+    shouldAttachAllVideoSamplesInBatch();
+    triggerReadShmDataAndAttachSamplesVideo();
+}
+
+TEST_F(ReadShmDataAndAttachSamplesTest, shouldAttachAllSubtitleSamplesInBatch)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::SUBTITLE);
+    setContextBatchDecryption();
+    shouldReadSubtitleData();
+    shouldAttachAllSubtitleSamplesInBatch();
+    triggerReadShmDataAndAttachSamples();
+    checkSubtitleSamplesAttached();
+}

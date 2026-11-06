@@ -103,6 +103,7 @@ public:
     bool getBufferingLimit(int sessionId, uint32_t &limitBufferingMs) override;
     bool setUseBuffering(int sessionId, bool useBuffering) override;
     bool getUseBuffering(int sessionId, bool &useBuffering) override;
+    bool setBatchDecryption(int sessionId, bool batchDecryption) override;
     bool switchSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
     bool isVideoMaster(bool &isVideoMaster) override;
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) override;

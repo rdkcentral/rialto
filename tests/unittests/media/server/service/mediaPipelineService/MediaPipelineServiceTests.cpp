@@ -415,6 +415,26 @@ TEST_F(MediaPipelineServiceTests, shouldSetReportDecodeErrors)
     setReportDecodeErrorsShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToSetBatchDecryptionForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    setBatchDecryptionShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetBatchDecryption)
+{
+    initSession();
+    mediaPipelineWillFailToSetBatchDecryption();
+    setBatchDecryptionShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldSetBatchDecryption)
+{
+    initSession();
+    mediaPipelineWillSetBatchDecryption();
+    setBatchDecryptionShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldGetQueuedFrames)
 {
     initSession();

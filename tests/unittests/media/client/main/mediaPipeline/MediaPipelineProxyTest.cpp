@@ -178,6 +178,11 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     /////////////////////////////////////////////
 
+    EXPECT_CALL(*mediaPipelineMock, setBatchDecryption(true)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setBatchDecryption(true));
+
+    /////////////////////////////////////////////
+
     {
         const uint32_t kQueuedFrames{123};
         uint32_t returnQueuedFrames;

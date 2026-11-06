@@ -123,6 +123,7 @@ protected:
     void shouldGetBufferingLimit(const uint32_t bufferingLimit);
     void shouldSetUseBuffering(const bool expectedUseBuffering);
     void shouldGetUseBuffering(const bool useBuffering);
+    void shouldSetBatchDecryption(const bool expectedBatchDecryption);
     void shouldSetVideoWindow(const uint32_t expectedX, const uint32_t expectedY, const uint32_t expectedWidth,
                               const uint32_t expectedHeight);
     void shouldRenderFrame();
@@ -247,6 +248,7 @@ protected:
     void getBufferingLimit(const uint32_t expectedBufferingLimit);
     void setUseBuffering(const bool useBuffering);
     void getUseBuffering(const bool expectedUseBuffering);
+    void setBatchDecryption(const bool batchDecryption);
     void setSetVideoWindow(const uint32_t x, const uint32_t y, const uint32_t width, const uint32_t height);
     void renderFrame();
     void renderFrameFailure();

@@ -449,6 +449,15 @@ TEST_F(GstGenericPlayerTest, shouldSetReportDecodeErrors)
     EXPECT_TRUE(m_sut->setReportDecodeErrors(MediaSourceType::VIDEO, true));
 }
 
+TEST_F(GstGenericPlayerTest, shouldSetBatchDecryption)
+{
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSetBatchDecryption(_, true)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->setBatchDecryption(true);
+}
+
 TEST_F(GstGenericPlayerTest, shouldGetQueuedFramesInPlayingState)
 {
     setPipelineState(GST_STATE_PLAYING);

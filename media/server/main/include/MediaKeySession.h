@@ -80,6 +80,8 @@ public:
 
     MediaKeyErrorStatus decrypt(GstBuffer *encrypted, GstCaps *caps) override;
 
+    MediaKeyErrorStatus decryptMulti(std::vector<GstBuffer *> &bufferVec, GstCaps *caps) override;
+
     MediaKeyErrorStatus closeKeySession() override;
 
     MediaKeyErrorStatus removeKeySession() override;

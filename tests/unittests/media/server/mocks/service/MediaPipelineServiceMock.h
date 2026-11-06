@@ -84,6 +84,7 @@ public:
     MOCK_METHOD(bool, getBufferingLimit, (int sessionId, uint32_t &limitBufferingMs), (override));
     MOCK_METHOD(bool, setUseBuffering, (int sessionId, bool useBuffering), (override));
     MOCK_METHOD(bool, getUseBuffering, (int sessionId, bool &useBuffering), (override));
+    MOCK_METHOD(bool, setBatchDecryption, (int sessionId, bool batchDecryption), (override));
     MOCK_METHOD(bool, switchSource, (int, const std::unique_ptr<IMediaPipeline::MediaSource> &), (override));
     MOCK_METHOD(bool, isVideoMaster, (bool &isVideoMaster), (override));
     MOCK_METHOD(std::vector<std::string>, getSupportedMimeTypes, (MediaSourceType type), (override));

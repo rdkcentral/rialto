@@ -36,6 +36,14 @@ TEST_F(FinishSetupSourceTest, shouldFinishSetupSource)
     checkSetupSourceFinished();
 }
 
+TEST_F(FinishSetupSourceTest, shouldFinishSetupSourceWithBatchDecryption)
+{
+    setContextBatchDecryption();
+    shouldFinishSetupSource(true);
+    triggerFinishSetupSource();
+    checkSetupSourceFinished();
+}
+
 TEST_F(FinishSetupSourceTest, shouldFinishSetupSourceWithUnknownSource)
 {
     setContextStreamInfo(firebolt::rialto::MediaSourceType::UNKNOWN);

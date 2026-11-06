@@ -26,6 +26,7 @@
 #include "IGstWrapper.h"
 #include <gst/gst.h>
 #include <memory>
+#include <string>
 
 namespace firebolt::rialto::server
 {
@@ -39,9 +40,14 @@ public:
      * @param[in] gstWrapperFactory     : The gstreamer wrapper factory.
      * @param[in] glibWrapperFactory    : The glib wrapper factory.
      */
-    GstRialtoDecryptorPrivate(GstBaseTransform *parentElement,
+    GstRialtoDecryptorPrivate(GstElement *parentElement,
                               const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> &gstWrapperFactory,
                               const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapperFactory> &glibWrapperFactory);
+
+    /**
+     * @brief Virtual destructor.
+     */
+    virtual ~GstRialtoDecryptorPrivate() = default;
 
     /**
      * @brief Decrypts the gst buffer.
@@ -67,7 +73,38 @@ public:
      */
     void setProtectionMetadataWrapper(std::unique_ptr<IGstProtectionMetadataHelper> &&metadataWrapper);
 
-private:
+protected:
+    /**
+     * @brief Creates the protection meta structure.
+     *
+     * @param[in]  protectionData   : The rialto protection data.
+     *
+     * @retval the gst structure of the protection meta.
+     */
+    GstStructure *createProtectionMetaInfo(GstRialtoProtectionData *protectionData);
+
+    /**
+     * @brief Posts a non-fatal warning message, that decryption failed and frames are dropped.
+     *
+     * @param[in] message : The warning message.
+     */
+    void postDecryptWarning(const std::string &message);
+
+    /**
+     * @brief Posts an application message, that HDCP output protection failed.
+     */
+    void postHdcpFailure();
+
+    /**
+     * @brief The parent decryptor element.
+     */
+    GstElement *m_decryptorElement;
+
+    /**
+     * @brief The service to perform decryption.
+     */
+    IDecryptionService *m_decryptionService;
+
     /**
      * @brief The gstreamer wrapper object.
      */
@@ -79,33 +116,15 @@ private:
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
 
     /**
-     * @brief The parent decryptor element.
-     */
-    GstBaseTransform *m_decryptorElement;
-
-    /**
-     * @brief The service to perform decryption.
-     */
-    IDecryptionService *m_decryptionService;
-
-    /**
      * @brief The protection metadata object
      */
     std::unique_ptr<IGstProtectionMetadataHelper> m_metadataWrapper;
 
+private:
     /**
      * @brief The flag indicating if the output restricted error occurred in the previous decryption attempt.
      */
     bool m_hdcpOutputRestricted{false};
-
-    /**
-     * @brief Creates the protection meta structure.
-     *
-     * @param[in]  protectionData   : The rialto protection data.
-     *
-     * @retval the gst structure of the protection meta.
-     */
-    GstStructure *createProtectionMetaInfo(GstRialtoProtectionData *protectionData);
 };
 }; // namespace firebolt::rialto::server
 

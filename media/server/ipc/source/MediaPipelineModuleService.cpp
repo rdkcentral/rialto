@@ -1308,4 +1308,18 @@ void MediaPipelineModuleService::getUseBuffering(::google::protobuf::RpcControll
 
     done->Run();
 }
+
+void MediaPipelineModuleService::setBatchDecryption(::google::protobuf::RpcController *controller,
+                                                    const ::firebolt::rialto::SetBatchDecryptionRequest *request,
+                                                    ::firebolt::rialto::SetBatchDecryptionResponse *response,
+                                                    ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.setBatchDecryption(request->session_id(), request->batch_decryption()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set batch decryption failed.");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
 } // namespace firebolt::rialto::server::ipc

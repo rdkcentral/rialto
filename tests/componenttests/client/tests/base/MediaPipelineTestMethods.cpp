@@ -1267,6 +1267,18 @@ void MediaPipelineTestMethods::getUseBuffering(const bool expectedUseBuffering)
     EXPECT_EQ(returnUseBuffering, expectedUseBuffering);
 }
 
+void MediaPipelineTestMethods::shouldSetBatchDecryption(const bool expectedBatchDecryption)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setBatchDecryption(_, setBatchDecryptionRequestMatcher(kSessionId, expectedBatchDecryption), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setBatchDecryption(const bool batchDecryption)
+{
+    EXPECT_EQ(m_mediaPipeline->setBatchDecryption(batchDecryption), true);
+}
+
 void MediaPipelineTestMethods::shouldSetVideoWindow(const uint32_t expectedX, const uint32_t expectedY,
                                                     const uint32_t expectedWidth, const uint32_t expectedHeight)
 {

@@ -177,6 +177,11 @@ public:
 
     bool getUseBuffering(bool &useBuffering) override { return m_mediaPipeline->getUseBuffering(useBuffering); }
 
+    bool setBatchDecryption(bool batchDecryption) override
+    {
+        return m_mediaPipeline->setBatchDecryption(batchDecryption);
+    }
+
     bool switchSource(const std::unique_ptr<MediaSource> &source) override
     {
         return m_mediaPipeline->switchSource(source);

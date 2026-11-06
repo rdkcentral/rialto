@@ -482,6 +482,16 @@ public:
     virtual bool getUseBuffering(bool &useBuffering) = 0;
 
     /**
+     * @brief Enables/disables batch decryption
+     *
+     * Selects the decryptor element created for encrypted sources. Takes effect for
+     * sources set up after this call.
+     *
+     * @param[in] batchDecryption      : true if batch decryption enabled.
+     */
+    virtual void setBatchDecryption(bool batchDecryption) = 0;
+
+    /**
      * @brief Switches a source.
      *
      * @param[in] mediaSource : The media source.

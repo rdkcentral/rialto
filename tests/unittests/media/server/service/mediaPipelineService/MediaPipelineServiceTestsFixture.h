@@ -71,6 +71,8 @@ public:
     void mediaPipelineWillFailToSetImmediateOutput();
     void mediaPipelineWillSetReportDecodeErrors();
     void mediaPipelineWillFailToSetReportDecodeErrors();
+    void mediaPipelineWillSetBatchDecryption();
+    void mediaPipelineWillFailToSetBatchDecryption();
     void mediaPipelineWillGetImmediateOutput();
     void mediaPipelineWillFailToGetImmediateOutput();
     void mediaPipelineWillGetQueuedFrames();
@@ -167,6 +169,8 @@ public:
     void getDurationShouldFail();
     void setReportDecodeErrorsShouldSucceed();
     void setReportDecodeErrorsShouldFail();
+    void setBatchDecryptionShouldSucceed();
+    void setBatchDecryptionShouldFail();
     void setImmediateOutputShouldSucceed();
     void setImmediateOutputShouldFail();
     void getImmediateOutputShouldSucceed();

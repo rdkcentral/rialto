@@ -25,6 +25,7 @@
 #include <memory>
 #include <stdint.h>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::wrappers
 {
@@ -106,6 +107,17 @@ public:
      * @retval the return status.
      */
     virtual MediaKeyErrorStatus decryptBuffer(GstBuffer *encrypted, GstCaps *caps) = 0;
+
+    /**
+     * @brief Decrypts the buffer.
+     *
+     * @param[in]  bufferVec        : Vector of gstreamer buffers containing encrypted data and related meta data. If
+     * applicable, decrypted data will be stored here after this call returns.
+     * @param[in] caps              : The gst caps shared by all buffers.
+     *
+     * @retval the return status.
+     */
+    virtual MediaKeyErrorStatus decryptBufferMulti(std::vector<GstBuffer *> &bufferVec, GstCaps *caps) = 0;
 
     /**
      * @brief Removes all data related to a session.

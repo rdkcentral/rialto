@@ -113,6 +113,8 @@ public:
 
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
 
+    MediaKeyErrorStatus decryptMulti(int32_t keySessionId, std::vector<GstBuffer *> &bufferVec, GstCaps *caps) override;
+
     MediaKeyErrorStatus getMetricSystemData(std::vector<uint8_t> &buffer) override;
 
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
@@ -233,6 +235,18 @@ private:
      * @retval an error status.
      */
     MediaKeyErrorStatus decryptInternal(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps);
+
+    /**
+     * @brief Decrypt internally, only to be called on the main thread.
+     *
+     * @param[in] keySessionId    : The session id for the session.
+     * @param[in] bufferVec       : Vector of gstreamer buffers containing encrypted data and related meta data. If
+     *                              applicable, decrypted data will be stored here after this call returns.
+     * @param[in] caps            : The gst caps of buffer.
+     *
+     * @retval an error status.
+     */
+    MediaKeyErrorStatus decryptMultiInternal(int32_t keySessionId, std::vector<GstBuffer *> &bufferVec, GstCaps *caps);
 
     /**
      * @brief Selects the specified keyId for the key session internally, only to be called on the main thread.

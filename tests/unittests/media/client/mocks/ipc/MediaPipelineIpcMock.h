@@ -76,6 +76,7 @@ public:
     MOCK_METHOD(bool, getBufferingLimit, (uint32_t & limitBufferingMs), (override));
     MOCK_METHOD(bool, setUseBuffering, (bool useBuffering), (override));
     MOCK_METHOD(bool, getUseBuffering, (bool &useBuffering), (override));
+    MOCK_METHOD(bool, setBatchDecryption, (bool batchDecryption), (override));
     MOCK_METHOD(bool, switchSource, (const std::unique_ptr<IMediaPipeline::MediaSource> &source), (override));
     MOCK_METHOD(bool, getDuration, (int64_t & duration), (override));
 };

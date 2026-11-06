@@ -270,6 +270,16 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToSetReportDecodeErrors()
     EXPECT_CALL(m_mediaPipelineMock, setReportDecodeErrors(_, _)).WillOnce(Return(false));
 }
 
+void MediaPipelineServiceTests::mediaPipelineWillSetBatchDecryption()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setBatchDecryption(true)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToSetBatchDecryption()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setBatchDecryption(true)).WillOnce(Return(false));
+}
+
 void MediaPipelineServiceTests::mediaPipelineWillGetQueuedFrames()
 {
     EXPECT_CALL(m_mediaPipelineMock, getQueuedFrames(_, _)).WillOnce(DoAll(SetArgReferee<1>(123), Return(true)));
@@ -807,6 +817,16 @@ void MediaPipelineServiceTests::setReportDecodeErrorsShouldSucceed()
 void MediaPipelineServiceTests::setReportDecodeErrorsShouldFail()
 {
     EXPECT_FALSE(m_sut->setReportDecodeErrors(kSessionId, kSourceId, true));
+}
+
+void MediaPipelineServiceTests::setBatchDecryptionShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->setBatchDecryption(kSessionId, true));
+}
+
+void MediaPipelineServiceTests::setBatchDecryptionShouldFail()
+{
+    EXPECT_FALSE(m_sut->setBatchDecryption(kSessionId, true));
 }
 
 void MediaPipelineServiceTests::getQueuedFramesShouldSucceed()

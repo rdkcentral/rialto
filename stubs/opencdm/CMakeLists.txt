@@ -24,23 +24,23 @@ include( CheckCXXCompilerFlag )
 include( GNUInstallDirs )
 include(ExternalProject)
 
-if (NOT THUNDER_CLIENT_TAG)
-  set(THUNDER_CLIENT_TAG "6f1361630983b956efb26f17590293911ef2272c")
+if (NOT ENTSERVICES_OPENCDM_CLIENT_TAG)
+  set(ENTSERVICES_OPENCDM_CLIENT_TAG "f5037db80ab14ca14eb53e192d9aafc612149951")
 endif()
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/third-party/opencdm)
 
 ExternalProject_Add(
-  ThunderClientLibraries
-  GIT_REPOSITORY https://github.com/rdkcentral/ThunderClientLibraries.git
-  GIT_TAG ${THUNDER_CLIENT_TAG}
+  entservices-opencdmi
+  GIT_REPOSITORY https://github.com/rdkcentral/entservices-opencdmi.git
+  GIT_TAG ${ENTSERVICES_OPENCDM_CLIENT_TAG}
   PREFIX "git"
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ${CMAKE_COMMAND} -E copy 
-  ${CMAKE_CURRENT_BINARY_DIR}/git/src/ThunderClientLibraries/Source/ocdm/open_cdm.h
-  ${CMAKE_CURRENT_BINARY_DIR}/git/src/ThunderClientLibraries/Source/ocdm/open_cdm_ext.h
-  ${CMAKE_CURRENT_BINARY_DIR}/git/src/ThunderClientLibraries/Source/ocdm/adapter/open_cdm_adapter.h
+  ${CMAKE_CURRENT_BINARY_DIR}/git/src/entservices-opencdmi/client/open_cdm.h
+  ${CMAKE_CURRENT_BINARY_DIR}/git/src/entservices-opencdmi/client/open_cdm_ext.h
+  ${CMAKE_CURRENT_BINARY_DIR}/git/src/entservices-opencdmi/client/adapter/open_cdm_adapter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/third-party/opencdm
 )
 
@@ -58,7 +58,7 @@ add_library(
   RialtoGStreamerEMEProtectionMetadata.cpp
 
         )
-add_dependencies( ocdm ThunderClientLibraries )
+add_dependencies( ocdm entservices-opencdmi )
 add_library(ocdm::ocdm ALIAS ocdm)
 
 include(CMakePackageConfigHelpers)

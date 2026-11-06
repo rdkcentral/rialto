@@ -92,12 +92,15 @@ public:
     MOCK_METHOD(gboolean, gstElementQueryPosition, (GstElement *, GstFormat, gint64 *), (override));
     MOCK_METHOD(gboolean, gstElementQueryDuration, (GstElement *, GstFormat, gint64 *), (override));
     MOCK_METHOD(GstFlowReturn, gstAppSrcPushBuffer, (GstAppSrc *, GstBuffer *), (override));
+    MOCK_METHOD(GstFlowReturn, gstAppSrcPushBufferList, (GstAppSrc *, GstBufferList *), (override));
     MOCK_METHOD(GstBuffer *, gstBufferNew, (), (override));
     MOCK_METHOD(GstBuffer *, gstBufferNewAllocate, (GstAllocator *, gsize, GstAllocationParams *), (override));
     MOCK_METHOD(gsize, gstBufferFill, (GstBuffer *, gsize, gconstpointer, gsize), (override));
     MOCK_METHOD(void, gstBufferUnref, (GstBuffer *), (override));
     MOCK_METHOD(gboolean, gstBufferMap, (GstBuffer * buffer, GstMapInfo *info, GstMapFlags flags), (override));
     MOCK_METHOD(void, gstBufferUnmap, (GstBuffer * buffer, GstMapInfo *info), (override));
+    MOCK_METHOD(GstBufferList *, gstBufferListNewSized, (guint size), (override));
+    MOCK_METHOD(void, gstBufferListInsert, (GstBufferList * list, gint idx, GstBuffer *buffer), (override));
     MOCK_METHOD(void, gstMessageUnref, (GstMessage *), (override));
     MOCK_METHOD(GstMessage *, gstBusTimedPopFiltered, (GstBus * bus, GstClockTime timeout, GstMessageType types),
                 (override));
@@ -238,6 +241,16 @@ public:
                  GDestroyNotify destroyData),
                 (override));
     MOCK_METHOD(void, gstPadRemoveProbe, (GstPad * pad, gulong id), (override));
+    MOCK_METHOD(GstFlowReturn, gstPadPush, (GstPad * pad, GstBuffer *buffer), (override));
+    MOCK_METHOD(gboolean, gstPadSetCaps, (GstPad * pad, GstCaps *caps), (override));
+    MOCK_METHOD(gboolean, gstPadEventDefault, (GstPad * pad, GstObject *parent, GstEvent *event), (override));
+    MOCK_METHOD(void, gstEventParseCaps, (GstEvent * event, GstCaps **caps), (override));
+    MOCK_METHOD(void, gstEventUnref, (GstEvent * event), (override));
+    MOCK_METHOD(GstBuffer *, gstBufferRef, (GstBuffer * buffer), (override));
+    MOCK_METHOD(guint, gstBufferListLength, (GstBufferList * list), (override));
+    MOCK_METHOD(GstBuffer *, gstBufferListGet, (GstBufferList * list, guint idx), (override));
+    MOCK_METHOD(void, gstBufferListUnref, (GstBufferList * list), (override));
+    MOCK_METHOD(gboolean, gstCapsReplace, (GstCaps * *oldCaps, GstCaps *newCaps), (override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

@@ -42,6 +42,7 @@ public:
 
 private:
     void attachData(const firebolt::rialto::MediaSourceType mediaType, GstBuffer *buffer) const;
+    void attachData() const;
     struct AudioData
     {
         GstBuffer *buffer;

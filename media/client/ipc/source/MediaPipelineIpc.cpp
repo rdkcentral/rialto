@@ -1444,6 +1444,37 @@ bool MediaPipelineIpc::getUseBuffering(bool &useBuffering)
     return true;
 }
 
+bool MediaPipelineIpc::setBatchDecryption(bool batchDecryption)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetBatchDecryptionRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_batch_decryption(batchDecryption);
+
+    firebolt::rialto::SetBatchDecryptionResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setBatchDecryption(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set batch decryption due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
 bool MediaPipelineIpc::switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source)
 {
     if (!reattachChannelIfRequired())

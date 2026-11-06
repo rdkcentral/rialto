@@ -550,6 +550,17 @@ public:
     createSetUseBuffering(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool useBuffering) const = 0;
 
     /**
+     * @brief Creates a SetBatchDecryption task.
+     *
+     * @param[in] context         : The GstPlayer context
+     * @param[in] batchDecryption : the value to set for batch decryption
+     *
+     * @retval the new SetBatchDecryption task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetBatchDecryption(GenericPlayerContext &context,
+                                                                  bool batchDecryption) const = 0;
+
+    /**
      * @brief Creates a SwitchSource task.
      *
      * @param[in] player    : The GstGenericPlayer instance
