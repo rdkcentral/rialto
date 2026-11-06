@@ -150,6 +150,10 @@ MediaKeysServerInternal::~MediaKeysServerInternal()
 
     auto task = [&]()
     {
+        // Destroy the key sessions before the OCDM system that created them, and
+        // on the main thread like all other OCDM operations.
+        m_mediaKeySessions.clear();
+
         m_ocdmSystem.reset();
 
         m_mainThread->unregisterClient(m_mainThreadClientId);
