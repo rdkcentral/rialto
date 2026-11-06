@@ -49,6 +49,7 @@ namespace firebolt::rialto::server::ct
     request.set_socketpermissions(kDefaultPermissions);
     request.set_socketowner(kOwnerName);
     request.set_socketgroup(kOwnerName);
+    request.set_appname("componenttests");
     *(request.mutable_loglevels()) = logLevels;
 
     return request;

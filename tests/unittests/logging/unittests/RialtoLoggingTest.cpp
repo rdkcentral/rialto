@@ -222,6 +222,21 @@ TEST_F(RialtoLoggingTest, SetLogLevelMultiple)
 }
 
 /**
+ * Test that setting the app name works correctly.
+ */
+TEST_F(RialtoLoggingTest, SetApplicationName)
+{
+    RIALTO_DEBUG_LEVEL logLevel = static_cast<RIALTO_DEBUG_LEVEL>(RIALTO_DEBUG_LEVEL_INFO | RIALTO_DEBUG_LEVEL_ERROR |
+                                                                  RIALTO_DEBUG_LEVEL_MILESTONE);
+
+    setApplicationName("unittests");
+    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler, false);
+    setLogLevels(RIALTO_COMPONENT_DEFAULT, logLevel);
+
+    TestExpectLogCalls(RIALTO_COMPONENT_DEFAULT, logLevel);
+}
+
+/**
  * Test that setting the log handler to ignore levels works
  */
 TEST_F(RialtoLoggingTest, SetLogLevelIgnoreForHandler)
