@@ -123,14 +123,13 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, LowLatencyAudioHaveDataSuccessWith
 TEST_F(RialtoServerMediaPipelineHaveDataTest, CommonHaveDataGettingSamplesThrows)
 {
     auto status = firebolt::rialto::MediaSourceStatus::OK;
-    IMediaPipeline::MediaSegmentVector dataVec;
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId))
         .WillOnce(Return(firebolt::rialto::MediaSourceType::VIDEO));
-    EXPECT_CALL(*m_activeRequestsMock, getSegments(m_kNeedDataRequestId))
-        .WillOnce(Throw(std::runtime_error("runtime_error")));
+    EXPECT_CALL(*m_activeRequestsMock, getRequest(m_kNeedDataRequestId))
+        .WillOnce(Return(std::shared_ptr<ActiveRequestsData>{}));
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_FALSE(m_mediaPipeline->haveData(status, m_kNeedDataRequestId));
 }
@@ -138,13 +137,13 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, CommonHaveDataGettingSamplesThrows
 TEST_F(RialtoServerMediaPipelineHaveDataTest, CommonHaveDataSuccess)
 {
     auto status = firebolt::rialto::MediaSourceStatus::OK;
-    IMediaPipeline::MediaSegmentVector dataVec;
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId))
         .WillOnce(Return(firebolt::rialto::MediaSourceType::VIDEO));
-    EXPECT_CALL(*m_activeRequestsMock, getSegments(m_kNeedDataRequestId)).WillOnce(ReturnRef(dataVec));
+    EXPECT_CALL(*m_activeRequestsMock, getRequest(m_kNeedDataRequestId))
+        .WillOnce(Return(std::make_shared<ActiveRequestsData>(firebolt::rialto::MediaSourceType::VIDEO, 0, 0)));
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_gstPlayerMock, attachSamples(A<const IMediaPipeline::MediaSegmentVector &>()));
     EXPECT_TRUE(m_mediaPipeline->haveData(status, m_kNeedDataRequestId));
@@ -153,13 +152,13 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, CommonHaveDataSuccess)
 TEST_F(RialtoServerMediaPipelineHaveDataTest, CommonHaveDataSuccessEos)
 {
     auto status = firebolt::rialto::MediaSourceStatus::EOS;
-    IMediaPipeline::MediaSegmentVector dataVec;
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId))
         .WillOnce(Return(firebolt::rialto::MediaSourceType::VIDEO));
-    EXPECT_CALL(*m_activeRequestsMock, getSegments(m_kNeedDataRequestId)).WillOnce(ReturnRef(dataVec));
+    EXPECT_CALL(*m_activeRequestsMock, getRequest(m_kNeedDataRequestId))
+        .WillOnce(Return(std::make_shared<ActiveRequestsData>(firebolt::rialto::MediaSourceType::VIDEO, 0, 0)));
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_gstPlayerMock, attachSamples(A<const IMediaPipeline::MediaSegmentVector &>()));
     EXPECT_CALL(*m_gstPlayerMock, setEos(firebolt::rialto::MediaSourceType::VIDEO));
