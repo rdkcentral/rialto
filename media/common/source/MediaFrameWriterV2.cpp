@@ -99,7 +99,7 @@ MediaFrameWriterV2::MediaFrameWriterV2(uint8_t *shmBuffer, const std::shared_ptr
     : m_shmBuffer(shmBuffer), m_kMaxBytes(shmInfo->maxMediaBytes), m_bytesWritten(0U),
       m_dataOffset(shmInfo->mediaDataOffset), m_numFrames{0}
 {
-    RIALTO_COMMON_LOG_INFO("We are using a writer for Metadata V2");
+    RIALTO_COMMON_LOG_DEBUG("We are using a writer for Metadata V2");
 
     // Zero memory
     m_byteWriter.fillBytes(m_shmBuffer, shmInfo->metadataOffset, 0, shmInfo->maxMetadataBytes);
