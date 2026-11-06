@@ -40,7 +40,7 @@ AttachSamples::AttachSamples(GenericPlayerContext &context,
             try
             {
                 IMediaPipeline::MediaSegmentVideo &videoSegment =
-                    dynamic_cast<IMediaPipeline::MediaSegmentVideo &>(*mediaSegment);
+                    static_cast<IMediaPipeline::MediaSegmentVideo &>(*mediaSegment);
                 VideoData videoData = {gstBuffer, videoSegment.getWidth(), videoSegment.getHeight(),
                                        videoSegment.getFrameRate(), videoSegment.getCodecData()};
                 m_videoData.push_back(std::move(videoData));
@@ -57,7 +57,7 @@ AttachSamples::AttachSamples(GenericPlayerContext &context,
             try
             {
                 IMediaPipeline::MediaSegmentAudio &audioSegment =
-                    dynamic_cast<IMediaPipeline::MediaSegmentAudio &>(*mediaSegment);
+                    static_cast<IMediaPipeline::MediaSegmentAudio &>(*mediaSegment);
                 AudioData audioData = {gstBuffer,
                                        audioSegment.getSampleRate(),
                                        audioSegment.getNumberOfChannels(),
