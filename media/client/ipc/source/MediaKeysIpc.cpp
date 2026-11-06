@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+#include <utility>
+
 #include "MediaKeysIpc.h"
 #include "RialtoClientLogging.h"
 
@@ -387,7 +389,7 @@ MediaKeyErrorStatus MediaKeysIpc::createKeySession(KeySessionType sessionType, s
     if (MediaKeyErrorStatus::OK == status)
     {
         keySessionId = response.key_session_id();
-        m_mediaKeysIpcClient = client;
+        m_mediaKeysIpcClient = std::move(client);
     }
 
     return status;
