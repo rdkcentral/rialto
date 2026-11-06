@@ -38,8 +38,8 @@ struct GstRialtoTextTrackSinkPrivate
     bool m_capsSet{false};
     std::optional<uint64_t> m_position;
     std::optional<uint64_t> m_queuedPosition;
-    std::optional<uint64_t> m_offset;
-    std::optional<uint64_t> m_queuedOffset;
+    std::optional<int64_t> m_offset;
+    std::optional<int64_t> m_queuedOffset;
     std::mutex m_mutex;
 };
 }; // namespace firebolt::rialto::server

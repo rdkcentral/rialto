@@ -43,7 +43,7 @@ void SynchroniseSubtitleClock::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SynchroniseSubtitleClock");
     gint64 position = m_player.getPosition(m_context.pipeline);
-    if (position == -1)
+    if (position < 0)
     {
         RIALTO_SERVER_LOG_WARN("Getting the position failed");
         return;
@@ -62,7 +62,8 @@ void SynchroniseSubtitleClock::execute() const
         return;
     }
 
-    GstStructure *structure = m_gstWrapper->gstStructureNew("current-pts", "pts", G_TYPE_UINT64, position, nullptr);
+    GstStructure *structure =
+        m_gstWrapper->gstStructureNew("current-pts", "pts", G_TYPE_UINT64, static_cast<guint64>(position), nullptr);
     GstEvent *event = m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, structure);
 
     if (event)

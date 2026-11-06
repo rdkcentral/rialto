@@ -458,6 +458,7 @@ protected:
     // Set Subtitle Offset test methods
     void shouldSetSubtitleOffset();
     void triggerSetSubtitleOffset();
+    void triggerSetSubtitleOffset(std::int64_t position);
 
     // ProcessAudioGap test methods
     void triggerProcessAudioGap();

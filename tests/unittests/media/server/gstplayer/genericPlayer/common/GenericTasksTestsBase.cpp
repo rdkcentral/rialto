@@ -3653,8 +3653,13 @@ void GenericTasksTestsBase::shouldSetSubtitleOffset()
 
 void GenericTasksTestsBase::triggerSetSubtitleOffset()
 {
+    triggerSetSubtitleOffset(kPosition);
+}
+
+void GenericTasksTestsBase::triggerSetSubtitleOffset(std::int64_t position)
+{
     firebolt::rialto::server::tasks::generic::SetSubtitleOffset task{testContext->m_context, testContext->m_glibWrapper,
-                                                                     kPosition};
+                                                                     position};
     task.execute();
 }
 
