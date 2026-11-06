@@ -171,6 +171,8 @@ std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
 					 static_cast<unsigned long long>(parsedMessage.ptsNs),
 					 static_cast<unsigned long long>(parsedMessage.count),
 					 static_cast<unsigned long long>(parsedMessage.durationNs));
+	return parsedMessage;
+}
 
 void RialtoMetrics::updateFrameCounters(int32_t sessionId, int32_t sourceId, const FrameCounters &counters)
 {
