@@ -70,7 +70,7 @@ The IPC layer is purpose-built to meet Rialto's specific requirements: per-conne
 
 Shared memory is used for the media data path. The server creates one per-application `SharedMemoryBuffer` when `PlaybackService` switches to ACTIVE, and passes its fd to the client via a `GetSharedMemory` RPC call. The client library maps this buffer and writes encoded media segments through its frame writer; the server reads from the same buffer to feed GStreamer. This design avoids copying the media payload through the socket.
 
-On the server side, GStreamer integration is managed by `GstGenericPlayer`, which wraps GStreamer pipeline construction and element management. The player is driven by a task queue to keep all GStreamer operations on a single dedicated worker thread. A separate `GstDispatcherThread` processes GStreamer bus messages (state changes, errors, end-of-stream) and translates them into server-side events. DRM operations are handled through the OpenCDM wrapper (`OcdmSystem`/`OcdmSession`).
+On the server side, GStreamer integration is managed by `GstGenericPlayer`, which wraps GStreamer pipeline construction and element management. The player is driven by a task queue so GStreamer element state changes and data operations run on a single dedicated worker thread. A separate `GstDispatcherThread` attaches a GLib bus watch (`gstBusCreateWatch`) to a private `GMainContext` and runs a `GMainLoop` on its own thread, translating bus messages (state changes, errors, end-of-stream) into server-side events. DRM operations are handled through the OpenCDM wrapper (`OcdmSystem`/`OcdmSession`).
 
 The `RialtoServerManager` reads its configuration from a JSON file (`rialto-config.json`) at startup and uses it to set environment variables, paths, timeouts, and socket parameters for each spawned `RialtoServer`. It supports pre-loading a configurable number of server processes to reduce application startup latency.
 
@@ -127,7 +127,7 @@ graph TD
     end
 
     ClientIPC -->|Unix domain socket| IPCServer
-    RSMSpawner -->|spawns| IPCServer
+    RSMSpawner -->|spawns| RSBlock
 ```
 
 #### Threading Model
@@ -136,8 +136,8 @@ graph TD
 - **Main Thread (`MainThread`)**: A shared event-loop thread on the server side that serialises all non-GStreamer server operations. It accepts tasks from any registered client via `enqueueTask()` or `enqueueTaskAndWait()` and processes them sequentially from a `std::deque`. This thread owns the `MediaPipelineServerInternal`, `MediaKeysServerInternal`, and `WebAudioPlayerServerInternal` objects and ensures they are accessed from a single thread.
 - **Worker Threads**:
   - _`WorkerThread`_: One per `GstGenericPlayer` instance; processes GStreamer player tasks (attach source, push buffer, seek, set rate, flush, etc.) from a `std::queue`. All GStreamer element state changes and data operations are posted to this thread.
-  - _`GstDispatcherThread`_: One per GStreamer pipeline; polls the GStreamer bus for messages (EOS, errors, state changes, QoS events) and dispatches them to the `GstGenericPlayer` client callbacks.
-- **Synchronization**: `MainThread` uses a `std::mutex` and `std::condition_variable` to protect the task queue. `WorkerThread` uses the same pattern. `GstDispatcherThread` is driven by a polling loop with an atomic `m_isGstreamerDispatcherActive` flag for shutdown coordination.
+  - _`GstDispatcherThread`_: One per GStreamer pipeline; attaches a GLib bus watch (`gstBusCreateWatch`) to a private `GMainContext` and runs a `GMainLoop`, delivering bus messages (EOS, errors, state changes, QoS events) to the `GstGenericPlayer` client callbacks.
+- **Synchronization**: `MainThread` uses a `std::mutex` and `std::condition_variable` to protect the task queue. `WorkerThread` uses the same pattern. `GstDispatcherThread` runs a `GMainLoop` on a private `GMainContext`; an atomic `m_isGstreamerDispatcherActive` flag gates shutdown coordination.
 - **Async / Event Dispatch**: Client notifications (playback state changes, need-data requests, QoS events) are produced on the worker and dispatcher threads and forwarded over the IPC server channel as protobuf event messages, delivering them asynchronously to the client-side event loop.
 
 ### Prerequisites and Dependencies
@@ -197,7 +197,7 @@ During normal operation, the server manager sends periodic `PingRequest` message
 **Context Switching Scenarios:**
 
 - Transitioning from ACTIVE to INACTIVE suspends media pipeline processing and releases GStreamer decoder resources, while keeping the IPC socket available but destroying the shared-memory buffer; clients must reacquire it after returning to ACTIVE.
-- Receiving an updated `setLogLevels()` call propagates new log level masks to all running `RialtoServer` instances at runtime via the server manager IPC channel.
+- Receiving an updated `setLogLevels()` call propagates new `LoggingLevels` values (named per-component `LoggingLevel` enum entries, converted to logger bitmasks internally) to all running `RialtoServer` instances at runtime via the server manager IPC channel.
 
 ---
 
@@ -315,7 +315,7 @@ Rialto interacts with platform and system components through three main paths: I
 | `SourceFlushedEvent`          | `mediapipelinemodule.proto` | Source flush completed                                                     | `RialtoClient` → `IMediaPipelineClient::notifySourceFlushed()`   |
 | `PlaybackErrorEvent`          | `mediapipelinemodule.proto` | Non-fatal per-source playback error (playback state unchanged)             | `RialtoClient` → `IMediaPipelineClient::notifyPlaybackError()`   |
 | `FirstFrameReceivedEvent`     | `mediapipelinemodule.proto` | First frame received for a source                                          | `RialtoClient` → `IMediaPipelineClient::notifyFirstFrameReceived()` |
-| `SetLogLevelsEvent`           | `mediapipelinemodule.proto` | Server requests new component log levels                                   | `RialtoClient` (applied to client logging)                       |
+| `SetLogLevelsEvent`           | `mediapipelinemodule.proto` | Server requests new component log levels (emitted by `SetLogLevelsService`; `RialtoClient` does not currently subscribe to or handle this event) | `RialtoClient` (no current handler)                              |
 | `LicenseRequestEvent`         | `mediakeysmodule.proto`     | DRM licence request challenge generated for a key session                  | `RialtoClient` → `IMediaKeysClient::onLicenseRequest()`          |
 | `KeyStatusesChangedEvent`     | `mediakeysmodule.proto`     | DRM key status updated for a key session                                   | `RialtoClient` → `IMediaKeysClient::onKeyStatusesChanged()`      |
 | `LicenseRenewalEvent`         | `mediakeysmodule.proto`     | DRM licence renewal required                                               | `RialtoClient` → `IMediaKeysClient::onLicenseRenewal()`          |
@@ -329,7 +329,7 @@ Rialto interacts with platform and system components through three main paths: I
 
 **Primary Request / Response Flow:**
 
-The client library serialises each API call into a protobuf request message and sends it over the per-application Unix domain socket. The server deserialises the request, executes the operation (typically enqueued onto `MainThread` or `WorkerThread`), and serialises the result back as a response message.
+The client library serialises each control-plane API call into a protobuf request message and sends it over the per-application Unix domain socket. The server deserialises the request, executes the operation (typically enqueued onto `MainThread` or `WorkerThread`), and serialises the result back as a response message. The shared-memory media path is exempt: `IMediaPipeline::addSegment()` writes frames into the mapped buffer directly, and only the subsequent `haveData()` call sends a `HaveDataRequest` RPC.
 
 ```mermaid
 sequenceDiagram
@@ -385,7 +385,7 @@ Rialto accesses the platform media subsystem directly through the following wrap
 | `IGstWrapper::gstElementSetState()`     | Controls GStreamer pipeline and element state (NULL, READY, PAUSED, PLAYING)     | `wrappers/source/GstWrapper.cpp`               |
 | `IGstWrapper::gstAppSrcPushBuffer()`    | Pushes encoded media buffers into the GStreamer appsrc element                   | `wrappers/source/GstWrapper.cpp`               |
 | `IGstWrapper::gstElementSendEvent()`    | Sends seek and flush events to the GStreamer pipeline                            | `wrappers/source/GstWrapper.cpp`               |
-| `IGstWrapper::gstBusTimedPopFiltered()` | Pops GStreamer bus messages with a timeout filter, used in `GstDispatcherThread` | `wrappers/source/GstWrapper.cpp`               |
+| `IGstWrapper::gstBusCreateWatch()` | Creates a GLib bus watch attached to `GstDispatcherThread`'s private `GMainContext` | `wrappers/source/GstWrapper.cpp`               |
 | `IGlibWrapper::gObjectSet()`            | Sets GStreamer element properties (video geometry, audio parameters)             | `wrappers/source/GlibWrapper.cpp`              |
 | `IRdkGstreamerUtilsWrapper`             | Provides platform-specific audio/video sink setup functions                      | `wrappers/source/RdkGstreamerUtilsWrapper.cpp` |
 | `IOcdmSystem::createSession()`          | Creates an OpenCDM DRM session for a given key system                            | `wrappers/source/OcdmSystem.cpp`               |
@@ -429,7 +429,7 @@ Rialto accesses the platform media subsystem directly through the following wrap
 | `numOfPreloadedServers`        | int    | `0`                                                                                                          | Number of `RialtoServer` processes to pre-launch at startup to reduce application connect latency                                                                   |
 | `numOfPingsBeforeRecovery`     | int    | `3`                                                                                                          | Number of consecutive failed health checks (including timeouts and unsuccessful acknowledgements) before the server manager triggers recovery for a server instance |
 | `logLevel`                     | uint   | `3`                                                                                                          | Default numeric logging level (0 = FATAL through 5 = DEBUG) applied to all Rialto components at startup                                                             |
-| `environmentVariables`         | list   | `XDG_RUNTIME_DIR=/tmp`, `GST_REGISTRY=/tmp/rialto-server-gstreamer-cache.bin`, `WESTEROS_SINK_USE_ESSRMGR=1` | Environment variables set for every spawned `RialtoServer` process                                                                                                  |
+| `environmentVariables`         | list   | `XDG_RUNTIME_DIR=/tmp`, `GST_REGISTRY=/opt/.gstreamer/registry.bin`, `WESTEROS_SINK_USE_ESSRMGR=1` | Environment variables set for every spawned `RialtoServer` process                                                                                                  |
 | `extraEnvVariables`            | list   | `[]`                                                                                                         | Additional environment variables merged into the server environment                                                                                                 |
 
 ### Runtime Configuration
