@@ -30,6 +30,7 @@
 
 #include <stdint.h>
 
+#include <chrono>
 #include <memory>
 #include <string>
 #include <vector>
@@ -72,7 +73,8 @@ public:
      */
     virtual std::unique_ptr<IMediaPipelineServerInternal> createMediaPipelineServerInternal(
         std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements, int sessionId,
-        const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService) const = 0;
+        const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService,
+        std::chrono::milliseconds playbackInfoTimer) const = 0;
 };
 
 /**

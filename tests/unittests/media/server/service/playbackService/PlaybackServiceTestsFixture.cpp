@@ -100,6 +100,11 @@ void PlaybackServiceTests::triggerSetMaxWebAudioPlayers()
     m_sut->setMaxWebAudioPlayers(kMaxWebAudioPlayers);
 }
 
+void PlaybackServiceTests::triggerSetPlaybackInfoTimer()
+{
+    m_sut->setPlaybackInfoTimer(std::chrono::milliseconds{75});
+}
+
 void PlaybackServiceTests::triggerSetClientDisplayName()
 {
     m_sut->setClientDisplayName(kClientDisplayName);

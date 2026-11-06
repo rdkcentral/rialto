@@ -24,4 +24,4 @@ apt-get update
 apt-get install -y build-essential
 apt-get install -y cmake
 apt-get install -y libunwind-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libgstreamer1.0-dev libyaml-cpp-dev
-apt-get install -y protobuf-compiler
+apt-get install -y protobuf-compiler libprotobuf-dev libjsoncpp-dev

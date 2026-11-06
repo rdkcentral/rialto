@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_I_GST_GENERIC_PLAYER_H_
 
 #include <MediaCommon.h>
+#include <chrono>
 #include <memory>
 #include <stdint.h>
 #include <string>
@@ -70,7 +71,7 @@ public:
      */
     virtual std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(
         IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-        const VideoRequirements &videoRequirements, bool isLive,
+        const VideoRequirements &videoRequirements, bool isLive, std::chrono::milliseconds playbackInfoTimer,
         const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory,
         const std::shared_ptr<IGstProfilerFactory> &gstProfilerFactory = nullptr) = 0;
 };
