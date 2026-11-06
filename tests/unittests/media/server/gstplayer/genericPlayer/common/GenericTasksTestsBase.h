@@ -75,6 +75,7 @@ protected:
     void setContextNeedDataPendingVideoOnly(bool isNeedDataPending);
     void setContextAudioBuffer();
     void setContextVideoBuffer();
+    void setContextSubtitleBuffer();
     void setContextPlaybackRate();
     void setContextSourceNull();
     void setContextAudioSourceRemoved();
@@ -280,6 +281,7 @@ protected:
     // Eos test methods
     void triggerEosAudio();
     void triggerEosVideo();
+    void triggerEosSubtitle();
     void shouldGstAppSrcEndOfStreamSuccess();
     void shouldGstAppSrcEndOfStreamFailure();
     void shouldCancelUnderflow(firebolt::rialto::MediaSourceType sourceType);
@@ -446,6 +448,9 @@ protected:
     void triggerFlush(firebolt::rialto::MediaSourceType sourceType);
     void checkAudioFlushed();
     void checkVideoFlushed();
+    void checkSubtitleFlushed();
+    void shouldFlushSubtitle();
+    void shouldFlushSubtitleSrcSuccess();
     void shouldFlushVideoSrcSuccess();
 
     // Set Source Position test methods
