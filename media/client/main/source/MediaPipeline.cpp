@@ -879,18 +879,19 @@ void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
 
 void MediaPipeline::notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames, uint64_t droppedFrames,
                                       uint64_t corruptedFrames, uint64_t ptsNs, const std::string &errorInfo,
-                                      uint32_t phase)
+                                      uint32_t phase, uint64_t count, uint64_t durationNs)
 {
     RIALTO_CLIENT_LOG_DEBUG(
-        "Forwarding playback metric event sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu, type: %s, phase: %u",
+        "Forwarding playback metric event sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu, type: %s, phase: %u, count: %llu, durationNs: %llu",
         sourceId, static_cast<unsigned long long>(renderedFrames), static_cast<unsigned long long>(droppedFrames),
         static_cast<unsigned long long>(corruptedFrames), static_cast<unsigned long long>(ptsNs), errorInfo.c_str(),
-        phase);
+        phase, static_cast<unsigned long long>(count), static_cast<unsigned long long>(durationNs));
 
     std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
     if (client)
     {
-        client->notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo, phase);
+        client->notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo, phase,
+                                 count, durationNs);
     }
     else
     {
