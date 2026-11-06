@@ -19,103 +19,194 @@
 
 #include "Timer.h"
 #include "RialtoCommonLogging.h"
-#include <cinttypes>
-#include <cstdint>
-#include <limits>
+#include <atomic>
+#include <chrono>
+#include <condition_variable>
+#include <functional>
 #include <mutex>
+#include <queue>
 #include <thread>
 #include <unordered_map>
 
 namespace
 {
-// guint is 32-bit, but std::chrono::milliseconds::rep is typically 64-bit; saturate instead of
-// silently wrapping (which would otherwise fire much earlier than the caller requested).
-guint toGuintMilliseconds(const std::chrono::milliseconds &timeout)
-{
-    constexpr auto kMaxMs = static_cast<std::chrono::milliseconds::rep>(std::numeric_limits<guint>::max());
-    const auto count = timeout.count();
-    if (count < 0)
-    {
-        return 0;
-    }
-    if (count > kMaxMs)
-    {
-        RIALTO_COMMON_LOG_WARN("Timer duration %" PRId64 " ms exceeds guint range, clamping to %u ms",
-                               static_cast<int64_t>(count), std::numeric_limits<guint>::max());
-        return std::numeric_limits<guint>::max();
-    }
-    return static_cast<guint>(count);
-}
-
 class CommonTimerLoop
 {
 public:
+    using Clock = std::chrono::steady_clock;
+    using Duration = std::chrono::milliseconds;
+    using Callback = std::function<void()>;
+
     static CommonTimerLoop &instance()
     {
         static CommonTimerLoop instance;
         return instance;
     }
 
-    void storeTimerCallback(const firebolt::rialto::common::Timer *timer, const std::function<void()> &callback)
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_activeTimers[timer] = callback;
-    }
-
-    void removeTimerCallback(const firebolt::rialto::common::Timer *timer)
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_activeTimers.erase(timer);
-    }
-
-    std::function<void()> getTimerCallback(const firebolt::rialto::common::Timer *timer)
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        auto it = m_activeTimers.find(timer);
-        return it != m_activeTimers.end() ? it->second : nullptr;
-    }
-
-    // Distinct from getTimerCallback(): an empty std::function is still a registered timer.
-    bool hasTimerCallback(const firebolt::rialto::common::Timer *timer)
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        return m_activeTimers.find(timer) != m_activeTimers.end();
-    }
-
-    // Timer sources must attach here, not to the global-default context, so they only ever
-    // dispatch on m_thread.
-    GMainContext *context() const { return m_context; }
-
 private:
+    struct TimerTask
+    {
+        std::uint64_t id;
+        Clock::time_point nextExecution;
+        Duration interval;
+        Callback callback;
+        bool repeat;
+        std::atomic<bool> cancelled{false};
+    };
+
+    struct Compare
+    {
+        bool operator()(const std::shared_ptr<TimerTask> &a, const std::shared_ptr<TimerTask> &b) const
+        {
+            return a->nextExecution > b->nextExecution;
+        }
+    };
+
+    std::priority_queue<std::shared_ptr<TimerTask>, std::vector<std::shared_ptr<TimerTask>>, Compare> m_tasks;
+
+    std::unordered_map<std::uint64_t, std::shared_ptr<TimerTask>> m_activeTasks;
+
+    std::mutex m_mutex;
+    std::condition_variable m_cv;
+
+    std::thread m_worker;
+    std::atomic<bool> m_running{true};
+
+    std::atomic<std::uint64_t> m_nextId{1};
+
     CommonTimerLoop()
     {
-        m_context = g_main_context_new();
-        m_loop = g_main_loop_new(m_context, FALSE);
-        m_thread = std::thread(
-            [this]()
-            {
-                g_main_context_push_thread_default(m_context);
-                g_main_loop_run(m_loop);
-                g_main_context_pop_thread_default(m_context);
-            });
+        RIALTO_COMMON_LOG_DEBUG("Starting CommonTimerLoop");
+        m_worker = std::thread([this]() { run(); });
     }
 
     ~CommonTimerLoop()
     {
-        g_main_loop_quit(m_loop);
-        if (m_thread.joinable())
-        {
-            m_thread.join();
-        }
-        g_main_loop_unref(m_loop);
-        g_main_context_unref(m_context);
+        if (!m_running.exchange(false))
+            return;
+
+        m_cv.notify_one();
+
+        if (m_worker.joinable())
+            m_worker.join();
+
+        RIALTO_COMMON_LOG_DEBUG("CommonTimerLoop stopped");
     }
 
-    GMainContext *m_context;
-    GMainLoop *m_loop;
-    std::thread m_thread;
-    std::mutex m_mutex;
-    std::unordered_map<const firebolt::rialto::common::Timer *, std::function<void()>> m_activeTimers;
+    CommonTimerLoop(const CommonTimerLoop &) = delete;
+    CommonTimerLoop &operator=(const CommonTimerLoop &) = delete;
+    CommonTimerLoop(CommonTimerLoop &&) = delete;
+    CommonTimerLoop &operator=(CommonTimerLoop &&) = delete;
+
+public:
+    std::uint64_t add(Duration delay, Callback callback, firebolt::rialto::common::TimerType timerType)
+    {
+        auto task = std::make_shared<TimerTask>();
+
+        task->id = m_nextId++;
+        task->nextExecution = Clock::now() + delay;
+        task->interval = delay;
+        task->callback = std::move(callback);
+        task->repeat = timerType == firebolt::rialto::common::TimerType::PERIODIC;
+
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+
+            m_activeTasks[task->id] = task;
+            m_tasks.push(task);
+        }
+
+        m_cv.notify_one();
+
+        return task->id;
+    }
+
+    void cancel(std::uint64_t id)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+
+        auto it = m_activeTasks.find(id);
+
+        if (it != m_activeTasks.end())
+        {
+            it->second->cancelled = true;
+            m_activeTasks.erase(it);
+        }
+
+        m_cv.notify_one();
+    }
+
+    bool isActive(std::uint64_t id)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_activeTasks.find(id) != m_activeTasks.end();
+    }
+
+private:
+    void run()
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+
+        while (m_running)
+        {
+            // remove cancelled tasks from the top of the queue
+            while (!m_tasks.empty() && m_tasks.top()->cancelled)
+                m_tasks.pop();
+
+            if (m_tasks.empty())
+            {
+                m_cv.wait(lock, [this]() { return !m_running || !m_tasks.empty(); });
+
+                continue;
+            }
+
+            auto task = m_tasks.top();
+
+            auto now = Clock::now();
+
+            if (task->nextExecution > now)
+            {
+                m_cv.wait_until(lock, task->nextExecution);
+                continue;
+            }
+
+            m_tasks.pop();
+
+            if (task->cancelled)
+                continue;
+
+            if (!task->repeat)
+                m_activeTasks.erase(task->id);
+
+            lock.unlock();
+
+            try
+            {
+                task->callback();
+            }
+            catch (...)
+            {
+                RIALTO_COMMON_LOG_ERROR("Exception occurred while executing timer callback");
+            }
+
+            lock.lock();
+
+            if (m_running && task->repeat && !task->cancelled)
+            {
+                task->nextExecution = Clock::now() + task->interval;
+                m_tasks.push(task);
+            }
+            else
+            {
+                m_activeTasks.erase(task->id);
+            }
+        }
+
+        while (!m_tasks.empty())
+            m_tasks.pop();
+
+        m_activeTasks.clear();
+    }
 };
 } // namespace
 
@@ -152,46 +243,12 @@ std::unique_ptr<ITimer> TimerFactory::createTimer(const std::chrono::millisecond
 
 Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback, TimerType timerType)
 {
-    CommonTimerLoop::instance().storeTimerCallback(this, callback);
-
-    GSource *source = g_timeout_source_new(toGuintMilliseconds(timeout));
-    if (timerType == TimerType::PERIODIC)
+    if (!callback)
     {
-        g_source_set_callback(
-            source,
-            [](gpointer data) -> gboolean
-            {
-                auto *timer = static_cast<firebolt::rialto::common::Timer *>(data);
-                auto callback = CommonTimerLoop::instance().getTimerCallback(timer);
-                if (callback)
-                {
-                    callback();
-                }
-                return CommonTimerLoop::instance().hasTimerCallback(timer) ? TRUE : FALSE;
-            },
-            this, nullptr);
+        RIALTO_COMMON_LOG_ERROR("Timer callback is not set");
+        return;
     }
-    else
-    {
-        g_source_set_callback(
-            source,
-            [](gpointer data) -> gboolean
-            {
-                auto *timer = static_cast<firebolt::rialto::common::Timer *>(data);
-                auto callback = CommonTimerLoop::instance().getTimerCallback(timer);
-                if (callback)
-                {
-                    callback();
-                }
-                CommonTimerLoop::instance().removeTimerCallback(timer);
-                return FALSE;
-            },
-            this, nullptr);
-    }
-    // Attached to our private context (not the global-default one), so this only ever fires on m_thread.
-    // Keep our own ref alongside the context's so cancel() can still destroy it by pointer later.
-    g_source_attach(source, CommonTimerLoop::instance().context());
-    m_source = source;
+    m_id = CommonTimerLoop::instance().add(timeout, callback, timerType);
 }
 
 Timer::~Timer()
@@ -201,17 +258,11 @@ Timer::~Timer()
 
 void Timer::cancel()
 {
-    CommonTimerLoop::instance().removeTimerCallback(this);
-    GSource *source = m_source.exchange(nullptr);
-    if (source)
-    {
-        g_source_destroy(source);
-        g_source_unref(source);
-    }
+    CommonTimerLoop::instance().cancel(m_id);
 }
 
 bool Timer::isActive() const
 {
-    return CommonTimerLoop::instance().hasTimerCallback(this);
+    return CommonTimerLoop::instance().isActive(m_id);
 }
 } // namespace firebolt::rialto::common
