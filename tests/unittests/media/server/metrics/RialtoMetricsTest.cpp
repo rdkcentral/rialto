@@ -124,19 +124,30 @@ TEST(RialtoMetricsTest, TracksEpisodeCountAndDurationForMetricEvents)
     RialtoMetrics metrics;
     metrics.setSessionId(7);
 
-    auto postMetric = [&](guint phase, guint64 ptsNs)
+    auto postMetric = [&](guint phase, guint64 ptsNs) -> std::optional<ParsedMetricMessage>
     {
         GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric_type", G_TYPE_UINT, 6U, "phase",
                                                      G_TYPE_UINT, phase, "source_id", G_TYPE_UINT, 11U, "session_id",
                                                      G_TYPE_UINT, 7U, "pts_ns", G_TYPE_INT64,
                                                      static_cast<gint64>(ptsNs), nullptr);
-        ASSERT_NE(nullptr, structure);
+        if (!structure)
+        {
+            ADD_FAILURE() << "Failed to create metric structure";
+            return std::nullopt;
+        }
         GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
-        ASSERT_NE(nullptr, message);
+        if (!message)
+        {
+            ADD_FAILURE() << "Failed to create metric message";
+            return std::nullopt;
+        }
         const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
         gst_message_unref(message);
-        ASSERT_TRUE(parsed.has_value());
-        EXPECT_EQ(ptsNs, parsed->ptsNs);
+        EXPECT_TRUE(parsed.has_value());
+        if (parsed)
+        {
+            EXPECT_EQ(ptsNs, parsed->ptsNs);
+        }
         return parsed;
     };
 
