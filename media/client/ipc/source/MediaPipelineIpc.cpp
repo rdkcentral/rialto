@@ -759,7 +759,7 @@ bool MediaPipelineIpc::getStats(int32_t sourceId, uint64_t &renderedFrames, uint
 bool MediaPipelineIpc::getFrameCounters(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
                                         uint64_t &corruptedFrames, uint64_t &timestamp)
 {
-    RIALTO_CLIENT_LOG_DEBUG("Requesting playback metrics sessionId: %d, sourceId: %d", m_sessionId, sourceId);
+    RIALTO_CLIENT_LOG_DEBUG("Requesting playback metrics sessionId: %d, sourceId: %d", m_sessionId.load(), sourceId);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -779,7 +779,7 @@ bool MediaPipelineIpc::getFrameCounters(int32_t sourceId, uint64_t &renderedFram
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to get frame counters for sessionId: %d, sourceId: %d, reason: '%s'",
-                                m_sessionId, sourceId, ipcController->ErrorText().c_str());
+                                m_sessionId.load(), sourceId, ipcController->ErrorText().c_str());
         return false;
     }
 
@@ -1669,7 +1669,7 @@ void MediaPipelineIpc::onMetricEvent(const std::shared_ptr<firebolt::rialto::Not
     else
     {
         RIALTO_CLIENT_LOG_DEBUG("Ignoring playback metric event for sessionId: %d (current sessionId: %d)",
-                                event->session_id(), m_sessionId);
+                                event->session_id(), m_sessionId.load());
     }
 }
 

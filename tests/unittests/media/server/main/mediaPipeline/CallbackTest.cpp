@@ -272,7 +272,8 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricEvent)
 
     mainThreadWillEnqueueTask();
     EXPECT_CALL(*m_mediaPipelineClientMock,
-                notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo, phase));
+                notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo, phase, 0,
+                                  0));
 
     m_gstPlayerCallback->notifyMetricEvent(sourceId, renderedFrames, droppedFrames, corruptedFrames, ptsNs, errorInfo,
                                            phase);
