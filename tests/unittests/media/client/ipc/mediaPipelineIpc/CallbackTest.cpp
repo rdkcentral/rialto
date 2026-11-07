@@ -131,7 +131,7 @@ TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyMetricEvent)
     metricEvent->set_phase(2);
 
     EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
-    EXPECT_CALL(*m_clientMock, notifyMetricEvent(m_sourceId, 101, 7, 3, 9001, "decoder error", 2));
+    EXPECT_CALL(*m_clientMock, notifyMetricEvent(m_sourceId, 101, 7, 3, 9001, "decoder error", 2, 0, 0));
 
     m_metricEventCb(metricEvent);
 }
