@@ -47,6 +47,7 @@ public:
     void sendStateChanged(GstState oldState, GstState newState, GstState pendingState, bool handleParseCall = false);
     void sendEos();
     void sendQos(GstElement *src);
+    void sendMetric(GstElement *src, guint metricType, guint phase, guint sourceId, guint sessionId, gint64 ptsNs);
     void sendWarning(GstElement *src, GError *error, const gchar *debug);
 
 private:
