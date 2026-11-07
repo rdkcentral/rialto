@@ -24,6 +24,33 @@ The Westeros message does not carry cumulative frame-counter fields; only corrup
 Rialto from occurrence messages. Sink stats replace the cached rendered and dropped totals without changing the
 corruption count or the last metric PTS.
 
+## Functional Gaps and Design Approach
+
+The implementation gaps were mismatches between the producer contract, the query response, and the GStreamer
+consumer tests:
+
+- **Source scope:** The producer identity is attached to the video sink, so `GetFrameCounters` supports an attached
+    video source only. Audio metric categories may appear in the protocol, but audio snapshot queries are not supported.
+    Rejecting an audio source is preferable to returning video sink statistics under an audio source ID. Supporting
+    audio snapshots would require producer-side audio identity and a defined audio counter source.
+- **Timestamp meaning:** A producer PTS and a server snapshot time are different values. `GetFrameCountersResponse`
+    returns the Rialto server's monotonic timestamp for when the cached snapshot was updated. Push notifications retain
+    the producer PTS in `pts_ns`.
+- **Counter stability:** Rendered, dropped, and corrupted counters in a cached snapshot do not decrease during a
+    session/source lifetime. Sink-stat refreshes and metric updates preserve the maximum observed count. Counter reset
+    semantics are not defined by this contract; a reset requires a new source/session identity.
+- **Message type validation:** The GStreamer consumer's application-bus metric message uses 64-bit unsigned values
+    for counters and PTS. Validator fixtures must use those same GTypes so the tests check the message that is actually
+    emitted.
+
+The query and push mechanisms are deliberately separate. Reading the MSE sink's `frame-counters` property triggers a
+synchronous `GetFrameCounters` query; Rialto does not poll that property automatically. `NotifyMetricEvent` is an
+asynchronous push path. In the GStreamer client, the event is converted to a `media-pipeline-metric` application-bus
+message for consumers that handle pipeline bus messages. Receiving a push event does not invoke the query property.
+
+The focused regression coverage checks rejection of audio snapshot queries, preservation of counters across stale
+sink-stat values, separate PTS and query timestamp values, and the GStreamer bus-message field types.
+
 ## Snapshot Query
 
 `GetFrameCounters` takes `session_id` and `source_id`. The server looks up the latest cached snapshot for that pair and returns:
