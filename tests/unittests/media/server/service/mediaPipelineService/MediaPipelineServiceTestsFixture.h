@@ -77,6 +77,8 @@ public:
     void mediaPipelineWillFailToGetQueuedFrames();
     void mediaPipelineWillGetStats();
     void mediaPipelineWillFailToGetStats();
+    void mediaPipelineWillGetFrameCounters();
+    void mediaPipelineWillFailToGetFrameCounters();
     void mediaPipelineWillRenderFrame();
     void mediaPipelineWillFailToRenderFrame();
     void mediaPipelineWillSetVolume();
