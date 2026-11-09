@@ -147,7 +147,7 @@ graph TD
 - **Build Dependencies**: `protobuf`, `protobuf-native`, `openssl`, `jsoncpp`, `gstreamer1.0`, `gstreamer1.0-plugins-base`, `glib-2.0`, `rdk-gstreamer-utils`, `virtual/vendor-rdk-gstreamer-utils-platform`. The `servermanager` package additionally depends on `mongoose`.
 - **HAL**: Rialto accesses the platform media pipeline directly through GStreamer elements and the RDK GStreamer utilities wrapper (`IRdkGstreamerUtilsWrapper`). DRM access is through the OpenCDM (`open_cdm.h`) interface.
 - **Process Launching**: `RialtoServer` is spawned as a child process by `RialtoServerManager`. The manager library is expected to be hosted by an application manager or framework integration layer.
-- **Configuration Files**: `rialto-config.json` (installed from `rialto-config.in.json`). The file specifies environment variables for `RialtoServer`, the server binary path, startup timeout, health-check interval, socket permissions, and number of pre-loaded server processes. On debug builds, an override file at the configured `overrides` path is also read.
+- **Configuration Files**: `rialto-config.json` (installed from `rialto-config.in.json`). The file specifies environment variables for `RialtoServer`, the server binary path, startup timeout, health-check interval, socket permissions, and number of pre-loaded server processes. When `RIALTO_ENABLE_CONFIG_FILE` is enabled (not debug-build specific), a SoC file and a configured `overrides` file are also read, in increasing order of precedence.
 - **Startup Order**: `RialtoServerManager` must be running before any application requests `initiateApplication()`. The server manager spawns `RialtoServer` instances on demand; when `numOfPreloadedServers` is configured to a non-zero value, server processes are pre-launched at startup to reduce application connect latency.
 
 ---
@@ -196,7 +196,7 @@ During normal operation, the server manager sends periodic `PingRequest` message
 
 **Context Switching Scenarios:**
 
-- Transitioning from ACTIVE to INACTIVE suspends media pipeline processing and releases GStreamer decoder resources, while keeping the IPC socket available but destroying the shared-memory buffer; clients must reacquire it after returning to ACTIVE.
+- Transitioning from ACTIVE to INACTIVE destroys playback and DRM state rather than pausing it: `PlaybackService::switchToInactive()` clears all media pipelines and web audio players, and `CdmService::switchToInactive()` clears all media keys and sessions. The IPC socket stays available but the shared-memory buffer is destroyed; `ClientController` reacquires it automatically on return to ACTIVE, while applications must recreate their pipelines and DRM sessions after reactivation.
 - Receiving an updated `setLogLevels()` call propagates new `LoggingLevels` values (named per-component `LoggingLevel` enum entries, converted to logger bitmasks internally) to all running `RialtoServer` instances at runtime via the server manager IPC channel.
 
 ---
@@ -246,6 +246,9 @@ sequenceDiagram
     App->>RC: IMediaPipeline::attachSource(MediaSourceAudio)
     RC->>RS: AttachSourceRequest (session_id, config)
     RS-->>RC: AttachSourceResponse (source_id)
+    App->>RC: IMediaPipeline::allSourcesAttached()
+    RC->>RS: AllSourcesAttachedRequest (session_id)
+    RS-->>RC: AllSourcesAttachedResponse
     RS->>RC: NeedMediaDataEvent (source_id, request_id, frameCount, shmInfo)
     RC->>App: IMediaPipelineClient::notifyNeedMediaData(source_id, frameCount, requestId, nullptr)
     App->>RC: IMediaPipeline::addSegment(needDataRequestId, segment)
@@ -414,7 +417,7 @@ Rialto accesses the platform media subsystem directly through the following wrap
 
 | Configuration File                                   | Purpose                                                                                                                                                                                          | Override Mechanism                                                                                                  |
 | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| `/etc/rialto-config.json` and `/etc/rialto-soc.json` | Base and SoC-specific server manager runtime parameters: server binary path, environment variables, timeouts, socket permissions, pre-loaded server count, health-check interval, and log levels | Files are read in order; the SoC file and, on debug builds, the configured override file can replace earlier values |
+| `/etc/rialto-config.json` and `/etc/rialto-soc.json` | Base and SoC-specific server manager runtime parameters: server binary path, environment variables, timeouts, socket permissions, pre-loaded server count, health-check interval, and log levels | Files are read in order; when `RIALTO_ENABLE_CONFIG_FILE` is enabled, the SoC file and the configured override file can replace earlier values — overrides are not restricted to debug builds |
 
 ### Key Configuration Parameters
 
@@ -434,7 +437,7 @@ Rialto accesses the platform media subsystem directly through the following wrap
 
 ### Runtime Configuration
 
-Log levels for all Rialto components can be changed at runtime without restarting any process:
+Log levels for the server-side Rialto processes (server manager and session servers) can be changed at runtime without restarting any process. Note that `clientLoggingLevel` is propagated via `SetLogLevelsEvent`, but `RialtoClient` does not currently subscribe to that event, so it does not enable logging inside the application process:
 
 ```cpp
 // Via IServerManagerService API (called by the application manager integration)
@@ -450,6 +453,6 @@ serverManagerService->setLogLevels(logLevels);
 
 ### Configuration Persistence
 
-Persistent configuration is read from `rialto-config.json` at `RialtoServerManager` startup. Runtime log level changes applied via `setLogLevels()` take effect immediately across all active Rialto processes.
+Persistent configuration is read from `rialto-config.json` at `RialtoServerManager` startup. Runtime log level changes applied via `setLogLevels()` take effect immediately in the server manager and all active session server processes; they do not affect logging inside client application processes, since `RialtoClient` has no `SetLogLevelsEvent` handler.
 
 ---
