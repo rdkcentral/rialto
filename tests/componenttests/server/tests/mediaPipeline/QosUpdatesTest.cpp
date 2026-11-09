@@ -80,6 +80,31 @@ public:
         EXPECT_EQ(receivedQos->qos_info().dropped(), kQosInfo.dropped);
     }
 
+    void sendVideoDecodeErrorMetric(int sourceId)
+    {
+        m_gstreamerStub.sendMetric(&m_src, kVideoDecodeErrorMetric, kMetricOccurrencePhase,
+                                   static_cast<guint>(sourceId), static_cast<guint>(m_sessionId), kMetricPtsNs);
+    }
+
+    void expectVideoSinkMetricsLookups()
+    {
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
+            .Times(testing::AtLeast(0))
+            .WillRepeatedly(Invoke(
+                [&](gpointer, const gchar *, void *element)
+                { *reinterpret_cast<GstElement **>(element) = m_videoSink; }));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink)))
+            .Times(testing::AtLeast(0))
+            .WillRepeatedly(Return(kElementTypeName.c_str()));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("metrics-session-id")))
+            .Times(testing::AtLeast(0))
+            .WillRepeatedly(Return(nullptr));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("metrics-source-id")))
+            .Times(testing::AtLeast(0))
+            .WillRepeatedly(Return(nullptr));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink)).Times(testing::AtLeast(0));
+    }
+
     void willGetStats()
     {
         EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _))
@@ -280,6 +305,8 @@ private:
  */
 TEST_F(QosUpdatesTest, QosUpdates)
 {
+    expectVideoSinkMetricsLookups();
+
     // Step 1: Create a new media session
     createSession();
 
@@ -339,8 +366,7 @@ TEST_F(QosUpdatesTest, QosUpdates)
     // Playback metric message should be parsed and forwarded to the client.
     willGetStats();
     ExpectMessage<firebolt::rialto::NotifyMetricEvent> expectedMetricEvent{m_clientStub};
-    m_gstreamerStub.sendMetric(&m_src, kVideoDecodeErrorMetric, kMetricOccurrencePhase,
-                               static_cast<guint>(m_videoSourceId), static_cast<guint>(m_sessionId), kMetricPtsNs);
+    sendVideoDecodeErrorMetric(m_videoSourceId);
 
     const auto receivedMetricEvent{expectedMetricEvent.getMessage()};
     ASSERT_TRUE(receivedMetricEvent);
