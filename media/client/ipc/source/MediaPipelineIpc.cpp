@@ -156,7 +156,7 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         {
             RIALTO_CLIENT_LOG_DEBUG("Received playback metric IPC event for sessionId: %d, sourceId: %d",
                                     event->session_id(), event->source_id());
-            m_eventThread->add(&MediaPipelineIpc::onMetricEvent, this, event);
+            m_eventThread->add(&MediaPipelineIpc::handleMetricEvent, this, event);
         });
     if (eventTag < 0)
     {
@@ -1651,19 +1651,18 @@ void MediaPipelineIpc::onQos(const std::shared_ptr<firebolt::rialto::QosEvent> &
     }
 }
 
-void MediaPipelineIpc::onMetricEvent(const std::shared_ptr<firebolt::rialto::NotifyMetricEvent> &event)
+void MediaPipelineIpc::handleMetricEvent(const std::shared_ptr<firebolt::rialto::NotifyMetricEvent> &event)
 {
     RIALTO_CLIENT_LOG_DEBUG(
-        "Dispatching playback metric event sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu, type: %s, phase: %u, count: %llu, durationNs: %llu",
-        event->session_id(), event->source_id(), static_cast<unsigned long long>(event->rendered_frames()),
-        static_cast<unsigned long long>(event->dropped_frames()),
-        static_cast<unsigned long long>(event->corrupted_frames()),
-        static_cast<unsigned long long>(event->pts_ns()), event->error_info().c_str(), event->phase(),
-        static_cast<unsigned long long>(event->count()), static_cast<unsigned long long>(event->duration_ns()));
+        "Dispatching playback metric event sessionId: %d, sourceId: %d, ptsNs: %llu, type: %s, phase: %u, count: %llu, durationNs: %llu, observedAtMonotonicNs: %llu, observedAtUnixNs: %lld",
+        event->session_id(), event->source_id(), static_cast<unsigned long long>(event->pts_ns()),
+        event->error_info().c_str(), event->phase(), static_cast<unsigned long long>(event->count()),
+        static_cast<unsigned long long>(event->duration_ns()),
+        static_cast<unsigned long long>(event->observed_at_monotonic_ns()),
+        static_cast<long long>(event->observed_at_unix_ns()));
     if (event->session_id() == m_sessionId)
     {
-        m_mediaPipelineIpcClient->notifyMetricEvent(event->source_id(), event->rendered_frames(), event->dropped_frames(),
-                                                    event->corrupted_frames(), event->pts_ns(), event->error_info(),
+        m_mediaPipelineIpcClient->notifyMetricEvent(event->source_id(), event->pts_ns(), event->error_info(),
                                                     event->phase(), event->count(), event->duration_ns());
     }
     else
