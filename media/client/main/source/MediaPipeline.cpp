@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -640,6 +641,13 @@ bool MediaPipeline::getUseBuffering(bool &useBuffering)
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->getUseBuffering(useBuffering);
+}
+
+bool MediaPipeline::setBatchDecryption(bool batchDecryption)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->setBatchDecryption(batchDecryption);
 }
 
 bool MediaPipeline::switchSource(const std::unique_ptr<MediaSource> &source)

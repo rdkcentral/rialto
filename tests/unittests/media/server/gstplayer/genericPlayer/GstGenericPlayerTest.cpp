@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -447,6 +448,15 @@ TEST_F(GstGenericPlayerTest, shouldSetReportDecodeErrors)
         .WillOnce(Return(ByMove(std::move(task))));
 
     EXPECT_TRUE(m_sut->setReportDecodeErrors(MediaSourceType::VIDEO, true));
+}
+
+TEST_F(GstGenericPlayerTest, shouldSetBatchDecryption)
+{
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSetBatchDecryption(_, true)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->setBatchDecryption(true);
 }
 
 TEST_F(GstGenericPlayerTest, shouldGetQueuedFramesInPlayingState)

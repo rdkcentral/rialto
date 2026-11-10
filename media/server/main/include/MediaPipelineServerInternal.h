@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -173,6 +174,8 @@ public:
     bool setUseBuffering(bool useBuffering) override;
 
     bool getUseBuffering(bool &useBuffering) override;
+
+    bool setBatchDecryption(bool batchDecryption) override;
 
     bool switchSource(const std::unique_ptr<MediaSource> &source) override;
 
@@ -748,6 +751,15 @@ protected:
      * @retval true on success.
      */
     bool getUseBufferingInternal(bool &useBuffering);
+
+    /**
+     * @brief Enables/disables batch decryption internally, only to be called on the main thread.
+     *
+     * @param[in] batchDecryption      : true if batch decryption enabled.
+     *
+     * @retval true on success.
+     */
+    bool setBatchDecryptionInternal(bool batchDecryption);
 
     /**
      * @brief Switches a source.

@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +25,7 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::wrappers
 {
@@ -41,6 +43,8 @@ public:
     MOCK_METHOD(MediaKeyErrorStatus, load, (), (override));
     MOCK_METHOD(MediaKeyErrorStatus, update, (const uint8_t response[], uint32_t responseSize), (override));
     MOCK_METHOD(MediaKeyErrorStatus, decryptBuffer, (GstBuffer * encrypted, GstCaps *caps), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, decryptBufferMulti, (std::vector<GstBuffer *> & bufferVec, GstCaps *caps),
+                (override));
     MOCK_METHOD(MediaKeyErrorStatus, remove, (), (override));
     MOCK_METHOD(MediaKeyErrorStatus, close, (), (override));
     MOCK_METHOD(MediaKeyErrorStatus, cancelChallengeData, (), (override));

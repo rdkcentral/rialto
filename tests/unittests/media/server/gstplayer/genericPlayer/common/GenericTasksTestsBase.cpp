@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2023 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +42,7 @@
 #include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
+#include "tasks/generic/SetBatchDecryption.h"
 #include "tasks/generic/SetBufferingLimit.h"
 #include "tasks/generic/SetImmediateOutput.h"
 #include "tasks/generic/SetLowLatency.h"
@@ -290,6 +292,11 @@ void GenericTasksTestsBase::setContextStreamInfo(firebolt::rialto::MediaSourceTy
              : (sourceType == firebolt::rialto::MediaSourceType::VIDEO ? testContext->m_streamInfoVideo
                                                                        : testContext->m_streamInfoSubtitle));
     testContext->m_context.streamInfo.emplace(sourceType, streamInfo);
+}
+
+void GenericTasksTestsBase::setContextBatchDecryption()
+{
+    testContext->m_context.batchDecryption = true;
 }
 
 void GenericTasksTestsBase::setContextPlaying()
@@ -1644,6 +1651,39 @@ void GenericTasksTestsBase::shouldAttachAllAudioSamplesWithDelay()
 void GenericTasksTestsBase::shouldAttachData(firebolt::rialto::MediaSourceType sourceType)
 {
     EXPECT_CALL(testContext->m_gstPlayer, attachData(sourceType)).Times(1);
+}
+
+void GenericTasksTestsBase::shouldAttachAllAudioSamplesInBatch()
+{
+    std::shared_ptr<firebolt::rialto::CodecData> kNullCodecData{};
+    EXPECT_CALL(testContext->m_gstPlayer, createBuffer(_)).Times(2).WillRepeatedly(Return(&testContext->m_audioBuffer));
+    EXPECT_CALL(testContext->m_gstPlayer, updateAudioCaps(kSampleRate, kNumberOfChannels, kNullCodecData));
+    EXPECT_CALL(testContext->m_gstPlayer, updateAudioCaps(kSampleRate, kNumberOfChannels, kCodecDataBuffer));
+    EXPECT_CALL(testContext->m_gstPlayer,
+                addAudioClippingToBuffer(&testContext->m_audioBuffer, kClippingStart, kClippingEnd))
+        .Times(2);
+    // All samples are attached at once, as a single buffer list
+    EXPECT_CALL(testContext->m_gstPlayer, attachData(MediaSourceType::AUDIO)).Times(1);
+    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::AUDIO));
+}
+
+void GenericTasksTestsBase::shouldAttachAllVideoSamplesInBatch()
+{
+    std::shared_ptr<firebolt::rialto::CodecData> kNullCodecData{};
+    EXPECT_CALL(testContext->m_gstPlayer, createBuffer(_)).Times(2).WillRepeatedly(Return(&testContext->m_videoBuffer));
+    EXPECT_CALL(testContext->m_gstPlayer, updateVideoCaps(kWidth, kHeight, kFrameRate, kNullCodecData));
+    EXPECT_CALL(testContext->m_gstPlayer, updateVideoCaps(kWidth, kHeight, kFrameRate, kCodecDataBuffer));
+    // All samples are attached at once, as a single buffer list
+    EXPECT_CALL(testContext->m_gstPlayer, attachData(MediaSourceType::VIDEO)).Times(1);
+    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::VIDEO));
+}
+
+void GenericTasksTestsBase::shouldAttachAllSubtitleSamplesInBatch()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, createBuffer(_)).Times(2).WillRepeatedly(Return(&testContext->m_subtitleBuffer));
+    // All samples are attached at once, as a single buffer list
+    EXPECT_CALL(testContext->m_gstPlayer, attachData(MediaSourceType::SUBTITLE)).Times(1);
+    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::SUBTITLE));
 }
 
 void GenericTasksTestsBase::triggerAttachSamplesAudio()
@@ -3034,18 +3074,18 @@ void GenericTasksTestsBase::shouldFailToReportPosition()
     EXPECT_CALL(testContext->m_gstPlayer, getPosition(NotNullMatcher())).WillOnce(Return(-1));
 }
 
-void GenericTasksTestsBase::shouldFinishSetupSource()
+void GenericTasksTestsBase::shouldFinishSetupSource(bool batchDecryption)
 {
     EXPECT_CALL(*testContext->m_gstSrc,
                 setupAndAddAppSrc(std::dynamic_pointer_cast<firebolt::rialto::server::IDecryptionService>(
                                       testContext->m_decryptionServiceMock)
                                       .get(),
                                   testContext->m_element, testContext->m_streamInfoAudio, _, &testContext->m_gstPlayer,
-                                  firebolt::rialto::MediaSourceType::AUDIO))
+                                  firebolt::rialto::MediaSourceType::AUDIO, batchDecryption))
         .WillOnce(Invoke(
             [this](firebolt::rialto::server::IDecryptionService *decryptionService, GstElement *element,
                    firebolt::rialto::server::StreamInfo &streamInfo, const GstAppSrcCallbacks *callbacks,
-                   gpointer userData, firebolt::rialto::MediaSourceType type)
+                   gpointer userData, firebolt::rialto::MediaSourceType type, bool batchDecryption)
             {
                 testContext->m_audioCallbacks = *callbacks;
                 testContext->m_audioUserData = userData;
@@ -3056,11 +3096,11 @@ void GenericTasksTestsBase::shouldFinishSetupSource()
                                       testContext->m_decryptionServiceMock)
                                       .get(),
                                   testContext->m_element, testContext->m_streamInfoVideo, _, &testContext->m_gstPlayer,
-                                  firebolt::rialto::MediaSourceType::VIDEO))
+                                  firebolt::rialto::MediaSourceType::VIDEO, batchDecryption))
         .WillOnce(Invoke(
             [this](firebolt::rialto::server::IDecryptionService *decryptionService, GstElement *element,
                    firebolt::rialto::server::StreamInfo &streamInfo, const GstAppSrcCallbacks *callbacks,
-                   gpointer userData, firebolt::rialto::MediaSourceType type)
+                   gpointer userData, firebolt::rialto::MediaSourceType type, bool batchDecryption)
             {
                 testContext->m_videoCallbacks = *callbacks;
                 testContext->m_videoUserData = userData;
@@ -3791,6 +3831,14 @@ void GenericTasksTestsBase::triggerSetReportDecodeErrors()
     task.execute();
 
     EXPECT_EQ(testContext->m_context.pendingReportDecodeErrorsForVideo, true);
+}
+
+void GenericTasksTestsBase::triggerSetBatchDecryption()
+{
+    firebolt::rialto::server::tasks::generic::SetBatchDecryption task{testContext->m_context, true};
+    task.execute();
+
+    EXPECT_TRUE(testContext->m_context.batchDecryption);
 }
 
 void GenericTasksTestsBase::shouldSetLowLatency()

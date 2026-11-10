@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +35,9 @@ public:
     GstDecryptorElementFactory() = default;
     ~GstDecryptorElementFactory() override = default;
 
-    GstElement *
-    createDecryptorElement(const gchar *name, firebolt::rialto::server::IDecryptionService *decryptionService,
-                           const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const override;
+    GstElement *createDecryptorElement(const gchar *name, firebolt::rialto::server::IDecryptionService *decryptionService,
+                                       const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                       bool batchDecryption) const override;
 };
 
 }; // namespace firebolt::rialto::server

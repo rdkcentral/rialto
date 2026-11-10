@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -469,6 +470,15 @@ public:
      * @retval true on success.
      */
     virtual bool getUseBuffering(bool &useBuffering) = 0;
+
+    /**
+     * @brief Enables/disables batch decryption
+     *
+     * @param[in] batchDecryption      : true if batch decryption enabled.
+     *
+     * @retval true on success.
+     */
+    virtual bool setBatchDecryption(bool batchDecryption) = 0;
 
     /**
      * @brief Request to switch the source to the server backend.

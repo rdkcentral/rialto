@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2023 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -378,6 +379,13 @@ MATCHER_P2(setReportDecodeErrorsRequestMatcher, sessionId, sourceId, "")
     const ::firebolt::rialto::SetReportDecodeErrorsRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::SetReportDecodeErrorsRequest *>(arg);
     return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
+}
+
+MATCHER_P2(setBatchDecryptionRequestMatcher, sessionId, batchDecryption, "")
+{
+    const ::firebolt::rialto::SetBatchDecryptionRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetBatchDecryptionRequest *>(arg);
+    return (kRequest->session_id() == sessionId) && (kRequest->batch_decryption() == batchDecryption);
 }
 
 MATCHER_P2(getQueuedFramesRequestMatcher, sessionId, sourceId, "")

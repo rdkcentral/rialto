@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -285,6 +286,47 @@ MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps
     }
 
     if ((checkForOcdmErrors("decrypt")) && (MediaKeyErrorStatus::OK == status))
+    {
+        status = MediaKeyErrorStatus::FAIL;
+    }
+
+    return status;
+}
+
+MediaKeyErrorStatus MediaKeySession::decryptMulti(std::vector<GstBuffer *> &bufferVec, GstCaps *caps)
+{
+    constexpr uint32_t kHdcpOutputProtectionFailure{4427};
+
+    initOcdmErrorChecking();
+
+    MediaKeyErrorStatus status = m_ocdmSession->decryptBufferMulti(bufferVec, caps);
+    if (MediaKeyErrorStatus::OUTPUT_RESTRICTED == status)
+    {
+        RIALTO_SERVER_LOG_WARN("Decrypt failed due to HDCP output protection");
+    }
+    else if (MediaKeyErrorStatus::OK != status)
+    {
+        uint32_t lastDrmError{0};
+        m_ocdmSession->getLastDrmError(lastDrmError);
+        if (lastDrmError == kHdcpOutputProtectionFailure)
+        {
+            RIALTO_SERVER_LOG_WARN("Decrypt failed due to HDCP output protection (DRM error %u)", lastDrmError);
+            status = MediaKeyErrorStatus::OUTPUT_RESTRICTED;
+        }
+
+        // Log decrypt failures once and re-enable logging only after a successful decrypt.
+        if ((MediaKeyErrorStatus::OUTPUT_RESTRICTED != status) && !m_decryptErrorLogged)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer");
+            m_decryptErrorLogged = true;
+        }
+    }
+    else
+    {
+        m_decryptErrorLogged = false;
+    }
+
+    if ((checkForOcdmErrors("decryptMulti")) && (MediaKeyErrorStatus::OK == status))
     {
         status = MediaKeyErrorStatus::FAIL;
     }
