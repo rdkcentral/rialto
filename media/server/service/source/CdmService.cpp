@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <exception>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -29,6 +30,18 @@
 
 namespace firebolt::rialto::server::service
 {
+namespace
+{
+void retainBlockedMediaKeys(std::unique_ptr<IMediaKeysServerInternal> mediaKeys)
+{
+    // A blocked OCDM call still uses the media keys object, so it is kept alive instead of being destroyed
+    static std::mutex retainedMutex;
+    static auto *retained = new std::vector<std::unique_ptr<IMediaKeysServerInternal>>();
+    std::lock_guard<std::mutex> lock{retainedMutex};
+    retained->push_back(std::move(mediaKeys));
+}
+} // namespace
+
 CdmService::CdmService(std::shared_ptr<IMediaKeysServerInternalFactory> &&mediaKeysFactory,
                        std::shared_ptr<IMediaKeysCapabilitiesFactory> &&mediaKeysCapabilitiesFactory)
     : m_mediaKeysFactory{std::move(mediaKeysFactory)},
@@ -60,9 +73,8 @@ void CdmService::switchToInactive()
         {
             if (mediaKeys.second && mediaKeys.second->isOcdmCallBlocked())
             {
-                // The blocked OCDM call still uses the media keys object, so it is deliberately leaked.
                 RIALTO_SERVER_LOG_ERROR("OCDM call blocked, leaking media keys handle: %d", mediaKeys.first);
-                static_cast<void>(mediaKeys.second.release());
+                retainBlockedMediaKeys(std::move(mediaKeys.second));
             }
         }
         m_mediaKeys.clear();
@@ -126,9 +138,8 @@ bool CdmService::destroyMediaKeys(int mediaKeysHandle)
         }
         if (mediaKeysIter->second->isOcdmCallBlocked())
         {
-            // The blocked OCDM call still uses the media keys object, so it is deliberately leaked.
             RIALTO_SERVER_LOG_ERROR("OCDM call blocked, leaking media keys handle: %d", mediaKeysHandle);
-            static_cast<void>(mediaKeysIter->second.release());
+            retainBlockedMediaKeys(std::move(mediaKeysIter->second));
         }
         m_mediaKeys.erase(mediaKeysIter);
     }

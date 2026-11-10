@@ -314,10 +314,9 @@ bool MediaKeysServerInternal::runTask(const char *operation, const IMainThread::
     }
 
     auto taskState = std::make_shared<TimedTaskState>();
-    auto ocdmCallState = m_ocdmCallState;
     const std::string kOperation{operation};
     const std::chrono::milliseconds kTimeout{m_kOcdmCallTimeout};
-    auto timedTask = [taskState, ocdmCallState, task, kOperation, kTimeout]()
+    auto timedTask = [taskState, ocdmCallState = m_ocdmCallState, task, kOperation, kTimeout]()
     {
         bool abandoned{false};
         {
