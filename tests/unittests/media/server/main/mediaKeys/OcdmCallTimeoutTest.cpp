@@ -27,9 +27,11 @@
 #include <gtest/gtest.h>
 
 #include <chrono>
+#include <condition_variable>
 #include <cstdlib>
 #include <future>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <thread>
 
@@ -48,6 +50,23 @@ const std::string kKeySystem{"com.widevine.alpha"};
 constexpr std::chrono::milliseconds kTimeout{100};
 constexpr std::chrono::milliseconds kFailFastLimit{50};
 constexpr uint64_t kDrmTime{1234};
+
+struct FinalizeInfo
+{
+    std::mutex mutex;
+    std::condition_variable cv;
+    bool finalized{false};
+    std::thread::id thread;
+};
+
+void onBufferFinalized(gpointer data, GstMiniObject *)
+{
+    auto *info = static_cast<FinalizeInfo *>(data);
+    std::lock_guard<std::mutex> lock{info->mutex};
+    info->thread = std::this_thread::get_id();
+    info->finalized = true;
+    info->cv.notify_all();
+}
 
 class BlockingDestructionSessionMock : public MediaKeySessionMock
 {
@@ -208,10 +227,12 @@ TEST_F(RialtoServerMediaKeysOcdmCallTimeoutTest, ShouldFailBlockedDecryptAndKeep
     createMediaKeys();
     auto session = std::make_unique<StrictMock<MediaKeySessionMock>>();
     auto released = m_released;
+    auto ocdmThread = std::make_shared<std::thread::id>();
     EXPECT_CALL(*session, decrypt(_, _))
         .WillOnce(Invoke(
-            [released](GstBuffer *, GstCaps *)
+            [released, ocdmThread](GstBuffer *, GstCaps *)
             {
+                *ocdmThread = std::this_thread::get_id();
                 released.wait();
                 return MediaKeyErrorStatus::OK;
             }));
@@ -226,15 +247,24 @@ TEST_F(RialtoServerMediaKeysOcdmCallTimeoutTest, ShouldFailBlockedDecryptAndKeep
     EXPECT_EQ(2, GST_MINI_OBJECT_REFCOUNT_VALUE(buffer));
     EXPECT_EQ(2, GST_MINI_OBJECT_REFCOUNT_VALUE(caps));
 
+    // The caller drops its reference, so the final unref happens after the blocked decrypt returns
+    FinalizeInfo finalizeInfo;
+    gst_mini_object_weak_ref(GST_MINI_OBJECT_CAST(buffer), onBufferFinalized, &finalizeInfo);
+    gst_buffer_unref(buffer);
+
     releaseOcdm();
     waitUntilOcdmResponsive();
-    for (int i = 0; i < 200 && GST_MINI_OBJECT_REFCOUNT_VALUE(buffer) > 1; ++i)
+    {
+        std::unique_lock<std::mutex> lock{finalizeInfo.mutex};
+        ASSERT_TRUE(finalizeInfo.cv.wait_for(lock, std::chrono::seconds{2}, [&]() { return finalizeInfo.finalized; }));
+        // Finalizing can call back into CdmService, so it must not happen on the OCDM thread
+        EXPECT_NE(*ocdmThread, finalizeInfo.thread);
+    }
+    for (int i = 0; i < 200 && GST_MINI_OBJECT_REFCOUNT_VALUE(caps) > 1; ++i)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds{10});
     }
-    EXPECT_EQ(1, GST_MINI_OBJECT_REFCOUNT_VALUE(buffer));
     EXPECT_EQ(1, GST_MINI_OBJECT_REFCOUNT_VALUE(caps));
-    gst_buffer_unref(buffer);
     gst_caps_unref(caps);
     m_sut.reset();
 }

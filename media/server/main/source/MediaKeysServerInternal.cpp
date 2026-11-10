@@ -18,12 +18,14 @@
  */
 
 #include <algorithm>
+#include <atomic>
 #include <cerrno>
 #include <cinttypes>
 #include <condition_variable>
 #include <cstdlib>
 #include <mutex>
 #include <stdexcept>
+#include <thread>
 #include <tuple>
 #include <utility>
 
@@ -86,18 +88,32 @@ int64_t toMs(std::chrono::steady_clock::duration duration)
  */
 struct DecryptBuffers
 {
+    std::mutex mutex;
+    bool started{false};
+    bool finished{false};
+    bool callerGone{false};
     GstBuffer *buffer{nullptr};
     GstCaps *caps{nullptr};
 
     ~DecryptBuffers()
     {
-        if (buffer)
+        if (buffer || caps)
         {
-            gst_buffer_unref(buffer);
-        }
-        if (caps)
-        {
-            gst_caps_unref(caps);
+            // This may run on the OCDM thread. Finalizing the buffer can call back into CdmService, which may then
+            // need the OCDM thread, so the references are dropped on a separate thread.
+            std::thread(
+                [buffer = buffer, caps = caps]()
+                {
+                    if (buffer)
+                    {
+                        gst_buffer_unref(buffer);
+                    }
+                    if (caps)
+                    {
+                        gst_caps_unref(caps);
+                    }
+                })
+                .detach();
         }
     }
 };
@@ -118,7 +134,7 @@ namespace firebolt::rialto::server
 {
 int32_t generateSessionId()
 {
-    static int32_t keySessionId{0};
+    static std::atomic<int32_t> keySessionId{0};
     return keySessionId++;
 }
 
@@ -232,13 +248,15 @@ MediaKeysServerInternal::MediaKeysServerInternal(
         }
     };
 
-    if (!runTask("createOcdmSystem", task) || !*ocdmSystem)
+    if (!runTask("createOcdmSystem", task))
     {
-        if (isOcdmCallBlocked())
-        {
-            // Destroying the main thread would wait for the blocked OCDM call
-            retainWhileOcdmBlocked(m_mainThread);
-        }
+        // The call may still complete later, destroying its result or the thread here could block
+        retainWhileOcdmBlocked(ocdmSystem);
+        retainWhileOcdmBlocked(m_mainThread);
+        throw std::runtime_error("MediaKeys construction failed");
+    }
+    if (!*ocdmSystem)
+    {
         throw std::runtime_error("MediaKeys construction failed");
     }
     m_ocdmSystem = *ocdmSystem;
@@ -255,6 +273,7 @@ MediaKeysServerInternal::~MediaKeysServerInternal()
         // Session destructors close and destruct the OCDM sessions, so they have to be bounded too
         mediaKeySessions->swap(m_mediaKeySessions);
     }
+    const size_t kMediaKeySessionsCount{mediaKeySessions->size()};
     IMainThread *mainThread{m_mainThread.get()};
     const uint32_t kMainThreadClientId{m_mainThreadClientId};
     auto task = [mediaKeySessions, ocdmSystem, mainThread, kMainThreadClientId]()
@@ -268,7 +287,7 @@ MediaKeysServerInternal::~MediaKeysServerInternal()
     if (!runTask("destroyOcdmSystem", task))
     {
         RIALTO_SERVER_LOG_ERROR("OCDM is not responsive, leaking the OCDM system and %zu key session(s)",
-                                mediaKeySessions->size());
+                                kMediaKeySessionsCount);
         retainWhileOcdmBlocked(ocdmSystem);
         retainWhileOcdmBlocked(mediaKeySessions);
         retainWhileOcdmBlocked(m_mainThread);
@@ -870,15 +889,35 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
     auto status = std::make_shared<MediaKeyErrorStatus>(MediaKeyErrorStatus::FAIL);
     auto buffers = std::make_shared<DecryptBuffers>();
     auto task = [this, status, keySessionId, encrypted, caps, buffers]()
-    { *status = decryptInternal(keySessionId, encrypted, caps); };
+    {
+        {
+            std::lock_guard<std::mutex> lock{buffers->mutex};
+            if (buffers->callerGone)
+            {
+                return;
+            }
+            buffers->started = true;
+        }
+        *status = decryptInternal(keySessionId, encrypted, caps);
+        std::lock_guard<std::mutex> lock{buffers->mutex};
+        buffers->finished = true;
+    };
 
     if (!runTask("decrypt", task))
     {
-        // A timed out decrypt may still be using the buffer and caps, keep them alive until the task is released
-        buffers->buffer = gst_buffer_ref(encrypted);
-        if (caps)
+        std::lock_guard<std::mutex> lock{buffers->mutex};
+        if (!buffers->started)
         {
-            buffers->caps = gst_caps_ref(caps);
+            buffers->callerGone = true;
+        }
+        else if (!buffers->finished)
+        {
+            // The timed out decrypt is still using the buffer and caps, keep them alive until it is released
+            buffers->buffer = gst_buffer_ref(encrypted);
+            if (caps)
+            {
+                buffers->caps = gst_caps_ref(caps);
+            }
         }
         return MediaKeyErrorStatus::FAIL;
     }
