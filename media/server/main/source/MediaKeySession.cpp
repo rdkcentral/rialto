@@ -167,7 +167,7 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
 void MediaKeySession::getChallenge(const LimitedDurationLicense &ldlState)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    auto task = [&]()
+    auto task = [this, ldlState]()
     {
         const bool kIsLdl{LimitedDurationLicense::ENABLED == ldlState};
         uint32_t challengeSize = 0;

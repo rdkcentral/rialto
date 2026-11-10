@@ -84,6 +84,24 @@ int64_t toMs(std::chrono::steady_clock::duration duration)
  *
  * Destroying them could block the caller (e.g. joining a stuck thread) or cause a use-after-free.
  */
+struct DecryptBuffers
+{
+    GstBuffer *buffer{nullptr};
+    GstCaps *caps{nullptr};
+
+    ~DecryptBuffers()
+    {
+        if (buffer)
+        {
+            gst_buffer_unref(buffer);
+        }
+        if (caps)
+        {
+            gst_caps_unref(caps);
+        }
+    }
+};
+
 void retainWhileOcdmBlocked(const std::shared_ptr<void> &object)
 {
     static std::mutex retainedMutex;
@@ -231,10 +249,17 @@ MediaKeysServerInternal::~MediaKeysServerInternal()
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     auto ocdmSystem = std::make_shared<std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystem>>(std::move(m_ocdmSystem));
+    auto mediaKeySessions = std::make_shared<std::map<int32_t, std::unique_ptr<IMediaKeySession>>>();
+    if (m_kOcdmCallTimeout.count() > 0)
+    {
+        // Session destructors close and destruct the OCDM sessions, so they have to be bounded too
+        mediaKeySessions->swap(m_mediaKeySessions);
+    }
     IMainThread *mainThread{m_mainThread.get()};
     const uint32_t kMainThreadClientId{m_mainThreadClientId};
-    auto task = [ocdmSystem, mainThread, kMainThreadClientId]()
+    auto task = [mediaKeySessions, ocdmSystem, mainThread, kMainThreadClientId]()
     {
+        mediaKeySessions->clear();
         ocdmSystem->reset();
 
         mainThread->unregisterClient(kMainThreadClientId);
@@ -243,10 +268,9 @@ MediaKeysServerInternal::~MediaKeysServerInternal()
     if (!runTask("destroyOcdmSystem", task))
     {
         RIALTO_SERVER_LOG_ERROR("OCDM is not responsive, leaking the OCDM system and %zu key session(s)",
-                                m_mediaKeySessions.size());
+                                mediaKeySessions->size());
         retainWhileOcdmBlocked(ocdmSystem);
-        retainWhileOcdmBlocked(
-            std::make_shared<std::map<int32_t, std::unique_ptr<IMediaKeySession>>>(std::move(m_mediaKeySessions)));
+        retainWhileOcdmBlocked(mediaKeySessions);
         retainWhileOcdmBlocked(m_mainThread);
     }
 }
@@ -717,7 +741,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getLdlSessionsLimit(uint32_t &ldlLi
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    auto result = std::make_shared<std::pair<MediaKeyErrorStatus, uint32_t>>(MediaKeyErrorStatus::FAIL, ldlLimit);
+    auto result = std::make_shared<std::pair<MediaKeyErrorStatus, uint32_t>>(MediaKeyErrorStatus::FAIL, 0);
     auto task = [this, result]() { result->first = m_ocdmSystem->getLdlSessionsLimit(&result->second); };
 
     if (!runTask("getLdlSessionsLimit", task))
@@ -732,7 +756,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getLastDrmError(int32_t keySessionI
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    auto result = std::make_shared<std::pair<MediaKeyErrorStatus, uint32_t>>(MediaKeyErrorStatus::FAIL, errorCode);
+    auto result = std::make_shared<std::pair<MediaKeyErrorStatus, uint32_t>>(MediaKeyErrorStatus::FAIL, 0);
     auto task = [this, result, keySessionId]() { result->first = getLastDrmErrorInternal(keySessionId, result->second); };
 
     if (!runTask("getLastDrmError", task))
@@ -765,7 +789,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getDrmTime(uint64_t &drmTime)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    auto result = std::make_shared<std::pair<MediaKeyErrorStatus, uint64_t>>(MediaKeyErrorStatus::FAIL, drmTime);
+    auto result = std::make_shared<std::pair<MediaKeyErrorStatus, uint64_t>>(MediaKeyErrorStatus::FAIL, 0);
     auto task = [this, result]() { result->first = m_ocdmSystem->getDrmTime(&result->second); };
 
     if (!runTask("getDrmTime", task))
@@ -844,12 +868,18 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     auto status = std::make_shared<MediaKeyErrorStatus>(MediaKeyErrorStatus::FAIL);
-    auto task = [this, status, keySessionId, encrypted, caps]()
+    auto buffers = std::make_shared<DecryptBuffers>();
+    auto task = [this, status, keySessionId, encrypted, caps, buffers]()
     { *status = decryptInternal(keySessionId, encrypted, caps); };
 
-    // The buffer is owned by the caller, so a decrypt that has already started is always waited for.
-    if (!runTask("decrypt", task, false))
+    if (!runTask("decrypt", task))
     {
+        // A timed out decrypt may still be using the buffer and caps, keep them alive until the task is released
+        buffers->buffer = gst_buffer_ref(encrypted);
+        if (caps)
+        {
+            buffers->caps = gst_caps_ref(caps);
+        }
         return MediaKeyErrorStatus::FAIL;
     }
     return *status;
