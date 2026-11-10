@@ -39,6 +39,7 @@ public:
                                   const std::shared_ptr<MediaPlayerShmInfo> &shmInfo);
     void notifyPositionChangeEvent(int sessionId, int64_t position);
     void notifyQosEvent(int sessionId, int32_t sourceId, const ::firebolt::rialto::QosInfo &qosInfo);
+    void notifyPlaybackMetricEvent(int sessionId, int32_t sourceId, const ::firebolt::rialto::PlaybackMetric &metric);
     void notifyBufferUnderflowEvent(int sessionId, int32_t sourceId);
     void notifyFirstFrameReceivedEvent(int sessionId, int32_t sourceId);
     void notifyPlaybackErrorEvent(int sessionId, int32_t sourceId, PlaybackError error);

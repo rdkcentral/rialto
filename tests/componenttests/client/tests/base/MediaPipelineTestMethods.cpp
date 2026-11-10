@@ -1535,6 +1535,45 @@ void MediaPipelineTestMethods::getStats(uint64_t expectedFrames, uint64_t expect
     EXPECT_EQ(returnDropped, expectedDropped);
 }
 
+void MediaPipelineTestMethods::shouldGetFrameCounters(const FrameCounters &frameCounters)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                getFrameCounters(_, getFrameCountersRequestMatcher(kSessionId, kVideoSourceId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getFrameCountersResponse(frameCounters)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getFrameCounters(const FrameCounters &expectedFrameCounters)
+{
+    FrameCounters frameCounters;
+    EXPECT_TRUE(m_mediaPipeline->getFrameCounters(kVideoSourceId, frameCounters));
+    EXPECT_EQ(frameCounters.renderedFrames, expectedFrameCounters.renderedFrames);
+    EXPECT_EQ(frameCounters.droppedFrames, expectedFrameCounters.droppedFrames);
+    EXPECT_EQ(frameCounters.corruptedFrames, expectedFrameCounters.corruptedFrames);
+}
+
+void MediaPipelineTestMethods::shouldNotifyPlaybackMetric(const PlaybackMetric &metric)
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackMetric(kVideoSourceId, _))
+        .WillOnce(Invoke(
+            [this, metric](int32_t, const PlaybackMetric &notified)
+            {
+                EXPECT_EQ(notified.type, metric.type);
+                EXPECT_EQ(notified.phase, metric.phase);
+                EXPECT_EQ(notified.ptsNs, metric.ptsNs);
+                EXPECT_EQ(notified.count, metric.count);
+                EXPECT_EQ(notified.durationNs, metric.durationNs);
+                EXPECT_EQ(notified.frameCounters.corruptedFrames, metric.frameCounters.corruptedFrames);
+                notifyEvent();
+            }));
+}
+
+void MediaPipelineTestMethods::sendNotifyPlaybackMetric(const PlaybackMetric &metric)
+{
+    getServerStub()->notifyPlaybackMetricEvent(kSessionId, kVideoSourceId, metric);
+    waitEvent();
+}
+
 void MediaPipelineTestMethods::shouldFlush()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock, flush(_, flushRequestMatcher(kSessionId, kAudioSourceId, kResetTime), _, _))

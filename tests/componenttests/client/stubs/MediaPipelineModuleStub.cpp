@@ -95,6 +95,25 @@ void MediaPipelineModuleStub::notifyQosEvent(int sessionId, int32_t sourceId, co
     getClient()->sendEvent(event);
 }
 
+void MediaPipelineModuleStub::notifyPlaybackMetricEvent(int sessionId, int32_t sourceId,
+                                                        const ::firebolt::rialto::PlaybackMetric &metric)
+{
+    waitForClientConnect();
+
+    auto event = std::make_shared<firebolt::rialto::PlaybackMetricEvent>();
+    event->set_session_id(sessionId);
+    event->set_source_id(sourceId);
+    event->set_type(static_cast<firebolt::rialto::PlaybackMetricEvent_MetricType>(metric.type));
+    event->set_phase(static_cast<firebolt::rialto::PlaybackMetricEvent_MetricPhase>(metric.phase));
+    event->set_pts_ns(metric.ptsNs);
+    event->set_count(metric.count);
+    event->set_duration_ns(metric.durationNs);
+    event->set_rendered_frames(metric.frameCounters.renderedFrames);
+    event->set_dropped_frames(metric.frameCounters.droppedFrames);
+    event->set_corrupted_frames(metric.frameCounters.corruptedFrames);
+    getClient()->sendEvent(event);
+}
+
 void MediaPipelineModuleStub::notifyBufferUnderflowEvent(int sessionId, int32_t sourceId)
 {
     waitForClientConnect();
