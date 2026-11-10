@@ -20,6 +20,6 @@
 
 ## 4. Verification and regression coverage
 
-- [] 4.1 Add and validate the unit-test coverage for metrics-cache correctness, monotonic counters, and bus-message parsing, and verify the playback-metrics path remains green in the unit-test suite without regression in adjacent metrics logic.
+- [ ] 4.1 Add and validate the unit-test coverage for metrics-cache correctness, monotonic counters, and bus-message parsing, and verify the playback-metrics path remains green in the unit-test suite without regression in adjacent metrics logic.
 - [x] 4.2 Integrate the playback-metrics component test for the GStreamer bus-message path through the player/client callback flow, and verify parsed values, counter updates, and no regression in adjacent pipeline behavior.
-- [ ] 4.3 Prepare and run the repository's targeted unit-test and component-test build and execution steps for the changed playback-metrics path, and verify the implementation remains stable in the existing media pipeline behavior.
+- [ ] 4.3 Prepare and run the repository’s targeted unit-test and component-test build and execution steps for the changed playback-metrics path, and verify the implementation remains stable in the existing media pipeline behavior.

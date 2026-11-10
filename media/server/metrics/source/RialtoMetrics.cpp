@@ -7,6 +7,14 @@
 
 namespace firebolt::rialto::server
 {
+enum MetricPhase : guint
+{
+	OCCURRENCE = 0,
+	STARTED = 1,
+	RESOLVED = 2,
+	INVALID = 3
+};
+
 namespace
 {
 std::uint64_t getMonotonicTimestampNs()
@@ -83,7 +91,8 @@ std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
 		!gst_structure_get_uint(structure, "session_id", &sessionId) ||
 		!gst_structure_get_int64(structure, "pts_ns", &ptsNs) ||
 		sourceId > static_cast<guint>(std::numeric_limits<int32_t>::max()) ||
-		sessionId > static_cast<guint>(std::numeric_limits<int32_t>::max()) || ptsNs < 0 || phase > 2)
+		sessionId > static_cast<guint>(std::numeric_limits<int32_t>::max()) || ptsNs < 0 ||
+		phase >= static_cast<guint>(MetricPhase::INVALID))
 	{
 		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics::onMetricMessage ignored malformed metric message");
 		return std::nullopt;
@@ -114,7 +123,9 @@ std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
 			{
 				counters.dropped = std::max(counters.dropped, *droppedFrames);
 			}
-			if (phase == 0 && metricType == 2 && counters.corrupted < std::numeric_limits<std::uint64_t>::max())
+			if (phase == static_cast<guint>(MetricPhase::OCCURRENCE) &&
+				metricType == static_cast<guint>(firebolt::rialto::MetricType::VIDEO_DECODE_ERROR) &&
+				counters.corrupted < std::numeric_limits<std::uint64_t>::max())
 			{
 				++counters.corrupted;
 			}
@@ -122,7 +133,7 @@ std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
 			m_counterCache[key] = counters;
 
 			auto &episode = m_metricEpisodes[{currentSessionId, static_cast<int32_t>(sourceId), metricType}];
-			if (phase == 0U)
+			if (phase == static_cast<guint>(MetricPhase::OCCURRENCE))
 			{
 				if (!episode.active)
 				{

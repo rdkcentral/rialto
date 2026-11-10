@@ -80,30 +80,32 @@ The server sends `NotifyMetricEvent` with these fields:
 | Field | Type | Meaning |
 |---|---|---|
 | `session_id` | `int32` | Owning media pipeline session |
-| `source_id` | `int32` | Source that produced the snapshot |
-| `rendered_frames` | `uint64` | Rendered frame count |
-| `dropped_frames` | `uint64` | Dropped frame count |
-| `corrupted_frames` | `uint64` | Corrupted frame count |
-| `pts_ns` | `uint64` | Presentation timestamp (PTS) associated with the metric snapshot, in nanoseconds |
+| `source_id` | `int32` | Source that produced the event |
+| `pts_ns` | `uint64` | Presentation timestamp (PTS) associated with the metric event, in nanoseconds |
 | `error_info` | `string` | Metric type name (for example, `METRIC_VIDEO_FRAME_DROP`) |
 | `phase` | `uint32` | Westeros metric phase: 0 occurrence, 1 started, 2 resolved |
+| `count` | `uint64` | Metric repetition count |
+| `duration_ns` | `uint64` | Metric duration, in nanoseconds |
+| `type` | `MetricType` | Numeric metric category |
+| `observed_at_monotonic_ns` | `uint64` | Server monotonic time when the event was observed |
+| `observed_at_unix_ns` | `int64` | Unix time when the event was observed |
 
-The event carries the PTS as `pts_ns` and preserves the Westeros `phase`. It does not carry the numeric `MetricType` enum field; the server maps the metric type to its string name in `error_info`.
+The event carries the PTS as `pts_ns` and preserves the Westeros `phase`. Cumulative rendered/dropped/corrupted values remain on the snapshot query path and are not required in the event payload.
 
 The server-side notification signature is:
 
 ```cpp
-void notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames, uint64_t droppedFrames,
-                       uint64_t corruptedFrames, uint64_t ptsNs, const std::string &errorInfo, uint32_t phase);
+void notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, const std::string &errorInfo, uint32_t phase,
+                       uint64_t count = 0, uint64_t durationNs = 0);
 ```
 
-The server IPC client fills in its session ID, copies the remaining values into the event, and sends it. The client IPC layer subscribes to this event type when setting up the IPC channel. It dispatches events on its event thread, forwards events for the current session without further filtering, and passes all payload fields, including `pts_ns` and `phase`, to `IMediaPipelineIpcClient::notifyMetricEvent`. `MediaPipeline` forwards that callback to the registered `IMediaPipelineClient` when it is still available.
+The server IPC client fills in its session ID, copies the remaining values into the event, and sends it. The client IPC layer subscribes to this event type when setting up the IPC channel. It dispatches events on its event thread, forwards events for the current session without further filtering, and passes the event metadata fields, including `pts_ns`, `phase`, `count`, and `duration_ns`, to `IMediaPipelineIpcClient::notifyMetricEvent`. `MediaPipeline` forwards that callback to the registered `IMediaPipelineClient` when it is still available.
 
 Applications receive the callback as:
 
 ```cpp
-void notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames, uint64_t droppedFrames,
-                       uint64_t corruptedFrames, uint64_t ptsNs, const std::string &errorInfo, uint32_t phase);
+void notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, const std::string &errorInfo, uint32_t phase,
+                       uint64_t count = 0, uint64_t durationNs = 0);
 ```
 
 ## Message Types

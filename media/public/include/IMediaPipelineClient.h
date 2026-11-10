@@ -193,8 +193,7 @@ public:
      *
      * @param[in] phase Westeros metric phase: 0 occurrence, 1 started, 2 resolved.
      */
-    virtual void notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames, uint64_t droppedFrames,
-                                   uint64_t corruptedFrames, uint64_t ptsNs, const std::string &errorInfo,
+    virtual void notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, const std::string &errorInfo,
                                    uint32_t phase, uint64_t count = 0, uint64_t durationNs = 0) = 0;
 
     /**

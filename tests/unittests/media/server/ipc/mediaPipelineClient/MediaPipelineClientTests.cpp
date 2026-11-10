@@ -39,16 +39,16 @@ TEST(MediaPipelineClientTests, NotifyMetricEventSerializesAndPreservesPayload)
                 EXPECT_TRUE(decoded.ParseFromString(payload));
                 EXPECT_EQ(kSessionId, decoded.session_id());
                 EXPECT_EQ(kSourceId, decoded.source_id());
-                EXPECT_EQ(101U, decoded.rendered_frames());
-                EXPECT_EQ(7U, decoded.dropped_frames());
-                EXPECT_EQ(3U, decoded.corrupted_frames());
                 EXPECT_EQ(9001U, decoded.pts_ns());
-                EXPECT_EQ("decoder error", decoded.error_info());
+                EXPECT_EQ("METRIC_VIDEO_DECODE_ERROR", decoded.error_info());
+                EXPECT_EQ(firebolt::rialto::MetricType::VIDEO_DECODE_ERROR, decoded.type());
                 EXPECT_EQ(kPhase, decoded.phase());
                 EXPECT_EQ(kCount, decoded.count());
                 EXPECT_EQ(kDurationNs, decoded.duration_ns());
+                EXPECT_GT(decoded.observed_at_monotonic_ns(), 0ULL);
+                EXPECT_GT(decoded.observed_at_unix_ns(), 0LL);
                 return true;
             }));
 
-    client.notifyMetricEvent(kSourceId, 101, 7, 3, 9001, "decoder error", kPhase, kCount, kDurationNs);
+    client.notifyMetricEvent(kSourceId, 9001, "METRIC_VIDEO_DECODE_ERROR", kPhase, kCount, kDurationNs);
 }
