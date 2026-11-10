@@ -1429,6 +1429,25 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
     return returnValue;
 }
 
+bool GstGenericPlayer::getFrameCounters(const MediaSourceType &mediaSourceType, FrameCounters &frameCounters)
+{
+    if (MediaSourceType::VIDEO != mediaSourceType)
+    {
+        RIALTO_SERVER_LOG_ERROR("Frame counters are only supported for video");
+        return false;
+    }
+    uint64_t renderedFrames{0};
+    uint64_t droppedFrames{0};
+    if (!getStats(mediaSourceType, renderedFrames, droppedFrames))
+    {
+        return false;
+    }
+    frameCounters.renderedFrames = renderedFrames;
+    frameCounters.droppedFrames = droppedFrames;
+    frameCounters.corruptedFrames = m_context.playbackMetrics.getCorruptedFrames();
+    return true;
+}
+
 GstBuffer *GstGenericPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const
 {
     GstBuffer *gstBuffer = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getDataLength(), nullptr);

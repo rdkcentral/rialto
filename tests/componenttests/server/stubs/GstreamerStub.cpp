@@ -242,6 +242,15 @@ void GstreamerStub::sendQos(GstElement *src)
     m_cv.notify_one();
 }
 
+void GstreamerStub::sendPlaybackMetric(GstElement *src, guint type, guint phase, gint64 ptsNs)
+{
+    std::unique_lock lock(m_mutex);
+    m_message = gst_message_new_element(GST_OBJECT(src), gst_structure_new("media-pipeline-metric", "metric_type",
+                                                                           G_TYPE_UINT, type, "phase", G_TYPE_UINT, phase,
+                                                                           "pts_ns", G_TYPE_INT64, ptsNs, nullptr));
+    m_cv.notify_one();
+}
+
 void GstreamerStub::sendWarning(GstElement *src, GError *error, const gchar *debug)
 {
     std::unique_lock lock(m_mutex);

@@ -151,6 +151,13 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         return false;
     m_eventTags.push_back(eventTag);
 
+    eventTag = ipcChannel->subscribe<firebolt::rialto::PlaybackMetricEvent>(
+        [this](const std::shared_ptr<firebolt::rialto::PlaybackMetricEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onPlaybackMetric, this, event); });
+    if (eventTag < 0)
+        return false;
+    m_eventTags.push_back(eventTag);
+
     eventTag = ipcChannel->subscribe<firebolt::rialto::BufferUnderflowEvent>(
         [this](const std::shared_ptr<firebolt::rialto::BufferUnderflowEvent> &event)
         { m_eventThread->add(&MediaPipelineIpc::onBufferUnderflow, this, event); });
@@ -738,6 +745,40 @@ bool MediaPipelineIpc::getStats(int32_t sourceId, uint64_t &renderedFrames, uint
 
     renderedFrames = response.rendered_frames();
     droppedFrames = response.dropped_frames();
+    return true;
+}
+
+bool MediaPipelineIpc::getFrameCounters(int32_t sourceId, FrameCounters &frameCounters)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetFrameCountersRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+
+    firebolt::rialto::GetFrameCountersResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getFrameCounters(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get frame counters due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    frameCounters.renderedFrames = response.rendered_frames();
+    frameCounters.droppedFrames = response.dropped_frames();
+    frameCounters.corruptedFrames = response.corrupted_frames();
     return true;
 }
 
@@ -1595,6 +1636,24 @@ void MediaPipelineIpc::onQos(const std::shared_ptr<firebolt::rialto::QosEvent> &
     {
         QosInfo qosInfo = {event->qos_info().processed(), event->qos_info().dropped()};
         m_mediaPipelineIpcClient->notifyQos(event->source_id(), qosInfo);
+    }
+}
+
+void MediaPipelineIpc::onPlaybackMetric(const std::shared_ptr<firebolt::rialto::PlaybackMetricEvent> &event)
+{
+    // Ignore event if not for this session
+    if (event->session_id() == m_sessionId)
+    {
+        PlaybackMetric metric;
+        metric.type = static_cast<PlaybackMetricType>(event->type());
+        metric.phase = static_cast<PlaybackMetricPhase>(event->phase());
+        metric.ptsNs = event->pts_ns();
+        metric.count = event->count();
+        metric.durationNs = event->duration_ns();
+        metric.frameCounters.renderedFrames = event->rendered_frames();
+        metric.frameCounters.droppedFrames = event->dropped_frames();
+        metric.frameCounters.corruptedFrames = event->corrupted_frames();
+        m_mediaPipelineIpcClient->notifyPlaybackMetric(event->source_id(), metric);
     }
 }
 

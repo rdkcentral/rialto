@@ -96,6 +96,18 @@ constexpr uint64_t kStopPosition{2423};
 constexpr bool kFramed{true};
 constexpr bool kIsVideoMaster{true};
 constexpr bool kIsLive{true};
+const firebolt::rialto::FrameCounters kFrameCounters{kRenderedFrames, kDroppedFrames, 7};
+firebolt::rialto::PlaybackMetric createPlaybackMetric()
+{
+    firebolt::rialto::PlaybackMetric metric;
+    metric.type = firebolt::rialto::PlaybackMetricType::VIDEO_FRAME_DROP;
+    metric.phase = firebolt::rialto::PlaybackMetricPhase::RESOLVED;
+    metric.ptsNs = 10500;
+    metric.count = 1;
+    metric.durationNs = 1500;
+    metric.frameCounters = kFrameCounters;
+    return metric;
+}
 } // namespace
 
 MATCHER_P(AttachedSourceMatcher, source, "")
@@ -197,6 +209,18 @@ MATCHER_P3(QosEventMatcher, kSourceId, processed, dropped, "")
     std::shared_ptr<firebolt::rialto::QosEvent> event = std::dynamic_pointer_cast<firebolt::rialto::QosEvent>(arg);
     return ((kSourceId == event->source_id()) && (processed == event->qos_info().processed()) &&
             (dropped == event->qos_info().dropped()));
+}
+
+MATCHER_P(PlaybackMetricEventMatcher, kSourceId, "")
+{
+    std::shared_ptr<firebolt::rialto::PlaybackMetricEvent> event =
+        std::dynamic_pointer_cast<firebolt::rialto::PlaybackMetricEvent>(arg);
+    return event && (kSourceId == event->source_id()) &&
+           (firebolt::rialto::PlaybackMetricEvent_MetricType_VIDEO_FRAME_DROP == event->type()) &&
+           (firebolt::rialto::PlaybackMetricEvent_MetricPhase_RESOLVED == event->phase()) &&
+           (10500u == event->pts_ns()) && (1u == event->count()) && (1500u == event->duration_ns()) &&
+           (kRenderedFrames == event->rendered_frames()) && (kDroppedFrames == event->dropped_frames()) &&
+           (7u == event->corrupted_frames());
 }
 
 MATCHER_P2(PlaybackErrorEventMatcher, kExpectedSourceId, kExpectedPlaybackError, "")
@@ -738,6 +762,19 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetStats()
     EXPECT_CALL(m_mediaPipelineServiceMock, getStats(kHardcodedSessionId, _, _, _)).WillOnce(Return(false));
 }
 
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetFrameCounters()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getFrameCounters(kHardcodedSessionId, kSourceId, _))
+        .WillOnce(DoAll(SetArgReferee<2>(kFrameCounters), Return(true)));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetFrameCounters()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getFrameCounters(kHardcodedSessionId, kSourceId, _)).WillOnce(Return(false));
+}
+
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillRenderFrame()
 {
     expectRequestSuccess();
@@ -1046,6 +1083,11 @@ void MediaPipelineModuleServiceTests::mediaClientWillSendPostionChangeEvent()
 void MediaPipelineModuleServiceTests::mediaClientWillSendQosEvent()
 {
     EXPECT_CALL(*m_clientMock, sendEvent(QosEventMatcher(kSourceId, kQosInfo.processed, kQosInfo.dropped)));
+}
+
+void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackMetricEvent()
+{
+    EXPECT_CALL(*m_clientMock, sendEvent(PlaybackMetricEventMatcher(kSourceId)));
 }
 
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackErrorEvent()
@@ -1492,6 +1534,32 @@ void MediaPipelineModuleServiceTests::sendGetStatsRequestAndReceiveResponseWitho
     m_service->getStats(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
+void MediaPipelineModuleServiceTests::sendGetFrameCountersRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetFrameCountersRequest request;
+    firebolt::rialto::GetFrameCountersResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_source_id(kSourceId);
+
+    m_service->getFrameCounters(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(response.rendered_frames(), kFrameCounters.renderedFrames);
+    EXPECT_EQ(response.dropped_frames(), kFrameCounters.droppedFrames);
+    EXPECT_EQ(response.corrupted_frames(), kFrameCounters.corruptedFrames);
+}
+
+void MediaPipelineModuleServiceTests::sendGetFrameCountersRequest()
+{
+    firebolt::rialto::GetFrameCountersRequest request;
+    firebolt::rialto::GetFrameCountersResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_source_id(kSourceId);
+
+    m_service->getFrameCounters(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
 void MediaPipelineModuleServiceTests::sendHaveDataRequestAndReceiveResponse()
 {
     firebolt::rialto::HaveDataRequest request;
@@ -1860,6 +1928,12 @@ void MediaPipelineModuleServiceTests::sendQosEvent()
 {
     ASSERT_TRUE(m_mediaPipelineClient);
     m_mediaPipelineClient->notifyQos(kSourceId, kQosInfo);
+}
+
+void MediaPipelineModuleServiceTests::sendPlaybackMetricEvent()
+{
+    ASSERT_TRUE(m_mediaPipelineClient);
+    m_mediaPipelineClient->notifyPlaybackMetric(kSourceId, createPlaybackMetric());
 }
 
 void MediaPipelineModuleServiceTests::sendPlaybackErrorEvent()

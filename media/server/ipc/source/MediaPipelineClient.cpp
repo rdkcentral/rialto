@@ -233,6 +233,29 @@ void MediaPipelineClient::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
     m_ipcClient->sendEvent(event);
 }
 
+void MediaPipelineClient::notifyPlaybackMetric(int32_t sourceId, const PlaybackMetric &metric)
+{
+    static_assert(static_cast<int>(PlaybackMetricType::UNKNOWN) ==
+                  firebolt::rialto::PlaybackMetricEvent_MetricType_UNKNOWN);
+    static_assert(static_cast<int>(PlaybackMetricPhase::RESOLVED) ==
+                  firebolt::rialto::PlaybackMetricEvent_MetricPhase_RESOLVED);
+    RIALTO_SERVER_LOG_DEBUG("Sending PlaybackMetricEvent...");
+
+    auto event = std::make_shared<firebolt::rialto::PlaybackMetricEvent>();
+    event->set_session_id(m_sessionId);
+    event->set_source_id(sourceId);
+    event->set_type(static_cast<firebolt::rialto::PlaybackMetricEvent_MetricType>(metric.type));
+    event->set_phase(static_cast<firebolt::rialto::PlaybackMetricEvent_MetricPhase>(metric.phase));
+    event->set_pts_ns(metric.ptsNs);
+    event->set_count(metric.count);
+    event->set_duration_ns(metric.durationNs);
+    event->set_rendered_frames(metric.frameCounters.renderedFrames);
+    event->set_dropped_frames(metric.frameCounters.droppedFrames);
+    event->set_corrupted_frames(metric.frameCounters.corruptedFrames);
+
+    m_ipcClient->sendEvent(event);
+}
+
 void MediaPipelineClient::notifyBufferUnderflow(int32_t sourceId)
 {
     RIALTO_SERVER_LOG_DEBUG("Sending BufferUnderflowEvent...");

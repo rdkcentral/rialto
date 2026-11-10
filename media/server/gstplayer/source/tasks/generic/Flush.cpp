@@ -72,6 +72,10 @@ void Flush::execute() const
     streamInfo.buffers.clear();
     m_context.initialPositions.erase(sourceElem->second.appSrc);
 
+    if (m_type == MediaSourceType::VIDEO)
+    {
+        m_context.playbackMetrics.reset();
+    }
     if (m_type == MediaSourceType::AUDIO)
     {
         m_player.clearAudioFirstFrameFallbackProbe();

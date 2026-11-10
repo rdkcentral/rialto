@@ -1172,3 +1172,53 @@ TEST_F(GstGenericPlayerTest, shouldReturnDuration)
     EXPECT_TRUE(m_sut->getDuration(targetDuration));
     EXPECT_EQ(kExpectedDuration, targetDuration);
 }
+
+TEST_F(GstGenericPlayerTest, shouldGetFrameCounters)
+{
+    constexpr guint64 kRenderedFrames{1234};
+    constexpr guint64 kDroppedFrames{5};
+    setPipelineState(GST_STATE_PLAYING);
+
+    expectGetAVSink(kVideoSinkStr, m_element);
+
+    GstStructure testStructure;
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstStructure **elementPtr = reinterpret_cast<GstStructure **>(element);
+                *elementPtr = &testStructure;
+            }));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&testStructure, StrEq("rendered"), _))
+        .WillOnce(DoAll(SetArgumentPointee<2>(kRenderedFrames), Return(true)));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&testStructure, StrEq("dropped"), _))
+        .WillOnce(DoAll(SetArgumentPointee<2>(kDroppedFrames), Return(true)));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureFree(&testStructure)).Times(1);
+
+    FrameCounters frameCounters;
+    EXPECT_TRUE(m_sut->getFrameCounters(MediaSourceType::VIDEO, frameCounters));
+    EXPECT_EQ(kRenderedFrames, frameCounters.renderedFrames);
+    EXPECT_EQ(kDroppedFrames, frameCounters.droppedFrames);
+    EXPECT_EQ(0u, frameCounters.corruptedFrames);
+}
+
+TEST_F(GstGenericPlayerTest, shouldFailToGetFrameCountersForAudio)
+{
+    setPipelineState(GST_STATE_PLAYING);
+
+    FrameCounters frameCounters;
+    EXPECT_FALSE(m_sut->getFrameCounters(MediaSourceType::AUDIO, frameCounters));
+}
+
+TEST_F(GstGenericPlayerTest, shouldFailToGetFrameCountersWhenStatsAreUnavailable)
+{
+    setPipelineState(GST_STATE_PLAYING);
+
+    expectGetAVSink(kVideoSinkStr, m_element);
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _)).Times(1);
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
+
+    FrameCounters frameCounters;
+    EXPECT_FALSE(m_sut->getFrameCounters(MediaSourceType::VIDEO, frameCounters));
+}

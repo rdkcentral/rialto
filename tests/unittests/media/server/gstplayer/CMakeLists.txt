@@ -117,6 +117,9 @@ add_gtests(RialtoServerGstPlayerUnitTests
     #ProtectionMetadata unittests
     dispatcherThread/GstDispatcherThreadTest.cpp
 
+    #PlaybackMetricsTracker unittests
+    playbackMetrics/PlaybackMetricsTrackerTest.cpp
+
     #WorkerThread unittests
     workerThread/WorkerThreadTest.cpp
 

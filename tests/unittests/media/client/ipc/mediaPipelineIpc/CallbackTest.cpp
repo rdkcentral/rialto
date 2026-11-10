@@ -242,3 +242,52 @@ TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyPlaybackInfo)
 
     m_playbackInfoCb(playbackInfoEvent);
 }
+
+/**
+ * Test that a playback metric notification over IPC is forwarded to the client.
+ */
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyPlaybackMetric)
+{
+    auto event = std::make_shared<firebolt::rialto::PlaybackMetricEvent>();
+    event->set_session_id(m_sessionId);
+    event->set_source_id(m_sourceId);
+    event->set_type(firebolt::rialto::PlaybackMetricEvent_MetricType_VIDEO_FRAME_DROP);
+    event->set_phase(firebolt::rialto::PlaybackMetricEvent_MetricPhase_RESOLVED);
+    event->set_pts_ns(10500);
+    event->set_count(1);
+    event->set_duration_ns(1500);
+    event->set_rendered_frames(100);
+    event->set_dropped_frames(3);
+    event->set_corrupted_frames(1);
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+    EXPECT_CALL(*m_clientMock, notifyPlaybackMetric(m_sourceId, _))
+        .WillOnce(Invoke(
+            [](int32_t, const PlaybackMetric &metric)
+            {
+                EXPECT_EQ(metric.type, PlaybackMetricType::VIDEO_FRAME_DROP);
+                EXPECT_EQ(metric.phase, PlaybackMetricPhase::RESOLVED);
+                EXPECT_EQ(metric.ptsNs, 10500u);
+                EXPECT_EQ(metric.count, 1u);
+                EXPECT_EQ(metric.durationNs, 1500u);
+                EXPECT_EQ(metric.frameCounters.renderedFrames, 100u);
+                EXPECT_EQ(metric.frameCounters.droppedFrames, 3u);
+                EXPECT_EQ(metric.frameCounters.corruptedFrames, 1u);
+            }));
+
+    m_playbackMetricCb(event);
+}
+
+/**
+ * Test that a playback metric for another session is ignored.
+ */
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, InvalidSessionIdPlaybackMetric)
+{
+    auto event = std::make_shared<firebolt::rialto::PlaybackMetricEvent>();
+    event->set_session_id(-1);
+    event->set_source_id(m_sourceId);
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+
+    m_playbackMetricCb(event);
+}

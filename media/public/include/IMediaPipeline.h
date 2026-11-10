@@ -1217,6 +1217,19 @@ public:
     virtual bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
 
     /**
+     * @brief Get the frame counters for this source.
+     *
+     * This method is synchronous. Only video sources are supported.
+     * The default implementation is not supported and returns false.
+     *
+     * @param[in] sourceId       : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[out] frameCounters : The frame counters
+     *
+     * @retval true on success.
+     */
+    virtual bool getFrameCounters(int32_t sourceId, FrameCounters &frameCounters) { return false; }
+
+    /**
      * @brief Sets the "Immediate Output" property for this source.
      *
      * This method is asynchronous, it will set the "Immediate Output" property

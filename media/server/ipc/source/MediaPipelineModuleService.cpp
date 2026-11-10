@@ -946,6 +946,27 @@ void MediaPipelineModuleService::getStats(::google::protobuf::RpcController *con
     done->Run();
 }
 
+void MediaPipelineModuleService::getFrameCounters(::google::protobuf::RpcController *controller,
+                                                  const ::firebolt::rialto::GetFrameCountersRequest *request,
+                                                  ::firebolt::rialto::GetFrameCountersResponse *response,
+                                                  ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    FrameCounters frameCounters;
+    if (!m_mediaPipelineService.getFrameCounters(request->session_id(), request->source_id(), frameCounters))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get frame counters failed");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_rendered_frames(frameCounters.renderedFrames);
+        response->set_dropped_frames(frameCounters.droppedFrames);
+        response->set_corrupted_frames(frameCounters.corruptedFrames);
+    }
+    done->Run();
+}
+
 void MediaPipelineModuleService::renderFrame(::google::protobuf::RpcController *controller,
                                              const ::firebolt::rialto::RenderFrameRequest *request,
                                              ::firebolt::rialto::RenderFrameResponse *response,

@@ -26,6 +26,8 @@ namespace
 constexpr GstMessageType kHandledMessageTypes =
     static_cast<GstMessageType>(GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_QOS | GST_MESSAGE_EOS | GST_MESSAGE_ERROR |
                                 GST_MESSAGE_WARNING | GST_MESSAGE_APPLICATION);
+
+constexpr const char *kPlaybackMetricMessageName{"media-pipeline-metric"};
 } // namespace
 
 namespace firebolt::rialto::server
@@ -128,6 +130,16 @@ void GstDispatcherThread::handleMessage(GstMessage *message)
         return;
     }
     // The bus watch delivers every message; only these types were previously popped from the bus at all.
+    if (GST_MESSAGE_ELEMENT == GST_MESSAGE_TYPE(message))
+    {
+        // Only playback metric element messages are handled
+        const GstStructure *structure = gst_message_get_structure(message);
+        if (structure && m_gstWrapper->gstStructureHasName(structure, kPlaybackMetricMessageName))
+        {
+            m_client.handleBusMessage(m_gstWrapper->gstMessageRef(message));
+        }
+        return;
+    }
     if (!(GST_MESSAGE_TYPE(message) & kHandledMessageTypes))
     {
         return;

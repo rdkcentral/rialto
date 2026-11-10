@@ -88,6 +88,14 @@ public:
     virtual void notifyQos(int32_t sourceId, const QosInfo &qosInfo) = 0;
 
     /**
+     * @brief Handler for a playback metric notification from the server.
+     *
+     * @param[in] sourceId : The id of the source the metric belongs to.
+     * @param[in] metric   : The metric.
+     */
+    virtual void notifyPlaybackMetric(int32_t sourceId, const PlaybackMetric &metric) = 0;
+
+    /**
      * @brief Notifies the client that buffer underflow occurred.
      *
      * Notification shall be sent whenever a video/audio buffer underflow occurs

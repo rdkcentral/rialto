@@ -19,6 +19,9 @@
 
 #include "MediaPipelineTestBase.h"
 
+using ::testing::DoAll;
+using ::testing::SetArgReferee;
+
 class RialtoClientMediaPipelineGetStatsTest : public MediaPipelineTestBase
 {
 protected:
@@ -68,4 +71,23 @@ TEST_F(RialtoClientMediaPipelineGetStatsTest, GetStatsFailure)
     uint64_t droppedFrames;
     EXPECT_CALL(*m_mediaPipelineIpcMock, getStats(m_kSourceId, _, _)).WillOnce(Return(false));
     EXPECT_FALSE(m_mediaPipeline->getStats(m_kSourceId, renderedFrames, droppedFrames));
+}
+
+TEST_F(RialtoClientMediaPipelineGetStatsTest, GetFrameCountersSuccess)
+{
+    const FrameCounters kFrameCounters{1234, 5, 2};
+    FrameCounters frameCounters;
+    EXPECT_CALL(*m_mediaPipelineIpcMock, getFrameCounters(m_kSourceId, _))
+        .WillOnce(DoAll(SetArgReferee<1>(kFrameCounters), Return(true)));
+    EXPECT_TRUE(m_mediaPipeline->getFrameCounters(m_kSourceId, frameCounters));
+    EXPECT_EQ(frameCounters.renderedFrames, kFrameCounters.renderedFrames);
+    EXPECT_EQ(frameCounters.droppedFrames, kFrameCounters.droppedFrames);
+    EXPECT_EQ(frameCounters.corruptedFrames, kFrameCounters.corruptedFrames);
+}
+
+TEST_F(RialtoClientMediaPipelineGetStatsTest, GetFrameCountersFailure)
+{
+    FrameCounters frameCounters;
+    EXPECT_CALL(*m_mediaPipelineIpcMock, getFrameCounters(m_kSourceId, _)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->getFrameCounters(m_kSourceId, frameCounters));
 }

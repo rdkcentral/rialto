@@ -260,6 +260,16 @@ public:
     virtual bool getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
 
     /**
+     * @brief Gets the frame counters of a source. Only video is supported.
+     *
+     * @param[in]  mediaSourceType : The media source type.
+     * @param[out] frameCounters   : The frame counters.
+     *
+     * @retval true on success.
+     */
+    virtual bool getFrameCounters(const MediaSourceType &mediaSourceType, FrameCounters &frameCounters) = 0;
+
+    /**
      * @brief Set the playback rate.
      *
      * @param[in] rate : The playback rate.

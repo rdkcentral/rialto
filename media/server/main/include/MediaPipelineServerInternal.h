@@ -123,6 +123,8 @@ public:
 
     bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
 
+    bool getFrameCounters(int32_t sourceId, FrameCounters &frameCounters) override;
+
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
     bool haveData(MediaSourceStatus status, uint32_t needDataRequestId) override;
@@ -197,6 +199,8 @@ public:
     void invalidateActiveRequests(const MediaSourceType &type) override;
 
     void notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo) override;
+
+    void notifyPlaybackMetric(MediaSourceType mediaSourceType, const PlaybackMetric &metric) override;
 
     void notifyBufferUnderflow(MediaSourceType mediaSourceType) override;
 
@@ -457,6 +461,16 @@ protected:
      * @retval true on success.
      */
     bool getStatsInternal(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames);
+
+    /**
+     * @brief Get the frame counters internally, only to be called on the main thread.
+     *
+     * @param[in] sourceId       : The video source id.
+     * @param[out] frameCounters : The frame counters.
+     *
+     * @retval true on success.
+     */
+    bool getFrameCountersInternal(int32_t sourceId, FrameCounters &frameCounters);
 
     /**
      * @brief Set video window internally, only to be called on the main thread.

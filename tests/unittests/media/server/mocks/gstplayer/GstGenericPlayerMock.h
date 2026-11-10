@@ -51,6 +51,8 @@ public:
     MOCK_METHOD(bool, getQueuedFrames, (uint32_t & queuedFrames), (override));
     MOCK_METHOD(bool, getStats,
                 (const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames), (override));
+    MOCK_METHOD(bool, getFrameCounters, (const MediaSourceType &mediaSourceType, FrameCounters &frameCounters),
+                (override));
     MOCK_METHOD(void, setVideoGeometry, (int x, int y, int width, int height), (override));
     MOCK_METHOD(void, setEos, (const firebolt::rialto::MediaSourceType &type), (override));
     MOCK_METHOD(void, setPlaybackRate, (double rate), (override));

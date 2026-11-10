@@ -529,6 +529,33 @@ bool MediaPipelineServerInternal::getStatsInternal(int32_t sourceId, uint64_t &r
     return m_gstPlayer->getStats(sourceIter->first, renderedFrames, droppedFrames);
 }
 
+bool MediaPipelineServerInternal::getFrameCounters(int32_t sourceId, FrameCounters &frameCounters)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = getFrameCountersInternal(sourceId, frameCounters); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::getFrameCountersInternal(int32_t sourceId, FrameCounters &frameCounters)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - Gstreamer player has not been loaded");
+        return false;
+    }
+    const auto kSourceIter = m_attachedSources.find(MediaSourceType::VIDEO);
+    if (m_attachedSources.cend() == kSourceIter || kSourceIter->second != sourceId)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - video source %d not found", sourceId);
+        return false;
+    }
+    return m_gstPlayer->getFrameCounters(MediaSourceType::VIDEO, frameCounters);
+}
+
 bool MediaPipelineServerInternal::setImmediateOutput(int32_t sourceId, bool immediateOutput)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -1648,6 +1675,34 @@ void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, con
             }
             m_mediaPipelineClient->notifyQos(kSourceIter->second, qosInfo);
         }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
+}
+
+void MediaPipelineServerInternal::notifyPlaybackMetric(MediaSourceType mediaSourceType, const PlaybackMetric &metric)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&, mediaSourceType, metric]()
+    {
+        if (!m_mediaPipelineClient)
+        {
+            return;
+        }
+        const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+        if (m_attachedSources.cend() == kSourceIter)
+        {
+            RIALTO_SERVER_LOG_WARN("Playback metric notification failed - sourceId not found for %s",
+                                   common::convertMediaSourceType(mediaSourceType));
+            return;
+        }
+        PlaybackMetric metricWithCounters{metric};
+        if (m_gstPlayer && !m_gstPlayer->getFrameCounters(mediaSourceType, metricWithCounters.frameCounters))
+        {
+            RIALTO_SERVER_LOG_WARN("Frame counters unavailable for the playback metric notification");
+        }
+        m_mediaPipelineClient->notifyPlaybackMetric(kSourceIter->second, metricWithCounters);
     };
 
     m_mainThread->enqueueTask(m_mainThreadClientId, task);

@@ -189,6 +189,16 @@ public:
     virtual void notifyQos(int32_t sourceId, const QosInfo &qosInfo) = 0;
 
     /**
+     * @brief Notifies the client of a playback metric reported by the video sink.
+     *
+     * The default implementation ignores the notification, so existing clients do not need to implement it.
+     *
+     * @param[in] sourceId : The id of the source the metric belongs to.
+     * @param[in] metric   : The metric.
+     */
+    virtual void notifyPlaybackMetric(int32_t sourceId, const PlaybackMetric &metric) {}
+
+    /**
      * @brief Notifies the client that buffer underflow occurred.
      *
      * Notification shall be sent whenever a video/audio buffer underflow occurs

@@ -162,6 +162,14 @@ public:
     virtual void notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo) = 0;
 
     /**
+     * @brief Notifies the client of a playback metric reported by the sink.
+     *
+     * @param[in] mediaSourceType : The media source type of the sink.
+     * @param[in] metric          : The metric, without frame counters.
+     */
+    virtual void notifyPlaybackMetric(MediaSourceType mediaSourceType, const PlaybackMetric &metric) = 0;
+
+    /**
      * @brief Notifies the client that buffer underflow occurred.
      *
      * Notification shall be sent whenever a video/audio buffer underflow occurs

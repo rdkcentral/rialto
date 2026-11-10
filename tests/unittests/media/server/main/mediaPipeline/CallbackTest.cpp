@@ -350,3 +350,56 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyFirstFrameReceivedFailureSou
 
     m_gstPlayerCallback->notifyFirstFrameReceived(mediaSourceType);
 }
+
+/**
+ * Test a playback metric is forwarded to the registered client with the frame counters of the source.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyPlaybackMetric)
+{
+    int sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    PlaybackMetric metric;
+    metric.type = PlaybackMetricType::VIDEO_FRAME_DROP;
+    metric.count = 2;
+    const FrameCounters kFrameCounters{10, 2, 1};
+
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_gstPlayerMock, getFrameCounters(MediaSourceType::VIDEO, _))
+        .WillOnce(::testing::DoAll(::testing::SetArgReferee<1>(kFrameCounters), Return(true)));
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackMetric(sourceId, _))
+        .WillOnce(Invoke(
+            [&](int32_t, const PlaybackMetric &notified)
+            {
+                EXPECT_EQ(notified.type, PlaybackMetricType::VIDEO_FRAME_DROP);
+                EXPECT_EQ(notified.count, 2u);
+                EXPECT_EQ(notified.frameCounters.renderedFrames, 10u);
+                EXPECT_EQ(notified.frameCounters.droppedFrames, 2u);
+                EXPECT_EQ(notified.frameCounters.corruptedFrames, 1u);
+            }));
+
+    m_gstPlayerCallback->notifyPlaybackMetric(MediaSourceType::VIDEO, metric);
+}
+
+/**
+ * Test a playback metric is still forwarded when the frame counters are unavailable.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyPlaybackMetricWithoutFrameCounters)
+{
+    int sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    PlaybackMetric metric;
+
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_gstPlayerMock, getFrameCounters(MediaSourceType::VIDEO, _)).WillOnce(Return(false));
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackMetric(sourceId, _));
+
+    m_gstPlayerCallback->notifyPlaybackMetric(MediaSourceType::VIDEO, metric);
+}
+
+/**
+ * Test a playback metric is not forwarded when the source is not attached.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyPlaybackMetricFailsWhenSourceNotAttached)
+{
+    mainThreadWillEnqueueTask();
+
+    m_gstPlayerCallback->notifyPlaybackMetric(MediaSourceType::VIDEO, PlaybackMetric{});
+}

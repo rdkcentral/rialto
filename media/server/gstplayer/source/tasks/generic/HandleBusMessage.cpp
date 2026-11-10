@@ -22,6 +22,35 @@
 #include "IGstGenericPlayerClient.h"
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
+#include <chrono>
+
+namespace
+{
+constexpr const char *kPlaybackMetricMessageName{"media-pipeline-metric"};
+
+firebolt::rialto::PlaybackMetricType convertPlaybackMetricType(guint type)
+{
+    switch (type)
+    {
+    case 0:
+        return firebolt::rialto::PlaybackMetricType::VIDEO_FRAME_DROP;
+    case 1:
+        return firebolt::rialto::PlaybackMetricType::AUDIO_FRAME_DROP;
+    case 2:
+        return firebolt::rialto::PlaybackMetricType::VIDEO_DECODE_ERROR;
+    case 3:
+        return firebolt::rialto::PlaybackMetricType::AUDIO_DECODE_ERROR;
+    case 4:
+        return firebolt::rialto::PlaybackMetricType::VIDEO_FRAME_REPEAT;
+    case 5:
+        return firebolt::rialto::PlaybackMetricType::AUDIO_GAP;
+    case 6:
+        return firebolt::rialto::PlaybackMetricType::BUFFER_UNDERFLOW;
+    default:
+        return firebolt::rialto::PlaybackMetricType::UNKNOWN;
+    }
+}
+} // namespace
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -310,11 +339,53 @@ void HandleBusMessage::execute() const
         }
         break;
     }
+    case GST_MESSAGE_ELEMENT:
+    {
+        handlePlaybackMetric();
+        break;
+    }
     default:
         break;
     }
 
     m_gstWrapper->gstMessageUnref(m_message);
+}
+
+void HandleBusMessage::handlePlaybackMetric() const
+{
+    const GstStructure *structure = gst_message_get_structure(m_message);
+    if (!structure || !m_gstWrapper->gstStructureHasName(structure, kPlaybackMetricMessageName) || !m_gstPlayerClient)
+    {
+        return;
+    }
+    GstObject *source = GST_MESSAGE_SRC(m_message);
+    const gchar *klass{nullptr};
+    if (source && GST_IS_ELEMENT(source))
+    {
+        klass = m_gstWrapper->gstElementClassGetMetadata(GST_ELEMENT_GET_CLASS(source), GST_ELEMENT_METADATA_KLASS);
+    }
+    if (!klass || !g_strrstr(klass, "Sink") || !g_strrstr(klass, "Video"))
+    {
+        RIALTO_SERVER_LOG_WARN("Ignoring playback metric, it was not posted by a video sink");
+        return;
+    }
+    guint type{0};
+    guint phase{0};
+    gint64 ptsNs{0};
+    if (!gst_structure_get_uint(structure, "metric_type", &type) ||
+        !gst_structure_get_uint(structure, "phase", &phase) || !gst_structure_get_int64(structure, "pts_ns", &ptsNs) ||
+        phase > static_cast<guint>(PlaybackMetricPhase::RESOLVED) || ptsNs < 0)
+    {
+        RIALTO_SERVER_LOG_WARN("Ignoring malformed playback metric");
+        return;
+    }
+    const auto kMetric{
+        m_context.playbackMetrics.onMetric(convertPlaybackMetricType(type), static_cast<PlaybackMetricPhase>(phase),
+                                           static_cast<uint64_t>(ptsNs), std::chrono::steady_clock::now())};
+    if (kMetric)
+    {
+        m_gstPlayerClient->notifyPlaybackMetric(MediaSourceType::VIDEO, *kMetric);
+    }
 }
 
 bool HandleBusMessage::allSourcesEos() const

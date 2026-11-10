@@ -283,6 +283,54 @@ struct QosInfo
 };
 
 /**
+ * @brief The type of a playback metric reported by the video sink.
+ */
+enum class PlaybackMetricType
+{
+    VIDEO_FRAME_DROP,   /**< Video frames were dropped. */
+    AUDIO_FRAME_DROP,   /**< Audio frames were dropped. Reserved, not produced yet. */
+    VIDEO_DECODE_ERROR, /**< A video frame could not be decoded. */
+    AUDIO_DECODE_ERROR, /**< An audio frame could not be decoded. Reserved, not produced yet. */
+    VIDEO_FRAME_REPEAT, /**< A video frame was repeated. */
+    AUDIO_GAP,          /**< A gap in the audio. Reserved, not produced yet. */
+    BUFFER_UNDERFLOW,   /**< The sink ran out of data. */
+    UNKNOWN             /**< The producer reported a type unknown to Rialto. */
+};
+
+/**
+ * @brief The phase of a playback metric.
+ */
+enum class PlaybackMetricPhase
+{
+    OCCURRENCE, /**< A single event. */
+    STARTED,    /**< An episode, e.g. a run of dropped frames, started. */
+    RESOLVED    /**< An episode ended. */
+};
+
+/**
+ * @brief Frame counters of a source.
+ */
+struct FrameCounters
+{
+    uint64_t renderedFrames{0};  /**< Rendered frames, as reported by the sink. */
+    uint64_t droppedFrames{0};   /**< Dropped frames, as reported by the sink. */
+    uint64_t corruptedFrames{0}; /**< Video decode errors since the source was attached or last flushed. */
+};
+
+/**
+ * @brief A playback metric notification.
+ */
+struct PlaybackMetric
+{
+    PlaybackMetricType type{PlaybackMetricType::UNKNOWN};       /**< The metric type. */
+    PlaybackMetricPhase phase{PlaybackMetricPhase::OCCURRENCE}; /**< The metric phase. */
+    uint64_t ptsNs{0};                                          /**< Producer PTS in nanoseconds. */
+    uint64_t count{0};           /**< Number of events of this type and phase covered by this notification. */
+    uint64_t durationNs{0};      /**< For RESOLVED, the PTS difference to the matching STARTED, otherwise 0. */
+    FrameCounters frameCounters; /**< Frame counters of the source when the notification was sent. */
+};
+
+/**
  * @brief The error return status for session management methods.
  */
 enum class MediaKeyErrorStatus

@@ -70,6 +70,10 @@ void MediaPipelineMetricsClient::notifyQos(int32_t sourceId, const QosInfo &qosI
 {
     m_client->notifyQos(sourceId, qosInfo);
 }
+void MediaPipelineMetricsClient::notifyPlaybackMetric(int32_t sourceId, const PlaybackMetric &metric)
+{
+    m_client->notifyPlaybackMetric(sourceId, metric);
+}
 void MediaPipelineMetricsClient::notifyBufferUnderflow(int32_t sourceId)
 {
     m_client->notifyBufferUnderflow(sourceId);

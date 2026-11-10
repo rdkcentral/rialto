@@ -239,6 +239,16 @@ public:
     virtual bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
 
     /**
+     * @brief Request the frame counters of a video source.
+     *
+     * @param[in] sourceId       : The source id.
+     * @param[out] frameCounters : The frame counters.
+     *
+     * @retval true on success.
+     */
+    virtual bool getFrameCounters(int32_t sourceId, FrameCounters &frameCounters) = 0;
+
+    /**
      * @brief Request new playback rate.
      *
      * @param[in] rate : The playback rate.

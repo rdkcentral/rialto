@@ -341,6 +341,11 @@ bool MediaPipeline::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_
     return m_mediaPipelineIpc->getStats(sourceId, renderedFrames, droppedFrames);
 }
 
+bool MediaPipeline::getFrameCounters(int32_t sourceId, FrameCounters &frameCounters)
+{
+    return m_mediaPipelineIpc->getFrameCounters(sourceId, frameCounters);
+}
+
 bool MediaPipeline::handleSetPosition(int64_t position)
 {
     // needData requests no longer valid
@@ -886,6 +891,17 @@ void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
     if (client)
     {
         client->notifyQos(sourceId, qosInfo);
+    }
+}
+
+void MediaPipeline::notifyPlaybackMetric(int32_t sourceId, const PlaybackMetric &metric)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
+    if (client)
+    {
+        client->notifyPlaybackMetric(sourceId, metric);
     }
 }
 

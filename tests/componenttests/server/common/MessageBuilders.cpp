@@ -232,6 +232,14 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::GetFrameCountersRequest createGetFrameCountersRequest(int sessionId, int sourceId)
+{
+    ::firebolt::rialto::GetFrameCountersRequest request;
+    request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
+    return request;
+}
+
 ::firebolt::rialto::RenderFrameRequest createRenderFrameRequest(int sessionId)
 {
     ::firebolt::rialto::RenderFrameRequest request;

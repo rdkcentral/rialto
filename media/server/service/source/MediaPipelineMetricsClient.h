@@ -44,6 +44,7 @@ public:
                              const std::shared_ptr<MediaPlayerShmInfo> &shmInfo) override;
     void notifyCancelNeedMediaData(int32_t sourceId) override;
     void notifyQos(int32_t sourceId, const QosInfo &qosInfo) override;
+    void notifyPlaybackMetric(int32_t sourceId, const PlaybackMetric &metric) override;
     void notifyBufferUnderflow(int32_t sourceId) override;
     void notifyFirstFrameReceived(int32_t sourceId) override;
     void notifyPlaybackError(int32_t sourceId, PlaybackError error) override;

@@ -194,6 +194,14 @@ struct GetStats
     static constexpr auto m_kFunction{&Stub::getStats};
 };
 
+struct GetFrameCounters
+{
+    using RequestType = ::firebolt::rialto::GetFrameCountersRequest;
+    using ResponseType = ::firebolt::rialto::GetFrameCountersResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getFrameCounters};
+};
+
 struct RenderFrame
 {
     using RequestType = ::firebolt::rialto::RenderFrameRequest;

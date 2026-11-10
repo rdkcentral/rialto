@@ -1095,3 +1095,56 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SimplePing)
 
     m_mediaPipeline->ping(std::make_unique<StrictMock<firebolt::rialto::server::HeartbeatHandlerMock>>());
 }
+
+/**
+ * Test that GetFrameCounters returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    FrameCounters frameCounters;
+    EXPECT_FALSE(m_mediaPipeline->getFrameCounters(m_kDummySourceId, frameCounters));
+}
+
+/**
+ * Test that GetFrameCounters fails for an audio source
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersFailsForAudioSource)
+{
+    loadGstPlayer();
+    int audioSourceId = attachSource(firebolt::rialto::MediaSourceType::AUDIO, "audio/x-opus");
+    mainThreadWillEnqueueTaskAndWait();
+    FrameCounters frameCounters;
+    EXPECT_FALSE(m_mediaPipeline->getFrameCounters(audioSourceId, frameCounters));
+}
+
+/**
+ * Test that GetFrameCounters returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersFailure)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getFrameCounters(MediaSourceType::VIDEO, _)).WillOnce(Return(false));
+    FrameCounters frameCounters;
+    EXPECT_FALSE(m_mediaPipeline->getFrameCounters(videoSourceId, frameCounters));
+}
+
+/**
+ * Test that GetFrameCounters returns the counters of the video source
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersSuccess)
+{
+    const FrameCounters kFrameCounters{m_kRenderedFrames, m_kDroppedFrames, 4};
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getFrameCounters(MediaSourceType::VIDEO, _))
+        .WillOnce(DoAll(SetArgReferee<1>(kFrameCounters), Return(true)));
+    FrameCounters frameCounters;
+    EXPECT_TRUE(m_mediaPipeline->getFrameCounters(videoSourceId, frameCounters));
+    EXPECT_EQ(frameCounters.renderedFrames, m_kRenderedFrames);
+    EXPECT_EQ(frameCounters.droppedFrames, m_kDroppedFrames);
+    EXPECT_EQ(frameCounters.corruptedFrames, 4u);
+}

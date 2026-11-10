@@ -297,6 +297,22 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToGetStats()
     EXPECT_CALL(m_mediaPipelineMock, getStats(_, _, _)).WillOnce(Return(false));
 }
 
+void MediaPipelineServiceTests::mediaPipelineWillGetFrameCounters()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getFrameCounters(kSourceId, _))
+        .WillOnce(Invoke(
+            [&](int32_t, firebolt::rialto::FrameCounters &frameCounters)
+            {
+                frameCounters = firebolt::rialto::FrameCounters{kRenderedFrames, kDroppedFrames, 1};
+                return true;
+            }));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToGetFrameCounters()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getFrameCounters(kSourceId, _)).WillOnce(Return(false));
+}
+
 void MediaPipelineServiceTests::mediaPipelineWillRenderFrame()
 {
     EXPECT_CALL(m_mediaPipelineMock, renderFrame()).WillOnce(Return(true));
@@ -774,6 +790,21 @@ void MediaPipelineServiceTests::getStatsShouldFail()
     std::uint64_t renderedFrames;
     std::uint64_t droppedFrames;
     EXPECT_FALSE(m_sut->getStats(kSessionId, kSourceId, renderedFrames, droppedFrames));
+}
+
+void MediaPipelineServiceTests::getFrameCountersShouldSucceed()
+{
+    firebolt::rialto::FrameCounters frameCounters;
+    EXPECT_TRUE(m_sut->getFrameCounters(kSessionId, kSourceId, frameCounters));
+    EXPECT_EQ(frameCounters.renderedFrames, kRenderedFrames);
+    EXPECT_EQ(frameCounters.droppedFrames, kDroppedFrames);
+    EXPECT_EQ(frameCounters.corruptedFrames, 1u);
+}
+
+void MediaPipelineServiceTests::getFrameCountersShouldFail()
+{
+    firebolt::rialto::FrameCounters frameCounters;
+    EXPECT_FALSE(m_sut->getFrameCounters(kSessionId, kSourceId, frameCounters));
 }
 
 void MediaPipelineServiceTests::setImmediateOutputShouldSucceed()

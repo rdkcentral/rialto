@@ -36,6 +36,7 @@ using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SetArgPointee;
+using ::testing::StrEq;
 using ::testing::StrictMock;
 
 namespace
@@ -410,4 +411,42 @@ TEST_F(GstDispatcherThreadTest, ShutdownDoesNotRaceLoopStartup)
     // Runs on this thread while the worker thread is blocked in gMainContextPushThreadDefault; if the
     // quit request could be lost, the destructor's join() would hang here forever.
     sut.reset();
+}
+
+/**
+ * Test that a playback metric element message is forwarded to the client.
+ */
+TEST_F(GstDispatcherThreadTest, PlaybackMetricElementMessageIsForwarded)
+{
+    auto sut = createSut();
+
+    GstStructure *structure = gst_structure_new_empty("media-pipeline-metric");
+    GstMessage *message = gst_message_new_element(nullptr, structure);
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(structure, StrEq("media-pipeline-metric"))).WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageRef(message)).WillOnce(Return(message));
+    EXPECT_CALL(m_client, handleBusMessage(message));
+    EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(message));
+
+    expectDestructorShutdown();
+    expectDestruction();
+    sut.reset();
+    gst_message_unref(message);
+}
+
+/**
+ * Test that other element messages are dropped without notifying the client.
+ */
+TEST_F(GstDispatcherThreadTest, OtherElementMessageIsIgnored)
+{
+    auto sut = createSut();
+
+    GstStructure *structure = gst_structure_new_empty("other-message");
+    GstMessage *message = gst_message_new_element(nullptr, structure);
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(structure, StrEq("media-pipeline-metric"))).WillOnce(Return(false));
+    EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(message));
+
+    expectDestructorShutdown();
+    expectDestruction();
+    sut.reset();
+    gst_message_unref(message);
 }
