@@ -122,6 +122,18 @@ void CdmServiceTests::triggerSwitchToInactive()
     m_sut.switchToInactive();
 }
 
+void CdmServiceTests::triggerSwitchToInactiveShouldLeakMediaKeys()
+{
+    auto *leakedMediaKeys = &m_mediaKeysMock;
+    m_sut.switchToInactive();
+    delete leakedMediaKeys;
+}
+
+void CdmServiceTests::mediaKeysWillCheckIfOcdmCallIsBlocked(bool isBlocked)
+{
+    EXPECT_CALL(m_mediaKeysMock, isOcdmCallBlocked()).WillOnce(Return(isBlocked));
+}
+
 void CdmServiceTests::triggerPing()
 {
     m_sut.ping(m_heartbeatProcedureMock);
@@ -264,7 +276,16 @@ void CdmServiceTests::createMediaKeysShouldFail()
 
 void CdmServiceTests::destroyMediaKeysShouldSucceed()
 {
+    EXPECT_CALL(m_mediaKeysMock, isOcdmCallBlocked()).WillOnce(Return(false));
     EXPECT_TRUE(m_sut.destroyMediaKeys(kMediaKeysHandle));
+}
+
+void CdmServiceTests::destroyMediaKeysShouldLeakMediaKeysWhenOcdmCallIsBlocked()
+{
+    auto *leakedMediaKeys = &m_mediaKeysMock;
+    EXPECT_CALL(m_mediaKeysMock, isOcdmCallBlocked()).WillOnce(Return(true));
+    EXPECT_TRUE(m_sut.destroyMediaKeys(kMediaKeysHandle));
+    delete leakedMediaKeys;
 }
 
 void CdmServiceTests::destroyMediaKeysShouldFail()

@@ -17,8 +17,18 @@
  * limitations under the License.
  */
 
+#include <algorithm>
+#include <cerrno>
+#include <cinttypes>
+#include <condition_variable>
+#include <cstdlib>
+#include <mutex>
 #include <stdexcept>
+#include <tuple>
+#include <utility>
 
+#include "MainThread.h"
+#include "MediaKeySession.h"
 #include "MediaKeysServerInternal.h"
 #include "RialtoServerLogging.h"
 
@@ -50,6 +60,41 @@ std::shared_ptr<IMediaKeysFactory> IMediaKeysFactory::createFactory()
     return server::IMediaKeysServerInternalFactory::createFactory();
 }
 } // namespace firebolt::rialto
+
+namespace
+{
+constexpr const char *kOcdmCallTimeoutEnv{"RIALTO_OCDM_CALL_TIMEOUT_MS"};
+
+struct TimedTaskState
+{
+    std::mutex mutex;
+    std::condition_variable cv;
+    bool started{false};
+    bool done{false};
+    bool abandoned{false};
+};
+
+int64_t toMs(std::chrono::steady_clock::duration duration)
+{
+    return static_cast<int64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
+}
+
+/**
+ * @brief Keeps objects that may still be used by a blocked OCDM call alive until the process exits.
+ *
+ * Destroying them could block the caller (e.g. joining a stuck thread) or cause a use-after-free.
+ */
+void retainWhileOcdmBlocked(const std::shared_ptr<void> &object)
+{
+    static std::mutex retainedMutex;
+    static auto *retained = new std::vector<std::shared_ptr<void>>();
+    std::lock_guard<std::mutex> lock{retainedMutex};
+    if (std::find(retained->begin(), retained->end(), object) == retained->end())
+    {
+        retained->push_back(object);
+    }
+}
+} // namespace
 
 namespace firebolt::rialto::server
 {
@@ -87,10 +132,19 @@ MediaKeysServerInternalFactory::createMediaKeysServerInternal(const std::string 
     std::unique_ptr<IMediaKeysServerInternal> mediaKeys;
     try
     {
-        mediaKeys = std::make_unique<server::MediaKeysServerInternal>(keySystem,
-                                                                      server::IMainThreadFactory::createFactory(),
+        const std::chrono::milliseconds kOcdmCallTimeout{MediaKeysServerInternal::getOcdmCallTimeoutFromEnv()};
+        std::shared_ptr<IMainThreadFactory> mainThreadFactory{server::IMainThreadFactory::createFactory()};
+        std::shared_ptr<IMediaKeySessionFactory> mediaKeySessionFactory{server::IMediaKeySessionFactory::createFactory()};
+        if (kOcdmCallTimeout.count() > 0)
+        {
+            RIALTO_SERVER_LOG_MIL("OCDM calls for %s are bounded to %" PRId64 " ms and run on a dedicated thread",
+                                  keySystem.c_str(), static_cast<int64_t>(kOcdmCallTimeout.count()));
+            mainThreadFactory = std::make_shared<server::DedicatedMainThreadFactory>();
+            mediaKeySessionFactory = std::make_shared<server::MediaKeySessionFactory>(mainThreadFactory);
+        }
+        mediaKeys = std::make_unique<server::MediaKeysServerInternal>(keySystem, mainThreadFactory,
                                                                       wrappers::IOcdmSystemFactory::createFactory(),
-                                                                      server::IMediaKeySessionFactory::createFactory());
+                                                                      mediaKeySessionFactory, kOcdmCallTimeout);
     }
     catch (const std::exception &e)
     {
@@ -103,11 +157,38 @@ MediaKeysServerInternalFactory::createMediaKeysServerInternal(const std::string 
 
 namespace firebolt::rialto::server
 {
+struct MediaKeysServerInternal::OcdmCallState
+{
+    std::mutex mutex;
+    bool blocked{false};
+    std::string blockedOperation;
+    std::chrono::steady_clock::time_point blockedSince;
+};
+
+std::chrono::milliseconds MediaKeysServerInternal::getOcdmCallTimeoutFromEnv()
+{
+    const char *value = std::getenv(kOcdmCallTimeoutEnv);
+    if (!value || '\0' == *value)
+    {
+        return std::chrono::milliseconds{0};
+    }
+    char *end{nullptr};
+    errno = 0;
+    const int64_t kTimeoutMs{std::strtoll(value, &end, 10)};
+    if (0 != errno || end == value || '\0' != *end || kTimeoutMs < 0)
+    {
+        RIALTO_SERVER_LOG_WARN("Invalid %s value '%s', OCDM calls are not bounded", kOcdmCallTimeoutEnv, value);
+        return std::chrono::milliseconds{0};
+    }
+    return std::chrono::milliseconds{kTimeoutMs};
+}
+
 MediaKeysServerInternal::MediaKeysServerInternal(
     const std::string &keySystem, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     const std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> &ocdmSystemFactory,
-    const std::shared_ptr<IMediaKeySessionFactory> &mediaKeySessionFactory)
-    : m_mediaKeySessionFactory(mediaKeySessionFactory), m_kKeySystem(keySystem)
+    const std::shared_ptr<IMediaKeySessionFactory> &mediaKeySessionFactory, std::chrono::milliseconds ocdmCallTimeout)
+    : m_kOcdmCallTimeout{ocdmCallTimeout}, m_ocdmCallState{std::make_shared<OcdmCallState>()},
+      m_mediaKeySessionFactory(mediaKeySessionFactory), m_kKeySystem(keySystem)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -123,50 +204,165 @@ MediaKeysServerInternal::MediaKeysServerInternal(
         throw std::runtime_error("No ocdmSystemFactory");
     }
 
-    bool result = false;
-    auto task = [&]()
+    auto ocdmSystem = std::make_shared<std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystem>>();
+    auto task = [ocdmSystem, ocdmSystemFactory, keySystem]()
     {
-        m_ocdmSystem = ocdmSystemFactory->createOcdmSystem(keySystem);
-        if (!m_ocdmSystem)
+        *ocdmSystem = ocdmSystemFactory->createOcdmSystem(keySystem);
+        if (!*ocdmSystem)
         {
             RIALTO_SERVER_LOG_ERROR("Ocdm system could not be created");
         }
-        else
-        {
-            result = true;
-        }
     };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    if (!result)
+    if (!runTask("createOcdmSystem", task) || !*ocdmSystem)
     {
+        if (isOcdmCallBlocked())
+        {
+            // Destroying the main thread would wait for the blocked OCDM call
+            retainWhileOcdmBlocked(m_mainThread);
+        }
         throw std::runtime_error("MediaKeys construction failed");
     }
+    m_ocdmSystem = *ocdmSystem;
 }
 
 MediaKeysServerInternal::~MediaKeysServerInternal()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    auto task = [&]()
+    auto ocdmSystem = std::make_shared<std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystem>>(std::move(m_ocdmSystem));
+    IMainThread *mainThread{m_mainThread.get()};
+    const uint32_t kMainThreadClientId{m_mainThreadClientId};
+    auto task = [ocdmSystem, mainThread, kMainThreadClientId]()
     {
-        m_ocdmSystem.reset();
+        ocdmSystem->reset();
 
-        m_mainThread->unregisterClient(m_mainThreadClientId);
+        mainThread->unregisterClient(kMainThreadClientId);
     };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    if (!runTask("destroyOcdmSystem", task))
+    {
+        RIALTO_SERVER_LOG_ERROR("OCDM is not responsive, leaking the OCDM system and %zu key session(s)",
+                                m_mediaKeySessions.size());
+        retainWhileOcdmBlocked(ocdmSystem);
+        retainWhileOcdmBlocked(
+            std::make_shared<std::map<int32_t, std::unique_ptr<IMediaKeySession>>>(std::move(m_mediaKeySessions)));
+        retainWhileOcdmBlocked(m_mainThread);
+    }
+}
+
+bool MediaKeysServerInternal::runTask(const char *operation, const IMainThread::Task &task, bool canAbandonRunningTask)
+{
+    if (m_kOcdmCallTimeout.count() <= 0)
+    {
+        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+        return true;
+    }
+
+    {
+        std::lock_guard<std::mutex> lock{m_ocdmCallState->mutex};
+        if (m_ocdmCallState->blocked)
+        {
+            RIALTO_SERVER_LOG_ERROR("Skipping %s, OCDM call %s has been blocked for %" PRId64 " ms", operation,
+                                    m_ocdmCallState->blockedOperation.c_str(),
+                                    toMs(std::chrono::steady_clock::now() - m_ocdmCallState->blockedSince));
+            return false;
+        }
+    }
+
+    auto taskState = std::make_shared<TimedTaskState>();
+    auto ocdmCallState = m_ocdmCallState;
+    const std::string kOperation{operation};
+    const std::chrono::milliseconds kTimeout{m_kOcdmCallTimeout};
+    auto timedTask = [taskState, ocdmCallState, task, kOperation, kTimeout]()
+    {
+        bool abandoned{false};
+        {
+            std::lock_guard<std::mutex> lock{taskState->mutex};
+            abandoned = taskState->abandoned;
+            taskState->started = !abandoned;
+        }
+        const auto kStart = std::chrono::steady_clock::now();
+        if (abandoned)
+        {
+            RIALTO_SERVER_LOG_WARN("%s skipped, its caller has already timed out", kOperation.c_str());
+        }
+        else
+        {
+            task();
+            {
+                std::lock_guard<std::mutex> lock{taskState->mutex};
+                taskState->done = true;
+            }
+            taskState->cv.notify_all();
+        }
+        const int64_t kDurationMs{toMs(std::chrono::steady_clock::now() - kStart)};
+        if (!abandoned && kDurationMs * 2 >= kTimeout.count())
+        {
+            RIALTO_SERVER_LOG_WARN("Slow OCDM call %s took %" PRId64 " ms (timeout %" PRId64 " ms)", kOperation.c_str(),
+                                   kDurationMs, static_cast<int64_t>(kTimeout.count()));
+        }
+        std::lock_guard<std::mutex> lock{ocdmCallState->mutex};
+        if (ocdmCallState->blocked)
+        {
+            RIALTO_SERVER_LOG_MIL("OCDM is responsive again, %s was blocked for %" PRId64 " ms",
+                                  ocdmCallState->blockedOperation.c_str(),
+                                  toMs(std::chrono::steady_clock::now() - ocdmCallState->blockedSince));
+            ocdmCallState->blocked = false;
+        }
+    };
+
+    const auto kStart = std::chrono::steady_clock::now();
+    m_mainThread->enqueueTask(m_mainThreadClientId, timedTask);
+
+    std::unique_lock<std::mutex> lock{taskState->mutex};
+    if (taskState->cv.wait_for(lock, m_kOcdmCallTimeout, [&taskState]() { return taskState->done; }))
+    {
+        return true;
+    }
+    if (taskState->started && !canAbandonRunningTask)
+    {
+        RIALTO_SERVER_LOG_WARN("%s exceeded the OCDM call timeout of %" PRId64 " ms, waiting for it to complete",
+                               operation, static_cast<int64_t>(m_kOcdmCallTimeout.count()));
+        taskState->cv.wait(lock, [&taskState]() { return taskState->done; });
+        return true;
+    }
+    if (!taskState->started)
+    {
+        taskState->abandoned = true;
+    }
+    {
+        std::lock_guard<std::mutex> stateLock{m_ocdmCallState->mutex};
+        m_ocdmCallState->blocked = true;
+        m_ocdmCallState->blockedOperation = taskState->started ? kOperation : "preceding " + kOperation;
+        m_ocdmCallState->blockedSince = kStart;
+    }
+    RIALTO_SERVER_LOG_ERROR("OCDM call %s did not %s within %" PRId64
+                            " ms, failing it and rejecting OCDM calls until OCDM "
+                            "is responsive again",
+                            operation, taskState->started ? "complete" : "start",
+                            static_cast<int64_t>(m_kOcdmCallTimeout.count()));
+    return false;
+}
+
+bool MediaKeysServerInternal::isOcdmCallBlocked() const
+{
+    std::lock_guard<std::mutex> lock{m_ocdmCallState->mutex};
+    return m_ocdmCallState->blocked;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = selectKeyIdInternal(keySessionId, keyId); };
+    auto status = std::make_shared<MediaKeyErrorStatus>(MediaKeyErrorStatus::FAIL);
+    auto task = [this, status, keySessionId, keyId]() { *status = selectKeyIdInternal(keySessionId, keyId); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
+    if (!runTask("selectKeyId", task))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    return *status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::selectKeyIdInternal(int32_t keySessionId, const std::vector<uint8_t> &keyId)
@@ -192,11 +388,14 @@ bool MediaKeysServerInternal::containsKey(int32_t keySessionId, const std::vecto
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
-    auto task = [&]() { result = containsKeyInternal(keySessionId, keyId); };
+    auto result = std::make_shared<bool>(false);
+    auto task = [this, result, keySessionId, keyId]() { *result = containsKeyInternal(keySessionId, keyId); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return result;
+    if (!runTask("containsKey", task))
+    {
+        return false;
+    }
+    return *result;
 }
 
 bool MediaKeysServerInternal::containsKeyInternal(int32_t keySessionId, const std::vector<uint8_t> &keyId)
@@ -217,11 +416,19 @@ MediaKeyErrorStatus MediaKeysServerInternal::createKeySession(KeySessionType ses
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = createKeySessionInternal(sessionType, client, keySessionId); };
+    auto result = std::make_shared<std::pair<MediaKeyErrorStatus, int32_t>>(MediaKeyErrorStatus::FAIL, -1);
+    auto task = [this, result, sessionType, client]()
+    { result->first = createKeySessionInternal(sessionType, client, result->second); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
+    if (!runTask("createKeySession", task))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    if (MediaKeyErrorStatus::OK == result->first)
+    {
+        keySessionId = result->second;
+    }
+    return result->first;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::createKeySessionInternal(KeySessionType sessionType,
@@ -249,11 +456,15 @@ MediaKeyErrorStatus MediaKeysServerInternal::generateRequest(int32_t keySessionI
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = generateRequestInternal(keySessionId, initDataType, initData, ldlState); };
+    auto status = std::make_shared<MediaKeyErrorStatus>(MediaKeyErrorStatus::FAIL);
+    auto task = [this, status, keySessionId, initDataType, initData, ldlState]()
+    { *status = generateRequestInternal(keySessionId, initDataType, initData, ldlState); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
+    if (!runTask("generateRequest", task))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    return *status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::generateRequestInternal(int32_t keySessionId, InitDataType initDataType,
@@ -280,11 +491,15 @@ MediaKeyErrorStatus MediaKeysServerInternal::loadSession(int32_t keySessionId, c
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = loadSessionInternal(keySessionId, cdmKeySessionId); };
+    auto status = std::make_shared<MediaKeyErrorStatus>(MediaKeyErrorStatus::FAIL);
+    auto task = [this, status, keySessionId, cdmKeySessionId]()
+    { *status = loadSessionInternal(keySessionId, cdmKeySessionId); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
+    if (!runTask("loadSession", task))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    return *status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::loadSessionInternal(int32_t keySessionId, const std::string &cdmKeySessionId)
@@ -309,11 +524,15 @@ MediaKeyErrorStatus MediaKeysServerInternal::updateSession(int32_t keySessionId,
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = updateSessionInternal(keySessionId, responseData); };
+    auto status = std::make_shared<MediaKeyErrorStatus>(MediaKeyErrorStatus::FAIL);
+    auto task = [this, status, keySessionId, responseData]()
+    { *status = updateSessionInternal(keySessionId, responseData); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
+    if (!runTask("updateSession", task))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    return *status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::updateSessionInternal(int32_t keySessionId,
@@ -339,11 +558,15 @@ MediaKeyErrorStatus MediaKeysServerInternal::setDrmHeader(int32_t keySessionId, 
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = setDrmHeaderInternal(keySessionId, requestData); };
+    auto status = std::make_shared<MediaKeyErrorStatus>(MediaKeyErrorStatus::FAIL);
+    auto task = [this, status, keySessionId, requestData]()
+    { *status = setDrmHeaderInternal(keySessionId, requestData); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
+    if (!runTask("setDrmHeader", task))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    return *status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::setDrmHeaderInternal(int32_t keySessionId,
@@ -370,11 +593,14 @@ MediaKeyErrorStatus MediaKeysServerInternal::closeKeySession(int32_t keySessionI
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = closeKeySessionInternal(keySessionId); };
+    auto status = std::make_shared<MediaKeyErrorStatus>(MediaKeyErrorStatus::FAIL);
+    auto task = [this, status, keySessionId]() { *status = closeKeySessionInternal(keySessionId); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
+    if (!runTask("closeKeySession", task))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    return *status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::closeKeySessionInternal(int32_t keySessionId)
@@ -399,11 +625,14 @@ MediaKeyErrorStatus MediaKeysServerInternal::removeKeySession(int32_t keySession
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = removeKeySessionInternal(keySessionId); };
+    auto status = std::make_shared<MediaKeyErrorStatus>(MediaKeyErrorStatus::FAIL);
+    auto task = [this, status, keySessionId]() { *status = removeKeySessionInternal(keySessionId); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
+    if (!runTask("removeKeySession", task))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    return *status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::removeKeySessionInternal(int32_t keySessionId)
@@ -428,66 +657,90 @@ MediaKeyErrorStatus MediaKeysServerInternal::deleteDrmStore()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = m_ocdmSystem->deleteSecureStore(); };
+    auto status = std::make_shared<MediaKeyErrorStatus>(MediaKeyErrorStatus::FAIL);
+    auto task = [this, status]() { *status = m_ocdmSystem->deleteSecureStore(); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
+    if (!runTask("deleteDrmStore", task))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    return *status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::deleteKeyStore()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = m_ocdmSystem->deleteKeyStore(); };
+    auto status = std::make_shared<MediaKeyErrorStatus>(MediaKeyErrorStatus::FAIL);
+    auto task = [this, status]() { *status = m_ocdmSystem->deleteKeyStore(); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
+    if (!runTask("deleteKeyStore", task))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    return *status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getDrmStoreHash(std::vector<unsigned char> &drmStoreHash)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
     constexpr size_t kHashSize{256};
+    auto result = std::make_shared<std::pair<MediaKeyErrorStatus, std::vector<unsigned char>>>(MediaKeyErrorStatus::FAIL,
+                                                                                               std::vector<unsigned char>(
+                                                                                                   kHashSize));
+    auto task = [this, result]() { result->first = m_ocdmSystem->getSecureStoreHash(&result->second[0], kHashSize); };
     drmStoreHash.resize(kHashSize);
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = m_ocdmSystem->getSecureStoreHash(&drmStoreHash[0], kHashSize); };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
+    if (!runTask("getDrmStoreHash", task))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    drmStoreHash = result->second;
+    return result->first;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getKeyStoreHash(std::vector<unsigned char> &keyStoreHash)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
     constexpr size_t kHashSize{256};
+    auto result = std::make_shared<std::pair<MediaKeyErrorStatus, std::vector<unsigned char>>>(MediaKeyErrorStatus::FAIL,
+                                                                                               std::vector<unsigned char>(
+                                                                                                   kHashSize));
+    auto task = [this, result]() { result->first = m_ocdmSystem->getKeyStoreHash(&result->second[0], kHashSize); };
     keyStoreHash.resize(kHashSize);
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = m_ocdmSystem->getKeyStoreHash(&keyStoreHash[0], kHashSize); };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
+    if (!runTask("getKeyStoreHash", task))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    keyStoreHash = result->second;
+    return result->first;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getLdlSessionsLimit(uint32_t &ldlLimit)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = m_ocdmSystem->getLdlSessionsLimit(&ldlLimit); };
+    auto result = std::make_shared<std::pair<MediaKeyErrorStatus, uint32_t>>(MediaKeyErrorStatus::FAIL, ldlLimit);
+    auto task = [this, result]() { result->first = m_ocdmSystem->getLdlSessionsLimit(&result->second); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
+    if (!runTask("getLdlSessionsLimit", task))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    ldlLimit = result->second;
+    return result->first;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getLastDrmError(int32_t keySessionId, uint32_t &errorCode)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = getLastDrmErrorInternal(keySessionId, errorCode); };
+    auto result = std::make_shared<std::pair<MediaKeyErrorStatus, uint32_t>>(MediaKeyErrorStatus::FAIL, errorCode);
+    auto task = [this, result, keySessionId]() { result->first = getLastDrmErrorInternal(keySessionId, result->second); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
+    if (!runTask("getLastDrmError", task))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    errorCode = result->second;
+    return result->first;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getLastDrmErrorInternal(int32_t keySessionId, uint32_t &errorCode)
@@ -510,33 +763,48 @@ MediaKeyErrorStatus MediaKeysServerInternal::getLastDrmErrorInternal(int32_t key
 
 MediaKeyErrorStatus MediaKeysServerInternal::getDrmTime(uint64_t &drmTime)
 {
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = m_ocdmSystem->getDrmTime(&drmTime); };
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
+    auto result = std::make_shared<std::pair<MediaKeyErrorStatus, uint64_t>>(MediaKeyErrorStatus::FAIL, drmTime);
+    auto task = [this, result]() { result->first = m_ocdmSystem->getDrmTime(&result->second); };
+
+    if (!runTask("getDrmTime", task))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    drmTime = result->second;
+    return result->first;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionId(int32_t keySessionId, std::string &cdmKeySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = getCdmKeySessionIdInternal(keySessionId, cdmKeySessionId); };
+    auto result =
+        std::make_shared<std::pair<MediaKeyErrorStatus, std::string>>(MediaKeyErrorStatus::FAIL, cdmKeySessionId);
+    auto task = [this, result, keySessionId]()
+    { result->first = getCdmKeySessionIdInternal(keySessionId, result->second); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
+    if (!runTask("getCdmKeySessionId", task))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    cdmKeySessionId = result->second;
+    return result->first;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::releaseKeySession(int32_t keySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = releaseKeySessionInternal(keySessionId); };
+    auto status = std::make_shared<MediaKeyErrorStatus>(MediaKeyErrorStatus::FAIL);
+    auto task = [this, status, keySessionId]() { *status = releaseKeySessionInternal(keySessionId); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
+    if (!runTask("releaseKeySession", task))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    return *status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::releaseKeySessionInternal(int32_t keySessionId)
@@ -575,12 +843,16 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
+    auto status = std::make_shared<MediaKeyErrorStatus>(MediaKeyErrorStatus::FAIL);
+    auto task = [this, status, keySessionId, encrypted, caps]()
+    { *status = decryptInternal(keySessionId, encrypted, caps); };
 
-    auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-
-    return status;
+    // The buffer is owned by the caller, so a decrypt that has already started is always waited for.
+    if (!runTask("decrypt", task, false))
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+    return *status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
@@ -606,9 +878,16 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
 void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    auto task = [&]() { heartbeatHandler.reset(); };
+    auto handler = std::make_shared<std::unique_ptr<IHeartbeatHandler>>(std::move(heartbeatHandler));
+    auto task = [handler]() { handler->reset(); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    if (!runTask("ping", task, false))
+    {
+        // Restarting the server does not recover a blocked OCDM, so keep the server (and non-DRM playback) alive.
+        RIALTO_SERVER_LOG_ERROR(
+            "MediaKeys thread is blocked by OCDM, acknowledging heartbeat; DRM operations will fail");
+        handler->reset();
+    }
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uint8_t> &buffer)
@@ -622,8 +901,18 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 
     for (int attempts = 0; bufferLength <= kMaxBufferLength; ++attempts)
     {
-        auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(bufferLength, buffer); };
-        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+        auto result =
+            std::make_shared<std::tuple<MediaKeyErrorStatus, uint32_t, std::vector<uint8_t>>>(MediaKeyErrorStatus::FAIL,
+                                                                                              bufferLength, buffer);
+        auto task = [this, result]()
+        { std::get<0>(*result) = m_ocdmSystem->getMetricSystemData(std::get<1>(*result), std::get<2>(*result)); };
+        if (!runTask("getMetricSystemData", task))
+        {
+            return MediaKeyErrorStatus::FAIL;
+        }
+        status = std::get<0>(*result);
+        bufferLength = std::get<1>(*result);
+        buffer = std::move(std::get<2>(*result));
 
         if (status != MediaKeyErrorStatus::BUFFER_TOO_SMALL)
         {

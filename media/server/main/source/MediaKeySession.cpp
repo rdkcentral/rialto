@@ -51,7 +51,9 @@ MediaKeySessionFactory::createMediaKeySession(const std::string &keySystem, int3
     try
     {
         mediaKeys = std::make_unique<server::MediaKeySession>(keySystem, keySessionId, ocdmSystem, sessionType, client,
-                                                              server::IMainThreadFactory::createFactory());
+                                                              m_mainThreadFactory
+                                                                  ? m_mainThreadFactory
+                                                                  : server::IMainThreadFactory::createFactory());
     }
     catch (const std::exception &e)
     {

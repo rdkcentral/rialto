@@ -56,6 +56,15 @@ void CdmService::switchToInactive()
 
     {
         std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
+        for (auto &mediaKeys : m_mediaKeys)
+        {
+            if (mediaKeys.second && mediaKeys.second->isOcdmCallBlocked())
+            {
+                // The blocked OCDM call still uses the media keys object, so it is deliberately leaked.
+                RIALTO_SERVER_LOG_ERROR("OCDM call blocked, leaking media keys handle: %d", mediaKeys.first);
+                static_cast<void>(mediaKeys.second.release());
+            }
+        }
         m_mediaKeys.clear();
         m_mediaKeysClients.clear();
         m_sessionInfo.clear();
@@ -114,6 +123,12 @@ bool CdmService::destroyMediaKeys(int mediaKeysHandle)
             {
                 ++it;
             }
+        }
+        if (mediaKeysIter->second->isOcdmCallBlocked())
+        {
+            // The blocked OCDM call still uses the media keys object, so it is deliberately leaked.
+            RIALTO_SERVER_LOG_ERROR("OCDM call blocked, leaking media keys handle: %d", mediaKeysHandle);
+            static_cast<void>(mediaKeysIter->second.release());
         }
         m_mediaKeys.erase(mediaKeysIter);
     }
