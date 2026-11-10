@@ -22,7 +22,6 @@
 #include "HeartbeatHandlerMock.h"
 #include "IGstDispatcherThreadClient.h"
 #include "IGstGenericPlayerPrivate.h"
-#include "IRialtoMetrics.h"
 #include "IMediaPipeline.h"
 #include "MatchersGenericPlayer.h"
 #include "MediaSourceUtil.h"
@@ -1299,18 +1298,14 @@ TEST_F(GstGenericPlayerTest, shouldCountAndNotifyWesterosMetricMessages)
     };
 
     expectStats(101U, 7U);
-    EXPECT_CALL(m_gstPlayerClient,
-                notifyMetricEvent(kSourceId, 101U, 7U, 0U, kPtsNs, std::string{"METRIC_VIDEO_FRAME_DROP"}, 0U, 1U,
-                                  0U));
+    EXPECT_CALL(m_gstPlayerClient, notifyMetricEvent(kSourceId, kPtsNs, std::string{"METRIC_VIDEO_FRAME_DROP"}, 0U));
     GstMessage *dropMessage = makeMetricMessage(kVideoFrameDropMetric, 0U);
     ASSERT_NE(nullptr, dropMessage);
     dispatcherClient->handleMetricMessage(dropMessage);
     gst_message_unref(dropMessage);
 
     expectStats(102U, 9U);
-    EXPECT_CALL(m_gstPlayerClient,
-                notifyMetricEvent(kSourceId, 102U, 9U, 0U, kPtsNs, std::string{"METRIC_BUFFER_UNDERFLOW"}, 2U, 1U,
-                                  0U));
+    EXPECT_CALL(m_gstPlayerClient, notifyMetricEvent(kSourceId, kPtsNs, std::string{"METRIC_BUFFER_UNDERFLOW"}, 2U));
     GstMessage *underflowMessage = makeMetricMessage(kBufferUnderflowMetric, 2U);
     ASSERT_NE(nullptr, underflowMessage);
     dispatcherClient->handleMetricMessage(underflowMessage);
@@ -1321,9 +1316,7 @@ TEST_F(GstGenericPlayerTest, shouldCountAndNotifyWesterosMetricMessages)
         .WillOnce(Invoke([](gpointer, const gchar *, void *value)
                          { *reinterpret_cast<GstStructure **>(value) = nullptr; }));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
-    EXPECT_CALL(m_gstPlayerClient,
-                notifyMetricEvent(kSourceId, 102U, 9U, 0U, kPtsNs, std::string{"METRIC_VIDEO_FRAME_DROP"}, 0U, 2U,
-                                  0U));
+    EXPECT_CALL(m_gstPlayerClient, notifyMetricEvent(kSourceId, kPtsNs, std::string{"METRIC_VIDEO_FRAME_DROP"}, 0U));
     GstMessage *dropWithoutStats = makeMetricMessage(kVideoFrameDropMetric, 0U);
     ASSERT_NE(nullptr, dropWithoutStats);
     dispatcherClient->handleMetricMessage(dropWithoutStats);
