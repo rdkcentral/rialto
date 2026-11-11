@@ -26,6 +26,7 @@
 #include <string>
 
 #include "MediaPipeline.h"
+#include <vector>
 
 namespace firebolt::rialto::client
 {
