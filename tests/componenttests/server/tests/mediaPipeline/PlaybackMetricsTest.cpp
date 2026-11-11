@@ -34,9 +34,10 @@ using testing::StrEq;
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr guint kVideoDecodeError{2};
-constexpr guint kOccurrence{0};
+constexpr guint kVideoDecodeError{3};
+constexpr guint kOccurrence{1};
 constexpr gint64 kPtsNs{123456};
+constexpr guint64 kCorruptedFrames{4};
 const std::string kElementTypeName{"GenericSink"};
 } // namespace
 
@@ -75,44 +76,54 @@ public:
             .WillOnce(DoAll(SetArgumentPointee<2>(kRenderedFrames), Return(true)));
         EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&m_testStructure, StrEq("dropped"), _))
             .WillOnce(DoAll(SetArgumentPointee<2>(kDroppedFrames), Return(true)));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&m_testStructure, StrEq("corrupted"), _))
+            .WillOnce(DoAll(SetArgumentPointee<2>(kCorruptedFrames), Return(true)));
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink)).Times(1);
         EXPECT_CALL(*m_gstWrapperMock, gstStructureFree(&m_testStructure)).Times(1);
     }
 
-    void willNotifyPlaybackMetric()
+    void setMetricSubscription()
     {
-        // Checked once by the dispatcher and once by the HandleBusMessage task
+        auto req{createSetMetricSubscriptionRequest(m_sessionId, {MediaMetricBatchEvent_MetricType_VIDEO_DECODE_ERROR})};
+        ConfigureAction<SetMetricSubscription>(m_clientStub).send(req).expectSuccess();
+    }
+
+    void willNotifyMediaMetric()
+    {
+        // Checked once by the dispatcher sync handler and once by the HandleBusMessage task
         EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(_, StrEq("media-pipeline-metric")))
             .Times(2)
             .WillRepeatedly(Return(true));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementClassGetMetadata(_, StrEq(GST_ELEMENT_METADATA_KLASS)))
-            .WillOnce(Return("Sink/Video"));
-        willGetStats();
     }
 
-    void notifyPlaybackMetric()
+    void notifyMediaMetric()
     {
-        ExpectMessage<PlaybackMetricEvent> expectedMetric{m_clientStub};
+        ExpectMessage<MediaMetricBatchEvent> expectedMetric{m_clientStub};
 
-        m_gstreamerStub.sendPlaybackMetric(m_videoSink, kVideoDecodeError, kOccurrence, kPtsNs);
+        m_gstreamerStub.sendMediaMetric(m_videoSink,
+                                        gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT,
+                                                          kVideoDecodeError, "observation-kind", G_TYPE_UINT,
+                                                          kOccurrence, "pts-ns", G_TYPE_INT64, kPtsNs, nullptr));
 
         auto receivedMetric = expectedMetric.getMessage();
         ASSERT_TRUE(receivedMetric);
         EXPECT_EQ(receivedMetric->session_id(), m_sessionId);
-        EXPECT_EQ(receivedMetric->source_id(), m_videoSourceId);
-        EXPECT_EQ(receivedMetric->type(), PlaybackMetricEvent_MetricType_VIDEO_DECODE_ERROR);
-        EXPECT_EQ(receivedMetric->phase(), PlaybackMetricEvent_MetricPhase_OCCURRENCE);
-        EXPECT_EQ(receivedMetric->pts_ns(), kPtsNs);
-        EXPECT_EQ(receivedMetric->count(), 1u);
-        EXPECT_EQ(receivedMetric->rendered_frames(), kRenderedFrames);
-        EXPECT_EQ(receivedMetric->dropped_frames(), kDroppedFrames);
-        EXPECT_EQ(receivedMetric->corrupted_frames(), 1u);
+        EXPECT_EQ(receivedMetric->missed_count(), 0u);
+        ASSERT_EQ(receivedMetric->metrics_size(), 1);
+        const auto &kEntry = receivedMetric->metrics(0);
+        EXPECT_EQ(kEntry.source_id(), m_videoSourceId);
+        EXPECT_EQ(kEntry.type(), MediaMetricBatchEvent_MetricType_VIDEO_DECODE_ERROR);
+        EXPECT_EQ(kEntry.phase(), MediaMetricBatchEvent_MetricPhase_OCCURRENCE);
+        EXPECT_EQ(kEntry.pts_ns(), kPtsNs);
+        EXPECT_FALSE(kEntry.has_count());
+        EXPECT_FALSE(kEntry.has_duration_ns());
+        EXPECT_GT(kEntry.observed_at_monotonic_ns(), 0u);
     }
 
     void getFrameCounters()
     {
-        auto req{createGetFrameCountersRequest(m_sessionId, m_videoSourceId)};
-        ConfigureAction<GetFrameCounters>(m_clientStub)
+        auto req{createGetStatsRequest(m_sessionId, m_videoSourceId)};
+        ConfigureAction<GetStats>(m_clientStub)
             .send(req)
             .expectSuccess()
             .matchResponse(
@@ -120,14 +131,8 @@ public:
                 {
                     EXPECT_EQ(resp.rendered_frames(), kRenderedFrames);
                     EXPECT_EQ(resp.dropped_frames(), kDroppedFrames);
-                    EXPECT_EQ(resp.corrupted_frames(), 1u);
+                    EXPECT_EQ(resp.corrupted_frames(), kCorruptedFrames);
                 });
-    }
-
-    void getFrameCountersOfAudioSourceFails()
-    {
-        auto req{createGetFrameCountersRequest(m_sessionId, m_audioSourceId)};
-        ConfigureAction<GetFrameCounters>(m_clientStub).send(req).expectFailure();
     }
 
 private:
@@ -138,8 +143,8 @@ private:
 /*
  * Component Test: Playback metrics
  * Test Objective:
- *  Test that a playback metric posted by the video sink is sent to the client with the frame counters,
- *  and that the frame counters of the video source can be queried.
+ *  Test that a subscribed media metric posted on the bus is sent to the client in a MediaMetricBatchEvent,
+ *  and that the three frame counters of the video source can be queried.
  *
  * Sequence Diagrams:
  *  Playback metrics - docs/PlaybackMetrics.md
@@ -163,12 +168,11 @@ private:
  *  Step 6: Write 1 video frame
  *  Step 7: Notify buffered and Paused
  *  Step 8: Play
- *  Step 9: Playback metric
- *   The video sink posts a video decode error occurrence.
- *   Expect that server sends PlaybackMetricEvent with the frame counters and one corrupted frame.
+ *  Step 9: Media metric
+ *   Subscribe to video decode errors. The decoder posts a video decode error occurrence.
+ *   Expect that server sends a MediaMetricBatchEvent with one occurrence for the video source.
  *  Step 10: Get frame counters
- *   Expect that GetFrameCounters returns the sink stats and one corrupted frame.
- *   Expect that GetFrameCounters fails for the audio source.
+ *   Expect that getStats returns rendered, dropped and corrupted from the sink stats.
  *  Step 11: End of stream, remove sources, stop and destroy the media session
  *
  * Test Teardown:
@@ -225,14 +229,14 @@ TEST_F(PlaybackMetricsTest, PlaybackMetrics)
     willPlay();
     play();
 
-    // Step 9: Playback metric
-    willNotifyPlaybackMetric();
-    notifyPlaybackMetric();
+    // Step 9: Media metric
+    setMetricSubscription();
+    willNotifyMediaMetric();
+    notifyMediaMetric();
 
     // Step 10: Get frame counters
     willGetStats();
     getFrameCounters();
-    getFrameCountersOfAudioSourceFails();
 
     // Step 11: End of stream, remove sources, stop and destroy the media session
     willEos(&m_audioAppSrc);

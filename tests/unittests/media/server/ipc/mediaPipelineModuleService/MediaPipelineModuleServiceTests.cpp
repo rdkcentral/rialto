@@ -380,20 +380,36 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetStats)
     sendGetStatsRequestAndReceiveResponseWithoutStatsMatch();
 }
 
-TEST_F(MediaPipelineModuleServiceTests, shouldGetFrameCounters)
+TEST_F(MediaPipelineModuleServiceTests, shouldGetStatsWithFrameCounters)
 {
     mediaPipelineServiceWillCreateSession();
     sendCreateSessionRequestAndReceiveResponse();
     mediaPipelineServiceWillGetFrameCounters();
-    sendGetFrameCountersRequestAndReceiveResponse();
+    sendGetStatsRequestAndReceiveFrameCounters();
 }
 
-TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetFrameCounters)
+TEST_F(MediaPipelineModuleServiceTests, shouldSetMetricSubscription)
 {
     mediaPipelineServiceWillCreateSession();
     sendCreateSessionRequestAndReceiveResponse();
-    mediaPipelineServiceWillFailToGetFrameCounters();
-    sendGetFrameCountersRequest();
+    mediaPipelineServiceWillSetMetricSubscription();
+    sendSetMetricSubscriptionRequest();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetMetricSubscription)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToSetMetricSubscription();
+    sendSetMetricSubscriptionRequest();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetMetricSubscriptionWithUnknownType)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillRejectUnknownMetricType();
+    sendSetMetricSubscriptionRequestWithUnknownType();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldSendPlaybackStateChangedEvent)
@@ -436,12 +452,12 @@ TEST_F(MediaPipelineModuleServiceTests, shouldSendQosEvent)
     sendQosEvent();
 }
 
-TEST_F(MediaPipelineModuleServiceTests, shouldSendPlaybackMetricEvent)
+TEST_F(MediaPipelineModuleServiceTests, shouldSendMediaMetricBatchEvents)
 {
     mediaPipelineServiceWillCreateSession();
     sendCreateSessionRequestAndReceiveResponse();
-    mediaClientWillSendPlaybackMetricEvent();
-    sendPlaybackMetricEvent();
+    mediaClientWillSendMediaMetricBatchEvents();
+    sendMediaMetricEvents();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldSendPlaybackErrorEvent)

@@ -45,22 +45,39 @@ TEST_F(RialtoClientMediaPipelineIpcGetFrameCountersTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock,
-                CallMethod(methodMatcher("getFrameCounters"), m_controllerMock.get(),
-                           getFrameCountersRequestMatcher(m_sessionId, m_kSourceId), _, m_blockingClosureMock.get()))
+                CallMethod(methodMatcher("getStats"), m_controllerMock.get(),
+                           getStatsRequestMatcher(m_sessionId, m_kSourceId), _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(
             [](google::protobuf::Message *response)
             {
-                auto *frameCountersResponse = dynamic_cast<firebolt::rialto::GetFrameCountersResponse *>(response);
-                frameCountersResponse->set_rendered_frames(100);
-                frameCountersResponse->set_dropped_frames(2);
-                frameCountersResponse->set_corrupted_frames(1);
+                auto *statsResponse = dynamic_cast<firebolt::rialto::GetStatsResponse *>(response);
+                statsResponse->set_rendered_frames(100);
+                statsResponse->set_dropped_frames(2);
+                statsResponse->set_corrupted_frames(1);
             })));
 
-    FrameCounters frameCounters;
+    VideoFrameCounters frameCounters;
     EXPECT_TRUE(m_mediaPipelineIpc->getFrameCounters(m_kSourceId, frameCounters));
     EXPECT_EQ(frameCounters.renderedFrames, 100u);
     EXPECT_EQ(frameCounters.droppedFrames, 2u);
     EXPECT_EQ(frameCounters.corruptedFrames, 1u);
+}
+
+TEST_F(RialtoClientMediaPipelineIpcGetFrameCountersTest, FailsWhenCorruptedIsNotReturned)
+{
+    expectIpcApiCallSuccess();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getStats"), _, _, _, _))
+        .WillOnce(WithArgs<3>(Invoke(
+            [](google::protobuf::Message *response)
+            {
+                auto *statsResponse = dynamic_cast<firebolt::rialto::GetStatsResponse *>(response);
+                statsResponse->set_rendered_frames(100);
+                statsResponse->set_dropped_frames(2);
+            })));
+
+    VideoFrameCounters frameCounters;
+    EXPECT_FALSE(m_mediaPipelineIpc->getFrameCounters(m_kSourceId, frameCounters));
 }
 
 TEST_F(RialtoClientMediaPipelineIpcGetFrameCountersTest, ChannelDisconnected)
@@ -68,7 +85,7 @@ TEST_F(RialtoClientMediaPipelineIpcGetFrameCountersTest, ChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    FrameCounters frameCounters;
+    VideoFrameCounters frameCounters;
     EXPECT_FALSE(m_mediaPipelineIpc->getFrameCounters(m_kSourceId, frameCounters));
 
     // Reattach channel on destroySession
@@ -76,24 +93,33 @@ TEST_F(RialtoClientMediaPipelineIpcGetFrameCountersTest, ChannelDisconnected)
     expectSubscribeEvents();
 }
 
-TEST_F(RialtoClientMediaPipelineIpcGetFrameCountersTest, ReconnectChannel)
-{
-    expectIpcApiCallReconnected();
-    expectUnsubscribeEvents();
-    expectSubscribeEvents();
-
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getFrameCounters"), _, _, _, _));
-
-    FrameCounters frameCounters;
-    EXPECT_TRUE(m_mediaPipelineIpc->getFrameCounters(m_kSourceId, frameCounters));
-}
-
 TEST_F(RialtoClientMediaPipelineIpcGetFrameCountersTest, Failure)
 {
     expectIpcApiCallFailure();
 
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getFrameCounters"), _, _, _, _));
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getStats"), _, _, _, _));
 
-    FrameCounters frameCounters;
+    VideoFrameCounters frameCounters;
     EXPECT_FALSE(m_mediaPipelineIpc->getFrameCounters(m_kSourceId, frameCounters));
+}
+
+TEST_F(RialtoClientMediaPipelineIpcGetFrameCountersTest, SetMetricSubscriptionSuccess)
+{
+    const std::vector<MetricType> kTypes{MetricType::VIDEO_FRAME_DROP, MetricType::BUFFER_UNDERFLOW};
+    expectIpcApiCallSuccess();
+
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("setMetricSubscription"), m_controllerMock.get(),
+                           setMetricSubscriptionRequestMatcher(m_sessionId, kTypes), _, m_blockingClosureMock.get()));
+
+    EXPECT_TRUE(m_mediaPipelineIpc->setMetricSubscription(kTypes));
+}
+
+TEST_F(RialtoClientMediaPipelineIpcGetFrameCountersTest, SetMetricSubscriptionFailure)
+{
+    expectIpcApiCallFailure();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setMetricSubscription"), _, _, _, _));
+
+    EXPECT_FALSE(m_mediaPipelineIpc->setMetricSubscription({}));
 }

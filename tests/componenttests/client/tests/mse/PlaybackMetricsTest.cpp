@@ -39,36 +39,47 @@ public:
 };
 
 /*
- * Component Test: Playback metrics
+ * Component Test: Media metrics
  * Test Objective:
- *  Test that a playback metric notification is forwarded to the client and that the frame counters of the
- *  video source can be queried.
+ *  Test the metric subscription, the delivery of a media metric batch and the frame counters query.
  *
  * Test Steps:
- *  Step 1: Notify playback metric
- *   Server sends a PlaybackMetricEvent for the video source.
- *   Expect that the client is notified with the same metric.
- *  Step 2: Get frame counters
- *   Expect that GetFrameCounters is sent to the server and the counters are returned.
+ *  Step 1: Set metric subscription
+ *   Expect that setMetricSubscription is sent to the server with the selected types.
+ *  Step 2: Notify media metric batch
+ *   Server sends a MediaMetricBatchEvent with a missed count and one resolved audio gap.
+ *   Expect that the client is notified of the missed count first, then of the metric.
+ *  Step 3: Get frame counters
+ *   Expect that getStats is sent to the server and the three counters are returned.
  *
  * Code:
  */
-TEST_F(PlaybackMetricsTest, notificationAndQuery)
+TEST_F(PlaybackMetricsTest, subscriptionNotificationAndQuery)
 {
-    // Step 1: Notify playback metric
-    PlaybackMetric metric;
-    metric.type = PlaybackMetricType::VIDEO_FRAME_DROP;
-    metric.phase = PlaybackMetricPhase::RESOLVED;
-    metric.ptsNs = 10500;
-    metric.count = 1;
-    metric.durationNs = 1500;
-    metric.frameCounters = FrameCounters{100, 3, 1};
-    MediaPipelineTestMethods::shouldNotifyPlaybackMetric(metric);
-    MediaPipelineTestMethods::sendNotifyPlaybackMetric(metric);
+    // Step 1: Set metric subscription
+    const std::vector<MetricType> kTypes{MetricType::AUDIO_GAP, MetricType::VIDEO_FRAME_DROP};
+    MediaPipelineTestMethods::shouldSetMetricSubscription(kTypes);
+    MediaPipelineTestMethods::setMetricSubscription(kTypes);
 
-    // Step 2: Get frame counters
-    const FrameCounters kFrameCounters{2345, 6, 2};
-    MediaPipelineTestMethods::shouldGetFrameCounters(kFrameCounters);
-    MediaPipelineTestMethods::getFrameCounters(kFrameCounters);
+    // Step 2: Notify media metric batch
+    MetricEvent metric;
+    metric.type = MetricType::AUDIO_GAP;
+    metric.phase = MetricPhase::RESOLVED;
+    metric.sourceId = 1;
+    metric.presentationTimeStampNs = 0;
+    metric.count = 4;
+    metric.durationNs = 1500;
+    metric.observedAtMonotonicNs = 11;
+    metric.observedAtUnixNs = 22;
+    MediaPipelineTestMethods::shouldNotifyMetric(metric, 2);
+    MediaPipelineTestMethods::sendNotifyMetric(metric, 2);
+
+    // Step 3: Get frame counters
+    VideoFrameCounters frameCounters;
+    frameCounters.renderedFrames = 2345;
+    frameCounters.droppedFrames = 6;
+    frameCounters.corruptedFrames = 2;
+    MediaPipelineTestMethods::shouldGetFrameCounters(frameCounters);
+    MediaPipelineTestMethods::getFrameCounters(frameCounters);
 }
 } // namespace firebolt::rialto::client::ct

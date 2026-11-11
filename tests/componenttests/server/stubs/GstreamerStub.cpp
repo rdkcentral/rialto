@@ -105,6 +105,14 @@ void GstreamerStub::setupMessages(bool repeatedCallsToGstPipelineGetBus)
             }));
     EXPECT_CALL(*m_glibWrapperMock, gSourceAttach(m_fakeBusSource, m_fakeMainContext)).WillOnce(Return(1));
     EXPECT_CALL(*m_glibWrapperMock, gSourceUnref(m_fakeBusSource));
+    // The dispatcher keeps the bus while its sync handler is installed and releases it at destruction.
+    EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(m_bus, testing::NotNull(), testing::NotNull(), nullptr))
+        .WillOnce(Invoke(
+            [this](GstBus *, GstBusSyncHandler func, gpointer data, GDestroyNotify)
+            {
+                m_syncHandler = func;
+                m_syncHandlerUserData = data;
+            }));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_bus));
 
     // GstDispatcherThread::gstBusEventHandler, running on its own worker thread.
@@ -242,13 +250,13 @@ void GstreamerStub::sendQos(GstElement *src)
     m_cv.notify_one();
 }
 
-void GstreamerStub::sendPlaybackMetric(GstElement *src, guint type, guint phase, gint64 ptsNs)
+void GstreamerStub::sendMediaMetric(GstElement *src, GstStructure *structure)
 {
-    std::unique_lock lock(m_mutex);
-    m_message = gst_message_new_element(GST_OBJECT(src), gst_structure_new("media-pipeline-metric", "metric_type",
-                                                                           G_TYPE_UINT, type, "phase", G_TYPE_UINT, phase,
-                                                                           "pts_ns", G_TYPE_INT64, ptsNs, nullptr));
-    m_cv.notify_one();
+    ASSERT_TRUE(m_syncHandler);
+    // Posting runs the bus sync handler on the posting thread; a dropped message is released by the bus.
+    GstMessage *message = gst_message_new_element(GST_OBJECT(src), structure);
+    EXPECT_EQ(GST_BUS_DROP, m_syncHandler(m_bus, message, m_syncHandlerUserData));
+    gst_message_unref(message);
 }
 
 void GstreamerStub::sendWarning(GstElement *src, GError *error, const gchar *debug)

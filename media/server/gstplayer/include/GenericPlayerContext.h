@@ -26,7 +26,6 @@
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ITimer.h"
 #include "MediaCommon.h"
-#include "PlaybackMetricsTracker.h"
 #include <atomic>
 #include <gst/gst.h>
 #include <list>
@@ -342,11 +341,6 @@ struct GenericPlayerContext
      * @brief Current position of the stream in nanoseconds.
      */
     std::atomic<int64_t> streamPosition{-1};
-
-    /**
-     * @brief Playback metrics of the video sink.
-     */
-    PlaybackMetricsTracker playbackMetrics;
 };
 } // namespace firebolt::rialto::server
 

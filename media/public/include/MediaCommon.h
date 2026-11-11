@@ -283,51 +283,61 @@ struct QosInfo
 };
 
 /**
- * @brief The type of a playback metric reported by the video sink.
+ * @brief The type of a media metric.
+ *
+ * Occurrence types are VIDEO_FRAME_DROP, AUDIO_FRAME_DROP, VIDEO_DECODE_ERROR and AUDIO_DECODE_ERROR. Episode types are
+ * VIDEO_FRAME_REPEAT, AUDIO_GAP and BUFFER_UNDERFLOW.
  */
-enum class PlaybackMetricType
+enum class MetricType : uint32_t
 {
-    VIDEO_FRAME_DROP,   /**< Video frames were dropped. */
-    AUDIO_FRAME_DROP,   /**< Audio frames were dropped. Reserved, not produced yet. */
-    VIDEO_DECODE_ERROR, /**< A video frame could not be decoded. */
-    AUDIO_DECODE_ERROR, /**< An audio frame could not be decoded. Reserved, not produced yet. */
-    VIDEO_FRAME_REPEAT, /**< A video frame was repeated. */
-    AUDIO_GAP,          /**< A gap in the audio. Reserved, not produced yet. */
-    BUFFER_UNDERFLOW,   /**< The sink ran out of data. */
-    UNKNOWN             /**< The producer reported a type unknown to Rialto. */
+    VIDEO_FRAME_DROP,   /**< A presentation-eligible video frame was discarded before presentation. */
+    AUDIO_FRAME_DROP,   /**< Decoded audio was discarded before output. */
+    VIDEO_FRAME_REPEAT, /**< The preceding video frame was reused because the next one was unavailable. */
+    AUDIO_GAP,          /**< Audio output was substituted for missing decoded audio. */
+    VIDEO_DECODE_ERROR, /**< The video decoder reported a frame-level decode failure or corruption. */
+    AUDIO_DECODE_ERROR, /**< The audio decoder reported a frame-level decode failure. */
+    BUFFER_UNDERFLOW    /**< A decoder required input and none was available. */
 };
 
 /**
- * @brief The phase of a playback metric.
+ * @brief The phase of a media metric notification.
  */
-enum class PlaybackMetricPhase
+enum class MetricPhase : uint32_t
 {
-    OCCURRENCE, /**< A single event. */
-    STARTED,    /**< An episode, e.g. a run of dropped frames, started. */
-    RESOLVED    /**< An episode ended. */
+    OCCURRENCE, /**< One affected frame or sample. Used by occurrence types. */
+    STARTED,    /**< An episode started. Used by episode types. */
+    RESOLVED    /**< An episode ended. Self-describing; a matching STARTED is not required. */
 };
 
 /**
- * @brief Frame counters of a source.
+ * @brief A media metric notification.
+ *
+ * Valid shapes:
+ * - occurrence types, OCCURRENCE: no count or duration.
+ * - VIDEO_FRAME_REPEAT and AUDIO_GAP, STARTED: no count or duration; RESOLVED: count and durationNs.
+ * - BUFFER_UNDERFLOW, STARTED: no count or duration; RESOLVED: durationNs.
  */
-struct FrameCounters
+struct MetricEvent
 {
-    uint64_t renderedFrames{0};  /**< Rendered frames, as reported by the sink. */
-    uint64_t droppedFrames{0};   /**< Dropped frames, as reported by the sink. */
-    uint64_t corruptedFrames{0}; /**< Video decode errors since the source was attached or last flushed. */
+    MetricType type{MetricType::VIDEO_FRAME_DROP};  /**< The metric type. */
+    MetricPhase phase{MetricPhase::OCCURRENCE};     /**< The metric phase. */
+    int32_t sourceId{-1};                           /**< The id of the source the metric belongs to. */
+    std::optional<int64_t> presentationTimeStampNs; /**< Stream timestamp of the affected frame or episode start. */
+    std::optional<uint64_t> count;      /**< RESOLVED repeat/gap only: number of repeated or substituted frames. */
+    std::optional<uint64_t> durationNs; /**< RESOLVED only: monotonic elapsed time of the episode. */
+    uint64_t observedAtMonotonicNs{0};  /**< Server monotonic time when the server accepted the observation. */
+    int64_t observedAtUnixNs{0};        /**< Server wall-clock time when the server accepted the observation. */
 };
 
 /**
- * @brief A playback metric notification.
+ * @brief Cumulative frame counters of a video source.
  */
-struct PlaybackMetric
+struct VideoFrameCounters
 {
-    PlaybackMetricType type{PlaybackMetricType::UNKNOWN};       /**< The metric type. */
-    PlaybackMetricPhase phase{PlaybackMetricPhase::OCCURRENCE}; /**< The metric phase. */
-    uint64_t ptsNs{0};                                          /**< Producer PTS in nanoseconds. */
-    uint64_t count{0};           /**< Number of events of this type and phase covered by this notification. */
-    uint64_t durationNs{0};      /**< For RESOLVED, the PTS difference to the matching STARTED, otherwise 0. */
-    FrameCounters frameCounters; /**< Frame counters of the source when the notification was sent. */
+    uint32_t size{sizeof(VideoFrameCounters)}; /**< Size of the structure, for future extension. */
+    uint64_t renderedFrames{0};                /**< Distinct presentation-eligible frames presented by the renderer. */
+    uint64_t droppedFrames{0};   /**< Frames dropped, using the same rules as MetricType::VIDEO_FRAME_DROP. */
+    uint64_t corruptedFrames{0}; /**< Distinct frames with a decode failure or corruption. Overlaps rendered/dropped. */
 };
 
 /**

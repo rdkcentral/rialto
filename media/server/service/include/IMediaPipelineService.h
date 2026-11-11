@@ -62,7 +62,8 @@ public:
     virtual bool getQueuedFrames(int sessionId, int32_t sourceId, uint32_t &queuedFrames) = 0;
     virtual bool getImmediateOutput(int sessionId, int32_t sourceId, bool &immediateOutput) = 0;
     virtual bool getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
-    virtual bool getFrameCounters(int sessionId, int32_t sourceId, FrameCounters &frameCounters) = 0;
+    virtual bool getFrameCounters(int sessionId, int32_t sourceId, VideoFrameCounters &frameCounters) = 0;
+    virtual bool setMetricSubscription(int sessionId, const std::vector<MetricType> &types) = 0;
     virtual bool setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
                                 std::uint32_t height) = 0;
     virtual bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,

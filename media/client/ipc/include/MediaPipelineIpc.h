@@ -101,7 +101,9 @@ public:
 
     bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
 
-    bool getFrameCounters(int32_t sourceId, FrameCounters &frameCounters) override;
+    bool getFrameCounters(int32_t sourceId, VideoFrameCounters &out) override;
+
+    bool setMetricSubscription(const std::vector<MetricType> &types) override;
 
     bool setPlaybackRate(double rate) override;
 
@@ -215,11 +217,11 @@ private:
     void onQos(const std::shared_ptr<firebolt::rialto::QosEvent> &event);
 
     /**
-     * @brief Handler for a playback metric notification from the server.
+     * @brief Handler for a media metric batch from the server.
      *
-     * @param[in] event : The playback metric event structure.
+     * @param[in] event : The media metric batch event structure.
      */
-    void onPlaybackMetric(const std::shared_ptr<firebolt::rialto::PlaybackMetricEvent> &event);
+    void onMediaMetricBatch(const std::shared_ptr<firebolt::rialto::MediaMetricBatchEvent> &event);
 
     /**
      * @brief Handler for a buffer underflow notification from the server.

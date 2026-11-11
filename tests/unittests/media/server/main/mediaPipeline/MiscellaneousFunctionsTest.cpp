@@ -27,6 +27,15 @@ using ::testing::SetArgReferee;
 class RialtoServerMediaPipelineMiscellaneousFunctionsTest : public MediaPipelineTestBase
 {
 protected:
+    int attachVideoAndCompleteSources()
+    {
+        int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+        mainThreadWillEnqueueTaskAndWait();
+        EXPECT_CALL(*m_gstPlayerMock, allSourcesAttached());
+        EXPECT_TRUE(m_mediaPipeline->allSourcesAttached());
+        return videoSourceId;
+    }
+
     const int64_t m_kPosition{4028596027};
     const int64_t m_kDuration{8057192054};
     const double m_kPlaybackRate{1.5};
@@ -1102,8 +1111,20 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SimplePing)
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersFailureDueToUninitializedPlayer)
 {
     mainThreadWillEnqueueTaskAndWait();
-    FrameCounters frameCounters;
+    VideoFrameCounters frameCounters;
     EXPECT_FALSE(m_mediaPipeline->getFrameCounters(m_kDummySourceId, frameCounters));
+}
+
+/**
+ * Test that GetFrameCounters fails before allSourcesAttached()
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersFailsBeforeAllSourcesAttached)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+    VideoFrameCounters frameCounters;
+    EXPECT_FALSE(m_mediaPipeline->getFrameCounters(videoSourceId, frameCounters));
 }
 
 /**
@@ -1113,8 +1134,9 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersFail
 {
     loadGstPlayer();
     int audioSourceId = attachSource(firebolt::rialto::MediaSourceType::AUDIO, "audio/x-opus");
+    attachVideoAndCompleteSources();
     mainThreadWillEnqueueTaskAndWait();
-    FrameCounters frameCounters;
+    VideoFrameCounters frameCounters;
     EXPECT_FALSE(m_mediaPipeline->getFrameCounters(audioSourceId, frameCounters));
 }
 
@@ -1124,10 +1146,10 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersFail
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersFailure)
 {
     loadGstPlayer();
-    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    int videoSourceId = attachVideoAndCompleteSources();
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getFrameCounters(MediaSourceType::VIDEO, _)).WillOnce(Return(false));
-    FrameCounters frameCounters;
+    VideoFrameCounters frameCounters;
     EXPECT_FALSE(m_mediaPipeline->getFrameCounters(videoSourceId, frameCounters));
 }
 
@@ -1136,15 +1158,41 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersFail
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersSuccess)
 {
-    const FrameCounters kFrameCounters{m_kRenderedFrames, m_kDroppedFrames, 4};
+    VideoFrameCounters kFrameCounters;
+    kFrameCounters.renderedFrames = m_kRenderedFrames;
+    kFrameCounters.droppedFrames = m_kDroppedFrames;
+    kFrameCounters.corruptedFrames = 4;
     loadGstPlayer();
-    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    int videoSourceId = attachVideoAndCompleteSources();
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getFrameCounters(MediaSourceType::VIDEO, _))
         .WillOnce(DoAll(SetArgReferee<1>(kFrameCounters), Return(true)));
-    FrameCounters frameCounters;
+    VideoFrameCounters frameCounters;
     EXPECT_TRUE(m_mediaPipeline->getFrameCounters(videoSourceId, frameCounters));
     EXPECT_EQ(frameCounters.renderedFrames, m_kRenderedFrames);
     EXPECT_EQ(frameCounters.droppedFrames, m_kDroppedFrames);
     EXPECT_EQ(frameCounters.corruptedFrames, 4u);
+}
+
+/**
+ * Test that the metric subscription is rejected in the FAILURE state
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetMetricSubscriptionFailsInFailureState)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::FAILURE));
+    m_gstPlayerCallback->notifyPlaybackState(PlaybackState::FAILURE);
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_FALSE(m_mediaPipeline->setMetricSubscription({MetricType::BUFFER_UNDERFLOW}));
+}
+
+/**
+ * Test that the metric subscription is accepted before load()
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetMetricSubscriptionBeforeLoad)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_TRUE(m_mediaPipeline->setMetricSubscription({MetricType::BUFFER_UNDERFLOW}));
 }

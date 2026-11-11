@@ -85,10 +85,9 @@ public:
     MOCK_METHOD(void, getStats,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetStatsRequest *request,
                  ::firebolt::rialto::GetStatsResponse *response, ::google::protobuf::Closure *done));
-    MOCK_METHOD(void, getFrameCounters,
-                (::google::protobuf::RpcController * controller,
-                 const ::firebolt::rialto::GetFrameCountersRequest *request,
-                 ::firebolt::rialto::GetFrameCountersResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setMetricSubscription,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::SetMediaMetricsRequest *request,
+                 ::firebolt::rialto::SetMediaMetricsResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, setPlaybackRate,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::SetPlaybackRateRequest *request,
                  ::firebolt::rialto::SetPlaybackRateResponse *response, ::google::protobuf::Closure *done));
@@ -273,10 +272,10 @@ public:
         return response;
     }
 
-    ::firebolt::rialto::GetFrameCountersResponse
-    getFrameCountersResponse(const ::firebolt::rialto::FrameCounters &frameCounters)
+    ::firebolt::rialto::GetStatsResponse
+    getFrameCountersResponse(const ::firebolt::rialto::VideoFrameCounters &frameCounters)
     {
-        firebolt::rialto::GetFrameCountersResponse response;
+        firebolt::rialto::GetStatsResponse response;
         response.set_rendered_frames(frameCounters.renderedFrames);
         response.set_dropped_frames(frameCounters.droppedFrames);
         response.set_corrupted_frames(frameCounters.corruptedFrames);

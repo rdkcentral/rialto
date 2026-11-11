@@ -768,23 +768,21 @@ message GetStatsRequest {
 message GetStatsResponse {
     optional int64 rendered_frames = 1 [default = -1];
     optional int64 dropped_frames = 2 [default = -1];
+    optional int64 corrupted_frames = 3 [default = -1];
 }
 
 /**
- * @fn void getFrameCounters(int session_id, int source_id)
- * @brief Get the frame counters of a video source.
+ * @fn bool setMetricSubscription(int session_id, MetricType[] types)
+ * @brief Replaces the complete set of media metric types delivered to the client.
  *
  * @param[in] session_id     The id of the A/V session.
- * @param[in] source_id      The id of the video source.
+ * @param[in] types          The metric types. Empty disables delivery.
  */
-message GetFrameCountersRequest {
+message SetMediaMetricsRequest {
     optional int32 session_id = 1 [default = -1];
-    optional int32 source_id = 2 [default = -1];
+    repeated MediaMetricBatchEvent.MetricType types = 2;
 }
-message GetFrameCountersResponse {
-    optional uint64 rendered_frames = 1 [default = 0];
-    optional uint64 dropped_frames = 2 [default = 0];
-    optional uint64 corrupted_frames = 3 [default = 0];
+message SetMediaMetricsResponse {
 }
 
 /**
@@ -994,35 +992,43 @@ message QosEvent {
 }
 
 /**
- * @brief Playback metric reported by the video sink.
+ * @brief Batch of media metric observations, sent only to sessions with a non-empty metric subscription.
+ *
+ * Each entry is one observation; batching never merges occurrences. The client reports missed_count, when non-zero,
+ * before the entries.
  */
-message PlaybackMetricEvent {
+message MediaMetricBatchEvent {
     enum MetricType {
-        VIDEO_FRAME_DROP = 0;
-        AUDIO_FRAME_DROP = 1;
-        VIDEO_DECODE_ERROR = 2;
-        AUDIO_DECODE_ERROR = 3;
-        VIDEO_FRAME_REPEAT = 4;
-        AUDIO_GAP = 5;
-        BUFFER_UNDERFLOW = 6;
-        UNKNOWN = 7;
+        UNKNOWN_METRIC_TYPE = 0;
+        VIDEO_FRAME_DROP = 1;
+        AUDIO_FRAME_DROP = 2;
+        VIDEO_FRAME_REPEAT = 3;
+        AUDIO_GAP = 4;
+        VIDEO_DECODE_ERROR = 5;
+        AUDIO_DECODE_ERROR = 6;
+        BUFFER_UNDERFLOW = 7;
     }
     enum MetricPhase {
-        OCCURRENCE = 0;
-        STARTED = 1;
-        RESOLVED = 2;
+        UNKNOWN_METRIC_PHASE = 0;
+        OCCURRENCE = 1;
+        STARTED = 2;
+        RESOLVED = 3;
+    }
+    /* Optional fields distinguish zero from absence. */
+    message MetricEvent {
+        optional MetricType type = 1 [default = UNKNOWN_METRIC_TYPE];
+        optional MetricPhase phase = 2 [default = UNKNOWN_METRIC_PHASE];
+        optional int32 source_id = 3 [default = -1];
+        optional int64 pts_ns = 4;
+        optional uint64 count = 5;
+        optional uint64 duration_ns = 6;
+        optional uint64 observed_at_monotonic_ns = 7;
+        optional int64 observed_at_unix_ns = 8;
     }
 
     optional int32 session_id = 1 [default = -1];
-    optional int32 source_id = 2 [default = -1];
-    optional MetricType type = 3 [default = UNKNOWN];
-    optional MetricPhase phase = 4 [default = OCCURRENCE];
-    optional uint64 pts_ns = 5 [default = 0];
-    optional uint64 count = 6 [default = 0];
-    optional uint64 duration_ns = 7 [default = 0];
-    optional uint64 rendered_frames = 8 [default = 0];
-    optional uint64 dropped_frames = 9 [default = 0];
-    optional uint64 corrupted_frames = 10 [default = 0];
+    repeated MetricEvent metrics = 2;
+    optional uint32 missed_count = 3 [default = 0];
 }
 
 /**
@@ -1225,10 +1231,10 @@ service MediaPipelineModule {
     }
 
     /**
-     * @brief Gets the frame counters of a video source
-     * @see GetFrameCountersRequest
+     * @brief Replaces the media metric subscription
+     * @see SetMediaMetricsRequest
      */
-    rpc getFrameCounters(GetFrameCountersRequest) returns (GetFrameCountersResponse) {
+    rpc setMetricSubscription(SetMediaMetricsRequest) returns (SetMediaMetricsResponse) {
     }
 
     /**

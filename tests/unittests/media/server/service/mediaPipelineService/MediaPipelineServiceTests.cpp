@@ -462,6 +462,19 @@ TEST_F(MediaPipelineServiceTests, shouldGetFrameCounters)
     getFrameCountersShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToSetMetricSubscriptionForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    setMetricSubscriptionShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldSetMetricSubscription)
+{
+    initSession();
+    mediaPipelineWillSetMetricSubscription();
+    setMetricSubscriptionShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldGetSupportedMimeTypes)
 {
     createMediaPipelineShouldSuccess();

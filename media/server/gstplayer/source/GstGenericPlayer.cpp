@@ -1429,23 +1429,50 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
     return returnValue;
 }
 
-bool GstGenericPlayer::getFrameCounters(const MediaSourceType &mediaSourceType, FrameCounters &frameCounters)
+bool GstGenericPlayer::getFrameCounters(const MediaSourceType &mediaSourceType, VideoFrameCounters &frameCounters)
 {
     if (MediaSourceType::VIDEO != mediaSourceType)
     {
         RIALTO_SERVER_LOG_ERROR("Frame counters are only supported for video");
         return false;
     }
-    uint64_t renderedFrames{0};
-    uint64_t droppedFrames{0};
-    if (!getStats(mediaSourceType, renderedFrames, droppedFrames))
+    GstElement *sink{getSink(mediaSourceType)};
+    if (!sink)
     {
+        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters, sink is NULL");
         return false;
     }
-    frameCounters.renderedFrames = renderedFrames;
-    frameCounters.droppedFrames = droppedFrames;
-    frameCounters.corruptedFrames = m_context.playbackMetrics.getCorruptedFrames();
-    return true;
+    bool returnValue{false};
+    GstStructure *stats{nullptr};
+    m_glibWrapper->gObjectGet(sink, "stats", &stats, nullptr);
+    if (!stats)
+    {
+        RIALTO_SERVER_LOG_ERROR("failed to get stats from '%s'", GST_ELEMENT_NAME(sink));
+    }
+    else
+    {
+        // One read gives one coherent snapshot of all three counters
+        guint64 rendered{0};
+        guint64 dropped{0};
+        guint64 corrupted{0};
+        if (m_gstWrapper->gstStructureGetUint64(stats, "rendered", &rendered) &&
+            m_gstWrapper->gstStructureGetUint64(stats, "dropped", &dropped) &&
+            m_gstWrapper->gstStructureGetUint64(stats, "corrupted", &corrupted))
+        {
+            frameCounters.renderedFrames = rendered;
+            frameCounters.droppedFrames = dropped;
+            frameCounters.corruptedFrames = corrupted;
+            returnValue = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("failed to get 'rendered', 'dropped' or 'corrupted' from structure (%s)",
+                                    GST_ELEMENT_NAME(sink));
+        }
+        m_gstWrapper->gstStructureFree(stats);
+    }
+    m_gstWrapper->gstObjectUnref(sink);
+    return returnValue;
 }
 
 GstBuffer *GstGenericPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const

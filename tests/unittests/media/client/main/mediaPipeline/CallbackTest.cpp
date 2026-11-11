@@ -127,16 +127,17 @@ TEST_F(RialtoClientMediaPipelineCallbackTest, PlaybackInfo)
 }
 
 /**
- * Test a playback metric notification is forwarded to the registered client.
+ * Test media metric notifications are forwarded to the registered client.
  */
-TEST_F(RialtoClientMediaPipelineCallbackTest, NotifyPlaybackMetric)
+TEST_F(RialtoClientMediaPipelineCallbackTest, NotifyMetric)
 {
-    PlaybackMetric metric;
-    metric.type = PlaybackMetricType::VIDEO_DECODE_ERROR;
-    metric.count = 3;
-    int32_t sourceId = 1;
+    MetricEvent metric;
+    metric.type = MetricType::VIDEO_DECODE_ERROR;
+    metric.sourceId = 1;
 
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackMetric(sourceId, Ref(metric)));
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyMetric(Ref(metric)));
+    m_mediaPipelineCallback->notifyMetric(metric);
 
-    m_mediaPipelineCallback->notifyPlaybackMetric(sourceId, metric);
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyEventsMissed(3));
+    m_mediaPipelineCallback->notifyEventsMissed(3);
 }

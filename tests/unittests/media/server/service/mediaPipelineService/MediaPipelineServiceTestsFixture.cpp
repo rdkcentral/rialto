@@ -301,11 +301,20 @@ void MediaPipelineServiceTests::mediaPipelineWillGetFrameCounters()
 {
     EXPECT_CALL(m_mediaPipelineMock, getFrameCounters(kSourceId, _))
         .WillOnce(Invoke(
-            [&](int32_t, firebolt::rialto::FrameCounters &frameCounters)
+            [&](int32_t, firebolt::rialto::VideoFrameCounters &frameCounters)
             {
-                frameCounters = firebolt::rialto::FrameCounters{kRenderedFrames, kDroppedFrames, 1};
+                frameCounters.renderedFrames = kRenderedFrames;
+                frameCounters.droppedFrames = kDroppedFrames;
+                frameCounters.corruptedFrames = 1;
                 return true;
             }));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillSetMetricSubscription()
+{
+    EXPECT_CALL(m_mediaPipelineMock,
+                setMetricSubscription(std::vector<firebolt::rialto::MetricType>{firebolt::rialto::MetricType::AUDIO_GAP}))
+        .WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToGetFrameCounters()
@@ -794,7 +803,7 @@ void MediaPipelineServiceTests::getStatsShouldFail()
 
 void MediaPipelineServiceTests::getFrameCountersShouldSucceed()
 {
-    firebolt::rialto::FrameCounters frameCounters;
+    firebolt::rialto::VideoFrameCounters frameCounters;
     EXPECT_TRUE(m_sut->getFrameCounters(kSessionId, kSourceId, frameCounters));
     EXPECT_EQ(frameCounters.renderedFrames, kRenderedFrames);
     EXPECT_EQ(frameCounters.droppedFrames, kDroppedFrames);
@@ -803,8 +812,18 @@ void MediaPipelineServiceTests::getFrameCountersShouldSucceed()
 
 void MediaPipelineServiceTests::getFrameCountersShouldFail()
 {
-    firebolt::rialto::FrameCounters frameCounters;
+    firebolt::rialto::VideoFrameCounters frameCounters;
     EXPECT_FALSE(m_sut->getFrameCounters(kSessionId, kSourceId, frameCounters));
+}
+
+void MediaPipelineServiceTests::setMetricSubscriptionShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->setMetricSubscription(kSessionId, {firebolt::rialto::MetricType::AUDIO_GAP}));
+}
+
+void MediaPipelineServiceTests::setMetricSubscriptionShouldFail()
+{
+    EXPECT_FALSE(m_sut->setMetricSubscription(kSessionId, {firebolt::rialto::MetricType::AUDIO_GAP}));
 }
 
 void MediaPipelineServiceTests::setImmediateOutputShouldSucceed()

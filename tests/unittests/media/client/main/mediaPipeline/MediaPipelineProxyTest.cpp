@@ -158,12 +158,21 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
     /////////////////////////////////////////////
 
     {
-        const FrameCounters kFrameCounters{kRenderedFrames, kDroppedFrames, 1};
+        VideoFrameCounters kFrameCounters;
+        kFrameCounters.corruptedFrames = 1;
         EXPECT_CALL(*mediaPipelineMock, getFrameCounters(kSourceId, _))
             .WillOnce(DoAll(SetArgReferee<1>(kFrameCounters), Return(true)));
-        FrameCounters frameCounters;
+        VideoFrameCounters frameCounters;
         EXPECT_TRUE(proxy->getFrameCounters(kSourceId, frameCounters));
         EXPECT_EQ(frameCounters.corruptedFrames, 1u);
+    }
+
+    /////////////////////////////////////////////
+
+    {
+        const std::vector<MetricType> kTypes{MetricType::BUFFER_UNDERFLOW};
+        EXPECT_CALL(*mediaPipelineMock, setMetricSubscription(kTypes)).WillOnce(Return(true));
+        EXPECT_TRUE(proxy->setMetricSubscription(kTypes));
     }
 
     /////////////////////////////////////////////

@@ -194,12 +194,12 @@ struct GetStats
     static constexpr auto m_kFunction{&Stub::getStats};
 };
 
-struct GetFrameCounters
+struct SetMetricSubscription
 {
-    using RequestType = ::firebolt::rialto::GetFrameCountersRequest;
-    using ResponseType = ::firebolt::rialto::GetFrameCountersResponse;
+    using RequestType = ::firebolt::rialto::SetMediaMetricsRequest;
+    using ResponseType = ::firebolt::rialto::SetMediaMetricsResponse;
     using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
-    static constexpr auto m_kFunction{&Stub::getFrameCounters};
+    static constexpr auto m_kFunction{&Stub::setMetricSubscription};
 };
 
 struct RenderFrame

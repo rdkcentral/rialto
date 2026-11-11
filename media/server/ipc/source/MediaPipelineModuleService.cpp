@@ -931,6 +931,16 @@ void MediaPipelineModuleService::getStats(::google::protobuf::RpcController *con
                                           ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    // A video sink that reports all three counters answers with one coherent snapshot including corrupted_frames
+    VideoFrameCounters frameCounters;
+    if (m_mediaPipelineService.getFrameCounters(request->session_id(), request->source_id(), frameCounters))
+    {
+        response->set_rendered_frames(frameCounters.renderedFrames);
+        response->set_dropped_frames(frameCounters.droppedFrames);
+        response->set_corrupted_frames(frameCounters.corruptedFrames);
+        done->Run();
+        return;
+    }
     uint64_t renderedFrames;
     uint64_t droppedFrames;
     if (!m_mediaPipelineService.getStats(request->session_id(), request->source_id(), renderedFrames, droppedFrames))
@@ -946,23 +956,30 @@ void MediaPipelineModuleService::getStats(::google::protobuf::RpcController *con
     done->Run();
 }
 
-void MediaPipelineModuleService::getFrameCounters(::google::protobuf::RpcController *controller,
-                                                  const ::firebolt::rialto::GetFrameCountersRequest *request,
-                                                  ::firebolt::rialto::GetFrameCountersResponse *response,
-                                                  ::google::protobuf::Closure *done)
+void MediaPipelineModuleService::setMetricSubscription(::google::protobuf::RpcController *controller,
+                                                       const ::firebolt::rialto::SetMediaMetricsRequest *request,
+                                                       ::firebolt::rialto::SetMediaMetricsResponse *response,
+                                                       ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    FrameCounters frameCounters;
-    if (!m_mediaPipelineService.getFrameCounters(request->session_id(), request->source_id(), frameCounters))
+    std::vector<MetricType> types;
+    for (const auto &type : request->types())
     {
-        RIALTO_SERVER_LOG_ERROR("Get frame counters failed");
-        controller->SetFailed("Operation failed");
+        if (type < firebolt::rialto::MediaMetricBatchEvent_MetricType_VIDEO_FRAME_DROP ||
+            type > firebolt::rialto::MediaMetricBatchEvent_MetricType_BUFFER_UNDERFLOW)
+        {
+            RIALTO_SERVER_LOG_ERROR("Set metric subscription failed - unknown metric type %d", type);
+            controller->SetFailed("Operation failed");
+            done->Run();
+            return;
+        }
+        // Wire values are the public enum values plus one
+        types.push_back(static_cast<MetricType>(type - 1));
     }
-    else
+    if (!m_mediaPipelineService.setMetricSubscription(request->session_id(), types))
     {
-        response->set_rendered_frames(frameCounters.renderedFrames);
-        response->set_dropped_frames(frameCounters.droppedFrames);
-        response->set_corrupted_frames(frameCounters.corruptedFrames);
+        RIALTO_SERVER_LOG_ERROR("Set metric subscription failed");
+        controller->SetFailed("Operation failed");
     }
     done->Run();
 }

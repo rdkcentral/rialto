@@ -96,7 +96,6 @@ add_library(
         source/GstCapabilities.cpp
         source/GstDecryptor.cpp
         source/GstDispatcherThread.cpp
-        source/PlaybackMetricsTracker.cpp
         source/GstGenericPlayer.cpp
         source/GstInitialiser.cpp
         source/GstLogForwarding.cpp

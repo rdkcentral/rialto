@@ -44,7 +44,8 @@ public:
                              const std::shared_ptr<MediaPlayerShmInfo> &shmInfo) override;
     void notifyCancelNeedMediaData(int32_t sourceId) override;
     void notifyQos(int32_t sourceId, const QosInfo &qosInfo) override;
-    void notifyPlaybackMetric(int32_t sourceId, const PlaybackMetric &metric) override;
+    void notifyMetric(const MetricEvent &metric) override;
+    void notifyEventsMissed(uint32_t count) override;
     void notifyBufferUnderflow(int32_t sourceId) override;
     void notifyFirstFrameReceived(int32_t sourceId) override;
     void notifyPlaybackError(int32_t sourceId, PlaybackError error) override;
@@ -54,6 +55,10 @@ public:
 private:
     int m_sessionId;
     std::shared_ptr<::firebolt::rialto::ipc::IClient> m_ipcClient;
+    /**
+     * @brief Missed notifications reported with the next MediaMetricBatchEvent.
+     */
+    uint32_t m_pendingMissedMetrics{0};
 
     // It is possible for a needData to be sent while a source is been attached,
     // this causes an issue in client side as they recieve a needData from a source

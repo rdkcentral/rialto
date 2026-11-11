@@ -232,11 +232,16 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
-::firebolt::rialto::GetFrameCountersRequest createGetFrameCountersRequest(int sessionId, int sourceId)
+::firebolt::rialto::SetMediaMetricsRequest
+createSetMetricSubscriptionRequest(int sessionId,
+                                   const std::vector<::firebolt::rialto::MediaMetricBatchEvent_MetricType> &types)
 {
-    ::firebolt::rialto::GetFrameCountersRequest request;
+    ::firebolt::rialto::SetMediaMetricsRequest request;
     request.set_session_id(sessionId);
-    request.set_source_id(sourceId);
+    for (const auto &type : types)
+    {
+        request.add_types(type);
+    }
     return request;
 }
 

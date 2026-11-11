@@ -79,6 +79,7 @@ public:
     void mediaPipelineWillFailToGetStats();
     void mediaPipelineWillGetFrameCounters();
     void mediaPipelineWillFailToGetFrameCounters();
+    void mediaPipelineWillSetMetricSubscription();
     void mediaPipelineWillRenderFrame();
     void mediaPipelineWillFailToRenderFrame();
     void mediaPipelineWillSetVolume();
@@ -179,6 +180,8 @@ public:
     void getStatsShouldFail();
     void getFrameCountersShouldSucceed();
     void getFrameCountersShouldFail();
+    void setMetricSubscriptionShouldSucceed();
+    void setMetricSubscriptionShouldFail();
     void getSupportedMimeTypesSucceed();
     void isMimeTypeSupportedSucceed();
     void getSupportedPropertiesSucceed();

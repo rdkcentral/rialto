@@ -18,6 +18,7 @@
  */
 
 #include <algorithm>
+#include <chrono>
 #include <stdexcept>
 
 #include "ActiveRequests.h"
@@ -214,6 +215,7 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
     {
         m_gstPlayer.reset();
     }
+    m_mediaMetrics.clearEpisodes();
 
     m_gstPlayer =
         m_kGstPlayerFactory
@@ -529,28 +531,65 @@ bool MediaPipelineServerInternal::getStatsInternal(int32_t sourceId, uint64_t &r
     return m_gstPlayer->getStats(sourceIter->first, renderedFrames, droppedFrames);
 }
 
-bool MediaPipelineServerInternal::getFrameCounters(int32_t sourceId, FrameCounters &frameCounters)
+bool MediaPipelineServerInternal::getFrameCounters(int32_t sourceId, VideoFrameCounters &out) const
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = getFrameCountersInternal(sourceId, frameCounters); };
+    auto task = [&]() { result = getFrameCountersInternal(sourceId, out); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
-bool MediaPipelineServerInternal::getFrameCountersInternal(int32_t sourceId, FrameCounters &frameCounters)
+bool MediaPipelineServerInternal::setMetricSubscription(const std::vector<MetricType> &types)
 {
-    if (!m_gstPlayer)
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]()
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - Gstreamer player has not been loaded");
+        if (PlaybackState::FAILURE == m_currentPlaybackState)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set metric subscription - pipeline is in FAILURE state");
+            result = false;
+            return;
+        }
+        const auto kNow{std::chrono::steady_clock::now().time_since_epoch()};
+        const auto kNowUnix{std::chrono::system_clock::now().time_since_epoch()};
+        bool isDeliveryRequired{false};
+        result =
+            m_mediaMetrics.setSubscription(types,
+                                           static_cast<uint64_t>(
+                                               std::chrono::duration_cast<std::chrono::nanoseconds>(kNow).count()),
+                                           static_cast<int64_t>(
+                                               std::chrono::duration_cast<std::chrono::nanoseconds>(kNowUnix).count()),
+                                           isDeliveryRequired);
+        if (!result)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set metric subscription - unknown or duplicate metric type");
+        }
+        if (isDeliveryRequired)
+        {
+            m_mainThread->enqueueTask(m_mainThreadClientId, [this]() { deliverMetrics(); });
+        }
+    };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::getFrameCountersInternal(int32_t sourceId, VideoFrameCounters &frameCounters) const
+{
+    if (!m_gstPlayer || !m_wasAllSourcesAttachedCalled || PlaybackState::FAILURE == m_currentPlaybackState)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Frame counters unavailable - pipeline not ready or failed");
         return false;
     }
     const auto kSourceIter = m_attachedSources.find(MediaSourceType::VIDEO);
     if (m_attachedSources.cend() == kSourceIter || kSourceIter->second != sourceId)
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - video source %d not found", sourceId);
+        RIALTO_SERVER_LOG_DEBUG("Frame counters unavailable - source %d is not the attached video source", sourceId);
         return false;
     }
     return m_gstPlayer->getFrameCounters(MediaSourceType::VIDEO, frameCounters);
@@ -1680,32 +1719,41 @@ void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, con
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
-void MediaPipelineServerInternal::notifyPlaybackMetric(MediaSourceType mediaSourceType, const PlaybackMetric &metric)
+void MediaPipelineServerInternal::notifyMetric(MediaSourceType mediaSourceType, const MetricEvent &metric)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    auto task = [&, mediaSourceType, metric]()
+    // Called on the player worker thread; never waits for delivery
+    if (m_mediaMetrics.push(mediaSourceType, metric))
     {
-        if (!m_mediaPipelineClient)
-        {
-            return;
-        }
-        const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+        m_mainThread->enqueueTask(m_mainThreadClientId, [this]() { deliverMetrics(); });
+    }
+}
+
+void MediaPipelineServerInternal::deliverMetrics()
+{
+    uint32_t missedCount{0};
+    const auto kEntries{m_mediaMetrics.take(missedCount)};
+    if (!m_mediaPipelineClient)
+    {
+        return;
+    }
+    if (missedCount > 0)
+    {
+        RIALTO_SERVER_LOG_WARN("%u media metric notifications were discarded", missedCount);
+        m_mediaPipelineClient->notifyEventsMissed(missedCount);
+    }
+    for (const auto &entry : kEntries)
+    {
+        const auto kSourceIter = m_attachedSources.find(entry.sourceType);
         if (m_attachedSources.cend() == kSourceIter)
         {
-            RIALTO_SERVER_LOG_WARN("Playback metric notification failed - sourceId not found for %s",
-                                   common::convertMediaSourceType(mediaSourceType));
-            return;
+            RIALTO_SERVER_LOG_WARN("Media metric notification failed - sourceId not found for %s",
+                                   common::convertMediaSourceType(entry.sourceType));
+            continue;
         }
-        PlaybackMetric metricWithCounters{metric};
-        if (m_gstPlayer && !m_gstPlayer->getFrameCounters(mediaSourceType, metricWithCounters.frameCounters))
-        {
-            RIALTO_SERVER_LOG_WARN("Frame counters unavailable for the playback metric notification");
-        }
-        m_mediaPipelineClient->notifyPlaybackMetric(kSourceIter->second, metricWithCounters);
-    };
-
-    m_mainThread->enqueueTask(m_mainThreadClientId, task);
+        MetricEvent event{entry.event};
+        event.sourceId = kSourceIter->second;
+        m_mediaPipelineClient->notifyMetric(event);
+    }
 }
 
 void MediaPipelineServerInternal::notifyBufferUnderflow(MediaSourceType mediaSourceType)

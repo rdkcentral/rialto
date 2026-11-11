@@ -43,7 +43,7 @@ public:
     void execute() const override;
 
 private:
-    void handlePlaybackMetric() const;
+    void handleMediaMetric() const;
     bool allSourcesEos() const;
 
     GenericPlayerContext &m_context;

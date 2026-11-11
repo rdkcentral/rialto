@@ -129,8 +129,9 @@ void MediaPipelineTest::gstPlayerWillBeDestructed()
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_NULL))
         .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
-    EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
+    // Removed by the dispatcher and by the player teardown
+    EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr)).Times(testing::AtLeast(1));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus)).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pipeline)).Times(testing::Between(1, 2));
     EXPECT_CALL(*m_glibWrapperMock, gThreadPoolStopUnusedThreads()).Times(testing::Between(1, 2));
 }

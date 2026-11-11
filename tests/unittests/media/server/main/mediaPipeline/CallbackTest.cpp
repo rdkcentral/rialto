@@ -352,54 +352,59 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyFirstFrameReceivedFailureSou
 }
 
 /**
- * Test a playback metric is forwarded to the registered client with the frame counters of the source.
+ * Test a subscribed media metric is delivered with the id of the attached source.
  */
-TEST_F(RialtoServerMediaPipelineCallbackTest, notifyPlaybackMetric)
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetric)
 {
     int sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
-    PlaybackMetric metric;
-    metric.type = PlaybackMetricType::VIDEO_FRAME_DROP;
-    metric.count = 2;
-    const FrameCounters kFrameCounters{10, 2, 1};
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_TRUE(m_mediaPipeline->setMetricSubscription({MetricType::VIDEO_FRAME_DROP}));
 
+    MetricEvent metric;
+    metric.type = MetricType::VIDEO_FRAME_DROP;
+    metric.phase = MetricPhase::OCCURRENCE;
+    metric.observedAtMonotonicNs = 5;
     mainThreadWillEnqueueTask();
-    EXPECT_CALL(*m_gstPlayerMock, getFrameCounters(MediaSourceType::VIDEO, _))
-        .WillOnce(::testing::DoAll(::testing::SetArgReferee<1>(kFrameCounters), Return(true)));
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackMetric(sourceId, _))
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyMetric(_))
         .WillOnce(Invoke(
-            [&](int32_t, const PlaybackMetric &notified)
+            [&](const MetricEvent &notified)
             {
-                EXPECT_EQ(notified.type, PlaybackMetricType::VIDEO_FRAME_DROP);
-                EXPECT_EQ(notified.count, 2u);
-                EXPECT_EQ(notified.frameCounters.renderedFrames, 10u);
-                EXPECT_EQ(notified.frameCounters.droppedFrames, 2u);
-                EXPECT_EQ(notified.frameCounters.corruptedFrames, 1u);
+                EXPECT_EQ(notified.type, MetricType::VIDEO_FRAME_DROP);
+                EXPECT_EQ(notified.sourceId, sourceId);
+                EXPECT_EQ(notified.observedAtMonotonicNs, 5u);
             }));
-
-    m_gstPlayerCallback->notifyPlaybackMetric(MediaSourceType::VIDEO, metric);
+    m_gstPlayerCallback->notifyMetric(MediaSourceType::VIDEO, metric);
 }
 
 /**
- * Test a playback metric is still forwarded when the frame counters are unavailable.
+ * Test an unsubscribed media metric is not delivered.
  */
-TEST_F(RialtoServerMediaPipelineCallbackTest, notifyPlaybackMetricWithoutFrameCounters)
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricIsFilteredWithoutSubscription)
 {
-    int sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
-    PlaybackMetric metric;
-
-    mainThreadWillEnqueueTask();
-    EXPECT_CALL(*m_gstPlayerMock, getFrameCounters(MediaSourceType::VIDEO, _)).WillOnce(Return(false));
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackMetric(sourceId, _));
-
-    m_gstPlayerCallback->notifyPlaybackMetric(MediaSourceType::VIDEO, metric);
+    attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    MetricEvent metric;
+    m_gstPlayerCallback->notifyMetric(MediaSourceType::VIDEO, metric);
 }
 
 /**
- * Test a playback metric is not forwarded when the source is not attached.
+ * Test a media metric is not delivered when its source is not attached.
  */
-TEST_F(RialtoServerMediaPipelineCallbackTest, notifyPlaybackMetricFailsWhenSourceNotAttached)
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricFailsWhenSourceNotAttached)
 {
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_TRUE(m_mediaPipeline->setMetricSubscription({MetricType::AUDIO_GAP}));
     mainThreadWillEnqueueTask();
+    MetricEvent metric;
+    metric.type = MetricType::AUDIO_GAP;
+    metric.phase = MetricPhase::STARTED;
+    m_gstPlayerCallback->notifyMetric(MediaSourceType::AUDIO, metric);
+}
 
-    m_gstPlayerCallback->notifyPlaybackMetric(MediaSourceType::VIDEO, PlaybackMetric{});
+/**
+ * Test the subscription is rejected for duplicate types.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, setMetricSubscriptionRejectsDuplicateTypes)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_FALSE(m_mediaPipeline->setMetricSubscription({MetricType::AUDIO_GAP, MetricType::AUDIO_GAP}));
 }

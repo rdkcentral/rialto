@@ -189,14 +189,24 @@ public:
     virtual void notifyQos(int32_t sourceId, const QosInfo &qosInfo) = 0;
 
     /**
-     * @brief Notifies the client of a playback metric reported by the video sink.
+     * @brief Notifies the client of one media metric observation.
      *
-     * The default implementation ignores the notification, so existing clients do not need to implement it.
+     * Only types selected with IMediaPipeline::setMetricSubscription() are delivered, one observation per call, in
+     * server acceptance order. The default implementation ignores the notification.
      *
-     * @param[in] sourceId : The id of the source the metric belongs to.
-     * @param[in] metric   : The metric.
+     * @param[in] metric : The metric observation.
      */
-    virtual void notifyPlaybackMetric(int32_t sourceId, const PlaybackMetric &metric) {}
+    virtual void notifyMetric(const MetricEvent &metric) { (void)metric; }
+
+    /**
+     * @brief Notifies the client that subscribed media metric notifications were lost.
+     *
+     * Sent before the notifications that follow the loss. Occurrence-derived aggregates for the interval are
+     * incomplete; episode state is unaffected. The default implementation ignores the notification.
+     *
+     * @param[in] count : The number of lost notifications since the previous delivery.
+     */
+    virtual void notifyEventsMissed(uint32_t count) { (void)count; }
 
     /**
      * @brief Notifies the client that buffer underflow occurred.

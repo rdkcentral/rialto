@@ -239,14 +239,23 @@ public:
     virtual bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
 
     /**
-     * @brief Request the frame counters of a video source.
+     * @brief Request the cumulative frame counters of a video source.
      *
-     * @param[in] sourceId       : The source id.
-     * @param[out] frameCounters : The frame counters.
+     * @param[in] sourceId : The source id.
+     * @param[out] out     : The frame counters.
+     *
+     * @retval true on success, false if the server did not return all three counters.
+     */
+    virtual bool getFrameCounters(int32_t sourceId, VideoFrameCounters &out) = 0;
+
+    /**
+     * @brief Replace the media metric subscription.
+     *
+     * @param[in] types : The complete set of metric types to deliver.
      *
      * @retval true on success.
      */
-    virtual bool getFrameCounters(int32_t sourceId, FrameCounters &frameCounters) = 0;
+    virtual bool setMetricSubscription(const std::vector<MetricType> &types) = 0;
 
     /**
      * @brief Request new playback rate.

@@ -75,11 +75,15 @@ TEST_F(RialtoClientMediaPipelineGetStatsTest, GetStatsFailure)
 
 TEST_F(RialtoClientMediaPipelineGetStatsTest, GetFrameCountersSuccess)
 {
-    const FrameCounters kFrameCounters{1234, 5, 2};
-    FrameCounters frameCounters;
+    VideoFrameCounters kFrameCounters;
+    kFrameCounters.renderedFrames = 1234;
+    kFrameCounters.droppedFrames = 5;
+    kFrameCounters.corruptedFrames = 2;
+    VideoFrameCounters frameCounters;
     EXPECT_CALL(*m_mediaPipelineIpcMock, getFrameCounters(m_kSourceId, _))
         .WillOnce(DoAll(SetArgReferee<1>(kFrameCounters), Return(true)));
     EXPECT_TRUE(m_mediaPipeline->getFrameCounters(m_kSourceId, frameCounters));
+    EXPECT_EQ(frameCounters.size, sizeof(VideoFrameCounters));
     EXPECT_EQ(frameCounters.renderedFrames, kFrameCounters.renderedFrames);
     EXPECT_EQ(frameCounters.droppedFrames, kFrameCounters.droppedFrames);
     EXPECT_EQ(frameCounters.corruptedFrames, kFrameCounters.corruptedFrames);
@@ -87,7 +91,26 @@ TEST_F(RialtoClientMediaPipelineGetStatsTest, GetFrameCountersSuccess)
 
 TEST_F(RialtoClientMediaPipelineGetStatsTest, GetFrameCountersFailure)
 {
-    FrameCounters frameCounters;
+    VideoFrameCounters frameCounters;
     EXPECT_CALL(*m_mediaPipelineIpcMock, getFrameCounters(m_kSourceId, _)).WillOnce(Return(false));
     EXPECT_FALSE(m_mediaPipeline->getFrameCounters(m_kSourceId, frameCounters));
+}
+
+TEST_F(RialtoClientMediaPipelineGetStatsTest, SetMetricSubscriptionSuccess)
+{
+    const std::vector<MetricType> kTypes{MetricType::AUDIO_GAP, MetricType::VIDEO_FRAME_REPEAT};
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setMetricSubscription(kTypes)).WillOnce(Return(true));
+    EXPECT_TRUE(m_mediaPipeline->setMetricSubscription(kTypes));
+}
+
+TEST_F(RialtoClientMediaPipelineGetStatsTest, SetMetricSubscriptionRejectsDuplicateAndUnknownTypes)
+{
+    EXPECT_FALSE(m_mediaPipeline->setMetricSubscription({MetricType::AUDIO_GAP, MetricType::AUDIO_GAP}));
+    EXPECT_FALSE(m_mediaPipeline->setMetricSubscription({static_cast<MetricType>(7)}));
+}
+
+TEST_F(RialtoClientMediaPipelineGetStatsTest, SetMetricSubscriptionFailure)
+{
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setMetricSubscription(_)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->setMetricSubscription({}));
 }

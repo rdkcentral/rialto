@@ -103,13 +103,13 @@ void MediaPipelineIpcTestBase::expectSubscribeEvents()
                 return static_cast<int>(EventTags::QosEvent);
             }))
         .RetiresOnSaturation();
-    EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.PlaybackMetricEvent", _, _))
+    EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.MediaMetricBatchEvent", _, _))
         .WillOnce(Invoke(
             [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
                    std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
             {
-                m_playbackMetricCb = std::move(handler);
-                return static_cast<int>(EventTags::PlaybackMetricEvent);
+                m_mediaMetricBatchCb = std::move(handler);
+                return static_cast<int>(EventTags::MediaMetricBatchEvent);
             }))
         .RetiresOnSaturation();
     EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.BufferUnderflowEvent", _, _))
@@ -166,7 +166,7 @@ void MediaPipelineIpcTestBase::expectUnsubscribeEvents()
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::NetworkStateChangeEvent))).WillOnce(Return(true));
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::NeedMediaDataEvent))).WillOnce(Return(true));
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::QosEvent))).WillOnce(Return(true));
-    EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::PlaybackMetricEvent))).WillOnce(Return(true));
+    EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::MediaMetricBatchEvent))).WillOnce(Return(true));
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::BufferUnderflowEvent))).WillOnce(Return(true));
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::FirstFrameReceivedEvent))).WillOnce(Return(true));
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::PlaybackErrorEvent))).WillOnce(Return(true));

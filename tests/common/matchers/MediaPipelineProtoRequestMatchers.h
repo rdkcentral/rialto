@@ -393,11 +393,22 @@ MATCHER_P2(getStatsRequestMatcher, sessionId, sourceId, "")
     return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
 }
 
-MATCHER_P2(getFrameCountersRequestMatcher, sessionId, sourceId, "")
+MATCHER_P2(setMetricSubscriptionRequestMatcher, sessionId, types, "")
 {
-    const ::firebolt::rialto::GetFrameCountersRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::GetFrameCountersRequest *>(arg);
-    return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
+    const ::firebolt::rialto::SetMediaMetricsRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetMediaMetricsRequest *>(arg);
+    if (kRequest->session_id() != sessionId || kRequest->types_size() != static_cast<int>(types.size()))
+    {
+        return false;
+    }
+    for (int i = 0; i < kRequest->types_size(); ++i)
+    {
+        if (kRequest->types(i) != static_cast<int>(types[i]) + 1)
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 MATCHER_P(getSupportedMimeTypesRequestMatcher, sourceType, "")

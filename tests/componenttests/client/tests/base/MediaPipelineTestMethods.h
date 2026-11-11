@@ -257,10 +257,12 @@ protected:
     void setReportDecodeErrors(bool reportDecodeErrors);
     void getQueuedFrames(uint32_t queuedFrames);
     void getStats(uint64_t expectedFrames, uint64_t expectedDropped);
-    void shouldGetFrameCounters(const FrameCounters &frameCounters);
-    void getFrameCounters(const FrameCounters &expectedFrameCounters);
-    void shouldNotifyPlaybackMetric(const PlaybackMetric &metric);
-    void sendNotifyPlaybackMetric(const PlaybackMetric &metric);
+    void shouldGetFrameCounters(const VideoFrameCounters &frameCounters);
+    void getFrameCounters(const VideoFrameCounters &expectedFrameCounters);
+    void shouldSetMetricSubscription(const std::vector<MetricType> &types);
+    void setMetricSubscription(const std::vector<MetricType> &types);
+    void shouldNotifyMetric(const MetricEvent &metric, uint32_t missedCount);
+    void sendNotifyMetric(const MetricEvent &metric, uint32_t missedCount);
     void createMediaPipelineCapabilitiesObject();
     void destroyMediaPipelineCapabilitiesObject();
     void getSupportedAudioMimeTypes();

@@ -57,10 +57,6 @@ void AttachSource::execute() const
 
     if (m_context.streamInfo.find(m_attachedSource->getType()) == m_context.streamInfo.end())
     {
-        if (m_attachedSource->getType() == MediaSourceType::VIDEO)
-        {
-            m_context.playbackMetrics.reset();
-        }
         addSource();
     }
     else if (m_attachedSource->getType() == MediaSourceType::AUDIO)

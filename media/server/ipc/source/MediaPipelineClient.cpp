@@ -233,27 +233,40 @@ void MediaPipelineClient::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
     m_ipcClient->sendEvent(event);
 }
 
-void MediaPipelineClient::notifyPlaybackMetric(int32_t sourceId, const PlaybackMetric &metric)
+void MediaPipelineClient::notifyMetric(const MetricEvent &metric)
 {
-    static_assert(static_cast<int>(PlaybackMetricType::UNKNOWN) ==
-                  firebolt::rialto::PlaybackMetricEvent_MetricType_UNKNOWN);
-    static_assert(static_cast<int>(PlaybackMetricPhase::RESOLVED) ==
-                  firebolt::rialto::PlaybackMetricEvent_MetricPhase_RESOLVED);
-    RIALTO_SERVER_LOG_DEBUG("Sending PlaybackMetricEvent...");
-
-    auto event = std::make_shared<firebolt::rialto::PlaybackMetricEvent>();
+    RIALTO_SERVER_LOG_DEBUG("Sending MediaMetricBatchEvent...");
+    auto event = std::make_shared<firebolt::rialto::MediaMetricBatchEvent>();
     event->set_session_id(m_sessionId);
-    event->set_source_id(sourceId);
-    event->set_type(static_cast<firebolt::rialto::PlaybackMetricEvent_MetricType>(metric.type));
-    event->set_phase(static_cast<firebolt::rialto::PlaybackMetricEvent_MetricPhase>(metric.phase));
-    event->set_pts_ns(metric.ptsNs);
-    event->set_count(metric.count);
-    event->set_duration_ns(metric.durationNs);
-    event->set_rendered_frames(metric.frameCounters.renderedFrames);
-    event->set_dropped_frames(metric.frameCounters.droppedFrames);
-    event->set_corrupted_frames(metric.frameCounters.corruptedFrames);
-
+    event->set_missed_count(m_pendingMissedMetrics);
+    m_pendingMissedMetrics = 0;
+    auto *entry = event->add_metrics();
+    // Wire values are the public enum values plus one; 0 is UNKNOWN
+    entry->set_type(
+        static_cast<firebolt::rialto::MediaMetricBatchEvent_MetricType>(static_cast<uint32_t>(metric.type) + 1));
+    entry->set_phase(
+        static_cast<firebolt::rialto::MediaMetricBatchEvent_MetricPhase>(static_cast<uint32_t>(metric.phase) + 1));
+    entry->set_source_id(metric.sourceId);
+    if (metric.presentationTimeStampNs)
+    {
+        entry->set_pts_ns(*metric.presentationTimeStampNs);
+    }
+    if (metric.count)
+    {
+        entry->set_count(*metric.count);
+    }
+    if (metric.durationNs)
+    {
+        entry->set_duration_ns(*metric.durationNs);
+    }
+    entry->set_observed_at_monotonic_ns(metric.observedAtMonotonicNs);
+    entry->set_observed_at_unix_ns(metric.observedAtUnixNs);
     m_ipcClient->sendEvent(event);
+}
+
+void MediaPipelineClient::notifyEventsMissed(uint32_t count)
+{
+    m_pendingMissedMetrics += count;
 }
 
 void MediaPipelineClient::notifyBufferUnderflow(int32_t sourceId)

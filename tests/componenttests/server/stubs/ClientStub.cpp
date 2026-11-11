@@ -51,7 +51,7 @@ bool ClientStub::connect()
                        firebolt::rialto::WebAudioPlayerStateEvent, firebolt::rialto::ApplicationStateChangeEvent,
                        firebolt::rialto::PingEvent, firebolt::rialto::LicenseRequestEvent,
                        firebolt::rialto::LicenseRenewalEvent, firebolt::rialto::KeyStatusesChangedEvent,
-                       firebolt::rialto::PlaybackInfoEvent, firebolt::rialto::PlaybackMetricEvent>(m_ipcChannel);
+                       firebolt::rialto::PlaybackInfoEvent, firebolt::rialto::MediaMetricBatchEvent>(m_ipcChannel);
     m_ipcThread = std::thread(&ClientStub::ipcThread, this);
     return true;
 }

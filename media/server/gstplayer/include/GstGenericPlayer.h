@@ -127,7 +127,7 @@ public:
     bool getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutput) override;
     bool getQueuedFrames(uint32_t &queuedFrames) override;
     bool getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
-    bool getFrameCounters(const MediaSourceType &mediaSourceType, FrameCounters &frameCounters) override;
+    bool getFrameCounters(const MediaSourceType &mediaSourceType, VideoFrameCounters &frameCounters) override;
     void setVolume(double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType) override;
     bool getVolume(double &volume) override;
     void setMute(const MediaSourceType &mediaSourceType, bool mute) override;

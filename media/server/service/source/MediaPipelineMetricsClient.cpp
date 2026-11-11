@@ -70,9 +70,14 @@ void MediaPipelineMetricsClient::notifyQos(int32_t sourceId, const QosInfo &qosI
 {
     m_client->notifyQos(sourceId, qosInfo);
 }
-void MediaPipelineMetricsClient::notifyPlaybackMetric(int32_t sourceId, const PlaybackMetric &metric)
+void MediaPipelineMetricsClient::notifyMetric(const MetricEvent &metric)
 {
-    m_client->notifyPlaybackMetric(sourceId, metric);
+    m_client->notifyMetric(metric);
+}
+
+void MediaPipelineMetricsClient::notifyEventsMissed(uint32_t count)
+{
+    m_client->notifyEventsMissed(count);
 }
 void MediaPipelineMetricsClient::notifyBufferUnderflow(int32_t sourceId)
 {

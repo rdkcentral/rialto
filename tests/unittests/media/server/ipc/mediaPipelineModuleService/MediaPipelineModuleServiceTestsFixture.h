@@ -95,7 +95,9 @@ public:
     void mediaPipelineServiceWillGetStats();
     void mediaPipelineServiceWillFailToGetStats();
     void mediaPipelineServiceWillGetFrameCounters();
-    void mediaPipelineServiceWillFailToGetFrameCounters();
+    void mediaPipelineServiceWillSetMetricSubscription();
+    void mediaPipelineServiceWillFailToSetMetricSubscription();
+    void mediaPipelineServiceWillRejectUnknownMetricType();
     void mediaPipelineServiceWillRenderFrame();
     void mediaPipelineServiceWillFailToRenderFrame();
     void mediaPipelineServiceWillSetVolume();
@@ -142,7 +144,7 @@ public:
     void mediaClientWillSendNeedMediaDataEvent(int sessionId);
     void mediaClientWillSendPostionChangeEvent();
     void mediaClientWillSendQosEvent();
-    void mediaClientWillSendPlaybackMetricEvent();
+    void mediaClientWillSendMediaMetricBatchEvents();
     void mediaClientWillSendPlaybackErrorEvent();
     void mediaClientWillSendFirstFrameReceivedEvent();
     void mediaClientWillSendSourceFlushedEvent();
@@ -185,8 +187,9 @@ public:
     void sendGetQueuedFramesRequestAndReceiveFail();
     void sendGetStatsRequestAndReceiveResponse();
     void sendGetStatsRequestAndReceiveResponseWithoutStatsMatch();
-    void sendGetFrameCountersRequestAndReceiveResponse();
-    void sendGetFrameCountersRequest();
+    void sendGetStatsRequestAndReceiveFrameCounters();
+    void sendSetMetricSubscriptionRequest();
+    void sendSetMetricSubscriptionRequestWithUnknownType();
     void sendHaveDataRequestAndReceiveResponse();
     void sendSetPlaybackRateRequestAndReceiveResponse();
     void sendSetVideoWindowRequestAndReceiveResponse();
@@ -222,7 +225,7 @@ public:
     void sendNeedMediaDataEvent();
     void sendPostionChangeEvent();
     void sendQosEvent();
-    void sendPlaybackMetricEvent();
+    void sendMediaMetricEvents();
     void sendPlaybackErrorEvent();
     void sendFirstFrameReceivedEvent();
     void sendSourceFlushedEvent();

@@ -18,6 +18,7 @@
  */
 
 #include <inttypes.h>
+#include <set>
 #include <stdexcept>
 #include <stdint.h>
 
@@ -341,9 +342,37 @@ bool MediaPipeline::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_
     return m_mediaPipelineIpc->getStats(sourceId, renderedFrames, droppedFrames);
 }
 
-bool MediaPipeline::getFrameCounters(int32_t sourceId, FrameCounters &frameCounters)
+bool MediaPipeline::getFrameCounters(int32_t sourceId, VideoFrameCounters &out) const
 {
-    return m_mediaPipelineIpc->getFrameCounters(sourceId, frameCounters);
+    VideoFrameCounters counters;
+    if (!m_mediaPipelineIpc->getFrameCounters(sourceId, counters))
+    {
+        return false;
+    }
+    out.renderedFrames = counters.renderedFrames;
+    out.droppedFrames = counters.droppedFrames;
+    out.corruptedFrames = counters.corruptedFrames;
+    return true;
+}
+
+bool MediaPipeline::setMetricSubscription(const std::vector<MetricType> &types)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    std::set<MetricType> uniqueTypes;
+    for (const auto &type : types)
+    {
+        if (static_cast<uint32_t>(type) > static_cast<uint32_t>(MetricType::BUFFER_UNDERFLOW))
+        {
+            RIALTO_CLIENT_LOG_ERROR("Unknown metric type %u", static_cast<uint32_t>(type));
+            return false;
+        }
+        if (!uniqueTypes.insert(type).second)
+        {
+            RIALTO_CLIENT_LOG_ERROR("Duplicate metric type %u", static_cast<uint32_t>(type));
+            return false;
+        }
+    }
+    return m_mediaPipelineIpc->setMetricSubscription(types);
 }
 
 bool MediaPipeline::handleSetPosition(int64_t position)
@@ -894,14 +923,22 @@ void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
     }
 }
 
-void MediaPipeline::notifyPlaybackMetric(int32_t sourceId, const PlaybackMetric &metric)
+void MediaPipeline::notifyMetric(const MetricEvent &metric)
 {
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
-
     std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
     if (client)
     {
-        client->notifyPlaybackMetric(sourceId, metric);
+        client->notifyMetric(metric);
+    }
+}
+
+void MediaPipeline::notifyEventsMissed(uint32_t count)
+{
+    RIALTO_CLIENT_LOG_WARN("%u media metric notifications were missed", count);
+    std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
+    if (client)
+    {
+        client->notifyEventsMissed(count);
     }
 }
 
