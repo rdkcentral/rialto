@@ -182,7 +182,7 @@ private:
     void cancelUnderflow(firebolt::rialto::MediaSourceType mediaSource) override;
     void setPendingPlaybackRate() override;
     void renderFrame() override;
-    void handleBusMessage(GstMessage *message) override;
+    void handleBusMessage(GstMessage *message, bool isPriority) override;
     void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) override;
 
     void addAutoVideoSinkChild(GObject *object) override;
@@ -492,6 +492,11 @@ private:
      * @brief The object used to check flushing state for all sources
      */
     std::unique_ptr<IFlushWatcher> m_flushWatcher;
+
+    /**
+     * @brief Cleared on the first flush or seek request; state changes are then handled in FIFO order
+     */
+    std::atomic<bool> m_isStateChangePriorityAllowed{true};
 };
 
 } // namespace firebolt::rialto::server

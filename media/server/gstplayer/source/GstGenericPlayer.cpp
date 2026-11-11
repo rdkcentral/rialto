@@ -408,6 +408,7 @@ void GstGenericPlayer::setPosition(std::int64_t position)
 {
     if (m_workerThread)
     {
+        m_isStateChangePriorityAllowed = false;
         m_workerThread->enqueueTask(m_taskFactory->createSetPosition(m_context, *this, position));
     }
 }
@@ -2573,6 +2574,7 @@ void GstGenericPlayer::flush(const MediaSourceType &mediaSourceType, bool resetT
 {
     if (m_workerThread)
     {
+        m_isStateChangePriorityAllowed = false;
         async = isAsync(mediaSourceType);
         m_flushWatcher->setFlushing(mediaSourceType, async);
         m_workerThread->enqueueTask(m_taskFactory->createFlush(m_context, *this, mediaSourceType, resetTime, async));
@@ -2584,6 +2586,7 @@ void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType,
 {
     if (m_workerThread)
     {
+        m_isStateChangePriorityAllowed = false;
         m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, mediaSourceType, position,
                                                                            resetTime, appliedRate, stopPosition));
     }
@@ -2681,9 +2684,20 @@ void GstGenericPlayer::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
     }
 }
 
-void GstGenericPlayer::handleBusMessage(GstMessage *message)
+void GstGenericPlayer::handleBusMessage(GstMessage *message, bool isPriority)
 {
-    m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message, *m_flushWatcher));
+    auto task = m_taskFactory->createHandleBusMessage(m_context, *this, message, *m_flushWatcher);
+    if (isPriority && m_isStateChangePriorityAllowed && !m_flushWatcher->isFlushOngoing())
+    {
+        m_workerThread->enqueuePriorityTask(std::move(task));
+        return;
+    }
+    if (isPriority)
+    {
+        // Keep the order of the remaining state changes, once one of them has been queued as a normal task
+        m_isStateChangePriorityAllowed = false;
+    }
+    m_workerThread->enqueueTask(std::move(task));
 }
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)

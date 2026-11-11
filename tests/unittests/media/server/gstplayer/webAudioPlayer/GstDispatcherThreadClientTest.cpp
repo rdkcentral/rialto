@@ -57,5 +57,5 @@ TEST_F(WebAudioGstDispatcherThreadClientTest, shouldHandleBusMessage)
         .WillRepeatedly(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
     EXPECT_CALL(m_taskFactoryMock, createHandleBusMessage(_, _, &message)).WillOnce(Return(ByMove(std::move(messageTask))));
 
-    m_sut->handleBusMessage(&message);
+    m_sut->handleBusMessage(&message, false);
 }
