@@ -78,6 +78,10 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
                 {
                     GstState oldState, newState, pending;
                     m_gstWrapper->gstMessageParseStateChanged(message, &oldState, &newState, &pending);
+                    RIALTO_SERVER_LOG_MIL("Pipeline state change received from bus (old: %s, new: %s, pending: %s)",
+                                          m_gstWrapper->gstElementStateGetName(oldState),
+                                          m_gstWrapper->gstElementStateGetName(newState),
+                                          m_gstWrapper->gstElementStateGetName(pending));
                     switch (newState)
                     {
                     case GST_STATE_NULL:
