@@ -21,6 +21,14 @@
 #include "ServerStub.h"
 #include "TestClientMock.h"
 #include "TestModuleMock.h"
+
+#include <atomic>
+#include <chrono>
+#include <condition_variable>
+#include <mutex>
+#include <thread>
+#include <vector>
+
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
@@ -244,4 +252,78 @@ TEST_F(RialtoIpcTest, NoReply)
                                                [&] { return messageReceived; });
 
     ASSERT_TRUE(status);
+}
+
+/**
+ * Test that IPC client can process no reply request from multiple threads.
+ */
+TEST_F(RialtoIpcTest, ConcurrentNoReply)
+{
+    constexpr bool kExpectMessage{false};
+    constexpr int kNumThreads{4};
+    constexpr int kRequestsPerThread{40};
+    constexpr int kExpectedRequests{kNumThreads * kRequestsPerThread};
+
+    m_clientStub->startMessageThread(kExpectMessage);
+
+    std::mutex messageReceivedMutex;
+    std::condition_variable messageReceivedCond;
+    std::atomic<int> messageReceivedCount{0};
+
+    EXPECT_CALL(*m_testModuleMock, TestRequestSingleVarNoReply(_, _, _, _))
+        .Times(kExpectedRequests)
+        .WillRepeatedly(WithArgs<0, 3>(Invoke(
+            [&](auto *c, auto *d)
+            {
+                m_testModuleMock->defaultReturn(c, d);
+
+                if (messageReceivedCount.fetch_add(1, std::memory_order_relaxed) + 1 == kExpectedRequests)
+                {
+                    std::lock_guard<std::mutex> messageReceivedLock(messageReceivedMutex);
+                    messageReceivedCond.notify_one();
+                }
+            })));
+
+    std::atomic<bool> allRequestsSucceeded{true};
+    std::vector<std::thread> threads;
+    threads.reserve(kNumThreads);
+
+    for (int t = 0; t < kNumThreads; ++t)
+    {
+        threads.emplace_back(
+            [&]()
+            {
+                for (int i = 0; i < kRequestsPerThread; ++i)
+                {
+                    if (!m_clientStub->sendSingleVarRequestWithNoReply(m_int))
+                    {
+                        allRequestsSucceeded.store(false, std::memory_order_relaxed);
+                    }
+                }
+            });
+    }
+
+    for (auto &thread : threads)
+    {
+        thread.join();
+    }
+
+    std::unique_lock<std::mutex> messageReceivedLock(messageReceivedMutex);
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+    while (messageReceivedCount.load(std::memory_order_relaxed) != kExpectedRequests)
+    {
+        if (messageReceivedCond.wait_until(messageReceivedLock, deadline) == std::cv_status::timeout)
+        {
+            break;
+        }
+    }
+    bool status = (messageReceivedCount.load(std::memory_order_relaxed) == kExpectedRequests);
+    messageReceivedLock.unlock();
+
+    m_clientStub->disconnect();
+    m_clientStub.reset();
+    m_serverStub.reset();
+
+    ASSERT_TRUE(status);
+    ASSERT_TRUE(allRequestsSucceeded.load(std::memory_order_relaxed));
 }
