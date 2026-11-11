@@ -94,17 +94,22 @@ void AttachSource::addSource() const
     }
     else if (m_attachedSource->getType() == MediaSourceType::SUBTITLE)
     {
+        if (!m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_context.pipeline), "text-sink"))
+        {
+            RIALTO_SERVER_LOG_ERROR("Pipeline does not expose 'text-sink' property, subtitle source cannot be attached");
+            m_glibWrapper->gFree(capsStr);
+            m_gstWrapper->gstCapsUnref(caps);
+            return;
+        }
+
         RIALTO_SERVER_LOG_MIL("Adding Subtitle appsrc with caps %s", capsStr);
         appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "subsrc");
         profilerInfo = "subsrc";
 
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_context.pipeline), "text-sink"))
-        {
-            GstElement *elem = m_gstTextTrackSinkFactory->createGstTextTrackSink();
-            m_context.subtitleSink = elem;
+        GstElement *elem = m_gstTextTrackSinkFactory->createGstTextTrackSink();
+        m_context.subtitleSink = elem;
 
-            m_glibWrapper->gObjectSet(m_context.pipeline, "text-sink", elem, nullptr);
-        }
+        m_glibWrapper->gObjectSet(m_context.pipeline, "text-sink", elem, nullptr);
     }
     if (appSrc)
     {
