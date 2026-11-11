@@ -57,6 +57,24 @@ protected:
 };
 
 /**
+ * @brief Factory that provides a dedicated (non shared) main thread instance.
+ *
+ * Every object created with the same factory instance gets the same thread.
+ */
+class DedicatedMainThreadFactory : public IMainThreadFactory
+{
+public:
+    DedicatedMainThreadFactory() = default;
+    ~DedicatedMainThreadFactory() override = default;
+
+    std::shared_ptr<IMainThread> getMainThread() const override;
+
+private:
+    mutable std::mutex m_creationMutex;
+    mutable std::shared_ptr<IMainThread> m_mainThread;
+};
+
+/**
  * @brief The definition of the MediaKeys.
  */
 class MainThread : public IMainThread
