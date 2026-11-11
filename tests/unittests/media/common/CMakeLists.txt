@@ -30,6 +30,8 @@ add_gtests (
         mediaFrameWriterV2/CreateTest.cpp
         mediaFrameWriterV2/WriteFrameTest.cpp
 
+        mediaSegment/MediaSegmentTest.cpp
+
         schemaVersion/SchemaVersionTest.cpp
         )
 
