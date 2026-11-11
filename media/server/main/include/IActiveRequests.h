@@ -27,6 +27,7 @@
 
 namespace firebolt::rialto::server
 {
+class ActiveRequestsData;
 class IActiveRequests
 {
 public:
@@ -47,7 +48,7 @@ public:
     virtual void clear() = 0;
     virtual AddSegmentStatus addSegment(std::uint32_t requestId,
                                         const std::unique_ptr<IMediaPipeline::MediaSegment> &segment) = 0;
-    virtual const IMediaPipeline::MediaSegmentVector &getSegments(std::uint32_t requestId) const = 0;
+    virtual std::shared_ptr<ActiveRequestsData> getRequest(std::uint32_t requestId) const = 0;
 };
 } // namespace firebolt::rialto::server
 
