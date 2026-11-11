@@ -358,6 +358,7 @@ public:
     {
         auto req{createSetSyncRequest(m_sessionId, true)};
         ConfigureAction<SetSync>(m_clientStub).send(req).expectSuccess();
+        waitWorker();
     }
 
     void getSyncFailure()

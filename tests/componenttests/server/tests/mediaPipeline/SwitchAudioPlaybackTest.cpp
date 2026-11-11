@@ -267,7 +267,7 @@ TEST_F(SwitchAudioPlaybackTest, SwitchAudio)
     willPause();
     pause();
     willNotifyPaused();
-    notifyPaused();
+    notifyPaused(false);
     GST_STATE(&m_pipeline) = GST_STATE_PAUSED;
 
     // Step 8: Flush Audio Source

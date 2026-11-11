@@ -68,7 +68,7 @@ public:
     void setupSource();
     void indicateAllSourcesAttached(const std::vector<GstAppSrc *> &appsrcs);
     void pause();
-    void notifyPaused();
+    void notifyPaused(bool expectPlaybackInfo = true);
     void pushAudioData(unsigned dataCountToPush, int needDataFrameCount = kPrerollNumFrames);
     void pushVideoData(unsigned dataCountToPush, int needDataFrameCount = kPrerollNumFrames);
     void pushAudioSample(int needDataFrameCount = kPrerollNumFrames);

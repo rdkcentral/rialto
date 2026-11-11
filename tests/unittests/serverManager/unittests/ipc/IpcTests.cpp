@@ -133,6 +133,20 @@ TEST_F(IpcTests, ShouldSuccessfullySetConfiguration)
     ASSERT_TRUE(triggerPerformSetConfiguration());
 }
 
+TEST_F(IpcTests, ShouldForwardPlaybackInfoTimerWithSocketName)
+{
+    configureServerToSendOkResponses(250);
+    ASSERT_TRUE(triggerCreateClient());
+    ASSERT_TRUE(triggerPerformSetConfiguration(250));
+}
+
+TEST_F(IpcTests, ShouldForwardPlaybackInfoTimerWithSocketFd)
+{
+    configureServerToSendOkResponses(250);
+    ASSERT_TRUE(triggerCreateClient());
+    ASSERT_TRUE(triggerPerformSetConfigurationWithFd(250));
+}
+
 TEST_F(IpcTests, ShouldFailToSetConfiguration)
 {
     configureServerToSendFailResponses();

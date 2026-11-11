@@ -18,6 +18,7 @@
  */
 
 #include "ClientComponentTest.h"
+#include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
 #include <linux/memfd.h>
@@ -62,6 +63,7 @@
 namespace
 {
 constexpr std::chrono::milliseconds kEventTimeout{400};
+constexpr std::chrono::milliseconds kEventTimeoutValgrind{10000};
 constexpr uint32_t kNumOfAVPartitions{2};
 constexpr uint32_t kNumOfWebAudioPartitions{1};
 constexpr uint32_t kVideoPartitionSize = 100000;
@@ -139,7 +141,8 @@ void ClientComponentTest::waitEvent()
     std::unique_lock<std::mutex> locker(m_eventsLock);
     if (!m_eventReceived)
     {
-        bool status = m_eventsCond.wait_for(locker, kEventTimeout, [this]() { return m_eventReceived; });
+        const auto timeout = std::getenv("RIALTO_TEST_UNDER_VALGRIND") ? kEventTimeoutValgrind : kEventTimeout;
+        bool status = m_eventsCond.wait_for(locker, timeout, [this]() { return m_eventReceived; });
         ASSERT_TRUE(status);
     }
     m_eventReceived = false;

@@ -18,6 +18,46 @@
  */
 
 #include "ServerManagerModuleServiceTestsFixture.h"
+#include <cstdlib>
+#include <optional>
+#include <string>
+
+namespace
+{
+constexpr char kPlaybackInfoTimerEnvVar[] = "RIALTO_PLAYBACK_INFO_TIMER_MS";
+
+class ScopedPlaybackInfoTimerEnv
+{
+public:
+    ScopedPlaybackInfoTimerEnv()
+    {
+        if (const char *value = std::getenv(kPlaybackInfoTimerEnvVar))
+        {
+            m_hadPreviousValue = true;
+            m_previousValue = value;
+        }
+        unsetenv(kPlaybackInfoTimerEnvVar);
+    }
+
+    ~ScopedPlaybackInfoTimerEnv()
+    {
+        if (m_hadPreviousValue)
+        {
+            setenv(kPlaybackInfoTimerEnvVar, m_previousValue.c_str(), 1);
+        }
+        else
+        {
+            unsetenv(kPlaybackInfoTimerEnvVar);
+        }
+    }
+
+    void set(const char *value) { setenv(kPlaybackInfoTimerEnvVar, value, 1); }
+
+private:
+    bool m_hadPreviousValue{false};
+    std::string m_previousValue;
+};
+} // namespace
 
 TEST_F(ServerManagerModuleServiceTests, shouldSetConfiguration)
 {
@@ -33,6 +73,45 @@ TEST_F(ServerManagerModuleServiceTests, shouldSetConfigurationWithFd)
     sessionServerManagerWillSetConfigurationWithFd(firebolt::rialto::common::SessionServerState::ACTIVE);
     sessionServerManagerWillSetLogLevels();
     sendSetConfigurationWithFd(firebolt::rialto::common::SessionServerState::ACTIVE);
+}
+
+TEST_F(ServerManagerModuleServiceTests, shouldSetPlaybackInfoTimerEnvironmentVariable)
+{
+    ScopedPlaybackInfoTimerEnv env;
+    sessionServerManagerWillHandleRequestSuccess();
+    sessionServerManagerWillSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE);
+    sessionServerManagerWillSetLogLevels();
+
+    sendSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE, std::optional<uint32_t>{250});
+
+    ASSERT_NE(nullptr, std::getenv(kPlaybackInfoTimerEnvVar));
+    EXPECT_STREQ("250", std::getenv(kPlaybackInfoTimerEnvVar));
+}
+
+TEST_F(ServerManagerModuleServiceTests, shouldClearPlaybackInfoTimerEnvironmentVariableWhenConfigurationIsMissing)
+{
+    ScopedPlaybackInfoTimerEnv env;
+    env.set("250");
+    sessionServerManagerWillHandleRequestSuccess();
+    sessionServerManagerWillSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE);
+    sessionServerManagerWillSetLogLevels();
+
+    sendSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE);
+
+    EXPECT_EQ(nullptr, std::getenv(kPlaybackInfoTimerEnvVar));
+}
+
+TEST_F(ServerManagerModuleServiceTests, shouldClearPlaybackInfoTimerEnvironmentVariableWhenConfigurationIsZero)
+{
+    ScopedPlaybackInfoTimerEnv env;
+    env.set("250");
+    sessionServerManagerWillHandleRequestSuccess();
+    sessionServerManagerWillSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE);
+    sessionServerManagerWillSetLogLevels();
+
+    sendSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE, std::optional<uint32_t>{0});
+
+    EXPECT_EQ(nullptr, std::getenv(kPlaybackInfoTimerEnvVar));
 }
 
 TEST_F(ServerManagerModuleServiceTests, shouldSetStateToUninitialized)
