@@ -77,6 +77,15 @@ void MediaKeysIpcTestBase::expectSubscribeEvents()
                 return static_cast<int>(EventTags::LicenseRenewalEvent);
             }))
         .RetiresOnSaturation();
+    EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.LicenseReleaseEvent", _, _))
+        .WillOnce(Invoke(
+            [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
+                   std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
+            {
+                m_licenseReleaseCb = std::move(handler);
+                return static_cast<int>(EventTags::LicenseReleaseEvent);
+            }))
+        .RetiresOnSaturation();
     EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.KeyStatusesChangedEvent", _, _))
         .WillOnce(Invoke(
             [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
@@ -92,6 +101,7 @@ void MediaKeysIpcTestBase::expectUnsubscribeEvents()
 {
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::LicenseRequestEvent))).WillOnce(Return(true));
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::LicenseRenewalEvent))).WillOnce(Return(true));
+    EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::LicenseReleaseEvent))).WillOnce(Return(true));
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::KeyStatusesChangedEvent))).WillOnce(Return(true));
 }
 
@@ -120,6 +130,20 @@ std::shared_ptr<firebolt::rialto::LicenseRenewalEvent> MediaKeysIpcTestBase::cre
     }
 
     return licenseRenewalEvent;
+}
+
+std::shared_ptr<firebolt::rialto::LicenseReleaseEvent> MediaKeysIpcTestBase::createLicenseReleaseEvent()
+{
+    auto licenseReleaseEvent = std::make_shared<firebolt::rialto::LicenseReleaseEvent>();
+    licenseReleaseEvent->set_media_keys_handle(m_mediaKeysHandle);
+    licenseReleaseEvent->set_key_session_id(m_kKeySessionId);
+
+    for (auto it = m_licenseReleaseMessage.begin(); it != m_licenseReleaseMessage.end(); it++)
+    {
+        licenseReleaseEvent->add_license_release_message(*it);
+    }
+
+    return licenseReleaseEvent;
 }
 
 void MediaKeysIpcTestBase::setCreateMediaKeysResponse(google::protobuf::Message *response)

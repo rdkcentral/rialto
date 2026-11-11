@@ -40,6 +40,8 @@ public:
     void notifyKeyStatusesChangedEvent(int32_t mediaKeysHandle, int32_t keySessionId, const KeyStatusVector &keyStatuses);
     void notifyLicenseRenewal(int32_t mediaKeysHandle, int32_t keySessionId,
                               const std::vector<unsigned char> &licenseRenewalMessage);
+    void notifyLicenseRelease(int32_t mediaKeysHandle, int32_t keySessionId,
+                              const std::vector<unsigned char> &licenseReleaseMessage);
 
     // Client helpers
     virtual void waitForClientConnect() = 0;

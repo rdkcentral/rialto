@@ -117,4 +117,21 @@ void MediaKeysClient::onKeyStatusesChanged(int32_t keySessionId, const KeyStatus
 
     m_ipcClient->sendEvent(event);
 }
+
+void MediaKeysClient::onLicenseRelease(int32_t keySessionId, const std::vector<unsigned char> &licenseReleaseMessage,
+                                       const std::string &url)
+{
+    RIALTO_SERVER_LOG_DEBUG("Sending LicenseReleaseEvent");
+
+    auto event = std::make_shared<firebolt::rialto::LicenseReleaseEvent>();
+    for (auto it = licenseReleaseMessage.begin(); it != licenseReleaseMessage.end(); it++)
+    {
+        event->add_license_release_message(*it);
+    }
+    event->set_media_keys_handle(m_mediaKeysHandle);
+    event->set_key_session_id(keySessionId);
+    event->set_url(url);
+
+    m_ipcClient->sendEvent(event);
+}
 } // namespace firebolt::rialto::server::ipc
