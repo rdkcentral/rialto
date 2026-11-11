@@ -22,6 +22,7 @@
 #include "RialtoServerLogging.h"
 #include "WorkerThread.h"
 #include "tasks/webAudio/WebAudioPlayerTaskFactory.h"
+#include <queue>
 #include <stdexcept>
 
 namespace
@@ -454,7 +455,7 @@ void GstWebAudioPlayer::stopWorkerThread()
     }
 }
 
-void GstWebAudioPlayer::handleBusMessage(GstMessage *message)
+void GstWebAudioPlayer::handleBusMessage(GstMessage *message, bool isPriority)
 {
     if (m_workerThread)
     {

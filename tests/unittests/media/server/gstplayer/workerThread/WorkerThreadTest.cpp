@@ -20,6 +20,7 @@
 #include "WorkerThread.h"
 #include "PlayerTaskMock.h"
 #include <condition_variable>
+#include <future>
 #include <gtest/gtest.h>
 #include <mutex>
 #include <thread>
@@ -90,6 +91,61 @@ TEST(WorkerThreadTest, shouldExecuteSlowAndFastTasksInOrder)
         std::unique_lock<std::mutex> lock{taskMutex};
         EXPECT_TRUE(taskCv.wait_for(lock, std::chrono::seconds(1), [&]() { return executionOrder.size() == 2; }));
         EXPECT_EQ(executionOrder, (std::vector<int>{1, 2}));
+    }
+
+    std::unique_ptr<firebolt::rialto::server::IPlayerTask> shutdownTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*shutdownTask), execute())
+        .WillOnce(Invoke([&]() { sut->stop(); }));
+    sut->enqueueTask(std::move(shutdownTask));
+}
+
+TEST(WorkerThreadTest, shouldExecutePriorityTasksFirstInTheirOwnOrder)
+{
+    std::mutex orderMutex;
+    std::vector<int> executionOrder;
+    std::promise<void> blockerRelease;
+    std::promise<void> blockerStarted;
+    std::promise<void> allDone;
+    auto sut = firebolt::rialto::server::WorkerThreadFactory().createWorkerThread();
+
+    auto makeTask = [&](int id, bool isLast)
+    {
+        auto task = std::make_unique<StrictMock<PlayerTaskMock>>();
+        EXPECT_CALL(*task, execute())
+            .WillOnce(Invoke(
+                [&, id, isLast]()
+                {
+                    std::unique_lock<std::mutex> lock{orderMutex};
+                    executionOrder.push_back(id);
+                    if (isLast)
+                    {
+                        allDone.set_value();
+                    }
+                }));
+        return std::unique_ptr<firebolt::rialto::server::IPlayerTask>{std::move(task)};
+    };
+
+    auto blocker = std::make_unique<StrictMock<PlayerTaskMock>>();
+    EXPECT_CALL(*blocker, execute())
+        .WillOnce(Invoke(
+            [&]()
+            {
+                blockerStarted.set_value();
+                blockerRelease.get_future().wait();
+            }));
+    sut->enqueueTask(std::move(blocker));
+    blockerStarted.get_future().wait();
+
+    sut->enqueueTask(makeTask(1, false));
+    sut->enqueuePriorityTask(makeTask(2, false));
+    sut->enqueueTask(makeTask(3, true));
+    sut->enqueuePriorityTask(makeTask(4, false));
+    blockerRelease.set_value();
+
+    EXPECT_EQ(std::future_status::ready, allDone.get_future().wait_for(std::chrono::seconds(1)));
+    {
+        std::unique_lock<std::mutex> lock{orderMutex};
+        EXPECT_EQ(executionOrder, (std::vector<int>{2, 4, 1, 3}));
     }
 
     std::unique_ptr<firebolt::rialto::server::IPlayerTask> shutdownTask{std::make_unique<StrictMock<PlayerTaskMock>>()};

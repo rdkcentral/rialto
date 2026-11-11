@@ -79,7 +79,7 @@ TEST_F(GstDispatcherThreadTest, PollTimeout)
         InSequence seq;
         EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(nullptr));
         EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
-        EXPECT_CALL(m_client, handleBusMessage(_));
+        EXPECT_CALL(m_client, handleBusMessage(_, false));
     }
 
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
@@ -126,11 +126,11 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPaused)
     {
         InSequence seq;
         EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
-        EXPECT_CALL(m_client, handleBusMessage(_));
+        EXPECT_CALL(m_client, handleBusMessage(_, true));
 
         // Signal error to stop the thread
         EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&messageError));
-        EXPECT_CALL(m_client, handleBusMessage(_));
+        EXPECT_CALL(m_client, handleBusMessage(_, false));
     }
     EXPECT_CALL(*m_flushOnPrerollControllerMock, stateReached(GST_STATE_PAUSED));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
@@ -177,11 +177,11 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPlaying)
     {
         InSequence seq;
         EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
-        EXPECT_CALL(m_client, handleBusMessage(_));
+        EXPECT_CALL(m_client, handleBusMessage(_, false));
 
         // Signal error to stop the thread
         EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&messageError));
-        EXPECT_CALL(m_client, handleBusMessage(_));
+        EXPECT_CALL(m_client, handleBusMessage(_, false));
     }
     EXPECT_CALL(*m_flushOnPrerollControllerMock, stateReached(GST_STATE_PLAYING));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
@@ -220,7 +220,7 @@ TEST_F(GstDispatcherThreadTest, StateChangedToStop)
     EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(_)).Times(3).WillRepeatedly(Return("STATE"));
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
-    EXPECT_CALL(m_client, handleBusMessage(_));
+    EXPECT_CALL(m_client, handleBusMessage(_, false));
     EXPECT_CALL(*m_flushOnPrerollControllerMock, reset());
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
         .WillOnce(Invoke(
@@ -266,11 +266,11 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPrerolling)
     {
         InSequence seq;
         EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
-        EXPECT_CALL(m_client, handleBusMessage(_));
+        EXPECT_CALL(m_client, handleBusMessage(_, true));
 
         // Signal error to stop the thread
         EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&messageError));
-        EXPECT_CALL(m_client, handleBusMessage(_));
+        EXPECT_CALL(m_client, handleBusMessage(_, false));
     }
     EXPECT_CALL(*m_flushOnPrerollControllerMock, setPrerolling());
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
@@ -301,7 +301,7 @@ TEST_F(GstDispatcherThreadTest, Error)
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_ERROR;
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
-    EXPECT_CALL(m_client, handleBusMessage(_));
+    EXPECT_CALL(m_client, handleBusMessage(_, false));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
         .WillOnce(Invoke(
             [this](gpointer bus)
@@ -343,7 +343,7 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPausedNonPipeline)
 
         // Signal error to stop the thread
         EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&messageError));
-        EXPECT_CALL(m_client, handleBusMessage(_));
+        EXPECT_CALL(m_client, handleBusMessage(_, false));
     }
 
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
@@ -359,6 +359,65 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPausedNonPipeline)
         std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_flushOnPrerollControllerMock, m_gstWrapperMock);
 
     // wait for dispatcher thread
+    std::unique_lock<std::mutex> dispatcherLock(m_dispatcherThreadMutex);
+    bool status = m_dispatcherThreadCond.wait_for(dispatcherLock, std::chrono::milliseconds(200),
+                                                  [this]() { return m_dispatcherThreadDone; });
+    EXPECT_TRUE(status);
+}
+
+/**
+ * Test that only the state changes of the initial preroll are marked as priority.
+ */
+TEST_F(GstDispatcherThreadTest, OnlyInitialPrerollStateChangesArePriority)
+{
+    GstMessage messageReady{};
+    GstMessage messagePaused{};
+    GstMessage messagePausedAgain{};
+    GstMessage messageError{};
+    for (GstMessage *message : {&messageReady, &messagePaused, &messagePausedAgain})
+    {
+        GST_MESSAGE_SRC(message) = GST_OBJECT(&m_pipeline);
+        GST_MESSAGE_TYPE(message) = GST_MESSAGE_STATE_CHANGED;
+    }
+    GST_MESSAGE_SRC(&messageError) = GST_OBJECT(&m_pipeline);
+    GST_MESSAGE_TYPE(&messageError) = GST_MESSAGE_ERROR;
+
+    EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(&messageReady, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(GST_STATE_NULL), SetArgPointee<2>(GST_STATE_READY),
+                        SetArgPointee<3>(GST_STATE_PAUSED)));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(&messagePaused, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(GST_STATE_READY), SetArgPointee<2>(GST_STATE_PAUSED),
+                        SetArgPointee<3>(GST_STATE_VOID_PENDING)));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(&messagePausedAgain, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(GST_STATE_READY), SetArgPointee<2>(GST_STATE_PAUSED),
+                        SetArgPointee<3>(GST_STATE_VOID_PENDING)));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(_)).WillRepeatedly(Return("STATE"));
+    EXPECT_CALL(*m_flushOnPrerollControllerMock, stateReached(GST_STATE_PAUSED)).Times(2);
+    {
+        InSequence seq;
+        EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&messageReady));
+        EXPECT_CALL(m_client, handleBusMessage(&messageReady, true));
+        EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&messagePaused));
+        EXPECT_CALL(m_client, handleBusMessage(&messagePaused, true));
+        EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _))
+            .WillOnce(Return(&messagePausedAgain));
+        EXPECT_CALL(m_client, handleBusMessage(&messagePausedAgain, false));
+        EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&messageError));
+        EXPECT_CALL(m_client, handleBusMessage(&messageError, false));
+    }
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
+        .WillOnce(Invoke(
+            [this](gpointer bus)
+            {
+                std::unique_lock<std::mutex> lock(m_dispatcherThreadMutex);
+                m_dispatcherThreadDone = true;
+                m_dispatcherThreadCond.notify_all();
+            }));
+
+    auto sut =
+        std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_flushOnPrerollControllerMock, m_gstWrapperMock);
+
     std::unique_lock<std::mutex> dispatcherLock(m_dispatcherThreadMutex);
     bool status = m_dispatcherThreadCond.wait_for(dispatcherLock, std::chrono::milliseconds(200),
                                                   [this]() { return m_dispatcherThreadDone; });
