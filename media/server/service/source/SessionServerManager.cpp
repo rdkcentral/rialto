@@ -130,7 +130,8 @@ bool SessionServerManager::configureIpc(int32_t socketFd)
 
 bool SessionServerManager::configureServices(const common::SessionServerState &state,
                                              const common::MaxResourceCapabilitites &maxResource,
-                                             const std::string &clientDisplayName, const std::string &appName)
+                                             const std::string &clientDisplayName, const std::string &appName,
+                                             std::chrono::milliseconds playbackInfoTimer)
 {
     firebolt::rialto::logging::setApplicationName(appName.c_str());
     m_sessionManagementServer->start();
@@ -138,6 +139,7 @@ bool SessionServerManager::configureServices(const common::SessionServerState &s
     m_playbackService.setMaxWebAudioPlayers(maxResource.maxWebAudioPlayers);
     m_playbackService.setClientDisplayName(clientDisplayName);
     m_playbackService.setResourceManagerAppName(appName);
+    m_playbackService.setPlaybackInfoTimer(playbackInfoTimer);
     return setState(state);
 }
 

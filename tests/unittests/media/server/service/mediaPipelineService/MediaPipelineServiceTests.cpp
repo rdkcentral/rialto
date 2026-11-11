@@ -54,6 +54,18 @@ TEST_F(MediaPipelineServiceTests, shouldCreateSession)
     initSession();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldPassConfiguredPlaybackInfoTimerToNewPipeline)
+{
+    constexpr std::chrono::milliseconds kPlaybackInfoTimer{75};
+    createMediaPipelineShouldSuccess();
+    configurePlaybackInfoTimer(kPlaybackInfoTimer);
+    playbackServiceWillReturnActive();
+    playbackServiceWillReturnMaxPlaybacks(1);
+    playbackServiceWillReturnSharedMemoryBuffer();
+    mediaPipelineFactoryWillCreateMediaPipeline(kPlaybackInfoTimer);
+    createSessionShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldFailToCreateSessionWithTheSameIdTwice)
 {
     initSession();

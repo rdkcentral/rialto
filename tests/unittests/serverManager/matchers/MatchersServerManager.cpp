@@ -23,6 +23,6 @@ namespace firebolt::rialto::common
 {
 bool operator==(const AppConfig &lhs, const AppConfig &rhs)
 {
-    return lhs.clientIpcSocketName == rhs.clientIpcSocketName;
+    return lhs.clientIpcSocketName == rhs.clientIpcSocketName && lhs.playbackInfoTimer == rhs.playbackInfoTimer;
 }
 } // namespace firebolt::rialto::common

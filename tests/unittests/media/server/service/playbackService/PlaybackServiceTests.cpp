@@ -52,6 +52,12 @@ TEST_F(PlaybackServiceTests, shouldSetMaxWebAudioPlayers)
     getMaxWebAudioPlayersShouldSucceed();
 }
 
+TEST_F(PlaybackServiceTests, shouldSetPlaybackInfoTimer)
+{
+    createPlaybackServiceShouldSuccess();
+    triggerSetPlaybackInfoTimer();
+}
+
 TEST_F(PlaybackServiceTests, shouldExposePrivateMetricsService)
 {
     createPlaybackServiceShouldSuccess();

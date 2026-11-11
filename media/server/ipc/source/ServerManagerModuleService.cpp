@@ -25,7 +25,10 @@
 #include <AudioDecoderCapabilities.h>
 #include <IIpcController.h>
 #include <VideoDecoderCapabilities.h>
+#include <chrono>
+#include <cstdlib>
 #include <optional>
+#include <string>
 
 using firebolt::rialto::ipc::common::deserialiseAudioCapabilities;
 using firebolt::rialto::ipc::common::deserialiseVideoCapabilities;
@@ -128,6 +131,9 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
             "ServerManagerModuleService: no capability fields - session server will use GStreamer query fallback");
     }
 
+    const std::chrono::milliseconds playbackInfoTimer{
+        request->has_playbackinfotimerms() && request->playbackinfotimerms() > 0 ? request->playbackinfotimerms() : 32};
+
     bool success{true};
     if (request->has_sessionmanagementsocketfd())
     {
@@ -144,7 +150,8 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
     m_sessionServerManager.setPreloadedCapabilities(audioCaps, videoCaps);
 
     success &= m_sessionServerManager.configureServices(convertSessionServerState(request->initialsessionserverstate()),
-                                                        maxResource, kClientDisplayName, request->appname());
+                                                        maxResource, kClientDisplayName, request->appname(),
+                                                        playbackInfoTimer);
     m_sessionServerManager.setLogLevels(static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().defaultloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().clientloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().sessionserverloglevels()),

@@ -42,7 +42,8 @@ public:
     MOCK_METHOD(bool, configureIpc, (int32_t socketFd), (override));
     MOCK_METHOD(bool, configureServices,
                 (const common::SessionServerState &state, const common::MaxResourceCapabilitites &maxResource,
-                 const std::string &clientDisplayName, const std::string &appName),
+                 const std::string &clientDisplayName, const std::string &appName,
+                 std::chrono::milliseconds playbackInfoTimer),
                 (override));
     MOCK_METHOD(bool, setState, (const common::SessionServerState &state), (override));
     MOCK_METHOD(void, setLogLevels,

@@ -43,9 +43,9 @@ IpcTests::IpcTests()
 {
 }
 
-void IpcTests::configureServerToSendOkResponses()
+void IpcTests::configureServerToSendOkResponses(uint32_t expectedPlaybackInfoTimerMs)
 {
-    m_appStub.start(StubResponse::OK);
+    m_appStub.start(StubResponse::OK, expectedPlaybackInfoTimerMs);
 }
 
 void IpcTests::configureServerToSendFailResponses()
@@ -129,7 +129,7 @@ void IpcTests::triggerRemoveClient()
     return m_sut->removeClient(kServerId);
 }
 
-bool IpcTests::triggerPerformSetConfiguration()
+bool IpcTests::triggerPerformSetConfiguration(std::chrono::milliseconds playbackInfoTimer)
 {
     EXPECT_TRUE(m_sut);
     const auto kInitialState{firebolt::rialto::common::SessionServerState::INACTIVE};
@@ -144,10 +144,10 @@ bool IpcTests::triggerPerformSetConfiguration()
     const std::string kAppId{"app"};
     return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketName, kClientSocketName, kMaxResource,
                                           kSocketPermissions, kSocketOwner, kSocketGroup, kAppId, std::nullopt,
-                                          std::nullopt);
+                                          std::nullopt, playbackInfoTimer);
 }
 
-bool IpcTests::triggerPerformSetConfigurationWithFd()
+bool IpcTests::triggerPerformSetConfigurationWithFd(std::chrono::milliseconds playbackInfoTimer)
 {
     EXPECT_TRUE(m_sut);
     const auto kInitialState{firebolt::rialto::common::SessionServerState::INACTIVE};
@@ -156,7 +156,7 @@ bool IpcTests::triggerPerformSetConfigurationWithFd()
     constexpr firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{2, 1};
     const std::string kAppId{"app"};
     bool result = m_sut->performSetConfiguration(kServerId, kInitialState, socketFd, kClientSocketName, kMaxResource,
-                                                 kAppId, std::nullopt, std::nullopt);
+                                                 kAppId, std::nullopt, std::nullopt, playbackInfoTimer);
     if (socketFd >= 0)
     {
         close(socketFd);

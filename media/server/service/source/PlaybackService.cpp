@@ -96,6 +96,11 @@ void PlaybackService::setMaxWebAudioPlayers(int maxWebAudio)
     m_maxWebAudioPlayers = maxWebAudio;
 }
 
+void PlaybackService::setPlaybackInfoTimer(std::chrono::milliseconds playbackInfoTimer)
+{
+    m_mediaPipelineService->setPlaybackInfoTimer(playbackInfoTimer);
+}
+
 void PlaybackService::setClientDisplayName(const std::string &clientDisplayName) const
 {
     // Method called during initialization only (before setting any state), no need to execute it on a task thread.

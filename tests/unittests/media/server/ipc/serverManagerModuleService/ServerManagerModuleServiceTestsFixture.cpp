@@ -34,6 +34,7 @@ constexpr int kSocketFd{17};
 const std::string kSocketName{"/tmp/rialtotest-0"};
 const std::string kClientDisplayName{"westeros-rialto"};
 constexpr unsigned int kSocketPermissions{0666};
+constexpr std::chrono::milliseconds kPlaybackInfoTimer{32};
 constexpr int kMaxSessions{5};
 constexpr int kMaxWebAudioPlayers{3};
 constexpr int kPingId{29};
@@ -85,13 +86,13 @@ ServerManagerModuleServiceTests::ServerManagerModuleServiceTests()
 ServerManagerModuleServiceTests::~ServerManagerModuleServiceTests() {}
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfiguration(
-    const firebolt::rialto::common::SessionServerState &state)
+    const firebolt::rialto::common::SessionServerState &state, std::chrono::milliseconds playbackInfoTimer)
 {
     EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketName, kSocketPermissions, kSocketOwner, kSocketGroup))
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId))
+                                  kAppId, playbackInfoTimer))
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 setPreloadedCapabilities(testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
@@ -104,7 +105,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWi
     EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketFd)).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId))
+                                  kAppId, kPlaybackInfoTimer))
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 setPreloadedCapabilities(testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
@@ -131,7 +132,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId))
+                                  kAppId, kPlaybackInfoTimer))
         .WillOnce(Return(false));
     EXPECT_CALL(m_sessionServerManagerMock,
                 setPreloadedCapabilities(testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
@@ -144,7 +145,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
     EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketFd)).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId))
+                                  kAppId, kPlaybackInfoTimer))
         .WillOnce(Return(false));
     EXPECT_CALL(m_sessionServerManagerMock,
                 setPreloadedCapabilities(testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
@@ -168,7 +169,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWi
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId))
+                                  kAppId, kPlaybackInfoTimer))
         .WillOnce(Return(true));
 }
 
@@ -182,7 +183,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWi
     EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketFd)).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId))
+                                  kAppId, kPlaybackInfoTimer))
         .WillOnce(Return(true));
 }
 
@@ -193,7 +194,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWi
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId))
+                                  kAppId, kPlaybackInfoTimer))
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 setPreloadedCapabilities(testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
@@ -206,7 +207,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWi
     EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketFd)).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId))
+                                  kAppId, kPlaybackInfoTimer))
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 setPreloadedCapabilities(testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
@@ -225,7 +226,8 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToPing()
     EXPECT_CALL(m_sessionServerManagerMock, ping(kPingId, _)).WillOnce(Return(false));
 }
 
-void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state)
+void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state,
+                                                           std::optional<std::chrono::milliseconds> playbackInfoTimer)
 {
     rialto::SetConfigurationRequest request;
     rialto::SetConfigurationResponse response;
@@ -245,6 +247,10 @@ void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialt
     request.set_socketowner(kSocketOwner);
     request.set_socketgroup(kSocketGroup);
     request.set_appname(kAppId);
+    if (playbackInfoTimer.has_value())
+    {
+        request.set_playbackinfotimerms(static_cast<uint32_t>(playbackInfoTimer->count()));
+    }
 
     m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
