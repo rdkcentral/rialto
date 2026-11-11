@@ -1710,8 +1710,11 @@ void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType me
                                                                                    mediaSourceType));
                                                         scheduleNotifyNeedMediaData(mediaSourceType);
                                                     }
-                                                    else
+                                                    else if (m_currentPlaybackState != PlaybackState::UNKNOWN &&
+                                                             m_currentPlaybackState != PlaybackState::IDLE)
                                                     {
+                                                        // Keep the default resend delay until the pipeline prerolls,
+                                                        // so that the first media data is not delayed during tune.
                                                         m_needDataDelayCalculator.increaseNeedMediaDataDelay(
                                                             mediaSourceType);
                                                     }

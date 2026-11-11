@@ -22,6 +22,8 @@
 #include <condition_variable>
 #include <gtest/gtest.h>
 #include <mutex>
+#include <thread>
+#include <vector>
 
 using firebolt::rialto::server::PlayerTaskMock;
 using testing::Invoke;
@@ -54,4 +56,44 @@ TEST(WorkerThreadTest, shouldEnqueueTaskAndExit)
     sut->enqueueTask(std::move(shutdownTask));
 
     // sut.reset();
+}
+
+TEST(WorkerThreadTest, shouldExecuteSlowAndFastTasksInOrder)
+{
+    std::mutex taskMutex;
+    std::condition_variable taskCv;
+    std::vector<int> executionOrder;
+    auto sut = firebolt::rialto::server::WorkerThreadFactory().createWorkerThread();
+
+    std::unique_ptr<firebolt::rialto::server::IPlayerTask> slowTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*slowTask), execute())
+        .WillOnce(Invoke(
+            [&]()
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(30));
+                std::unique_lock<std::mutex> lock{taskMutex};
+                executionOrder.push_back(1);
+            }));
+    std::unique_ptr<firebolt::rialto::server::IPlayerTask> fastTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*fastTask), execute())
+        .WillOnce(Invoke(
+            [&]()
+            {
+                std::unique_lock<std::mutex> lock{taskMutex};
+                executionOrder.push_back(2);
+                taskCv.notify_one();
+            }));
+    sut->enqueueTask(std::move(slowTask));
+    sut->enqueueTask(std::move(fastTask));
+
+    {
+        std::unique_lock<std::mutex> lock{taskMutex};
+        EXPECT_TRUE(taskCv.wait_for(lock, std::chrono::seconds(1), [&]() { return executionOrder.size() == 2; }));
+        EXPECT_EQ(executionOrder, (std::vector<int>{1, 2}));
+    }
+
+    std::unique_ptr<firebolt::rialto::server::IPlayerTask> shutdownTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*shutdownTask), execute())
+        .WillOnce(Invoke([&]() { sut->stop(); }));
+    sut->enqueueTask(std::move(shutdownTask));
 }
