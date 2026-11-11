@@ -27,7 +27,7 @@ add_compile_definitions(PROJECT_VER_PATCH="${PROJECT_VERSION_PATCH}")
 
 set(CMAKE_CXX_STANDARD 17)
 
-if ( COVERAGE_ENABLED )
+if (COVERAGE_ENABLED)
     add_compile_options(--coverage -fprofile-update=atomic)
     add_link_options(--coverage)
 endif()
@@ -46,7 +46,7 @@ option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" ON)
 option(RIALTO_LOG_WARN_ENABLED "Enable warning logging for RialtoServer" ON)
 option(RIALTO_LOG_MIL_ENABLED "Enable milestone logging for RialtoServer" ON)
 
-if( RIALTO_BUILD_TYPE STREQUAL "Debug" )
+if(RIALTO_BUILD_TYPE STREQUAL "Debug")
     message("_______________DEBUG MODE_______________")
     option(RIALTO_LOG_INFO_ENABLED "Enable info logging for RialtoServer" ON)
     option(RIALTO_LOG_DEBUG_ENABLED "Enable debug logging for RialtoServer" ON)
@@ -65,41 +65,40 @@ if (NOT RIALTO_LOG_FATAL_ENABLED OR
 
     message("_______________COMPILATION ERRORS IGNORED_______________")
     add_compile_options(-Wno-error=unused-function -Wno-error=unused-variable)
-
 endif()
 
-if ( RIALTO_LOG_FATAL_ENABLED )
+if (RIALTO_LOG_FATAL_ENABLED)
     message("RIALTO_LOG_FATAL IS ENABLED")
-    add_compile_definitions( RIALTO_LOG_FATAL_ENABLED )
+    add_compile_definitions(RIALTO_LOG_FATAL_ENABLED)
 endif()
 
-if ( RIALTO_LOG_ERROR_ENABLED )
+if (RIALTO_LOG_ERROR_ENABLED)
     message("RIALTO_LOG_ERROR IS ENABLED")
-    add_compile_definitions( RIALTO_LOG_ERROR_ENABLED )
+    add_compile_definitions(RIALTO_LOG_ERROR_ENABLED)
 endif()
 
-if ( RIALTO_LOG_WARN_ENABLED )
+if (RIALTO_LOG_WARN_ENABLED)
     message("RIALTO_LOG_WARN IS ENABLED")
-    add_compile_definitions( RIALTO_LOG_WARN_ENABLED )
+    add_compile_definitions(RIALTO_LOG_WARN_ENABLED)
 endif()
 
-if ( RIALTO_LOG_MIL_ENABLED )
+if (RIALTO_LOG_MIL_ENABLED)
     message("RIALTO_LOG_MIL IS ENABLED")
-    add_compile_definitions( RIALTO_LOG_MIL_ENABLED )
+    add_compile_definitions(RIALTO_LOG_MIL_ENABLED)
 endif()
 
-if ( RIALTO_LOG_INFO_ENABLED )
+if (RIALTO_LOG_INFO_ENABLED)
     message("RIALTO_LOG_INFO IS ENABLED")
-    add_compile_definitions( RIALTO_LOG_INFO_ENABLED )
+    add_compile_definitions(RIALTO_LOG_INFO_ENABLED)
 endif()
 
-if ( RIALTO_LOG_DEBUG_ENABLED )
+if (RIALTO_LOG_DEBUG_ENABLED)
     message("RIALTO_LOG_DEBUG IS ENABLED")
-    add_compile_definitions( RIALTO_LOG_DEBUG_ENABLED )
+    add_compile_definitions(RIALTO_LOG_DEBUG_ENABLED)
 endif()
 
 #check if TextTrack plugin exists in Thunder
-find_path( TEXT_TRACK_INCLUDE_DIR NAMES WPEFramework/interfaces/ITextTrack.h )
+find_path(TEXT_TRACK_INCLUDE_DIR NAMES WPEFramework/interfaces/ITextTrack.h)
 if (TEXT_TRACK_INCLUDE_DIR)
     message("ENABLE RIALTO_ENABLE_TEXT_TRACK")
     add_compile_definitions(RIALTO_ENABLE_TEXT_TRACK)
@@ -136,7 +135,7 @@ add_compile_definitions(SRCREV="${SRCREV}")
 add_compile_definitions(TAGS="${TAGS}")
 
 # Add our local cmake directory to search for components
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Thread is just the generic lib link for the pthread libraries (on platforms
 # that don't have a separate pthread library this is a NOP)
