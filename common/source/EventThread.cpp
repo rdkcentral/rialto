@@ -87,7 +87,20 @@ void EventThread::threadExecutor()
         m_lock.unlock();
 
         if (func)
-            func();
+        {
+            try
+            {
+                func();
+            }
+            catch (const std::exception &e)
+            {
+                RIALTO_COMMON_LOG_ERROR("Exception thrown by event thread callback: %s", e.what());
+            }
+            catch (...)
+            {
+                RIALTO_COMMON_LOG_ERROR("Unknown exception thrown by event thread callback");
+            }
+        }
 
         m_lock.lock();
     }
