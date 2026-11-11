@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+#include <utility>
+
 #include "NeedMediaData.h"
 #include "IActiveRequests.h"
 #include "IMediaPipelineClient.h"
@@ -30,8 +32,8 @@ namespace firebolt::rialto::server
 NeedMediaData::NeedMediaData(std::weak_ptr<IMediaPipelineClient> client, IActiveRequests &activeRequests,
                              const ISharedMemoryBuffer &shmBuffer, int sessionId, MediaSourceType mediaSourceType,
                              std::int32_t sourceId, PlaybackState currentPlaybackState)
-    : m_client{client}, m_activeRequests{activeRequests}, m_mediaSourceType{mediaSourceType}, m_frameCount{kMaxFrames},
-      m_sourceId{sourceId}, m_maxMediaBytes{0}
+    : m_client{std::move(client)}, m_activeRequests{activeRequests}, m_mediaSourceType{mediaSourceType},
+      m_frameCount{kMaxFrames}, m_sourceId{sourceId}, m_maxMediaBytes{0}
 {
     if (PlaybackState::PLAYING != currentPlaybackState)
     {

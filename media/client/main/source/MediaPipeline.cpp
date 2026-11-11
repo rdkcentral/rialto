@@ -20,6 +20,7 @@
 #include <inttypes.h>
 #include <stdexcept>
 #include <stdint.h>
+#include <utility>
 
 #include "KeyIdMap.h"
 #include "MediaPipeline.h"
@@ -140,7 +141,7 @@ MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> cl
             clientControllerLocked ? *clientControllerLocked
                                    : client::IClientControllerAccessor::instance().getClientController();
 
-        auto mp{std::make_shared<client::MediaPipeline>(client, videoRequirements,
+        auto mp{std::make_shared<client::MediaPipeline>(std::move(client), videoRequirements,
                                                         mediaPipelineIpcFactoryLocked
                                                             ? mediaPipelineIpcFactoryLocked
                                                             : client::IMediaPipelineIpcFactory::getFactory(),
@@ -183,8 +184,9 @@ MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const V
                              const std::shared_ptr<IMediaPipelineIpcFactory> &mediaPipelineIpcFactory,
                              const std::shared_ptr<common::IMediaFrameWriterFactory> &mediaFrameWriterFactory,
                              IClientController &clientController)
-    : m_mediaPipelineClient(client), m_clientController{clientController}, m_currentAppState{ApplicationState::UNKNOWN},
-      m_mediaFrameWriterFactory(mediaFrameWriterFactory), m_currentState(State::IDLE), m_attachingSource(false)
+    : m_mediaPipelineClient(std::move(client)), m_clientController{clientController},
+      m_currentAppState{ApplicationState::UNKNOWN}, m_mediaFrameWriterFactory(mediaFrameWriterFactory),
+      m_currentState(State::IDLE), m_attachingSource(false)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 

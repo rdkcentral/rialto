@@ -47,7 +47,7 @@ BlockingClosureFactory::createBlockingClosurePoll(std::shared_ptr<::firebolt::ri
     std::shared_ptr<IBlockingClosure> blockingClosure;
     try
     {
-        blockingClosure = std::make_shared<BlockingClosurePoll>(ipcChannel);
+        blockingClosure = std::make_shared<BlockingClosurePoll>(std::move(ipcChannel));
     }
     catch (const std::exception &e)
     {
