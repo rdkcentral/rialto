@@ -108,3 +108,15 @@ TEST_F(FlushTest, ShouldFlushVideoWithNeedData)
     triggerFlush(firebolt::rialto::MediaSourceType::VIDEO);
     checkVideoFlushed();
 }
+
+TEST_F(FlushTest, ShouldFlushSubtitle)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::SUBTITLE);
+    setContextSubtitleBuffer();
+    setContextEndOfStream(firebolt::rialto::MediaSourceType::SUBTITLE);
+    shouldFlushSubtitle();
+    shouldFlushSubtitleSrcSuccess();
+    setPipelinePlaying();
+    triggerFlush(firebolt::rialto::MediaSourceType::SUBTITLE);
+    checkSubtitleFlushed();
+}
