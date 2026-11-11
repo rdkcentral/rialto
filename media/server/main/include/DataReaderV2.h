@@ -30,7 +30,7 @@ class DataReaderV2 : public IDataReader
 {
 public:
     DataReaderV2(const MediaSourceType &mediaSourceType, std::uint8_t *buffer, std::uint32_t dataOffset,
-                 std::uint32_t numFrames, bool isBufferFull);
+                 std::uint32_t numFrames, bool isBufferFull, std::uint64_t regionEnd);
     ~DataReaderV2() override = default;
 
     IMediaPipeline::MediaSegmentVector readData() const override;
@@ -42,6 +42,7 @@ private:
     std::uint32_t m_dataOffset;
     std::uint32_t m_numFrames;
     bool m_isBufferFull;
+    std::uint64_t m_regionEnd;
 };
 } // namespace firebolt::rialto::server
 
