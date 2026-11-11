@@ -27,7 +27,8 @@
 #include "IMediaPipeline.h"
 #include "IMediaPipelineIpc.h"
 #include <atomic>
-#include <condition_variable>
+#include <cstddef>
+#include <deque>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -228,6 +229,14 @@ protected:
         std::unique_ptr<common::IMediaFrameWriter> frameWriter; /**< The frame writer used to add segments. */
     };
 
+    struct PendingNeedMediaData
+    {
+        int32_t sourceId;
+        size_t frameCount;
+        uint32_t requestId;
+        std::shared_ptr<MediaPlayerShmInfo> shmInfo;
+    };
+
     /**
      * @brief The media player client.
      */
@@ -296,14 +305,19 @@ protected:
     std::mutex m_attachSourceMutex;
 
     /**
-     * @brief The attach source condition variable.
+     * @brief Number of source attachments currently in progress.
      */
-    std::condition_variable m_attachSourceCond;
+    std::size_t m_attachSourceCount{0};
 
     /**
-     * @brief Whether attachSource is currently in progress.
+     * @brief Whether pending NeedMediaData events are being drained.
      */
-    bool m_attachingSource;
+    bool m_drainingNeedMediaData{false};
+
+    /**
+     * @brief NeedMediaData events deferred until source attachment completes.
+     */
+    std::deque<PendingNeedMediaData> m_pendingNeedMediaData;
 
     /**
      * @brief The container with attached source id <-> MediaSourceType mapping
@@ -323,6 +337,17 @@ protected:
      * @param[in] state : The new PlaybackState.
      */
     void updateState(PlaybackState state);
+
+    /**
+     * @brief Processes a NeedMediaData event after source attachment coordination.
+     */
+    void processNeedMediaData(int32_t sourceId, size_t frameCount, uint32_t requestId,
+                              const std::shared_ptr<MediaPlayerShmInfo> &shmInfo);
+
+    /**
+     * @brief Processes queued NeedMediaData events once source attachments complete.
+     */
+    void drainPendingNeedMediaData();
 
     /**
      * @brief Handles a have data request.
