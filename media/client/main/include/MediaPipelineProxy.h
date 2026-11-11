@@ -26,6 +26,7 @@
 #include <string>
 
 #include "MediaPipeline.h"
+#include <vector>
 
 namespace firebolt::rialto::client
 {
@@ -84,6 +85,16 @@ public:
     bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
     {
         return m_mediaPipeline->getStats(sourceId, renderedFrames, droppedFrames);
+    }
+
+    bool getFrameCounters(int32_t sourceId, VideoFrameCounters &out) const override
+    {
+        return m_mediaPipeline->getFrameCounters(sourceId, out);
+    }
+
+    bool setMetricSubscription(const std::vector<MetricType> &types) override
+    {
+        return m_mediaPipeline->setMetricSubscription(types);
     }
 
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override

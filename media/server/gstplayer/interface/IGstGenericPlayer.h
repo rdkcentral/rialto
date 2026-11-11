@@ -260,6 +260,16 @@ public:
     virtual bool getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
 
     /**
+     * @brief Gets a coherent snapshot of the cumulative video frame counters from the sink "stats" property.
+     *
+     * @param[in]  mediaSourceType : The media source type. Only video is supported.
+     * @param[out] frameCounters   : The frame counters.
+     *
+     * @retval true on success, false if the sink does not report rendered, dropped and corrupted.
+     */
+    virtual bool getFrameCounters(const MediaSourceType &mediaSourceType, VideoFrameCounters &frameCounters) = 0;
+
+    /**
      * @brief Set the playback rate.
      *
      * @param[in] rate : The playback rate.

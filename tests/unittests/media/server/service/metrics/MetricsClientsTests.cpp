@@ -73,6 +73,11 @@ TEST(MetricsClientsTests, mediaPipelineCallbacksAreForwarded)
     sut.notifyCancelNeedMediaData(5);
     EXPECT_CALL(*client, notifyQos(6, Ref(qosInfo)));
     sut.notifyQos(6, qosInfo);
+    const MetricEvent metricEvent{};
+    EXPECT_CALL(*client, notifyMetric(Ref(metricEvent)));
+    sut.notifyMetric(metricEvent);
+    EXPECT_CALL(*client, notifyEventsMissed(4));
+    sut.notifyEventsMissed(4);
     EXPECT_CALL(*client, notifyBufferUnderflow(7));
     sut.notifyBufferUnderflow(7);
     EXPECT_CALL(*client, notifyFirstFrameReceived(8));

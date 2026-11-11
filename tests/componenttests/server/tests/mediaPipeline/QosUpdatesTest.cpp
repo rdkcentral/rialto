@@ -80,16 +80,20 @@ public:
     void willGetStats()
     {
         EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _))
-            .WillOnce(Invoke(
+            .Times(2)
+            .WillRepeatedly(Invoke(
                 [&](gpointer object, const gchar *first_property_name, void *element)
                 {
                     GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
                     *elementPtr = m_videoSink;
                 }));
-        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink))).WillOnce(Return(kElementTypeName.c_str()));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink)))
+            .Times(2)
+            .WillRepeatedly(Return(kElementTypeName.c_str()));
 
         EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _))
-            .WillOnce(Invoke(
+            .Times(2)
+            .WillRepeatedly(Invoke(
                 [&](gpointer object, const gchar *first_property_name, void *element)
                 {
                     GstStructure **elementPtr = reinterpret_cast<GstStructure **>(element);
@@ -97,11 +101,16 @@ public:
                 }));
 
         EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&m_testStructure, StrEq("rendered"), _))
-            .WillOnce(DoAll(SetArgumentPointee<2>(kRenderedFrames), Return(true)));
+            .Times(2)
+            .WillRepeatedly(DoAll(SetArgumentPointee<2>(kRenderedFrames), Return(true)));
         EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&m_testStructure, StrEq("dropped"), _))
-            .WillOnce(DoAll(SetArgumentPointee<2>(kDroppedFrames), Return(true)));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink)).Times(1);
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureFree(&m_testStructure)).Times(1);
+            .Times(2)
+            .WillRepeatedly(DoAll(SetArgumentPointee<2>(kDroppedFrames), Return(true)));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink)).Times(2);
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureFree(&m_testStructure)).Times(2);
+        // Frame counters are tried first; this sink has no corrupted counter, so getStats reads the stats again
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&m_testStructure, StrEq("corrupted"), _))
+            .WillOnce(Return(false));
     }
 
     void getStats()
@@ -121,16 +130,20 @@ public:
     void willFailToGetStats()
     {
         EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _))
-            .WillOnce(Invoke(
+            .Times(2)
+            .WillRepeatedly(Invoke(
                 [&](gpointer object, const gchar *first_property_name, void *element)
                 {
                     GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
                     *elementPtr = m_videoSink;
                 }));
-        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink))).WillOnce(Return(kElementTypeName.c_str()));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink)))
+            .Times(2)
+            .WillRepeatedly(Return(kElementTypeName.c_str()));
 
         EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _))
-            .WillOnce(Invoke(
+            .Times(2)
+            .WillRepeatedly(Invoke(
                 [&](gpointer object, const gchar *first_property_name, void *element)
                 {
                     GstStructure **elementPtr = reinterpret_cast<GstStructure **>(element);
@@ -139,9 +152,11 @@ public:
 
         // Emulate a situation that the stats structure doesn't contain the number
         // of rendered frames...
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&m_testStructure, StrEq("rendered"), _)).WillOnce(Return(false));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink)).Times(1);
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureFree(&m_testStructure)).Times(1);
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&m_testStructure, StrEq("rendered"), _))
+            .Times(2)
+            .WillRepeatedly(Return(false));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink)).Times(2);
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureFree(&m_testStructure)).Times(2);
     }
 
     void getStatsFailure()

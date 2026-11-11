@@ -34,8 +34,10 @@ using namespace firebolt::rialto::wrappers;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;
+using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SetArgPointee;
+using ::testing::StrEq;
 using ::testing::StrictMock;
 
 namespace
@@ -82,7 +84,7 @@ protected:
                 }));
         EXPECT_CALL(*m_glibWrapperMock, gSourceAttach(&m_busSource, kMainContext)).WillOnce(Return(1));
         EXPECT_CALL(*m_glibWrapperMock, gSourceUnref(&m_busSource));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
+        expectSyncHandler();
 
         EXPECT_CALL(*m_glibWrapperMock, gMainContextPushThreadDefault(kMainContext));
         EXPECT_CALL(*m_glibWrapperMock, gMainLoopRun(kMainLoop));
@@ -93,6 +95,23 @@ protected:
         EXPECT_TRUE(m_capturedFunc);
         return sut;
     }
+
+    // Expects the sync handler to be installed at construction and removed, with the bus released, at destruction.
+    void expectSyncHandler()
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, NotNull(), NotNull(), nullptr))
+            .WillOnce(Invoke(
+                [this](GstBus *, GstBusSyncHandler func, gpointer data, GDestroyNotify)
+                {
+                    m_syncHandler = func;
+                    m_syncHandlerData = data;
+                }));
+        EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
+    }
+
+    GstBusSyncHandler m_syncHandler{nullptr};
+    gpointer m_syncHandlerData{nullptr};
 
     // Invokes the captured GSourceFunc as GStreamer's bus-watch dispatch would, i.e. as a GstBusFunc.
     gboolean triggerBusMessage(GstMessage *message)
@@ -368,7 +387,7 @@ TEST_F(GstDispatcherThreadTest, ShutdownDoesNotRaceLoopStartup)
     EXPECT_CALL(*m_glibWrapperMock, gSourceSetCallback(&m_busSource, _, _, nullptr));
     EXPECT_CALL(*m_glibWrapperMock, gSourceAttach(&m_busSource, kMainContext)).WillOnce(Return(1));
     EXPECT_CALL(*m_glibWrapperMock, gSourceUnref(&m_busSource));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
+    expectSyncHandler();
 
     // Blocks the worker thread until the destructor has attached the idle quit source, i.e. until
     // destruction has genuinely started before the loop would otherwise have been entered.
@@ -410,4 +429,51 @@ TEST_F(GstDispatcherThreadTest, ShutdownDoesNotRaceLoopStartup)
     // Runs on this thread while the worker thread is blocked in gMainContextPushThreadDefault; if the
     // quit request could be lost, the destructor's join() would hang here forever.
     sut.reset();
+}
+
+/**
+ * Test that the sync handler takes a media metric message when it is posted, so a bus flush cannot drop it.
+ */
+TEST_F(GstDispatcherThreadTest, MediaMetricMessageIsTakenBySyncHandler)
+{
+    auto sut = createSut();
+    ASSERT_TRUE(m_syncHandler);
+
+    GstStructure *structure = gst_structure_new_empty("media-pipeline-metric");
+    GstMessage *message = gst_message_new_element(nullptr, structure);
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(structure, StrEq("media-pipeline-metric"))).WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageRef(message)).WillOnce(Return(message));
+    EXPECT_CALL(m_client, handleBusMessage(message));
+    EXPECT_EQ(GST_BUS_DROP, m_syncHandler(&m_bus, message, m_syncHandlerData));
+
+    expectDestructorShutdown();
+    expectDestruction();
+    sut.reset();
+    gst_message_unref(message);
+}
+
+/**
+ * Test that the sync handler passes other messages to the bus.
+ */
+TEST_F(GstDispatcherThreadTest, OtherMessagesArePassedBySyncHandler)
+{
+    auto sut = createSut();
+    ASSERT_TRUE(m_syncHandler);
+
+    GstStructure *structure = gst_structure_new_empty("other-message");
+    GstMessage *elementMessage = gst_message_new_element(nullptr, structure);
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(structure, StrEq("media-pipeline-metric"))).WillOnce(Return(false));
+    EXPECT_EQ(GST_BUS_PASS, m_syncHandler(&m_bus, elementMessage, m_syncHandlerData));
+
+    GstMessage *eosMessage = gst_message_new_eos(nullptr);
+    EXPECT_EQ(GST_BUS_PASS, m_syncHandler(&m_bus, eosMessage, m_syncHandlerData));
+
+    // Element messages reaching the bus watch are not handled there
+    EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(elementMessage));
+
+    expectDestructorShutdown();
+    expectDestruction();
+    sut.reset();
+    gst_message_unref(elementMessage);
+    gst_message_unref(eosMessage);
 }

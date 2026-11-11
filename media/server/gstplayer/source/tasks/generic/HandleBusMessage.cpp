@@ -22,6 +22,71 @@
 #include "IGstGenericPlayerClient.h"
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
+#include <chrono>
+#include <optional>
+
+namespace
+{
+constexpr const char *kMediaMetricMessageName{"media-pipeline-metric"};
+
+// Values of the SoC media metrics specification. Append-only.
+constexpr guint kMediaMetricVideoFrameDrop{1};
+constexpr guint kMediaMetricAudioFrameDrop{2};
+constexpr guint kMediaMetricVideoDecodeError{3};
+constexpr guint kMediaMetricAudioDecodeError{4};
+constexpr guint kMediaMetricVideoFrameRepeat{5};
+constexpr guint kMediaMetricAudioGap{6};
+constexpr guint kMediaMetricBufferUnderflow{7};
+constexpr guint kObservationOccurrence{1};
+constexpr guint kObservationEpisodeStarted{2};
+constexpr guint kObservationEpisodeResolved{3};
+
+std::optional<firebolt::rialto::MetricType> convertMetricType(guint metric)
+{
+    switch (metric)
+    {
+    case kMediaMetricVideoFrameDrop:
+        return firebolt::rialto::MetricType::VIDEO_FRAME_DROP;
+    case kMediaMetricAudioFrameDrop:
+        return firebolt::rialto::MetricType::AUDIO_FRAME_DROP;
+    case kMediaMetricVideoDecodeError:
+        return firebolt::rialto::MetricType::VIDEO_DECODE_ERROR;
+    case kMediaMetricAudioDecodeError:
+        return firebolt::rialto::MetricType::AUDIO_DECODE_ERROR;
+    case kMediaMetricVideoFrameRepeat:
+        return firebolt::rialto::MetricType::VIDEO_FRAME_REPEAT;
+    case kMediaMetricAudioGap:
+        return firebolt::rialto::MetricType::AUDIO_GAP;
+    case kMediaMetricBufferUnderflow:
+        return firebolt::rialto::MetricType::BUFFER_UNDERFLOW;
+    default:
+        return std::nullopt;
+    }
+}
+
+std::optional<firebolt::rialto::MetricPhase> convertObservationKind(guint kind)
+{
+    switch (kind)
+    {
+    case kObservationOccurrence:
+        return firebolt::rialto::MetricPhase::OCCURRENCE;
+    case kObservationEpisodeStarted:
+        return firebolt::rialto::MetricPhase::STARTED;
+    case kObservationEpisodeResolved:
+        return firebolt::rialto::MetricPhase::RESOLVED;
+    default:
+        return std::nullopt;
+    }
+}
+
+bool isOccurrenceType(firebolt::rialto::MetricType type)
+{
+    return type == firebolt::rialto::MetricType::VIDEO_FRAME_DROP ||
+           type == firebolt::rialto::MetricType::AUDIO_FRAME_DROP ||
+           type == firebolt::rialto::MetricType::VIDEO_DECODE_ERROR ||
+           type == firebolt::rialto::MetricType::AUDIO_DECODE_ERROR;
+}
+} // namespace
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -310,11 +375,121 @@ void HandleBusMessage::execute() const
         }
         break;
     }
+    case GST_MESSAGE_ELEMENT:
+    {
+        handleMediaMetric();
+        break;
+    }
     default:
         break;
     }
 
     m_gstWrapper->gstMessageUnref(m_message);
+}
+
+void HandleBusMessage::handleMediaMetric() const
+{
+    const GstStructure *structure = gst_message_get_structure(m_message);
+    if (!structure || !m_gstWrapper->gstStructureHasName(structure, kMediaMetricMessageName) || !m_gstPlayerClient)
+    {
+        return;
+    }
+    guint metric{0};
+    guint observationKind{0};
+    if (!gst_structure_get_uint(structure, "metric", &metric) ||
+        !gst_structure_get_uint(structure, "observation-kind", &observationKind))
+    {
+        RIALTO_SERVER_LOG_WARN("Rejecting media metric without metric or observation-kind");
+        return;
+    }
+    const auto kType{convertMetricType(metric)};
+    const auto kPhase{convertObservationKind(observationKind)};
+    if (!kType || !kPhase)
+    {
+        RIALTO_SERVER_LOG_WARN("Rejecting media metric with unknown metric %u or observation-kind %u", metric,
+                               observationKind);
+        return;
+    }
+
+    MetricEvent event;
+    event.type = *kType;
+    event.phase = *kPhase;
+    gint64 ptsNs{0};
+    if (gst_structure_get_int64(structure, "pts-ns", &ptsNs))
+    {
+        event.presentationTimeStampNs = ptsNs;
+    }
+    const bool kIsOccurrenceType{isOccurrenceType(event.type)};
+    if ((MetricPhase::OCCURRENCE == event.phase) != kIsOccurrenceType)
+    {
+        RIALTO_SERVER_LOG_WARN("Rejecting media metric %u with invalid observation-kind %u", metric, observationKind);
+        return;
+    }
+    if (MetricPhase::RESOLVED == event.phase)
+    {
+        guint64 durationNs{0};
+        if (!gst_structure_get_uint64(structure, "duration-ns", &durationNs))
+        {
+            RIALTO_SERVER_LOG_WARN("Rejecting resolved media metric %u without duration-ns", metric);
+            return;
+        }
+        event.durationNs = durationNs;
+        if (MetricType::VIDEO_FRAME_REPEAT == event.type || MetricType::AUDIO_GAP == event.type)
+        {
+            guint64 count{0};
+            if (!gst_structure_get_uint64(structure, "count", &count) || 0 == count)
+            {
+                RIALTO_SERVER_LOG_WARN("Rejecting resolved media metric %u without a positive count", metric);
+                return;
+            }
+            event.count = count;
+        }
+    }
+
+    MediaSourceType sourceType{MediaSourceType::UNKNOWN};
+    switch (event.type)
+    {
+    case MetricType::VIDEO_FRAME_DROP:
+    case MetricType::VIDEO_DECODE_ERROR:
+    case MetricType::VIDEO_FRAME_REPEAT:
+        sourceType = MediaSourceType::VIDEO;
+        break;
+    case MetricType::AUDIO_FRAME_DROP:
+    case MetricType::AUDIO_DECODE_ERROR:
+    case MetricType::AUDIO_GAP:
+        sourceType = MediaSourceType::AUDIO;
+        break;
+    case MetricType::BUFFER_UNDERFLOW:
+    {
+        // The producer owns the affected decoder; its class identifies the source
+        GstObject *source = GST_MESSAGE_SRC(m_message);
+        const gchar *klass{nullptr};
+        if (source && GST_IS_ELEMENT(source))
+        {
+            klass = m_gstWrapper->gstElementClassGetMetadata(GST_ELEMENT_GET_CLASS(source), GST_ELEMENT_METADATA_KLASS);
+        }
+        if (klass && g_strrstr(klass, "Video"))
+        {
+            sourceType = MediaSourceType::VIDEO;
+        }
+        else if (klass && g_strrstr(klass, "Audio"))
+        {
+            sourceType = MediaSourceType::AUDIO;
+        }
+        break;
+    }
+    }
+    if (MediaSourceType::UNKNOWN == sourceType)
+    {
+        RIALTO_SERVER_LOG_WARN("Rejecting buffer underflow metric from an element that is not audio or video");
+        return;
+    }
+
+    event.observedAtMonotonicNs = static_cast<uint64_t>(
+        std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
+    event.observedAtUnixNs = static_cast<int64_t>(
+        std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+    m_gstPlayerClient->notifyMetric(sourceType, event);
 }
 
 bool HandleBusMessage::allSourcesEos() const

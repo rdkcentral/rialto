@@ -242,3 +242,104 @@ TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyPlaybackInfo)
 
     m_playbackInfoCb(playbackInfoEvent);
 }
+
+/**
+ * Test that a media metric batch is expanded in order: missed count first, then one notification per entry.
+ */
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyMediaMetricBatch)
+{
+    auto event = std::make_shared<firebolt::rialto::MediaMetricBatchEvent>();
+    event->set_session_id(m_sessionId);
+    event->set_missed_count(2);
+    auto *occurrence = event->add_metrics();
+    occurrence->set_type(firebolt::rialto::MediaMetricBatchEvent_MetricType_VIDEO_FRAME_DROP);
+    occurrence->set_phase(firebolt::rialto::MediaMetricBatchEvent_MetricPhase_OCCURRENCE);
+    occurrence->set_source_id(m_sourceId);
+    occurrence->set_pts_ns(0);
+    occurrence->set_observed_at_monotonic_ns(11);
+    occurrence->set_observed_at_unix_ns(22);
+    auto *resolved = event->add_metrics();
+    resolved->set_type(firebolt::rialto::MediaMetricBatchEvent_MetricType_AUDIO_GAP);
+    resolved->set_phase(firebolt::rialto::MediaMetricBatchEvent_MetricPhase_RESOLVED);
+    resolved->set_source_id(m_sourceId);
+    resolved->set_count(4);
+    resolved->set_duration_ns(1500);
+
+    testing::InSequence sequence;
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+    EXPECT_CALL(*m_clientMock, notifyEventsMissed(2));
+    EXPECT_CALL(*m_clientMock, notifyMetric(_))
+        .WillOnce(Invoke(
+            [this](const MetricEvent &metric)
+            {
+                EXPECT_EQ(metric.type, MetricType::VIDEO_FRAME_DROP);
+                EXPECT_EQ(metric.phase, MetricPhase::OCCURRENCE);
+                EXPECT_EQ(metric.sourceId, m_sourceId);
+                EXPECT_EQ(metric.presentationTimeStampNs, 0);
+                EXPECT_FALSE(metric.count);
+                EXPECT_FALSE(metric.durationNs);
+                EXPECT_EQ(metric.observedAtMonotonicNs, 11u);
+                EXPECT_EQ(metric.observedAtUnixNs, 22);
+            }));
+    EXPECT_CALL(*m_clientMock, notifyMetric(_))
+        .WillOnce(Invoke(
+            [](const MetricEvent &metric)
+            {
+                EXPECT_EQ(metric.type, MetricType::AUDIO_GAP);
+                EXPECT_EQ(metric.phase, MetricPhase::RESOLVED);
+                EXPECT_FALSE(metric.presentationTimeStampNs);
+                EXPECT_EQ(metric.count, 4u);
+                EXPECT_EQ(metric.durationNs, 1500u);
+            }));
+
+    m_mediaMetricBatchCb(event);
+}
+
+/**
+ * Test that invalid media metric entries are discarded without affecting valid ones.
+ */
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, InvalidMediaMetricEntriesAreDiscarded)
+{
+    auto event = std::make_shared<firebolt::rialto::MediaMetricBatchEvent>();
+    event->set_session_id(m_sessionId);
+    // Unknown type
+    event->add_metrics()->set_phase(firebolt::rialto::MediaMetricBatchEvent_MetricPhase_OCCURRENCE);
+    // Occurrence type with a count
+    auto *withCount = event->add_metrics();
+    withCount->set_type(firebolt::rialto::MediaMetricBatchEvent_MetricType_VIDEO_DECODE_ERROR);
+    withCount->set_phase(firebolt::rialto::MediaMetricBatchEvent_MetricPhase_OCCURRENCE);
+    withCount->set_count(3);
+    // Resolved underflow without duration
+    auto *noDuration = event->add_metrics();
+    noDuration->set_type(firebolt::rialto::MediaMetricBatchEvent_MetricType_BUFFER_UNDERFLOW);
+    noDuration->set_phase(firebolt::rialto::MediaMetricBatchEvent_MetricPhase_RESOLVED);
+    // Resolved repeat without count
+    auto *noCount = event->add_metrics();
+    noCount->set_type(firebolt::rialto::MediaMetricBatchEvent_MetricType_VIDEO_FRAME_REPEAT);
+    noCount->set_phase(firebolt::rialto::MediaMetricBatchEvent_MetricPhase_RESOLVED);
+    noCount->set_duration_ns(10);
+    // Valid started underflow
+    auto *valid = event->add_metrics();
+    valid->set_type(firebolt::rialto::MediaMetricBatchEvent_MetricType_BUFFER_UNDERFLOW);
+    valid->set_phase(firebolt::rialto::MediaMetricBatchEvent_MetricPhase_STARTED);
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+    EXPECT_CALL(*m_clientMock, notifyMetric(_))
+        .WillOnce(Invoke([](const MetricEvent &metric) { EXPECT_EQ(metric.type, MetricType::BUFFER_UNDERFLOW); }));
+
+    m_mediaMetricBatchCb(event);
+}
+
+/**
+ * Test that a media metric batch for another session is ignored.
+ */
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, InvalidSessionIdMediaMetricBatch)
+{
+    auto event = std::make_shared<firebolt::rialto::MediaMetricBatchEvent>();
+    event->set_session_id(-1);
+    event->set_missed_count(1);
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+
+    m_mediaMetricBatchCb(event);
+}

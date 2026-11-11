@@ -232,6 +232,19 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::SetMediaMetricsRequest
+createSetMetricSubscriptionRequest(int sessionId,
+                                   const std::vector<::firebolt::rialto::MediaMetricBatchEvent_MetricType> &types)
+{
+    ::firebolt::rialto::SetMediaMetricsRequest request;
+    request.set_session_id(sessionId);
+    for (const auto &type : types)
+    {
+        request.add_types(type);
+    }
+    return request;
+}
+
 ::firebolt::rialto::RenderFrameRequest createRenderFrameRequest(int sessionId)
 {
     ::firebolt::rialto::RenderFrameRequest request;

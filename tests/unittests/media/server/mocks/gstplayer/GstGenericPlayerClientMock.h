@@ -39,6 +39,7 @@ public:
     MOCK_METHOD(void, clearActiveRequestsCache, (), (override));
     MOCK_METHOD(void, invalidateActiveRequests, (const MediaSourceType &type), (override));
     MOCK_METHOD(void, notifyQos, (MediaSourceType mediaSourceType, const QosInfo &qosInfo), (override));
+    MOCK_METHOD(void, notifyMetric, (MediaSourceType mediaSourceType, const MetricEvent &metric), (override));
     MOCK_METHOD(void, notifyBufferUnderflow, (MediaSourceType mediaSourceType), (override));
     MOCK_METHOD(void, notifyFirstFrameReceived, (MediaSourceType mediaSourceType), (override));
     MOCK_METHOD(void, notifyPlaybackError, (MediaSourceType mediaSourceType, PlaybackError error), (override));

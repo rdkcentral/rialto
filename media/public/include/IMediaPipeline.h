@@ -1217,6 +1217,39 @@ public:
     virtual bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
 
     /**
+     * @brief Gets an exact snapshot of the cumulative frame counters of a video source.
+     *
+     * This method is synchronous and independent of setMetricSubscription(). The counters are monotonic for the
+     * lifetime of the source; seek, flush, pause, rate changes, underflow and EOS do not reset them.
+     * renderedFrames + droppedFrames is the total number of presentation outcomes. corruptedFrames overlaps them.
+     *
+     * Fails for a non-video or unattached source, before allSourcesAttached(), in the FAILURE state or when the
+     * server does not return all three counters. The default implementation returns false.
+     *
+     * @param[in]  sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[out] out      : The frame counters.
+     *
+     * @retval true on success.
+     */
+    virtual bool getFrameCounters(int32_t sourceId, VideoFrameCounters &out) const { return false; }
+
+    /**
+     * @brief Selects the media metric types delivered through IMediaPipelineClient::notifyMetric().
+     *
+     * Each pipeline starts with an empty subscription. A successful call atomically replaces the complete previous
+     * set; an empty vector disables delivery. Selecting an episode type enables both STARTED and RESOLVED. The
+     * selection persists across load() and is valid in every state except FAILURE.
+     *
+     * Returns false, leaving the previous set effective, for an unknown or duplicate value, a FAILURE pipeline,
+     * an IPC failure or a server without media metrics support. The default implementation returns false.
+     *
+     * @param[in] types : The complete set of metric types to deliver.
+     *
+     * @retval true when the complete set is effective.
+     */
+    virtual bool setMetricSubscription(const std::vector<MetricType> &types) { return false; }
+
+    /**
      * @brief Sets the "Immediate Output" property for this source.
      *
      * This method is asynchronous, it will set the "Immediate Output" property

@@ -26,6 +26,7 @@
 #include "IMainThread.h"
 #include "IMediaPipelineServerInternal.h"
 #include "ITimer.h"
+#include "MediaMetricsQueue.h"
 #include "NeedDataDelayCalculator.h"
 #include <map>
 #include <memory>
@@ -123,6 +124,10 @@ public:
 
     bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
 
+    bool getFrameCounters(int32_t sourceId, VideoFrameCounters &out) const override;
+
+    bool setMetricSubscription(const std::vector<MetricType> &types) override;
+
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
     bool haveData(MediaSourceStatus status, uint32_t needDataRequestId) override;
@@ -197,6 +202,8 @@ public:
     void invalidateActiveRequests(const MediaSourceType &type) override;
 
     void notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo) override;
+
+    void notifyMetric(MediaSourceType mediaSourceType, const MetricEvent &metric) override;
 
     void notifyBufferUnderflow(MediaSourceType mediaSourceType) override;
 
@@ -293,6 +300,11 @@ protected:
      * @brief Flag used to check if allSourcesAttached was already called
      */
     bool m_wasAllSourcesAttachedCalled;
+
+    /**
+     * @brief Media metric subscription and delivery queue. Persists across load().
+     */
+    MediaMetricsQueue m_mediaMetrics;
 
     /**
      * @brief Flag used to check if low latency is set for video source
@@ -457,6 +469,21 @@ protected:
      * @retval true on success.
      */
     bool getStatsInternal(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames);
+
+    /**
+     * @brief Get the frame counters internally, only to be called on the main thread.
+     *
+     * @param[in] sourceId       : The video source id.
+     * @param[out] frameCounters : The frame counters.
+     *
+     * @retval true on success.
+     */
+    bool getFrameCountersInternal(int32_t sourceId, VideoFrameCounters &frameCounters) const;
+
+    /**
+     * @brief Delivers the queued media metric observations, only to be called on the main thread.
+     */
+    void deliverMetrics();
 
     /**
      * @brief Set video window internally, only to be called on the main thread.
