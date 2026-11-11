@@ -59,12 +59,17 @@ void HandleBusMessage::execute() const
                                   m_gstWrapper->gstElementStateGetName(newState),
                                   m_gstWrapper->gstElementStateGetName(pending));
 
-            std::string filename = std::string(m_gstWrapper->gstElementStateGetName(oldState)) + "-" +
-                                   std::string(m_gstWrapper->gstElementStateGetName(newState));
-            m_gstWrapper->gstDebugBinToDotFileWithTs(GST_BIN(m_context.pipeline), GST_DEBUG_GRAPH_SHOW_ALL,
-                                                     filename.c_str());
+            // Dumped after the state notification, so that it does not delay notifying the client
+            const auto kDumpPipelineGraph = [&]()
+            {
+                std::string filename = std::string(m_gstWrapper->gstElementStateGetName(oldState)) + "-" +
+                                       std::string(m_gstWrapper->gstElementStateGetName(newState));
+                m_gstWrapper->gstDebugBinToDotFileWithTs(GST_BIN(m_context.pipeline), GST_DEBUG_GRAPH_SHOW_ALL,
+                                                         filename.c_str());
+            };
             if (!m_gstPlayerClient)
             {
+                kDumpPipelineGraph();
                 break;
             }
             switch (newState)
@@ -135,6 +140,7 @@ void HandleBusMessage::execute() const
                 break;
             }
             }
+            kDumpPipelineGraph();
         }
         break;
     }

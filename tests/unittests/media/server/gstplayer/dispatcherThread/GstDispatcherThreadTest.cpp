@@ -121,6 +121,7 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPaused)
 
     EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(_)).Times(3).WillRepeatedly(Return("STATE"));
 
     {
         InSequence seq;
@@ -171,6 +172,7 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPlaying)
 
     EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(_)).Times(3).WillRepeatedly(Return("STATE"));
 
     {
         InSequence seq;
@@ -215,6 +217,7 @@ TEST_F(GstDispatcherThreadTest, StateChangedToStop)
 
     EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(_)).Times(3).WillRepeatedly(Return("STATE"));
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
     EXPECT_CALL(m_client, handleBusMessage(_));
@@ -258,6 +261,7 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPrerolling)
 
     EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(_)).Times(3).WillRepeatedly(Return("STATE"));
 
     {
         InSequence seq;

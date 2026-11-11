@@ -19,6 +19,8 @@
 
 #include "WorkerThread.h"
 #include "RialtoServerLogging.h"
+#include <chrono>
+#include <typeinfo>
 
 namespace
 {
@@ -96,8 +98,18 @@ void WorkerThread::taskHandler()
 {
     while (m_isTaskThreadActive)
     {
+        constexpr std::chrono::milliseconds kSlowTaskThreshold{20};
         std::unique_ptr<IPlayerTask> task = waitForTask();
+        const auto kStartTime = std::chrono::steady_clock::now();
         task->execute();
+        const auto kDuration =
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - kStartTime);
+        if (kDuration > kSlowTaskThreshold)
+        {
+            const IPlayerTask &kTask = *task;
+            RIALTO_SERVER_LOG_WARN("Player task %s took %d ms", typeid(kTask).name(),
+                                   static_cast<int>(kDuration.count()));
+        }
     }
 }
 
