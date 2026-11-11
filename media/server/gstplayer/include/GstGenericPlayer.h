@@ -44,6 +44,8 @@
 
 namespace firebolt::rialto::server
 {
+class IRialtoMetrics;
+
 constexpr uint32_t kMinPrimaryVideoWidth{1920};
 constexpr uint32_t kMinPrimaryVideoHeight{1080};
 
@@ -107,6 +109,9 @@ public:
      * @brief Virtual destructor.
      */
     virtual ~GstGenericPlayer();
+
+    std::shared_ptr<IRialtoMetrics> getRialtoMetrics() const override;
+    void setMetricSessionId(int32_t sessionId) override;
 
     void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
     void removeSource(const MediaSourceType &mediaSourceType) override;
@@ -196,6 +201,7 @@ private:
     void setPendingPlaybackRate() override;
     void renderFrame() override;
     void handleBusMessage(GstMessage *message) override;
+    void handleMetricMessage(GstMessage *message) override;
     void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) override;
 
     void addAutoVideoSinkChild(GObject *object) override;
@@ -210,6 +216,13 @@ private:
     void notifyPlaybackInfo() override;
 
 private:
+    void setMetricProperty(const char *propertyName, int32_t value);
+    void setMetricProperty(GstElement *sink, const char *propertyName, int32_t value);
+    void setMetricProperties(GstElement *sink);
+    void setMetricSourceId(int32_t sourceId);
+    std::atomic_int32_t m_metricSessionId{-1};
+    std::atomic_int32_t m_metricSourceId{-1};
+
     /**
      * @brief Initialises the player pipeline for MSE playback.
      */
@@ -458,6 +471,8 @@ private:
      * @brief Thread for handling player tasks.
      */
     std::unique_ptr<IWorkerThread> m_workerThread;
+
+    std::shared_ptr<IRialtoMetrics> m_metrics;
 
     /**
      * @brief Thread for handling gst bus callbacks

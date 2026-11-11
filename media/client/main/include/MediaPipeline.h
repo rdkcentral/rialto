@@ -158,6 +158,9 @@ public:
 
     void notifyQos(int32_t sourceId, const QosInfo &qosInfo) override;
 
+    void notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, const std::string &errorInfo, uint32_t phase,
+                           uint64_t count = 0, uint64_t durationNs = 0) override;
+
     void notifyBufferUnderflow(int32_t sourceId) override;
 
     void notifyFirstFrameReceived(int32_t sourceId) override;

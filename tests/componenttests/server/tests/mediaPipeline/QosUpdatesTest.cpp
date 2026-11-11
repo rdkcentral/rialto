@@ -35,6 +35,9 @@ using testing::StrEq;
 namespace
 {
 constexpr unsigned kFramesToPush{1};
+constexpr guint kVideoDecodeErrorMetric{2};
+constexpr guint kMetricOccurrencePhase{0};
+constexpr gint64 kMetricPtsNs{1234567890};
 const std::string kAudioSourceName{"Audio"};
 const std::string kVideoSourceName{"Video"};
 const std::string kElementTypeName{"GenericSink"};
@@ -75,6 +78,31 @@ public:
         EXPECT_EQ(receivedQos->source_id(), sourceId);
         EXPECT_EQ(receivedQos->qos_info().processed(), kQosInfo.processed);
         EXPECT_EQ(receivedQos->qos_info().dropped(), kQosInfo.dropped);
+    }
+
+    void sendVideoDecodeErrorMetric(int sourceId)
+    {
+        m_gstreamerStub.sendMetric(&m_src, kVideoDecodeErrorMetric, kMetricOccurrencePhase,
+                                   static_cast<guint>(sourceId), static_cast<guint>(m_sessionId), kMetricPtsNs);
+    }
+
+    void expectVideoSinkMetricsLookups()
+    {
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
+            .Times(testing::AtLeast(0))
+            .WillRepeatedly(Invoke(
+                [&](gpointer, const gchar *, void *element)
+                { *reinterpret_cast<GstElement **>(element) = m_videoSink; }));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink)))
+            .Times(testing::AtLeast(0))
+            .WillRepeatedly(Return(kElementTypeName.c_str()));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("metrics-session-id")))
+            .Times(testing::AtLeast(0))
+            .WillRepeatedly(Return(nullptr));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("metrics-source-id")))
+            .Times(testing::AtLeast(0))
+            .WillRepeatedly(Return(nullptr));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink)).Times(testing::AtLeast(0));
     }
 
     void willGetStats()
@@ -277,6 +305,8 @@ private:
  */
 TEST_F(QosUpdatesTest, QosUpdates)
 {
+    expectVideoSinkMetricsLookups();
+
     // Step 1: Create a new media session
     createSession();
 
@@ -332,6 +362,22 @@ TEST_F(QosUpdatesTest, QosUpdates)
     // Step 11: Get Stats
     willGetStats();
     getStats();
+
+    // Playback metric message should be parsed and forwarded to the client.
+    willGetStats();
+    ExpectMessage<firebolt::rialto::NotifyMetricEvent> expectedMetricEvent{m_clientStub};
+    sendVideoDecodeErrorMetric(m_videoSourceId);
+
+    const auto receivedMetricEvent{expectedMetricEvent.getMessage()};
+    ASSERT_TRUE(receivedMetricEvent);
+    EXPECT_EQ(receivedMetricEvent->session_id(), m_sessionId);
+    EXPECT_EQ(receivedMetricEvent->source_id(), m_videoSourceId);
+    EXPECT_EQ(receivedMetricEvent->rendered_frames(), kRenderedFrames);
+    EXPECT_EQ(receivedMetricEvent->dropped_frames(), kDroppedFrames);
+    EXPECT_EQ(receivedMetricEvent->corrupted_frames(), 1U);
+    EXPECT_EQ(receivedMetricEvent->pts_ns(), static_cast<uint64_t>(kMetricPtsNs));
+    EXPECT_EQ(receivedMetricEvent->error_info(), "METRIC_VIDEO_DECODE_ERROR");
+    EXPECT_EQ(receivedMetricEvent->phase(), kMetricOccurrencePhase);
 
     // Step 12: End of audio stream
     // Step 13: End of video stream
