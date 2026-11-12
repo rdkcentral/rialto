@@ -6,9 +6,30 @@
 #include <utility>
 
 typedef struct _GstMessage GstMessage;
+typedef struct _GstStructure GstStructure;
+typedef struct _GstElement GstElement;
+typedef int GstFlowReturn;
 
 namespace firebolt::rialto::server
 {
+enum class MediaMetricType : std::uint32_t
+{
+    MEDIA_METRIC_VIDEO_FRAME_DROP = 1,
+    MEDIA_METRIC_AUDIO_FRAME_DROP = 2,
+    MEDIA_METRIC_VIDEO_DECODE_ERROR = 3,
+    MEDIA_METRIC_AUDIO_DECODE_ERROR = 4,
+    MEDIA_METRIC_VIDEO_FRAME_REPEAT = 5,
+    MEDIA_METRIC_AUDIO_GAP = 6,
+    MEDIA_METRIC_BUFFER_UNDERFLOW = 7
+};
+
+enum class ObservationKind : std::uint32_t
+{
+    OCCURRENCE = 1,
+    EPISODE_STARTED = 2,
+    EPISODE_RESOLVED = 3
+};
+
 struct FrameCounters
 {
     std::uint64_t rendered{0};
@@ -19,14 +40,13 @@ struct FrameCounters
 
 struct ParsedMetricMessage
 {
-    std::int32_t sessionId{0};
-    std::uint32_t type{0};
-    std::uint32_t phase{0};
-    int32_t sourceId{0};
-    std::uint64_t ptsNs{0};
-    FrameCounters counters;
-    std::uint64_t count{0};
-    std::uint64_t durationNs{0};
+    std::int32_t session_id{0};
+    std::uint32_t metric{0};
+    std::uint32_t observation_kind{0};
+    int32_t source_id{0};
+    std::optional<std::int64_t> pts_ns;
+    std::optional<std::uint64_t> count;
+    std::optional<std::uint64_t> duration_ns;
 };
 
 const char *metricTypeToString(std::uint32_t type);
@@ -44,6 +64,16 @@ public:
                                 std::uint64_t droppedFrames) = 0;
     virtual bool getFrameCounters(int32_t sessionId, int32_t sourceId, FrameCounters &counters) const = 0;
 };
-} // namespace firebolt::rialto::server
+
+class ElementToSourceMapper
+{
+public:
+    virtual ~ElementToSourceMapper() = default;
+    virtual void RegisterElement(GstElement* element, uint32_t session_id, uint32_t source_id) = 0;
+    virtual bool MapElement(GstElement* element, uint32_t& out_session_id, uint32_t& out_source_id) = 0;
+};
+
+GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricMessage& out);
+
 
 #endif // FIREBOLT_RIALTO_SERVER_METRICS_I_RIALTO_METRICS_H_

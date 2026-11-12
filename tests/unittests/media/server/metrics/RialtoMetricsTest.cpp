@@ -283,3 +283,411 @@ TEST(RialtoMetricsTest, ConcurrentQueriesReadConsistentSnapshots)
 
     EXPECT_TRUE(snapshotsConsistent.load());
 }
+
+TEST(ValidateMediaPipelineMetricTest, AcceptsValidMediaPipelineMetricStructureName)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("test-source");
+    ASSERT_NE(nullptr, source);
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    ASSERT_NE(nullptr, message);
+
+    const GstStructure *msgStructure = gst_message_get_structure(message);
+    ASSERT_NE(nullptr, msgStructure);
+
+    ParsedMetricMessage out;
+    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+
+    gst_message_unref(message);
+    gst_object_unref(source);
+
+    EXPECT_EQ(GST_FLOW_OK, result);
+}
+
+TEST(ValidateMediaPipelineMetricTest, RejectsStructureNamedMetric)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("test-source");
+    ASSERT_NE(nullptr, source);
+
+    GstStructure *structure = gst_structure_new("metric", nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    ASSERT_NE(nullptr, message);
+
+    const GstStructure *msgStructure = gst_message_get_structure(message);
+    ASSERT_NE(nullptr, msgStructure);
+
+    ParsedMetricMessage out;
+    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+
+    gst_message_unref(message);
+    gst_object_unref(source);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+}
+
+TEST(ValidateMediaPipelineMetricTest, RejectsStructureNamedLegacyMetric)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("test-source");
+    ASSERT_NE(nullptr, source);
+
+    GstStructure *structure = gst_structure_new("legacy-metric", nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    ASSERT_NE(nullptr, message);
+
+    const GstStructure *msgStructure = gst_message_get_structure(message);
+    ASSERT_NE(nullptr, msgStructure);
+
+    ParsedMetricMessage out;
+    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+
+    gst_message_unref(message);
+    gst_object_unref(source);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+}
+
+TEST(ValidateMediaPipelineMetricTest, RejectsNullStructure)
+{
+    ParsedMetricMessage out;
+    GstFlowReturn result = ValidateMediaPipelineMetric(nullptr, out);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+}
+
+TEST(ValidateMediaPipelineMetricTest, RejectsMissingMetricField)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("test-source");
+    ASSERT_NE(nullptr, source);
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    ASSERT_NE(nullptr, message);
+
+    const GstStructure *msgStructure = gst_message_get_structure(message);
+    ASSERT_NE(nullptr, msgStructure);
+
+    ParsedMetricMessage out;
+    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+
+    gst_message_unref(message);
+    gst_object_unref(source);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+}
+
+TEST(ValidateMediaPipelineMetricTest, RejectsMetricFieldWithWrongType)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("test-source");
+    ASSERT_NE(nullptr, source);
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_INT64, gint64{5}, nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    ASSERT_NE(nullptr, message);
+
+    const GstStructure *msgStructure = gst_message_get_structure(message);
+    ASSERT_NE(nullptr, msgStructure);
+
+    ParsedMetricMessage out;
+    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+
+    gst_message_unref(message);
+    gst_object_unref(source);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+}
+
+TEST(ValidateMediaPipelineMetricTest, AcceptsAllValidMetricValuesOneToSeven)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("test-source");
+    ASSERT_NE(nullptr, source);
+
+    for (guint metricVal = 1; metricVal <= 7; ++metricVal)
+    {
+        GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, metricVal, nullptr);
+        ASSERT_NE(nullptr, structure);
+
+        GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+        ASSERT_NE(nullptr, message);
+
+        const GstStructure *msgStructure = gst_message_get_structure(message);
+        ASSERT_NE(nullptr, msgStructure);
+
+        ParsedMetricMessage out;
+        GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+
+        gst_message_unref(message);
+
+        EXPECT_EQ(GST_FLOW_OK, result) << "Failed for metric value " << metricVal;
+        EXPECT_EQ(metricVal, out.metric) << "Metric value not correctly stored for value " << metricVal;
+    }
+
+    gst_object_unref(source);
+}
+
+TEST(ValidateMediaPipelineMetricTest, RejectsMetricValueZero)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("test-source");
+    ASSERT_NE(nullptr, source);
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 0U, nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    ASSERT_NE(nullptr, message);
+
+    const GstStructure *msgStructure = gst_message_get_structure(message);
+    ASSERT_NE(nullptr, msgStructure);
+
+    ParsedMetricMessage out;
+    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+
+    gst_message_unref(message);
+    gst_object_unref(source);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+}
+
+TEST(ValidateMediaPipelineMetricTest, RejectsMetricValueEight)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("test-source");
+    ASSERT_NE(nullptr, source);
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 8U, nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    ASSERT_NE(nullptr, message);
+
+    const GstStructure *msgStructure = gst_message_get_structure(message);
+    ASSERT_NE(nullptr, msgStructure);
+
+    ParsedMetricMessage out;
+    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+
+    gst_message_unref(message);
+    gst_object_unref(source);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+}
+
+TEST(ValidateMediaPipelineMetricTest, RejectsMetricValueTwoFiftFive)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("test-source");
+    ASSERT_NE(nullptr, source);
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 255U, nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    ASSERT_NE(nullptr, message);
+
+    const GstStructure *msgStructure = gst_message_get_structure(message);
+    ASSERT_NE(nullptr, msgStructure);
+
+    ParsedMetricMessage out;
+    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+
+    gst_message_unref(message);
+    gst_object_unref(source);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+}
+
+TEST(ValidateMediaPipelineMetricTest, RejectsMissingObservationKindField)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("test-source");
+    ASSERT_NE(nullptr, source);
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U, nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    ASSERT_NE(nullptr, message);
+
+    const GstStructure *msgStructure = gst_message_get_structure(message);
+    ASSERT_NE(nullptr, msgStructure);
+
+    ParsedMetricMessage out;
+    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+
+    gst_message_unref(message);
+    gst_object_unref(source);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+}
+
+TEST(ValidateMediaPipelineMetricTest, RejectsObservationKindFieldWithWrongType)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("test-source");
+    ASSERT_NE(nullptr, source);
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", 
+                                                 "metric", G_TYPE_UINT, 1U,
+                                                 "observation-kind", G_TYPE_INT64, gint64{1}, 
+                                                 nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    ASSERT_NE(nullptr, message);
+
+    const GstStructure *msgStructure = gst_message_get_structure(message);
+    ASSERT_NE(nullptr, msgStructure);
+
+    ParsedMetricMessage out;
+    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+
+    gst_message_unref(message);
+    gst_object_unref(source);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+}
+
+TEST(ValidateMediaPipelineMetricTest, AcceptsAllValidObservationKindValues)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("test-source");
+    ASSERT_NE(nullptr, source);
+
+    for (guint kindVal = 1; kindVal <= 3; ++kindVal)
+    {
+        GstStructure *structure = gst_structure_new("media-pipeline-metric", 
+                                                     "metric", G_TYPE_UINT, 1U,
+                                                     "observation-kind", G_TYPE_UINT, kindVal, 
+                                                     nullptr);
+        ASSERT_NE(nullptr, structure);
+
+        GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+        ASSERT_NE(nullptr, message);
+
+        const GstStructure *msgStructure = gst_message_get_structure(message);
+        ASSERT_NE(nullptr, msgStructure);
+
+        ParsedMetricMessage out;
+        GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+
+        gst_message_unref(message);
+
+        EXPECT_EQ(GST_FLOW_OK, result) << "Failed for observation-kind value " << kindVal;
+        EXPECT_EQ(kindVal, out.observation_kind) << "Observation-kind value not correctly stored for value " << kindVal;
+    }
+
+    gst_object_unref(source);
+}
+
+TEST(ValidateMediaPipelineMetricTest, RejectsObservationKindValueZero)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("test-source");
+    ASSERT_NE(nullptr, source);
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", 
+                                                 "metric", G_TYPE_UINT, 1U,
+                                                 "observation-kind", G_TYPE_UINT, 0U, 
+                                                 nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    ASSERT_NE(nullptr, message);
+
+    const GstStructure *msgStructure = gst_message_get_structure(message);
+    ASSERT_NE(nullptr, msgStructure);
+
+    ParsedMetricMessage out;
+    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+
+    gst_message_unref(message);
+    gst_object_unref(source);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+}
+
+TEST(ValidateMediaPipelineMetricTest, RejectsObservationKindValueFour)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("test-source");
+    ASSERT_NE(nullptr, source);
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", 
+                                                 "metric", G_TYPE_UINT, 1U,
+                                                 "observation-kind", G_TYPE_UINT, 4U, 
+                                                 nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    ASSERT_NE(nullptr, message);
+
+    const GstStructure *msgStructure = gst_message_get_structure(message);
+    ASSERT_NE(nullptr, msgStructure);
+
+    ParsedMetricMessage out;
+    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+
+    gst_message_unref(message);
+    gst_object_unref(source);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+}
+
+TEST(ValidateMediaPipelineMetricTest, RejectsObservationKindValueTwoFiftFive)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("test-source");
+    ASSERT_NE(nullptr, source);
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", 
+                                                 "metric", G_TYPE_UINT, 1U,
+                                                 "observation-kind", G_TYPE_UINT, 255U, 
+                                                 nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    ASSERT_NE(nullptr, message);
+
+    const GstStructure *msgStructure = gst_message_get_structure(message);
+    ASSERT_NE(nullptr, msgStructure);
+
+    ParsedMetricMessage out;
+    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+
+    gst_message_unref(message);
+    gst_object_unref(source);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+}
