@@ -17,6 +17,10 @@
  * limitations under the License.
  */
 
+#include <atomic>  // RDKAI
+#include <cstdio>   // RDKAI
+#include <cstdlib>  // RDKAI
+#include <string>   // RDKAI
 #include <algorithm>
 #include <chrono>
 #include <cinttypes>
@@ -265,12 +269,331 @@ GstGenericPlayer::~GstGenericPlayer()
     }
 }
 
+// ---------------- RDKAI prototype (RDKAI-66/67): test bins as playbin "audio-sink" -- DO NOT UPSTREAM ----------------
+namespace
+{
+// Platform sink: RDKAI_SINK_NAME if set, else the first vendor sink found in the registry
+const char *rdkaiSinkName()
+{
+    static const std::string kName = []() -> std::string
+    {
+        std::string result;
+        const char *env = getenv("RDKAI_SINK_NAME");
+        if (env && env[0])
+        {
+            result = env;
+        }
+        else
+        {
+            static const char *const kCandidates[] = {"brcmaudiosink", "amlhalasink"};
+            for (const char *candidate : kCandidates)
+            {
+                GstElementFactory *factory = gst_element_factory_find(candidate);
+                if (factory)
+                {
+                    gst_object_unref(factory);
+                    result = candidate;
+                    break;
+                }
+            }
+        }
+        RIALTO_SERVER_LOG_MIL("RDKAI: audio sink element = %s", result.empty() ? "(none found)" : result.c_str());
+        return result;
+    }();
+    return kName.c_str();
+}
+
+// Logs the caps that enter the bin (shows whether S16LE reaches it)
+GstPadProbeReturn rdkaiCapsProbe(GstPad *, GstPadProbeInfo *info, gpointer)
+{
+    GstEvent *ev = GST_PAD_PROBE_INFO_EVENT(info);
+    if (ev && GST_EVENT_TYPE(ev) == GST_EVENT_CAPS)
+    {
+        GstCaps *caps = nullptr;
+        gst_event_parse_caps(ev, &caps);
+        gchar *s = caps ? gst_caps_to_string(caps) : nullptr;
+        RIALTO_SERVER_LOG_MIL("RDKAI: caps entering bin = %s", s ? s : "none");
+        g_free(s);
+    }
+    return GST_PAD_PROBE_OK;
+}
+
+// RDKAI-66: identity probe, counts buffers and logs every 100th PTS
+GstPadProbeReturn rdkaiCountProbe(GstPad *, GstPadProbeInfo *info, gpointer)
+{
+    static guint64 count{0};
+    GstBuffer *buf = GST_PAD_PROBE_INFO_BUFFER(info);
+    if (buf)
+    {
+        ++count;
+        if (count == 1 || count % 100 == 0)
+        {
+            RIALTO_SERVER_LOG_MIL("RDKAI-66 passthrough: buffers=%llu pts=%" GST_TIME_FORMAT " size=%u",
+                                  static_cast<unsigned long long>(count), GST_TIME_ARGS(GST_BUFFER_PTS(buf)),
+                                  static_cast<unsigned>(gst_buffer_get_size(buf)));
+        }
+    }
+    return GST_PAD_PROBE_OK;
+}
+
+// RDKAI-66 bin: ghost sink -> identity -> platform sink
+GstElement *rdkaiCreatePassthroughAudioBin()
+{
+    GstElement *bin = gst_bin_new("rdkai_passthrough");
+    GstElement *identity = gst_element_factory_make("identity", "rdkai_identity");
+    GstElement *sink = gst_element_factory_make(rdkaiSinkName(), nullptr); // default name keeps Rialto's prefix match
+    if (!bin || !identity || !sink)
+    {
+        RIALTO_SERVER_LOG_ERROR("RDKAI-66: failed to create passthrough elements");
+        if (bin)
+            gst_object_unref(bin);
+        if (identity)
+            gst_object_unref(identity);
+        if (sink)
+            gst_object_unref(sink);
+        return nullptr;
+    }
+    gst_bin_add_many(GST_BIN(bin), identity, sink, nullptr);
+    if (!gst_element_link(identity, sink))
+    {
+        RIALTO_SERVER_LOG_ERROR("RDKAI-66: failed to link identity -> sink");
+        gst_object_unref(bin);
+        return nullptr;
+    }
+    GstPad *idSink = gst_element_get_static_pad(identity, "sink");
+    gst_element_add_pad(bin, gst_ghost_pad_new("sink", idSink));
+    gst_pad_add_probe(idSink, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM, rdkaiCapsProbe, nullptr, nullptr);
+    gst_object_unref(idSink);
+    GstPad *idSrc = gst_element_get_static_pad(identity, "src");
+    gst_pad_add_probe(idSrc, GST_PAD_PROBE_TYPE_BUFFER, rdkaiCountProbe, nullptr, nullptr);
+    gst_object_unref(idSrc);
+    return bin;
+}
+
+struct RdkaiTapCtx
+{
+    GstElement *vol{nullptr};
+    std::atomic<guint64> buffers{0};
+    std::atomic<guint64> bytes{0};
+    FILE *dump{nullptr};
+    guint64 dumpLimit{0};
+};
+
+void rdkaiTapCtxFree(gpointer data, GClosure *)
+{
+    RdkaiTapCtx *ctx = static_cast<RdkaiTapCtx *>(data);
+    RIALTO_SERVER_LOG_MIL("RDKAI-67 bed-tap: closed, total buffers=%llu bytes=%llu",
+                          static_cast<unsigned long long>(ctx->buffers.load()),
+                          static_cast<unsigned long long>(ctx->bytes.load()));
+    if (ctx->dump)
+    {
+        fclose(ctx->dump);
+    }
+    delete ctx;
+}
+
+// appsink "new-sample": counts buffers, logs caps once, optionally dumps ~30 s of PCM, optional slow-consumer test
+GstFlowReturn rdkaiTapNewSample(GstElement *appsink, gpointer userData)
+{
+    RdkaiTapCtx *ctx = static_cast<RdkaiTapCtx *>(userData);
+    GstSample *sample = nullptr;
+    g_signal_emit_by_name(appsink, "pull-sample", &sample);
+    if (!sample)
+    {
+        return GST_FLOW_OK;
+    }
+    GstBuffer *buf = gst_sample_get_buffer(sample);
+    const guint64 n = ++ctx->buffers;
+    if (buf)
+    {
+        const guint64 total = (ctx->bytes += gst_buffer_get_size(buf));
+        if (ctx->dump)
+        {
+            if (total <= ctx->dumpLimit)
+            {
+                GstMapInfo map;
+                if (gst_buffer_map(buf, &map, GST_MAP_READ))
+                {
+                    fwrite(map.data, 1, map.size, ctx->dump);
+                    gst_buffer_unmap(buf, &map);
+                }
+            }
+            else
+            {
+                fclose(ctx->dump);
+                ctx->dump = nullptr;
+            }
+        }
+    }
+    if (n == 1)
+    {
+        GstCaps *caps = gst_sample_get_caps(sample);
+        gchar *s = caps ? gst_caps_to_string(caps) : nullptr;
+        RIALTO_SERVER_LOG_MIL("RDKAI-67 bed-tap: first buffer caps=%s", s ? s : "none");
+        g_free(s);
+    }
+    if (n % 100 == 0)
+    {
+        gdouble v{-1.0};
+        g_object_get(ctx->vol, "volume", &v, nullptr);
+        RIALTO_SERVER_LOG_MIL("RDKAI-67 bed-tap: buffers=%llu bytes=%llu orig-vol=%.2f",
+                              static_cast<unsigned long long>(n), static_cast<unsigned long long>(ctx->bytes.load()), v);
+    }
+    gst_sample_unref(sample);
+    static const int slowMs = getenv("RDKAI_TAP_SLOW_MS") ? atoi(getenv("RDKAI_TAP_SLOW_MS")) : 0;
+    if (slowMs > 0)
+    {
+        g_usleep(static_cast<gulong>(slowMs) * 1000);
+    }
+    return GST_FLOW_OK;
+}
+
+// Logs every outside change to orig-vol
+void rdkaiVolNotify(GObject *obj, GParamSpec *, gpointer)
+{
+    gdouble v{-1.0};
+    gboolean m{FALSE};
+    g_object_get(obj, "volume", &v, "mute", &m, nullptr);
+    RIALTO_SERVER_LOG_MIL("RDKAI-67: orig-vol changed externally -> volume=%.2f mute=%d", v, static_cast<int>(m));
+}
+
+// RDKAI-67 bin: ghost sink -> [optional audioconvert/resample/S16LE caps] -> tee
+//                 tee -> orig-vol -> platform sink                        (main path)
+//                 tee -> leaky queue -> convert -> resample -> caps -> appsink "bed-tap"
+GstElement *rdkaiCreateTeeAudioBin()
+{
+    const char *convEnv = getenv("RDKAI_BIN_CONVERT");
+    const bool convert = (convEnv && convEnv[0] == '1');
+
+    GstElement *bin = gst_bin_new("rdkai_tee_bin");
+    GstElement *tee = gst_element_factory_make("tee", "rdkai_tee");
+    GstElement *vol = gst_element_factory_make("volume", "orig-vol");
+    GstElement *sink = gst_element_factory_make(rdkaiSinkName(), nullptr); // default name keeps Rialto's prefix match
+    GstElement *tq = gst_element_factory_make("queue", "rdkai_tap_queue");
+    GstElement *tconv = gst_element_factory_make("audioconvert", "rdkai_tap_conv");
+    GstElement *tres = gst_element_factory_make("audioresample", "rdkai_tap_resample");
+    GstElement *tcf = gst_element_factory_make("capsfilter", "rdkai_tap_caps");
+    GstElement *app = gst_element_factory_make("appsink", "bed-tap");
+    GstElement *conv = convert ? gst_element_factory_make("audioconvert", "rdkai_front_conv") : nullptr;
+    GstElement *res = convert ? gst_element_factory_make("audioresample", "rdkai_front_resample") : nullptr;
+    GstElement *cf = convert ? gst_element_factory_make("capsfilter", "rdkai_front_caps") : nullptr;
+
+    GstElement *all[] = {bin, tee, vol, sink, tq, tconv, tres, tcf, app, conv, res, cf};
+    bool ok = bin && tee && vol && sink && tq && tconv && tres && tcf && app && (!convert || (conv && res && cf));
+    if (!ok)
+    {
+        RIALTO_SERVER_LOG_ERROR("RDKAI-67: failed to create tee bin elements (sink=%s)", rdkaiSinkName());
+        for (GstElement *e : all)
+        {
+            if (e)
+            {
+                gst_object_unref(e);
+            }
+        }
+        return nullptr;
+    }
+
+    gst_bin_add_many(GST_BIN(bin), tee, vol, sink, tq, tconv, tres, tcf, app, nullptr);
+    if (convert)
+    {
+        gst_bin_add_many(GST_BIN(bin), conv, res, cf, nullptr);
+    }
+    bool linked = gst_element_link_many(tee, vol, sink, nullptr) &&
+                  gst_element_link_many(tee, tq, tconv, tres, tcf, app, nullptr);
+    if (convert)
+    {
+        GstCaps *frontCaps = gst_caps_from_string("audio/x-raw,format=S16LE,rate=48000,channels=2");
+        g_object_set(cf, "caps", frontCaps, nullptr);
+        gst_caps_unref(frontCaps);
+        linked = linked && gst_element_link_many(conv, res, cf, tee, nullptr);
+    }
+    if (!linked)
+    {
+        RIALTO_SERVER_LOG_ERROR("RDKAI-67: failed to link tee bin");
+        gst_object_unref(bin);
+        return nullptr;
+    }
+
+    // Tap format: S16LE mono, rate from RDKAI_TAP_RATE (default 16000, common speech-recognition input)
+    int rate = 16000;
+    const char *rateEnv = getenv("RDKAI_TAP_RATE");
+    if (rateEnv && atoi(rateEnv) >= 8000 && atoi(rateEnv) <= 48000)
+    {
+        rate = atoi(rateEnv);
+    }
+    gchar *capsStr = g_strdup_printf("audio/x-raw,format=S16LE,channels=1,rate=%d", rate);
+    GstCaps *caps = gst_caps_from_string(capsStr);
+    g_object_set(tcf, "caps", caps, nullptr);
+    gst_caps_unref(caps);
+    g_free(capsStr);
+
+    // The tap must never stall playback: bounded leaky queue + non-blocking appsink that drops when full
+    g_object_set(tq, "leaky", 2, "max-size-buffers", 10u, "max-size-bytes", 0u, "max-size-time", (guint64)0, nullptr);
+    g_object_set(app, "emit-signals", TRUE, "drop", TRUE, "max-buffers", 8u, "sync", FALSE, "async", FALSE,
+                 "enable-last-sample", FALSE, nullptr);
+
+    RdkaiTapCtx *ctx = new RdkaiTapCtx();
+    ctx->vol = vol;
+    const char *dumpEnv = getenv("RDKAI_TAP_DUMP");
+    if (dumpEnv && dumpEnv[0] == '1')
+    {
+        ctx->dump = fopen("/tmp/rdkai_bedtap.raw", "wb");
+        ctx->dumpLimit = static_cast<guint64>(rate) * 2 * 30; // 30 s of S16LE mono
+    }
+    g_signal_connect_data(app, "new-sample", G_CALLBACK(rdkaiTapNewSample), ctx, rdkaiTapCtxFree,
+                          static_cast<GConnectFlags>(0));
+
+    // orig-vol must be settable (manual test) and is left at unity gain
+    gdouble v{-1.0};
+    gst_util_set_object_arg(G_OBJECT(vol), "volume", "0.8");
+    g_object_get(vol, "volume", &v, nullptr);
+    RIALTO_SERVER_LOG_MIL("RDKAI-67: orig-vol set test -> %.2f (expect 0.80)", v);
+    gst_util_set_object_arg(G_OBJECT(vol), "volume", "1.0");
+    g_object_get(vol, "volume", &v, nullptr);
+    RIALTO_SERVER_LOG_MIL("RDKAI-67: orig-vol restored -> %.2f (expect 1.00), tap rate=%d, front convert=%d", v, rate,
+                          static_cast<int>(convert));
+    g_signal_connect(vol, "notify::volume", G_CALLBACK(rdkaiVolNotify), nullptr);
+    g_signal_connect(vol, "notify::mute", G_CALLBACK(rdkaiVolNotify), nullptr);
+
+    GstElement *head = convert ? conv : tee;
+    GstPad *headSink = gst_element_get_static_pad(head, "sink");
+    gst_element_add_pad(bin, gst_ghost_pad_new("sink", headSink));
+    gst_pad_add_probe(headSink, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM, rdkaiCapsProbe, nullptr, nullptr);
+    gst_object_unref(headSink);
+    return bin;
+}
+
+// RDKAI_PASSTHROUGH=1 -> identity bin, =2 -> tee bin
+GstElement *rdkaiCreateSelectedAudioBin()
+{
+    const char *mode = getenv("RDKAI_PASSTHROUGH");
+    return (mode && mode[0] == '2') ? rdkaiCreateTeeAudioBin() : rdkaiCreatePassthroughAudioBin();
+}
+} // namespace
+// ---------------- end RDKAI ----------------
+
 void GstGenericPlayer::initMsePipeline()
 {
     // Make playbin
     m_context.pipeline = m_gstWrapper->gstElementFactoryMake("playbin", "media_pipeline");
     // Set pipeline flags
     setPlaybinFlags(true);
+
+    // RDKAI prototype: splice a test bin as playbin "audio-sink" (RDKAI_PASSTHROUGH=1 identity, =2 tee)
+    const char *rdkaiEnv = getenv("RDKAI_PASSTHROUGH");
+    if (rdkaiEnv && (rdkaiEnv[0] == '1' || rdkaiEnv[0] == '2'))
+    {
+        GstElement *rdkaiBin = rdkaiCreateSelectedAudioBin();
+        if (rdkaiBin)
+        {
+            g_object_set(m_context.pipeline, "audio-sink", rdkaiBin, nullptr);
+            RIALTO_SERVER_LOG_MIL("RDKAI: test audio-sink bin installed (mode %c)", rdkaiEnv[0]);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("RDKAI: test bin creation failed, using default audio sink");
+        }
+    }
 
     m_context.gstProfiler = m_gstProfilerFactory->createGstProfiler(m_context.pipeline, m_gstWrapper, m_glibWrapper);
     if (!m_context.gstProfiler)
@@ -3046,6 +3369,11 @@ void GstGenericPlayer::setPlaybinFlags(bool enableAudio)
 
 bool GstGenericPlayer::shouldEnableNativeAudio()
 {
+    const char *rdkaiNoNative = getenv("RDKAI_NO_NATIVE_AUDIO"); // RDKAI prototype
+    if (rdkaiNoNative && rdkaiNoNative[0] == '1')
+    {
+        return false;
+    }
     GstElementFactory *factory = m_gstWrapper->gstElementFactoryFind("brcmaudiosink");
     if (factory)
     {
