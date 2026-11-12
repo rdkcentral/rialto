@@ -5,6 +5,8 @@
 #include <cstring>
 #include <gst/gst.h>
 #include <limits>
+#include <unordered_map>
+#include <mutex>
 
 namespace firebolt::rialto::server
 {
@@ -14,6 +16,67 @@ enum MetricPhase : guint
 	STARTED = 1,
 	RESOLVED = 2,
 	INVALID = 3
+};
+
+class ElementToSourceMapperImpl : public ElementToSourceMapper
+{
+private:
+	std::unordered_map<uintptr_t, std::pair<uint32_t, uint32_t>> m_elementMap;
+	mutable std::mutex m_mapMutex;
+
+public:
+	ElementToSourceMapperImpl() : m_elementMap(), m_mapMutex()
+	{
+		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ElementToSourceMapperImpl created");
+	}
+
+	virtual ~ElementToSourceMapperImpl()
+	{
+		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ElementToSourceMapperImpl destroyed");
+	}
+
+	void RegisterElement(GstElement* element, uint32_t session_id, uint32_t source_id) override
+	{
+		if (!element)
+		{
+			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, "ElementToSourceMapperImpl::RegisterElement: null element provided");
+			return;
+		}
+
+		std::lock_guard<std::mutex> lock(m_mapMutex);
+		uintptr_t elementKey = reinterpret_cast<uintptr_t>(element);
+		m_elementMap[elementKey] = std::make_pair(session_id, source_id);
+		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, 
+						"ElementToSourceMapperImpl::RegisterElement: registered element %p with session_id %u, source_id %u",
+						element, session_id, source_id);
+	}
+
+	bool MapElement(GstElement* element, uint32_t& out_session_id, uint32_t& out_source_id) override
+	{
+		if (!element)
+		{
+			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, "ElementToSourceMapperImpl::MapElement: null element provided");
+			return false;
+		}
+
+		std::lock_guard<std::mutex> lock(m_mapMutex);
+		uintptr_t elementKey = reinterpret_cast<uintptr_t>(element);
+		auto it = m_elementMap.find(elementKey);
+		
+		if (it == m_elementMap.end())
+		{
+			RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, 
+							"ElementToSourceMapperImpl::MapElement: element %p not found in map", element);
+			return false;
+		}
+
+		out_session_id = it->second.first;
+		out_source_id = it->second.second;
+		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
+						"ElementToSourceMapperImpl::MapElement: mapped element %p to session_id %u, source_id %u",
+						element, out_session_id, out_source_id);
+		return true;
+	}
 };
 
 namespace
@@ -49,6 +112,11 @@ const char *metricTypeToString(std::uint32_t type)
 	default:
 		return "METRIC_UNKNOWN";
 	}
+}
+
+RialtoMetrics::RialtoMetrics() : m_elementToSourceMapper(std::make_unique<ElementToSourceMapperImpl>())
+{
+	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics created");
 }
 
 RialtoMetrics::~RialtoMetrics()
@@ -245,6 +313,11 @@ bool RialtoMetrics::getFrameCounters(int32_t sessionId, int32_t sourceId, FrameC
 	return true;
 }
 
+ElementToSourceMapper* RialtoMetrics::getElementToSourceMapper()
+{
+	return m_elementToSourceMapper.get();
+}
+
 GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricMessage& out)
 {
 	if (!msg)
@@ -413,6 +486,37 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricM
 			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER,
 							"ValidateMediaPipelineMetric: BUFFER_UNDERFLOW metric with EPISODE_RESOLVED observation-kind cannot have 'count' field");
 			return GST_FLOW_ERROR;
+		}
+	}
+
+	// Enrichment: Extract source element from GstMessage and map to session_id and source_id
+	if (gstMessage && mapper)
+	{
+		GstElement* sourceElement = GST_MESSAGE_SRC(gstMessage);
+		if (sourceElement)
+		{
+			uint32_t enrichedSessionId = 0;
+			uint32_t enrichedSourceId = 0;
+			
+			if (mapper->MapElement(sourceElement, enrichedSessionId, enrichedSourceId))
+			{
+				out.session_id = static_cast<int32_t>(enrichedSessionId);
+				out.source_id = static_cast<int32_t>(enrichedSourceId);
+				RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
+								"ValidateMediaPipelineMetric: enriched message with session_id %d, source_id %d",
+								out.session_id, out.source_id);
+			}
+			else
+			{
+				RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER,
+								"ValidateMediaPipelineMetric: failed to map element %p to session/source IDs, continuing with defaults",
+								sourceElement);
+			}
+		}
+		else
+		{
+			RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
+							"ValidateMediaPipelineMetric: no source element available in GstMessage");
 		}
 	}
 

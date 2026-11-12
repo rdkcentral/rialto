@@ -216,9 +216,6 @@ private:
     void notifyPlaybackInfo() override;
 
 private:
-    void setMetricProperty(const char *propertyName, int32_t value);
-    void setMetricProperty(GstElement *sink, const char *propertyName, int32_t value);
-    void setMetricProperties(GstElement *sink);
     void setMetricSourceId(int32_t sourceId);
     std::atomic_int32_t m_metricSessionId{-1};
     std::atomic_int32_t m_metricSourceId{-1};
