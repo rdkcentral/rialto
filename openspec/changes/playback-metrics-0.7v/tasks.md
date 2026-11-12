@@ -2,7 +2,7 @@
 
 ## 1. RialtoMetrics Parser Interface and Validation Layer
 
-- [ ] 1.1 Update existing `ParsedMetricMessage` struct in `IRialtoMetrics.h` to match the 0.7 contract schema: rename `type` → `metric`, `phase` → `observation_kind`, `ptsNs` → `pts_ns`, `durationNs` → `duration_ns`; remove `counters` field (FrameCounters moved to separate tracking); convert `pts_ns`, `duration_ns`, `count` to `std::optional<>` for conditional presence; keep `session_id` and `source_id` (enrichment context); remove legacy field aliases. Write unit tests verifying struct compiles, integrates with existing code, and field types/optionality match spec.
+- [ ] 1.1 Update existing `ParsedMetricMessage` struct in `IRialtoMetrics.h` to match the 0.7 contract schema: rename `type` → `metric`, `phase` → `observation_kind`, `ptsNs` → `pts_ns`, `durationNs` → `duration_ns`; remove `counters` field (FrameCounters moved to separate tracking); convert `pts_ns`, `duration_ns`, `count` to `std::optional<>` for conditional presence. **IMPORTANT: `session_id` and `source_id` are NOT part of the SoC media-pipeline-metric message—they are added during Rialto enrichment only.** The struct should have fields for session_id and source_id to store enriched context, but validation must NOT expect them in the incoming GstStructure. Remove legacy field aliases. Write unit tests verifying struct compiles, integrates with existing code, and field types/optionality match spec.
 
 - [ ] 1.2 Add validation function signature `GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricMessage& out)` to `IRialtoMetrics.h`. This function returns GST_FLOW_OK if the message passes all 0.7 contract checks, otherwise returns an error flow and logs the validation failure.
 
@@ -18,7 +18,7 @@
 
 - [ ] 1.8 Implement `count` field validation: when present, must be `G_TYPE_UINT64`. Do not enforce semantic rules here (those belong in 1.10). Write unit tests for valid values (0, 5, 1000), missing field (accept), and wrong type `G_TYPE_INT64` (reject).
 
-- [ ] 1.9 Implement legacy field-name rejection: scan the GstStructure for fields named `"metric_type"`, `"phase"`, `"pts_ns"` (underscore), `"source_id"`, or `"session_id"` and reject the message if any are found. Log validation error. Write unit tests for each legacy name present (reject), and absence (accept).
+- [ ] 1.9 Implement legacy field-name rejection: scan the GstStructure for fields named `"metric_type"`, `"phase"`, `"pts_ns"` (underscore), `"source_id"`, or `"session_id"` and reject the message if any are found. Log validation error. **NOTE: `source_id` and `session_id` are NOT sent by the SoC producer (westeros-sink); they are only added during enrichment in Rialto.** Write unit tests for each legacy name present (reject), and absence (accept). **Update: Remove `source_id` and `session_id` from legacy field rejection as they are not part of the SoC media-pipeline-metric message.** Fields to reject: `"metric_type"`, `"phase"`, `"pts_ns"` (underscore) only.
 
 - [ ] 1.10 Implement semantic field-combination validation: reject OCCURRENCE (observation-kind=1) with `duration-ns` or `count` present; reject BUFFER_UNDERFLOW (metric=7) in EPISODE_RESOLVED (observation-kind=3) with `count` present. Write unit tests for all invalid combinations (reject) and valid combinations (VIDEO_FRAME_REPEAT/AUDIO_GAP with count in EPISODE_RESOLVED, etc.).
 
@@ -28,7 +28,7 @@
 
 - [ ] 2.2 Implement `ElementToSourceMapper` in `RialtoMetrics.cpp` using a concurrent map (e.g., `std::unordered_map` with mutex or thread-safe equivalent) keyed by element pointer. Implement `RegisterElement()` and `MapElement()` with proper locking and error handling (return failure if element not found).
 
-- [ ] 2.3 Integrate `ElementToSourceMapper::MapElement()` into `ValidateMediaPipelineMetric()`. Extract the producing element via `GST_MESSAGE_SRC(message)`, call `MapElement()` to retrieve Rialto (session_id, source_id), and populate the enrichment context in the returned `ParsedMetricMessage`. If mapping fails, decide implementation behavior (reject, retry, or placeholder) per design open question resolution. Write unit tests for both successful and failed enrichment scenarios.
+- [ ] 2.3 Integrate `ElementToSourceMapper::MapElement()` into `ValidateMediaPipelineMetric()`. Extract the producing element via `GST_MESSAGE_SRC(message)`, call `MapElement()` to retrieve Rialto (session_id, source_id), and populate the enrichment context in the returned `ParsedMetricMessage`. **IMPORTANT:** The incoming GstStructure from the SoC producer does NOT contain source_id or session_id fields. These must be looked up from the GStreamer message source element and mapped via ElementToSourceMapper. If mapping fails, follow the design decision: currently logs a warning and continues with default/placeholder values. Write unit tests for both successful and failed enrichment scenarios.
 
 - [ ] 2.4 Add registration hooks to connect GStreamer element creation with `ElementToSourceMapper::RegisterElement()`. This occurs when a decoder or output element is instantiated and linked to a Rialto source. Identify where in the codebase (likely `GstGenericPlayer` or similar) this registration should be called and add the call. Write integration tests to verify registration occurs and enrichment succeeds.
 
@@ -48,13 +48,13 @@
 
 ## 4. IPC Schema and Serialization
 
-- [ ] 4.1 Update `rialto/proto/mediapipelinemodule.proto` with a `MediaPipelineMetric` message containing: required `metric` (uint32), required `observation_kind` (uint32), optional `pts_ns` (int64), optional `duration_ns` (uint64), optional `count` (uint64), optional `session_id` (uint32), optional `source_id` (uint32). Field names use underscores per proto convention.
+- [ ] 4.1 Update `rialto/proto/mediapipelinemodule.proto` with a `MediaPipelineMetric` message containing: required `metric` (uint32), required `observation_kind` (uint32), optional `pts_ns` (int64), optional `duration_ns` (uint64), optional `count` (uint64), optional `session_id` (uint32), optional `source_id` (uint32). Field names use underscores per proto convention. **NOTE:** The SoC producer sends only the core fields (`metric`, `observation_kind`, `pts_ns`, `duration_ns`, `count`). The `session_id` and `source_id` are added by Rialto during enrichment via `ElementToSourceMapper`. The proto message includes all fields for the enriched payload sent to clients.
 
 - [ ] 4.2 Implement serialization from `ParsedMetricMessage` to the proto `MediaPipelineMetric` message in `MediaPipelineClient.cpp`. Map the enriched metric fields and optional fields correctly. Write unit tests for all metric types and observation kinds, verifying round-trip serialization/deserialization.
 
 - [ ] 4.3 Verify the IPC client deserialization path correctly reads the proto `MediaPipelineMetric` message and reconstructs the metric data for downstream consumers. Write integration tests ensuring end-to-end proto serialization works.
 
-- [ ] 4.4 Update `MediaPipelineClient` notification event payload to use the proto `MediaPipelineMetric` message (with new field names: `metric`, `observation_kind`, `pts_ns`, `duration_ns`, `count`). Ensure clients consuming the event use the new field names. Write integration tests for notification delivery with the updated schema.
+- [ ] 4.4 Update `MediaPipelineClient` notification event payload to use the proto `MediaPipelineMetric` message with all fields including the enriched context: `metric`, `observation_kind`, `pts_ns`, `duration_ns`, `count`, `session_id` (enriched), `source_id` (enriched). Ensure clients consuming the event use the new field names. Write integration tests for notification delivery with the updated schema. **NOTE:** The `session_id` and `source_id` should be populated by Rialto before serialization to proto.
 
 - [ ] 4.5 Update all downstream event/notification handlers that consume the `ParsedMetricMessage` or proto event (e.g., analytics, logging, metrics aggregation services) to use the new field names and handle optional fields correctly. Verify no regressions in downstream processing. Write tests for each handler consuming the updated message.
 
