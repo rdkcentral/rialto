@@ -480,6 +480,12 @@ void GstGenericPlayer::termPipeline()
     m_gstWrapper->gstBusSetSyncHandler(bus, nullptr, nullptr, nullptr);
     m_gstWrapper->gstObjectUnref(bus);
 
+    // Session close: no element of this pipeline may be mapped once its references are released
+    if (m_metrics && m_metrics->getElementToSourceMapper())
+    {
+        m_metrics->getElementToSourceMapper()->UnregisterAllElements();
+    }
+
     if (m_context.source)
     {
         m_gstWrapper->gstObjectUnref(m_context.source);
@@ -1161,6 +1167,10 @@ bool GstGenericPlayer::switchAudioCodec(bool isAudioAAC, GstCaps *newAudioCaps)
                                    m_context.playbackGroup.m_curAudioDecoder) == TRUE)
     {
         RIALTO_SERVER_LOG_DEBUG("OTF -> Removed AudioDecoder = %p", m_context.playbackGroup.m_curAudioDecoder);
+        if (m_metrics && m_metrics->getElementToSourceMapper())
+        {
+            m_metrics->getElementToSourceMapper()->UnregisterElement(m_context.playbackGroup.m_curAudioDecoder);
+        }
         m_context.playbackGroup.m_curAudioDecoder = NULL;
     }
     // Remove Audio Parser From Decodebin
@@ -3270,11 +3280,10 @@ void GstGenericPlayer::handleMetricMessage(GstMessage *message)
         return;
     }
 
-    const char *metricType = metricTypeToString(parsedMetric->metric);
-    uint64_t ptsNs = parsedMetric->pts_ns.value_or(0);
-    uint64_t count = parsedMetric->count.value_or(0);
-    uint64_t durationNs = parsedMetric->duration_ns.value_or(0);
-    
+    const uint64_t ptsNs = parsedMetric->pts_ns.value_or(0);
+    const uint64_t count = parsedMetric->count.value_or(0);
+    const uint64_t durationNs = parsedMetric->duration_ns.value_or(0);
+
     RIALTO_SERVER_LOG_DEBUG(
         "Parsed playback metric sourceId: %d, sessionId: %d, metric: %u, observation_kind: %u, ptsNs: %llu, count: %llu, durationNs: %llu",
         parsedMetric->source_id, parsedMetric->session_id, parsedMetric->metric, parsedMetric->observation_kind,
@@ -3286,10 +3295,9 @@ void GstGenericPlayer::handleMetricMessage(GstMessage *message)
         return;
     }
 
-    RIALTO_SERVER_LOG_DEBUG("Forwarding playback metric event for sourceId: %d, observation_kind: %u", 
+    RIALTO_SERVER_LOG_DEBUG("Forwarding playback metric event for sourceId: %d, observation_kind: %u",
                             parsedMetric->source_id, parsedMetric->observation_kind);
-    m_gstPlayerClient->notifyMetricEvent(parsedMetric->source_id, ptsNs, metricType, parsedMetric->observation_kind, 
-                                         count, durationNs);
+    m_gstPlayerClient->notifyMetricEvent(*parsedMetric);
 }
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)

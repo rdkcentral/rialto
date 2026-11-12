@@ -1747,9 +1747,15 @@ void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, con
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
-void MediaPipelineServerInternal::notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, const std::string &errorInfo,
-                                                    uint32_t phase, uint64_t count, uint64_t durationNs)
+void MediaPipelineServerInternal::notifyMetricEvent(const ParsedMetricMessage &metric)
 {
+    const int32_t sourceId{metric.source_id};
+    const uint64_t ptsNs{static_cast<uint64_t>(metric.pts_ns.value_or(0))};
+    const std::string errorInfo{metricTypeToString(metric.metric)};
+    const uint32_t phase{metric.observation_kind};
+    const uint64_t count{metric.count.value_or(0)};
+    const uint64_t durationNs{metric.duration_ns.value_or(0)};
+
     RIALTO_SERVER_LOG_DEBUG(
         "Queueing playback metric event sourceId: %d, ptsNs: %llu, type: %s, phase: %u, count: %llu, durationNs: %llu",
         sourceId, static_cast<unsigned long long>(ptsNs), errorInfo.c_str(), phase,

@@ -1,8 +1,10 @@
 #include "RialtoMetrics.h"
+#include "RialtoLogging.h"
 #include <atomic>
 #include <chrono>
 #include <gtest/gtest.h>
 #include <gst/gst.h>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -662,6 +664,181 @@ TEST(ValidateMediaPipelineMetricTest, RejectsObservationKindValueFour)
     gst_object_unref(source);
 
     EXPECT_EQ(GST_FLOW_ERROR, result);
+}
+
+namespace
+{
+std::string validateAndCaptureWarnings(GstStructure *structure, GstFlowReturn &result)
+{
+    std::string logs;
+    setLogHandler(RIALTO_COMPONENT_SERVER,
+                  [&logs](RIALTO_DEBUG_LEVEL level, const char *, int, const char *, const char *message,
+                          std::size_t messageLen)
+                  {
+                      if (level == RIALTO_DEBUG_LEVEL_WARNING)
+                      {
+                          logs.append(message, messageLen);
+                          logs.append("\n");
+                      }
+                  },
+                  true);
+
+    ParsedMetricMessage out;
+    result = ValidateMediaPipelineMetric(structure, out);
+    setLogHandler(RIALTO_COMPONENT_SERVER, nullptr, false);
+    return logs;
+}
+void expectRejectedWithWarning(GstStructure *structure)
+{
+    ASSERT_NE(nullptr, structure);
+    GstFlowReturn result{GST_FLOW_OK};
+    const std::string logs = validateAndCaptureWarnings(structure, result);
+    gst_structure_free(structure);
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+    EXPECT_FALSE(logs.empty());
+}
+} // namespace
+
+TEST(ValidateMediaPipelineMetricLoggingTest, EveryRejectionPathLogsWarning)
+{
+    gst_init(nullptr, nullptr);
+
+    expectRejectedWithWarning(gst_structure_new("metric", nullptr));
+    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "observation-kind", G_TYPE_UINT, 1U, nullptr));
+    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_STRING, "1",
+                                                "observation-kind", G_TYPE_UINT, 1U, nullptr));
+    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 0U,
+                                                "observation-kind", G_TYPE_UINT, 1U, nullptr));
+    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U, nullptr));
+    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
+                                                "observation-kind", G_TYPE_STRING, "1", nullptr));
+    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
+                                                "observation-kind", G_TYPE_UINT, 0U, nullptr));
+    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
+                                                "observation-kind", G_TYPE_UINT, 1U, "pts-ns", G_TYPE_UINT, 5U, nullptr));
+    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
+                                                "observation-kind", G_TYPE_UINT, 2U, "duration-ns", G_TYPE_INT64,
+                                                gint64{5}, nullptr));
+    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
+                                                "observation-kind", G_TYPE_UINT, 2U, "count", G_TYPE_INT64,
+                                                gint64{5}, nullptr));
+    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
+                                                "observation-kind", G_TYPE_UINT, 1U, "metric_type", G_TYPE_UINT, 1U,
+                                                nullptr));
+    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
+                                                "observation-kind", G_TYPE_UINT, 1U, "phase", G_TYPE_UINT, 1U, nullptr));
+    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
+                                                "observation-kind", G_TYPE_UINT, 1U, "pts_ns", G_TYPE_INT64,
+                                                gint64{1}, nullptr));
+    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
+                                                "observation-kind", G_TYPE_UINT, 1U, "duration-ns", G_TYPE_UINT64,
+                                                guint64{1}, nullptr));
+    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
+                                                "observation-kind", G_TYPE_UINT, 1U, "count", G_TYPE_UINT64,
+                                                guint64{1}, nullptr));
+    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 7U,
+                                                "observation-kind", G_TYPE_UINT, 3U, "count", G_TYPE_UINT64,
+                                                guint64{1}, nullptr));
+}
+
+TEST(ValidateMediaPipelineMetricLoggingTest, WrongTypeLogsExpectedAndActualType)
+{
+    gst_init(nullptr, nullptr);
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_STRING, "1", nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstFlowReturn result{GST_FLOW_OK};
+    const std::string logs = validateAndCaptureWarnings(structure, result);
+    gst_structure_free(structure);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+    EXPECT_NE(std::string::npos, logs.find("field 'metric' has wrong type, expected G_TYPE_UINT, actual gchararray"));
+}
+
+TEST(ValidateMediaPipelineMetricLoggingTest, WrongPtsTypeLogsExpectedAndActualType)
+{
+    gst_init(nullptr, nullptr);
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
+                                                 "observation-kind", G_TYPE_UINT, 1U, "pts-ns", G_TYPE_UINT, 5U,
+                                                 nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstFlowReturn result{GST_FLOW_OK};
+    const std::string logs = validateAndCaptureWarnings(structure, result);
+    gst_structure_free(structure);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+    EXPECT_NE(std::string::npos, logs.find("field 'pts-ns' has wrong type, expected G_TYPE_INT64, actual guint"));
+}
+
+TEST(ValidateMediaPipelineMetricLoggingTest, OutOfRangeMetricLogsRejectedValue)
+{
+    gst_init(nullptr, nullptr);
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 9U,
+                                                 "observation-kind", G_TYPE_UINT, 1U, nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstFlowReturn result{GST_FLOW_OK};
+    const std::string logs = validateAndCaptureWarnings(structure, result);
+    gst_structure_free(structure);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+    EXPECT_NE(std::string::npos, logs.find("field 'metric' value 9 is outside valid range"));
+}
+
+TEST(ElementToSourceMapperTest, UnregisterElementRemovesOnlyThatElement)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *first = gst_pipeline_new("first-element");
+    GstElement *second = gst_pipeline_new("second-element");
+    ASSERT_NE(nullptr, first);
+    ASSERT_NE(nullptr, second);
+
+    RialtoMetrics metrics;
+    ElementToSourceMapper *mapper = metrics.getElementToSourceMapper();
+    mapper->RegisterElement(first, 1U, 2U);
+    mapper->RegisterElement(second, 3U, 4U);
+
+    mapper->UnregisterElement(first);
+
+    uint32_t sessionId{0};
+    uint32_t sourceId{0};
+    EXPECT_FALSE(mapper->MapElement(first, sessionId, sourceId));
+    EXPECT_TRUE(mapper->MapElement(second, sessionId, sourceId));
+    EXPECT_EQ(3U, sessionId);
+    EXPECT_EQ(4U, sourceId);
+
+    gst_object_unref(first);
+    gst_object_unref(second);
+}
+
+TEST(ElementToSourceMapperTest, UnregisterAllElementsClearsEveryMapping)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *first = gst_pipeline_new("first-element");
+    GstElement *second = gst_pipeline_new("second-element");
+    ASSERT_NE(nullptr, first);
+    ASSERT_NE(nullptr, second);
+
+    RialtoMetrics metrics;
+    ElementToSourceMapper *mapper = metrics.getElementToSourceMapper();
+    mapper->RegisterElement(first, 1U, 2U);
+    mapper->RegisterElement(second, 3U, 4U);
+
+    mapper->UnregisterAllElements();
+
+    uint32_t sessionId{0};
+    uint32_t sourceId{0};
+    EXPECT_FALSE(mapper->MapElement(first, sessionId, sourceId));
+    EXPECT_FALSE(mapper->MapElement(second, sessionId, sourceId));
+
+    gst_object_unref(first);
+    gst_object_unref(second);
 }
 
 TEST(ValidateMediaPipelineMetricTest, RejectsObservationKindValueTwoFiftFive)
