@@ -2,6 +2,7 @@
 #include "RialtoLogging.h"
 #include <algorithm>
 #include <chrono>
+#include <cstring>
 #include <gst/gst.h>
 #include <limits>
 
@@ -243,4 +244,179 @@ bool RialtoMetrics::getFrameCounters(int32_t sessionId, int32_t sourceId, FrameC
 					 static_cast<unsigned long long>(counters.timestamp));
 	return true;
 }
+
+GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricMessage& out)
+{
+	if (!msg)
+	{
+		RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: null structure provided");
+		return GST_FLOW_ERROR;
+	}
+
+	const char* structureName = gst_structure_get_name(msg);
+	if (!structureName || strcmp(structureName, "media-pipeline-metric") != 0)
+	{
+		RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER,
+						"ValidateMediaPipelineMetric: invalid structure name '%s', expected 'media-pipeline-metric'",
+						structureName ? structureName : "null");
+		return GST_FLOW_ERROR;
+	}
+
+	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: structure name validation passed");
+
+	// Validate 'metric' field - required, must be G_TYPE_UINT, value in range 1-7
+	if (!gst_structure_has_field(msg, "metric"))
+	{
+		RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: required field 'metric' is missing");
+		return GST_FLOW_ERROR;
+	}
+
+	const GValue* metricValue = gst_structure_get_value(msg, "metric");
+	if (!metricValue || !G_VALUE_HOLDS_UINT(metricValue))
+	{
+		RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, 
+						"ValidateMediaPipelineMetric: field 'metric' has wrong type, expected G_TYPE_UINT");
+		return GST_FLOW_ERROR;
+	}
+
+	guint metricVal = g_value_get_uint(metricValue);
+	if (metricVal < static_cast<guint>(MediaMetricType::MEDIA_METRIC_VIDEO_FRAME_DROP) || 
+	    metricVal > static_cast<guint>(MediaMetricType::MEDIA_METRIC_BUFFER_UNDERFLOW))
+	{
+		RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER,
+						"ValidateMediaPipelineMetric: field 'metric' value %u is outside valid range %u-%u",
+						metricVal,
+						static_cast<guint>(MediaMetricType::MEDIA_METRIC_VIDEO_FRAME_DROP),
+						static_cast<guint>(MediaMetricType::MEDIA_METRIC_BUFFER_UNDERFLOW));
+		return GST_FLOW_ERROR;
+	}
+
+	out.metric = metricVal;
+	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: metric field validation passed with value %u", metricVal);
+
+	// Validate 'observation-kind' field - required, must be G_TYPE_UINT, value in {1, 2, 3}
+	if (!gst_structure_has_field(msg, "observation-kind"))
+	{
+		RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: required field 'observation-kind' is missing");
+		return GST_FLOW_ERROR;
+	}
+
+	const GValue* observationKindValue = gst_structure_get_value(msg, "observation-kind");
+	if (!observationKindValue || !G_VALUE_HOLDS_UINT(observationKindValue))
+	{
+		RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, 
+						"ValidateMediaPipelineMetric: field 'observation-kind' has wrong type, expected G_TYPE_UINT");
+		return GST_FLOW_ERROR;
+	}
+
+	guint observationKindVal = g_value_get_uint(observationKindValue);
+	if (observationKindVal < static_cast<guint>(ObservationKind::OCCURRENCE) || 
+	    observationKindVal > static_cast<guint>(ObservationKind::EPISODE_RESOLVED))
+	{
+		RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER,
+						"ValidateMediaPipelineMetric: field 'observation-kind' value %u is outside valid range %u-%u",
+						observationKindVal,
+						static_cast<guint>(ObservationKind::OCCURRENCE),
+						static_cast<guint>(ObservationKind::EPISODE_RESOLVED));
+		return GST_FLOW_ERROR;
+	}
+
+	out.observation_kind = observationKindVal;
+	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: observation-kind field validation passed with value %u", observationKindVal);
+
+	// Validate 'pts-ns' field - optional, when present must be G_TYPE_INT64
+	if (gst_structure_has_field(msg, "pts-ns"))
+	{
+		const GValue* ptsNsValue = gst_structure_get_value(msg, "pts-ns");
+		if (!ptsNsValue || !G_VALUE_HOLDS_INT64(ptsNsValue))
+		{
+			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, 
+							"ValidateMediaPipelineMetric: field 'pts-ns' has wrong type, expected G_TYPE_INT64");
+			return GST_FLOW_ERROR;
+		}
+
+		gint64 ptsNsVal = g_value_get_int64(ptsNsValue);
+		out.pts_ns = ptsNsVal;
+		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: pts-ns field validation passed with value %ld", ptsNsVal);
+	}
+
+	// Validate 'duration-ns' field - optional, when present must be G_TYPE_UINT64 and non-negative
+	if (gst_structure_has_field(msg, "duration-ns"))
+	{
+		const GValue* durationNsValue = gst_structure_get_value(msg, "duration-ns");
+		if (!durationNsValue || !G_VALUE_HOLDS_UINT64(durationNsValue))
+		{
+			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, 
+							"ValidateMediaPipelineMetric: field 'duration-ns' has wrong type, expected G_TYPE_UINT64");
+			return GST_FLOW_ERROR;
+		}
+
+		guint64 durationNsVal = g_value_get_uint64(durationNsValue);
+		out.duration_ns = durationNsVal;
+		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: duration-ns field validation passed with value %llu", 
+						 static_cast<unsigned long long>(durationNsVal));
+	}
+
+	// Validate 'count' field - optional, when present must be G_TYPE_UINT64
+	if (gst_structure_has_field(msg, "count"))
+	{
+		const GValue* countValue = gst_structure_get_value(msg, "count");
+		if (!countValue || !G_VALUE_HOLDS_UINT64(countValue))
+		{
+			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, 
+							"ValidateMediaPipelineMetric: field 'count' has wrong type, expected G_TYPE_UINT64");
+			return GST_FLOW_ERROR;
+		}
+
+		guint64 countVal = g_value_get_uint64(countValue);
+		out.count = countVal;
+		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: count field validation passed with value %llu", 
+						 static_cast<unsigned long long>(countVal));
+	}
+
+	// Legacy field-name rejection - reject messages with old field names
+	const char* legacyFieldNames[] = {"metric_type", "phase", "pts_ns"};
+	for (const auto& legacyName : legacyFieldNames)
+	{
+		if (gst_structure_has_field(msg, legacyName))
+		{
+			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, 
+							"ValidateMediaPipelineMetric: legacy field name '%s' found in message, rejecting", legacyName);
+			return GST_FLOW_ERROR;
+		}
+	}
+
+	// Semantic field-combination validation
+	// Reject OCCURRENCE (observation-kind=1) with duration-ns or count present
+	if (observationKindVal == static_cast<guint>(ObservationKind::OCCURRENCE))
+	{
+		if (gst_structure_has_field(msg, "duration-ns"))
+		{
+			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER,
+							"ValidateMediaPipelineMetric: OCCURRENCE observation-kind cannot have 'duration-ns' field");
+			return GST_FLOW_ERROR;
+		}
+		if (gst_structure_has_field(msg, "count"))
+		{
+			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER,
+							"ValidateMediaPipelineMetric: OCCURRENCE observation-kind cannot have 'count' field");
+			return GST_FLOW_ERROR;
+		}
+	}
+
+	// Reject BUFFER_UNDERFLOW (metric=7) in EPISODE_RESOLVED (observation-kind=3) with count present
+	if (metricVal == static_cast<guint>(MediaMetricType::MEDIA_METRIC_BUFFER_UNDERFLOW) &&
+		observationKindVal == static_cast<guint>(ObservationKind::EPISODE_RESOLVED))
+	{
+		if (gst_structure_has_field(msg, "count"))
+		{
+			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER,
+							"ValidateMediaPipelineMetric: BUFFER_UNDERFLOW metric with EPISODE_RESOLVED observation-kind cannot have 'count' field");
+			return GST_FLOW_ERROR;
+		}
+	}
+
+	return GST_FLOW_OK;
+}
+
 } // namespace firebolt::rialto::server
