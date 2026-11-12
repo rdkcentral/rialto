@@ -34,9 +34,9 @@
 
 ## 3. Parser Integration into Message Flow
 
-- [ ] 3.1 Update `RialtoMetrics::OnGstMessage()` or equivalent bus message handler to call the new `ValidateMediaPipelineMetric()` function for all incoming `"media-pipeline-metric"` structures. Reject and discard invalid messages; forward validated messages. Write unit tests simulating bus messages with valid and invalid payloads.
+- [x] 3.1 Update `RialtoMetrics::OnGstMessage()` or equivalent bus message handler to call the new `ValidateMediaPipelineMetric()` function for all incoming `"media-pipeline-metric"` structures. Reject and discard invalid messages; forward validated messages. Write unit tests simulating bus messages with valid and invalid payloads.
 
-- [ ] 3.2 Ensure the enriched `ParsedMetricMessage` from `ValidateMediaPipelineMetric()` is passed to downstream consumers (MediaPipelineServerInternal, IPC serializer). Modify the existing metrics-forwarding interface to carry the enriched data. Verify compilation and existing downstream tests still pass (backward compatibility).
+- [x] 3.2 Ensure the enriched `ParsedMetricMessage` from `ValidateMediaPipelineMetric()` is passed to downstream consumers (MediaPipelineServerInternal, IPC serializer). Modify the existing metrics-forwarding interface to carry the enriched data. Verify compilation and existing downstream tests still pass (backward compatibility).
 
 - [ ] 3.3 Update logging/debugging in the parser to report validation failures with full context (field name, expected type/value, actual type/value) to aid troubleshooting. Verify log output is readable and consistent for rejection scenarios. Test via unit tests that log output is generated for each failure case.
 

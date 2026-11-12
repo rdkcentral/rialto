@@ -143,114 +143,32 @@ std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
 	}
 
 	const GstStructure *structure = gst_message_get_structure(message);
-	if (!structure || !gst_structure_has_name(structure, "media-pipeline-metric"))
+	if (!structure)
 	{
-		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics::onMetricMessage ignored non-metric message");
+		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics::onMetricMessage ignored message without structure");
 		return std::nullopt;
 	}
 
-	guint metricType{0};
-	guint phase{0};
-	guint sourceId{0};
-	guint sessionId{0};
-	gint64 ptsNs{0};
-	if (!gst_structure_get_uint(structure, "metric_type", &metricType) ||
-		!gst_structure_get_uint(structure, "phase", &phase) ||
-		!gst_structure_get_uint(structure, "source_id", &sourceId) ||
-		!gst_structure_get_uint(structure, "session_id", &sessionId) ||
-		!gst_structure_get_int64(structure, "pts_ns", &ptsNs) ||
-		sourceId > static_cast<guint>(std::numeric_limits<int32_t>::max()) ||
-		sessionId > static_cast<guint>(std::numeric_limits<int32_t>::max()) || ptsNs < 0 ||
-		phase >= static_cast<guint>(MetricPhase::INVALID))
+	if (!gst_structure_has_name(structure, "media-pipeline-metric"))
 	{
-		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics::onMetricMessage ignored malformed metric message");
+		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics::onMetricMessage ignored non-media-pipeline-metric message");
 		return std::nullopt;
 	}
 
-	int32_t currentSessionId{-1};
-	FrameCounters counters;
-	std::uint64_t count{0};
-	std::uint64_t durationNs{0};
-	bool validSession{false};
+	// Validate the metric message using the new ValidateMediaPipelineMetric function
+	ParsedMetricMessage parsedMessage;
+	GstFlowReturn validationResult = ValidateMediaPipelineMetric(structure, parsedMessage, message, m_elementToSourceMapper.get());
+	
+	if (validationResult != GST_FLOW_OK)
 	{
-		std::lock_guard<std::mutex> lock{m_counterMutex};
-		currentSessionId = m_sessionId;
-		if (currentSessionId >= 0 && static_cast<int32_t>(sessionId) == currentSessionId)
-		{
-			const auto key = std::make_pair(currentSessionId, static_cast<int32_t>(sourceId));
-			const auto it = m_counterCache.find(key);
-			if (it != m_counterCache.end())
-			{
-				counters = it->second;
-			}
-
-			if (renderedFrames)
-			{
-				counters.rendered = std::max(counters.rendered, *renderedFrames);
-			}
-			if (droppedFrames)
-			{
-				counters.dropped = std::max(counters.dropped, *droppedFrames);
-			}
-			if (phase == static_cast<guint>(MetricPhase::OCCURRENCE) &&
-				metricType == static_cast<guint>(firebolt::rialto::MetricType::VIDEO_DECODE_ERROR) &&
-				counters.corrupted < std::numeric_limits<std::uint64_t>::max())
-			{
-				++counters.corrupted;
-			}
-			counters.timestamp = getMonotonicTimestampNs();
-			m_counterCache[key] = counters;
-
-			auto &episode = m_metricEpisodes[{currentSessionId, static_cast<int32_t>(sourceId), metricType}];
-			if (phase == static_cast<guint>(MetricPhase::OCCURRENCE))
-			{
-				if (!episode.active)
-				{
-					episode.startPtsNs = static_cast<std::uint64_t>(ptsNs);
-					episode.active = true;
-					episode.count = 1;
-					episode.durationNs = 0;
-				}
-				else
-				{
-					++episode.count;
-					episode.durationNs = 0;
-				}
-			}
-			else
-			{
-				++episode.count;
-				if (episode.active && ptsNs >= static_cast<gint64>(episode.startPtsNs))
-				{
-					episode.durationNs = static_cast<std::uint64_t>(ptsNs) - episode.startPtsNs;
-				}
-				episode.active = false;
-			}
-			count = episode.count;
-			durationNs = episode.durationNs;
-			validSession = true;
-		}
-	}
-	if (!validSession)
-	{
-		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
-						 "RialtoMetrics::onMetricMessage ignored metric for sessionId: %u, current sessionId: %d",
-						 sessionId, currentSessionId);
+		RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, "RialtoMetrics::onMetricMessage validation failed for metric message");
 		return std::nullopt;
 	}
 
-	ParsedMetricMessage parsedMessage{static_cast<int32_t>(sessionId), metricType, phase,
-							  static_cast<int32_t>(sourceId), static_cast<std::uint64_t>(ptsNs), counters,
-							  count, durationNs};
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
-					 "RialtoMetrics::onMetricMessage parsed sessionId: %d, sourceId: %d, type: %u, phase: %u, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu, count: %llu, durationNs: %llu",
-					 parsedMessage.sessionId, parsedMessage.sourceId, metricType, phase,
-					 static_cast<unsigned long long>(counters.rendered),
-					 static_cast<unsigned long long>(counters.dropped),
-					 static_cast<unsigned long long>(counters.corrupted),
-					 static_cast<unsigned long long>(parsedMessage.ptsNs),
-					 static_cast<unsigned long long>(parsedMessage.count),
-					 static_cast<unsigned long long>(parsedMessage.durationNs));
+					 "RialtoMetrics::onMetricMessage validated metric: %u, observation_kind: %u, session_id: %d, source_id: %d",
+					 parsedMessage.metric, parsedMessage.observation_kind, parsedMessage.session_id, parsedMessage.source_id);
+	
 	return parsedMessage;
 }
 
