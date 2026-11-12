@@ -63,6 +63,7 @@ public:
     virtual void updateSinkStats(int32_t sessionId, int32_t sourceId, std::uint64_t renderedFrames,
                                 std::uint64_t droppedFrames) = 0;
     virtual bool getFrameCounters(int32_t sessionId, int32_t sourceId, FrameCounters &counters) const = 0;
+    virtual ElementToSourceMapper* getElementToSourceMapper() = 0;
 };
 
 class ElementToSourceMapper
@@ -73,7 +74,9 @@ public:
     virtual bool MapElement(GstElement* element, uint32_t& out_session_id, uint32_t& out_source_id) = 0;
 };
 
-GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricMessage& out);
+GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricMessage& out, 
+										   GstMessage* gstMessage = nullptr, 
+										   ElementToSourceMapper* mapper = nullptr);
 
 
 #endif // FIREBOLT_RIALTO_SERVER_METRICS_I_RIALTO_METRICS_H_
