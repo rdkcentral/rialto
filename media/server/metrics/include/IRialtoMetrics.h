@@ -72,6 +72,8 @@ public:
     virtual ~ElementToSourceMapper() = default;
     virtual void RegisterElement(GstElement* element, uint32_t session_id, uint32_t source_id) = 0;
     virtual bool MapElement(GstElement* element, uint32_t& out_session_id, uint32_t& out_source_id) = 0;
+    virtual void UnregisterElement(GstElement* element) = 0;
+    virtual void UnregisterAllElements() = 0;
 };
 
 GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricMessage& out, 

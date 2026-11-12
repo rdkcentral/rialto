@@ -25,6 +25,7 @@
 #include "IGstGenericPlayer.h"
 #include "IMainThread.h"
 #include "IMediaPipelineServerInternal.h"
+#include "IRialtoMetrics.h"
 #include "ITimer.h"
 #include "NeedDataDelayCalculator.h"
 #include <map>
@@ -201,8 +202,7 @@ public:
 
     void notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo) override;
 
-    void notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, const std::string &errorInfo, uint32_t phase,
-                           uint64_t count = 0, uint64_t durationNs = 0) override;
+    void notifyMetricEvent(const ParsedMetricMessage &metric) override;
 
     void notifyBufferUnderflow(MediaSourceType mediaSourceType) override;
 
