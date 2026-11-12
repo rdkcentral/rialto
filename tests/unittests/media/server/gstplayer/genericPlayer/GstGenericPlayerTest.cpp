@@ -30,13 +30,19 @@
 #include <gst/gst.h>
 
 using testing::_;
+using testing::AllOf;
 using testing::ByMove;
 using testing::DoAll;
+using testing::Field;
 using testing::Invoke;
+using testing::Optional;
 using testing::Ref;
 using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrEq;
+using firebolt::rialto::server::MediaMetricType;
+using firebolt::rialto::server::ObservationKind;
+using firebolt::rialto::server::ParsedMetricMessage;
 
 class GstGenericPlayerTest : public GstGenericPlayerTestCommon
 {
@@ -1260,8 +1266,8 @@ TEST_F(GstGenericPlayerTest, shouldReturnDuration)
 
 TEST_F(GstGenericPlayerTest, shouldCountAndNotifyWesterosMetricMessages)
 {
-    constexpr guint kVideoFrameDropMetric{0};
-    constexpr guint kBufferUnderflowMetric{6};
+    constexpr guint kVideoFrameDropMetric{1};
+    constexpr guint kBufferUnderflowMetric{7};
     constexpr guint kSourceId{11};
     constexpr guint kSessionId{7};
     constexpr guint64 kPtsNs{9001};
@@ -1269,17 +1275,26 @@ TEST_F(GstGenericPlayerTest, shouldCountAndNotifyWesterosMetricMessages)
     const auto metrics = m_sut->getRialtoMetrics();
     ASSERT_NE(nullptr, metrics);
     metrics->setSessionId(kSessionId);
+    metrics->getElementToSourceMapper()->RegisterElement(m_element, kSessionId, kSourceId);
 
     auto *dispatcherClient = dynamic_cast<IGstDispatcherThreadClient *>(m_sut.get());
     ASSERT_NE(nullptr, dispatcherClient);
 
-    const auto makeMetricMessage = [&](guint metricType, guint phase)
+    const auto makeMetricMessage = [&](guint metricType, guint observationKind)
     {
         GstStructure *structure =
-            gst_structure_new("media-pipeline-metric", "metric_type", G_TYPE_UINT, metricType, "phase", G_TYPE_UINT,
-                              phase, "source_id", G_TYPE_UINT, kSourceId, "session_id", G_TYPE_UINT, kSessionId,
-                              "pts_ns", G_TYPE_INT64, static_cast<gint64>(kPtsNs), nullptr);
+            gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, metricType, "observation-kind",
+                              G_TYPE_UINT, observationKind, "pts-ns", G_TYPE_INT64, static_cast<gint64>(kPtsNs),
+                              nullptr);
         return gst_message_new_element(GST_OBJECT(m_element), structure);
+    };
+
+    const auto metricEvent = [&](MediaMetricType metric, ObservationKind observationKind)
+    {
+        return AllOf(Field(&ParsedMetricMessage::source_id, static_cast<int32_t>(kSourceId)),
+                     Field(&ParsedMetricMessage::metric, static_cast<uint32_t>(metric)),
+                     Field(&ParsedMetricMessage::observation_kind, static_cast<uint32_t>(observationKind)),
+                     Field(&ParsedMetricMessage::pts_ns, Optional(static_cast<int64_t>(kPtsNs))));
     };
 
     GstStructure stats;
@@ -1298,15 +1313,19 @@ TEST_F(GstGenericPlayerTest, shouldCountAndNotifyWesterosMetricMessages)
     };
 
     expectStats(101U, 7U);
-    EXPECT_CALL(m_gstPlayerClient, notifyMetricEvent(kSourceId, kPtsNs, std::string{"METRIC_VIDEO_FRAME_DROP"}, 0U));
-    GstMessage *dropMessage = makeMetricMessage(kVideoFrameDropMetric, 0U);
+    EXPECT_CALL(m_gstPlayerClient,
+                notifyMetricEvent(metricEvent(MediaMetricType::MEDIA_METRIC_VIDEO_FRAME_DROP, ObservationKind::OCCURRENCE)));
+    GstMessage *dropMessage =
+        makeMetricMessage(kVideoFrameDropMetric, static_cast<guint>(ObservationKind::OCCURRENCE));
     ASSERT_NE(nullptr, dropMessage);
     dispatcherClient->handleMetricMessage(dropMessage);
     gst_message_unref(dropMessage);
 
     expectStats(102U, 9U);
-    EXPECT_CALL(m_gstPlayerClient, notifyMetricEvent(kSourceId, kPtsNs, std::string{"METRIC_BUFFER_UNDERFLOW"}, 2U));
-    GstMessage *underflowMessage = makeMetricMessage(kBufferUnderflowMetric, 2U);
+    EXPECT_CALL(m_gstPlayerClient,
+                notifyMetricEvent(metricEvent(MediaMetricType::MEDIA_METRIC_BUFFER_UNDERFLOW, ObservationKind::EPISODE_STARTED)));
+    GstMessage *underflowMessage =
+        makeMetricMessage(kBufferUnderflowMetric, static_cast<guint>(ObservationKind::EPISODE_STARTED));
     ASSERT_NE(nullptr, underflowMessage);
     dispatcherClient->handleMetricMessage(underflowMessage);
     gst_message_unref(underflowMessage);
@@ -1316,8 +1335,10 @@ TEST_F(GstGenericPlayerTest, shouldCountAndNotifyWesterosMetricMessages)
         .WillOnce(Invoke([](gpointer, const gchar *, void *value)
                          { *reinterpret_cast<GstStructure **>(value) = nullptr; }));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
-    EXPECT_CALL(m_gstPlayerClient, notifyMetricEvent(kSourceId, kPtsNs, std::string{"METRIC_VIDEO_FRAME_DROP"}, 0U));
-    GstMessage *dropWithoutStats = makeMetricMessage(kVideoFrameDropMetric, 0U);
+    EXPECT_CALL(m_gstPlayerClient,
+                notifyMetricEvent(metricEvent(MediaMetricType::MEDIA_METRIC_VIDEO_FRAME_DROP, ObservationKind::OCCURRENCE)));
+    GstMessage *dropWithoutStats =
+        makeMetricMessage(kVideoFrameDropMetric, static_cast<guint>(ObservationKind::OCCURRENCE));
     ASSERT_NE(nullptr, dropWithoutStats);
     dispatcherClient->handleMetricMessage(dropWithoutStats);
     gst_message_unref(dropWithoutStats);

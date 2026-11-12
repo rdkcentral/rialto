@@ -260,17 +260,42 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyQosFailureSourceIdNotFound)
     m_gstPlayerCallback->notifyQos(mediaSourceType, qosInfo);
 }
 
-TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricEvent)
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricEventMapsEveryOptionalFieldPresence)
 {
-    constexpr int32_t sourceId{11};
-    constexpr uint64_t ptsNs{9001};
-    constexpr uint32_t phase{2};
-    const std::string errorInfo{"METRIC_BUFFER_UNDERFLOW"};
+    constexpr int32_t kSourceId{11};
+    constexpr int64_t kPtsNs{9001};
+    constexpr uint64_t kCount{4};
+    constexpr uint64_t kDurationNs{5000};
+    const auto metricType = firebolt::rialto::server::MediaMetricType::MEDIA_METRIC_AUDIO_GAP;
+    const auto observationKind = firebolt::rialto::server::ObservationKind::EPISODE_STARTED;
+    const std::string errorInfo{firebolt::rialto::server::metricTypeToString(static_cast<uint32_t>(metricType))};
 
-    mainThreadWillEnqueueTask();
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyMetricEvent(sourceId, ptsNs, errorInfo, phase));
+    // Bit 0: pts_ns, bit 1: count, bit 2: duration_ns. Absent fields are forwarded as 0.
+    for (uint32_t mask = 0; mask < 8; ++mask)
+    {
+        SCOPED_TRACE("optional field mask " + std::to_string(mask));
+        firebolt::rialto::server::ParsedMetricMessage metric;
+        metric.source_id = kSourceId;
+        metric.metric = static_cast<uint32_t>(metricType);
+        metric.observation_kind = static_cast<uint32_t>(observationKind);
+        if (mask & 1)
+            metric.pts_ns = kPtsNs;
+        if (mask & 2)
+            metric.count = kCount;
+        if (mask & 4)
+            metric.duration_ns = kDurationNs;
 
-    m_gstPlayerCallback->notifyMetricEvent(sourceId, ptsNs, errorInfo, phase);
+        const auto expectedPts = (mask & 1) ? static_cast<uint64_t>(kPtsNs) : 0U;
+        const auto expectedCount = (mask & 2) ? kCount : 0U;
+        const auto expectedDuration = (mask & 4) ? kDurationNs : 0U;
+
+        mainThreadWillEnqueueTask();
+        EXPECT_CALL(*m_mediaPipelineClientMock, notifyMetricEvent(kSourceId, expectedPts, errorInfo,
+                                                                  static_cast<uint32_t>(observationKind),
+                                                                  expectedCount, expectedDuration));
+
+        m_gstPlayerCallback->notifyMetricEvent(metric);
+    }
 }
 
 /**

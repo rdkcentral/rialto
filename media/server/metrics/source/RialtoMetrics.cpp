@@ -77,6 +77,27 @@ public:
 						element, out_session_id, out_source_id);
 		return true;
 	}
+
+	void UnregisterElement(GstElement* element) override
+	{
+		if (!element)
+		{
+			return;
+		}
+
+		std::lock_guard<std::mutex> lock(m_mapMutex);
+		if (m_elementMap.erase(reinterpret_cast<uintptr_t>(element)) > 0)
+		{
+			RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ElementToSourceMapperImpl::UnregisterElement: removed element %p", element);
+		}
+	}
+
+	void UnregisterAllElements() override
+	{
+		std::lock_guard<std::mutex> lock(m_mapMutex);
+		m_elementMap.clear();
+		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ElementToSourceMapperImpl::UnregisterAllElements: map cleared");
+	}
 };
 
 namespace
@@ -266,7 +287,8 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricM
 	if (!metricValue || !G_VALUE_HOLDS_UINT(metricValue))
 	{
 		RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, 
-						"ValidateMediaPipelineMetric: field 'metric' has wrong type, expected G_TYPE_UINT");
+						"ValidateMediaPipelineMetric: field 'metric' has wrong type, expected G_TYPE_UINT, actual %s",
+						metricValue ? G_VALUE_TYPE_NAME(metricValue) : "null");
 		return GST_FLOW_ERROR;
 	}
 
@@ -296,7 +318,8 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricM
 	if (!observationKindValue || !G_VALUE_HOLDS_UINT(observationKindValue))
 	{
 		RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, 
-						"ValidateMediaPipelineMetric: field 'observation-kind' has wrong type, expected G_TYPE_UINT");
+						"ValidateMediaPipelineMetric: field 'observation-kind' has wrong type, expected G_TYPE_UINT, actual %s",
+						observationKindValue ? G_VALUE_TYPE_NAME(observationKindValue) : "null");
 		return GST_FLOW_ERROR;
 	}
 
@@ -322,7 +345,8 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricM
 		if (!ptsNsValue || !G_VALUE_HOLDS_INT64(ptsNsValue))
 		{
 			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, 
-							"ValidateMediaPipelineMetric: field 'pts-ns' has wrong type, expected G_TYPE_INT64");
+							"ValidateMediaPipelineMetric: field 'pts-ns' has wrong type, expected G_TYPE_INT64, actual %s",
+							ptsNsValue ? G_VALUE_TYPE_NAME(ptsNsValue) : "null");
 			return GST_FLOW_ERROR;
 		}
 
@@ -338,7 +362,8 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricM
 		if (!durationNsValue || !G_VALUE_HOLDS_UINT64(durationNsValue))
 		{
 			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, 
-							"ValidateMediaPipelineMetric: field 'duration-ns' has wrong type, expected G_TYPE_UINT64");
+							"ValidateMediaPipelineMetric: field 'duration-ns' has wrong type, expected G_TYPE_UINT64, actual %s",
+							durationNsValue ? G_VALUE_TYPE_NAME(durationNsValue) : "null");
 			return GST_FLOW_ERROR;
 		}
 
@@ -355,7 +380,8 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricM
 		if (!countValue || !G_VALUE_HOLDS_UINT64(countValue))
 		{
 			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, 
-							"ValidateMediaPipelineMetric: field 'count' has wrong type, expected G_TYPE_UINT64");
+							"ValidateMediaPipelineMetric: field 'count' has wrong type, expected G_TYPE_UINT64, actual %s",
+							countValue ? G_VALUE_TYPE_NAME(countValue) : "null");
 			return GST_FLOW_ERROR;
 		}
 

@@ -38,13 +38,13 @@
 
 - [x] 3.2 Ensure the enriched `ParsedMetricMessage` from `ValidateMediaPipelineMetric()` is passed to downstream consumers (MediaPipelineServerInternal, IPC serializer). Modify the existing metrics-forwarding interface to carry the enriched data. Verify compilation and existing downstream tests still pass (backward compatibility).
 
-- [ ] 3.3 Update logging/debugging in the parser to report validation failures with full context (field name, expected type/value, actual type/value) to aid troubleshooting. Verify log output is readable and consistent for rejection scenarios. Test via unit tests that log output is generated for each failure case.
+- [x] 3.3 Update logging/debugging in the parser to report validation failures with full context (field name, expected type/value, actual type/value) to aid troubleshooting. Verify log output is readable and consistent for rejection scenarios. Test via unit tests that log output is generated for each failure case.
 
-- [ ] 3.4 Update `GstDispatcherThread` to receive `ParsedMetricMessage` with the new field names and optional-field semantics. Ensure the dispatcher forwards the struct without modification (pass-through). Write unit tests for metric flow through the dispatcher.
+- [x] 3.4 Update `GstDispatcherThread` to receive `ParsedMetricMessage` with the new field names and optional-field semantics. Ensure the dispatcher forwards the struct without modification (pass-through). Write unit tests for metric flow through the dispatcher.
 
-- [ ] 3.5 Update `MediaPipelineServerInternal::onMetricMessage()` (or equivalent handler) to accept the new `ParsedMetricMessage` struct and map its fields to internal event/notification formats. Handle optional fields correctly (pts_ns, duration_ns, count may be absent). Write unit tests for all combinations of optional field presence.
+- [x] 3.5 Update `MediaPipelineServerInternal::onMetricMessage()` (or equivalent handler) to accept the new `ParsedMetricMessage` struct and map its fields to internal event/notification formats. Handle optional fields correctly (pts_ns, duration_ns, count may be absent). Write unit tests for all combinations of optional field presence.
 
-- [ ] 3.6 Update the notification event generation in `MediaPipelineServerInternal` to use the new `ParsedMetricMessage` fields (`metric`, `observation_kind`, `pts_ns`, `duration_ns`, `count`) when constructing the event payload. Ensure the event contract matches the new spec field names and types. Write integration tests verifying event notification carries correct data.
+- [x] 3.6 Update the notification event generation in `MediaPipelineServerInternal` to use the new `ParsedMetricMessage` fields (`metric`, `observation_kind`, `pts_ns`, `duration_ns`, `count`) when constructing the event payload. Ensure the event contract matches the new spec field names and types. Write integration tests verifying event notification carries correct data.
 
 ## 4. IPC Schema and Serialization
 
