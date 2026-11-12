@@ -4,6 +4,7 @@
 #include "IRialtoMetrics.h"
 #include <map>
 #include <mutex>
+#include <memory>
 
 namespace firebolt::rialto::server
 {
@@ -19,6 +20,7 @@ public:
     void updateSinkStats(int32_t sessionId, int32_t sourceId, std::uint64_t renderedFrames,
                          std::uint64_t droppedFrames) override;
     bool getFrameCounters(int32_t sessionId, int32_t sourceId, FrameCounters &counters) const override;
+    ElementToSourceMapper* getElementToSourceMapper() override;
 
 private:
     struct MetricEpisodeState
@@ -36,6 +38,7 @@ private:
     int32_t m_sessionId{-1};
     std::map<CounterKey, FrameCounters> m_counterCache;
     std::map<EpisodeKey, MetricEpisodeState> m_metricEpisodes;
+    std::unique_ptr<ElementToSourceMapper> m_elementToSourceMapper;
 };
 } // namespace firebolt::rialto::server
 
