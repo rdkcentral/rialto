@@ -64,9 +64,6 @@ protected:
     std::unique_ptr<WebAudioPlayer> m_webAudioPlayer;
     std::unique_ptr<StrictMock<WebAudioPlayerIpcMock>> webAudioPlayerIpcMock;
 
-    // Shared memory handle observer, captured from subscribeSharedMemoryHandle()
-    IClientController::SharedMemoryHandleObserver m_shmObserver;
-
     void SetUp();
     void TearDown();
     void createWebAudioPlayer();

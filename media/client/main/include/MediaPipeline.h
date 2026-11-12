@@ -239,6 +239,10 @@ protected:
      * @brief The media player ipc object.
      */
     std::unique_ptr<IMediaPipelineIpc> m_mediaPipelineIpc;
+
+    /**
+     * @brief The shared memory handle.
+     */
     std::shared_ptr<ISharedMemoryHandle> m_shmHandle;
 
     /**
@@ -272,16 +276,6 @@ protected:
      * @brief The shared memory mutex. Guards m_shmHandle.
      */
     std::mutex m_shmMutex;
-
-    /**
-     * @brief Cached shared memory handle, refreshed by the subscribeSharedMemoryHandle() observer.
-     */
-    std::shared_ptr<ISharedMemoryHandle> m_shmHandle;
-
-    /**
-     * @brief Token for the shared memory handle observer subscription.
-     */
-    int m_shmHandleObserverId{-1};
 
     /**
      * @brief The current state of the MediaPipeline.

@@ -68,9 +68,6 @@ protected:
     // MediaPipeline object
     std::shared_ptr<MediaPipeline> m_mediaPipeline;
 
-    // Shared memory handle observer, captured from subscribeSharedMemoryHandle()
-    IClientController::SharedMemoryHandleObserver m_shmObserver;
-
     void SetUp();
     void TearDown();
     void createMediaPipeline();
