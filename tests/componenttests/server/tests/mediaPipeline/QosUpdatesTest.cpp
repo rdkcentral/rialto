@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+#include <optional>
+
 #include "ActionTraits.h"
 #include "ConfigureAction.h"
 #include "Constants.h"
@@ -38,6 +40,8 @@ constexpr unsigned kFramesToPush{1};
 constexpr guint kVideoDecodeErrorMetric{3};
 constexpr guint kMetricObservationKindOccurrence{1};
 constexpr gint64 kMetricPtsNs{1234567890};
+constexpr guint64 kEpisodeCount{4};
+constexpr guint64 kEpisodeDurationNs{1000};
 const std::string kAudioSourceName{"Audio"};
 const std::string kVideoSourceName{"Video"};
 const std::string kElementTypeName{"GenericSink"};
@@ -578,6 +582,69 @@ TEST_F(QosUpdatesTest, StatsFailure)
     stop();
 
     // Step 15: Destroy media session
+    gstPlayerWillBeDestructed();
+    destroySession();
+}
+
+/**
+ * Feeds every valid 0.7 metric/observation-kind pair through the stub, the parser and the IPC.
+ *
+ * Expected Results:
+ *  Each message is parsed, forwarded to the client with its fields intact, and carries observed-at timestamps.
+ *  Absent count and duration are serialized as 0.
+ */
+TEST_F(QosUpdatesTest, PlaybackMetricMatrixIsParsedAndForwardedThroughIpc)
+{
+    expectVideoSinkMetricsLookups();
+
+    // Step 1: Create a new media session
+    createSession();
+
+    // Step 2: Load content
+    gstPlayerWillBeCreated();
+    load();
+
+    constexpr guint kFirstMetric{1};
+    constexpr guint kLastMetric{7};
+    constexpr guint kOccurrence{1};
+    constexpr guint kEpisodeStarted{2};
+    constexpr guint kEpisodeResolved{3};
+    constexpr guint kBufferUnderflowMetric{7};
+
+    // Step 3: Send each valid metric/observation-kind pair and verify the client receives it
+    for (guint metric = kFirstMetric; metric <= kLastMetric; ++metric)
+    {
+        for (guint observationKind : {kOccurrence, kEpisodeStarted, kEpisodeResolved})
+        {
+            // EPISODE_RESOLVED carries a duration, and a count unless it is BUFFER_UNDERFLOW.
+            std::optional<guint64> count;
+            std::optional<guint64> durationNs;
+            if (observationKind == kEpisodeResolved)
+            {
+                durationNs = kEpisodeDurationNs;
+                if (metric != kBufferUnderflowMetric)
+                {
+                    count = kEpisodeCount;
+                }
+            }
+
+            willGetStats();
+            ExpectMessage<firebolt::rialto::MediaPipelineMetric> expectedMetricEvent{m_clientStub};
+            m_gstreamerStub.sendMetric(&m_src, metric, observationKind, kMetricPtsNs, count, durationNs);
+
+            const auto receivedMetricEvent{expectedMetricEvent.getMessage()};
+            ASSERT_TRUE(receivedMetricEvent) << "metric " << metric << " observation-kind " << observationKind;
+            EXPECT_EQ(receivedMetricEvent->metric(), metric);
+            EXPECT_EQ(receivedMetricEvent->observation_kind(), observationKind);
+            EXPECT_EQ(receivedMetricEvent->pts_ns(), kMetricPtsNs);
+            EXPECT_EQ(receivedMetricEvent->count(), count.value_or(0));
+            EXPECT_EQ(receivedMetricEvent->duration_ns(), durationNs.value_or(0));
+            EXPECT_GT(receivedMetricEvent->observed_at_monotonic_ns(), 0u);
+            EXPECT_GT(receivedMetricEvent->observed_at_unix_ns(), 0u);
+        }
+    }
+
+    // Step 4: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }
