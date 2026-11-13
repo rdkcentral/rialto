@@ -310,6 +310,47 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricMapsEveryOptionalField
 }
 
 /**
+ * Test a metric is delivered to the client when no subscription has been set (all types subscribed by default).
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricDeliveredByDefaultSubscription)
+{
+    firebolt::rialto::MetricEvent metric;
+    metric.sourceId = 1;
+    metric.type = firebolt::rialto::MetricType::AUDIO_GAP;
+    metric.phase = firebolt::rialto::MetricPhase::OCCURRENCE;
+
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaPipelineClientMock,
+                notifyMetric(::testing::Field(&firebolt::rialto::MetricEvent::type, firebolt::rialto::MetricType::AUDIO_GAP)));
+
+    m_gstPlayerCallback->notifyMetric(metric);
+}
+
+/**
+ * Test that only metric types in the subscription set are delivered to the client.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricFilteredBySubscription)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_TRUE(m_mediaPipeline->setMetricSubscription({firebolt::rialto::MetricType::VIDEO_FRAME_DROP}));
+
+    firebolt::rialto::MetricEvent unsubscribedMetric;
+    unsubscribedMetric.sourceId = 1;
+    unsubscribedMetric.type = firebolt::rialto::MetricType::AUDIO_GAP;
+    unsubscribedMetric.phase = firebolt::rialto::MetricPhase::OCCURRENCE;
+    // No enqueueTask expectation: the StrictMock main thread fails the test if the dropped metric is queued.
+    m_gstPlayerCallback->notifyMetric(unsubscribedMetric);
+
+    firebolt::rialto::MetricEvent subscribedMetric = unsubscribedMetric;
+    subscribedMetric.type = firebolt::rialto::MetricType::VIDEO_FRAME_DROP;
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaPipelineClientMock,
+                notifyMetric(::testing::Field(&firebolt::rialto::MetricEvent::type,
+                                              firebolt::rialto::MetricType::VIDEO_FRAME_DROP)));
+    m_gstPlayerCallback->notifyMetric(subscribedMetric);
+}
+
+/**
  * Test a notification of playback error is forwarded to the registered client.
  */
 TEST_F(RialtoServerMediaPipelineCallbackTest, notifyPlaybackError)

@@ -653,7 +653,40 @@ bool MediaPipelineIpc::setReportDecodeErrors(int32_t sourceId, bool reportDecode
     return true;
 }
 
-bool MediaPipelineIpc::getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
+bool MediaPipelineIpc::setMetricSubscription(const std::vector<MetricType> &types)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetMediaMetricsRequest request;
+
+    request.set_session_id(m_sessionId);
+    for (const auto &type : types)
+    {
+        request.add_types(
+            static_cast<firebolt::rialto::MediaPipelineMetricEvent::MetricType>(static_cast<uint32_t>(type)));
+    }
+
+    firebolt::rialto::SetMediaMetricsResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setMetricSubscription(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set metric subscription due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return response.result();
+}
 {
     if (!reattachChannelIfRequired())
     {
