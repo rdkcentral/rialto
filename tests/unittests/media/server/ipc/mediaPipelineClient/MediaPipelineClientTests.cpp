@@ -1,4 +1,5 @@
 #include "ClientMock.h"
+#include "IRialtoMetrics.h"
 #include "MediaPipelineClient.h"
 #include "mediapipelinemodule.pb.h"
 #include <gtest/gtest.h>
@@ -18,6 +19,8 @@ TEST(MediaPipelineClientTests, NotifyMetricEventSerializesAndPreservesPayload)
     constexpr uint32_t kPhase{2};
     constexpr uint64_t kCount{12};
     constexpr uint64_t kDurationNs{45678};
+    constexpr uint64_t kObservedAtMonotonicNs{123456789};
+    constexpr int64_t kObservedAtUnixNs{1700000000000000000};
     auto ipcClient = std::make_shared<StrictMock<ipc::ClientMock>>();
     MediaPipelineClient client{kSessionId, ipcClient};
 
@@ -25,7 +28,7 @@ TEST(MediaPipelineClientTests, NotifyMetricEventSerializesAndPreservesPayload)
         .WillOnce(Invoke(
             [=](const std::shared_ptr<google::protobuf::Message> &message)
             {
-                auto event = std::dynamic_pointer_cast<NotifyMetricEvent>(message);
+                auto event = std::dynamic_pointer_cast<MediaPipelineMetric>(message);
                 if (!event)
                 {
                     ADD_FAILURE() << "Unexpected event type";
@@ -35,20 +38,20 @@ TEST(MediaPipelineClientTests, NotifyMetricEventSerializesAndPreservesPayload)
                 std::string payload;
                 EXPECT_TRUE(event->SerializeToString(&payload));
 
-                NotifyMetricEvent decoded;
+                MediaPipelineMetric decoded;
                 EXPECT_TRUE(decoded.ParseFromString(payload));
-                EXPECT_EQ(kSessionId, decoded.session_id());
-                EXPECT_EQ(kSourceId, decoded.source_id());
-                EXPECT_EQ(9001U, decoded.pts_ns());
-                EXPECT_EQ("METRIC_VIDEO_DECODE_ERROR", decoded.error_info());
-                EXPECT_EQ(firebolt::rialto::MetricType::VIDEO_DECODE_ERROR, decoded.type());
-                EXPECT_EQ(kPhase, decoded.phase());
+                EXPECT_EQ(static_cast<uint32_t>(kSessionId), decoded.session_id());
+                EXPECT_EQ(static_cast<uint32_t>(kSourceId), decoded.source_id());
+                EXPECT_EQ(9001, decoded.pts_ns());
+                EXPECT_EQ(static_cast<uint32_t>(firebolt::rialto::server::MediaMetricType::MEDIA_METRIC_VIDEO_DECODE_ERROR),
+                          decoded.metric());
+                EXPECT_EQ(kPhase, decoded.observation_kind());
                 EXPECT_EQ(kCount, decoded.count());
                 EXPECT_EQ(kDurationNs, decoded.duration_ns());
-                EXPECT_GT(decoded.observed_at_monotonic_ns(), 0ULL);
-                EXPECT_GT(decoded.observed_at_unix_ns(), 0LL);
+                EXPECT_EQ(kObservedAtMonotonicNs, decoded.observed_at_monotonic_ns());
+                EXPECT_EQ(kObservedAtUnixNs, decoded.observed_at_unix_ns());
                 return true;
             }));
 
-    client.notifyMetricEvent(kSourceId, 9001, "METRIC_VIDEO_DECODE_ERROR", kPhase, kCount, kDurationNs);
+    EXPECT_FALSE(decoded.has_duration_ns());
 }

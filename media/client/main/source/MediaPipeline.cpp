@@ -890,7 +890,8 @@ void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
 }
 
 void MediaPipeline::notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, const std::string &errorInfo,
-                                      uint32_t phase, uint64_t count, uint64_t durationNs)
+                                      uint32_t phase, uint64_t count, uint64_t durationNs,
+                                      uint64_t observedAtMonotonicNs, int64_t observedAtUnixNs)
 {
     RIALTO_CLIENT_LOG_DEBUG(
         "Forwarding playback metric event sourceId: %d, ptsNs: %llu, type: %s, phase: %u, count: %llu, durationNs: %llu",
@@ -900,7 +901,8 @@ void MediaPipeline::notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, const st
     std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
     if (client)
     {
-        client->notifyMetricEvent(sourceId, ptsNs, errorInfo, phase, count, durationNs);
+        client->notifyMetricEvent(sourceId, ptsNs, errorInfo, phase, count, durationNs, observedAtMonotonicNs,
+                                  observedAtUnixNs);
     }
     else
     {

@@ -770,16 +770,6 @@ message GetStatsResponse {
     optional int64 dropped_frames = 2 [default = -1];
 }
 
-enum MetricType {
-    VIDEO_FRAME_DROP = 0;
-    AUDIO_FRAME_DROP = 1;
-    VIDEO_DECODE_ERROR = 2;
-    AUDIO_DECODE_ERROR = 3;
-    VIDEO_FRAME_REPEAT = 4;
-    AUDIO_GAP = 5;
-    BUFFER_UNDERFLOW = 6;
-}
-
 message GetFrameCountersRequest {
     optional int32 session_id = 1 [default = -1];
     optional int32 source_id = 2 [default = -1];
@@ -999,20 +989,21 @@ message QosEvent {
 }
 
 /**
- * @brief Event sent by the server with a frame-counter snapshot.
+ * @brief Media pipeline metric observation, enriched with session and source ids before serialization.
+ *
+ * The producer supplies metric, observation_kind and the optional timing/count fields.
+ * session_id and source_id are added by Rialto from the ElementToSourceMapper.
  */
-message NotifyMetricEvent {
-    optional int32 session_id = 1 [default = -1];
-    optional int32 source_id = 2 [default = -1];
-    optional string error_info = 3;
-    optional uint64 pts_ns = 4 [default = 0];
-    // Westeros metric phase: 0 occurrence, 1 started, 2 resolved.
-    optional uint32 phase = 5 [default = 0];
-    optional uint64 count = 6 [default = 0];
-    optional uint64 duration_ns = 7 [default = 0];
-    optional MetricType type = 8 [default = VIDEO_FRAME_DROP];
-    optional uint64 observed_at_monotonic_ns = 9 [default = 0];
-    optional int64 observed_at_unix_ns = 10 [default = 0];
+message MediaPipelineMetric {
+    required uint32 metric = 1;
+    required uint32 observation_kind = 2;
+    optional int64 pts_ns = 3;
+    optional uint64 duration_ns = 4;
+    optional uint64 count = 5;
+    optional uint32 session_id = 6;
+    optional uint32 source_id = 7;
+    required uint64 observed_at_monotonic_ns = 8;
+    required int64 observed_at_unix_ns = 9;
 }
 
 /**

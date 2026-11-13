@@ -88,7 +88,8 @@ public:
     virtual void notifyQos(int32_t sourceId, const QosInfo &qosInfo) = 0;
 
     virtual void notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, const std::string &errorInfo, uint32_t phase,
-                                   uint64_t count = 0, uint64_t durationNs = 0) = 0;
+                                   uint64_t count = 0, uint64_t durationNs = 0,
+                                   uint64_t observedAtMonotonicNs = 0, int64_t observedAtUnixNs = 0) = 0;
 
     /**
      * @brief Notifies the client that buffer underflow occurred.
