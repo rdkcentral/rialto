@@ -320,7 +320,7 @@ TEST_F(MediaPipelineModuleServiceTests, shouldSetImmediateOutput)
     constexpr int32_t kVideoSourceId{1};
     sendAttachSourceRequestAndReceiveResponse(sessionId, firebolt::rialto::MediaSourceType::VIDEO, kVideoSourceId);
     mediaPipelineServiceWillSetImmediateOutputForVideoOnly(sessionId, kVideoSourceId);
-    sendSetImmediateOutputRequestAndReceiveResponse(sessionId, kVideoSourceId, kImmediateOutputVal1);
+    sendSetImmediateOutputRequestAndReceiveResponse(sessionId, kVideoSourceId, false);
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetImmediateOutput)
