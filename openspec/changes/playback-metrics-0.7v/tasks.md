@@ -60,7 +60,7 @@
 
 ## 5. Unit Tests for Validation and Parser
 
-- [ ] 5.1 Add comprehensive unit test suite `RialtoMetricsTest.cpp` with test cases for:
+- [x] 5.1 Add comprehensive unit test suite `RialtoMetricsTest.cpp` with test cases for:
   - Structure-name validation (valid, invalid)
   - Metric field validation (all 1–7 valid, 0/8 invalid, missing, wrong type)
   - Observation-kind field validation (1, 2, 3 valid, 0/4 invalid, missing, wrong type)
@@ -72,7 +72,7 @@
   - Source enrichment success and failure cases
   - Parser state recovery after rejection
 
-- [ ] 5.2 Create component-level tests that exercise the parser in the context of the GStreamer bus message loop (if feasible). Include tests for rapid successive messages (valid and invalid), verifying no state corruption.
+- [x] 5.2 Create component-level tests that exercise the parser in the context of the GStreamer bus message loop (if feasible). Include tests for rapid successive messages (valid and invalid), verifying no state corruption.
 
 ## 6. Component Test Stubs and End-to-End Integration
 
