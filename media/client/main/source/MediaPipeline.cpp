@@ -889,19 +889,19 @@ void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
     }
 }
 
-void MediaPipeline::notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, const std::string &errorInfo,
-                                      uint32_t phase, uint64_t count, uint64_t durationNs,
-                                      uint64_t observedAtMonotonicNs, int64_t observedAtUnixNs)
+void MediaPipeline::notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, uint32_t metric, uint32_t observationKind,
+                                      uint64_t count, uint64_t durationNs, uint64_t observedAtMonotonicNs,
+                                      int64_t observedAtUnixNs)
 {
     RIALTO_CLIENT_LOG_DEBUG(
-        "Forwarding playback metric event sourceId: %d, ptsNs: %llu, type: %s, phase: %u, count: %llu, durationNs: %llu",
-        sourceId, static_cast<unsigned long long>(ptsNs), errorInfo.c_str(), phase,
+        "Forwarding playback metric event sourceId: %d, ptsNs: %llu, metric: %u, observationKind: %u, count: %llu, durationNs: %llu",
+        sourceId, static_cast<unsigned long long>(ptsNs), metric, observationKind,
         static_cast<unsigned long long>(count), static_cast<unsigned long long>(durationNs));
 
     std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
     if (client)
     {
-        client->notifyMetricEvent(sourceId, ptsNs, errorInfo, phase, count, durationNs, observedAtMonotonicNs,
+        client->notifyMetricEvent(sourceId, ptsNs, metric, observationKind, count, durationNs, observedAtMonotonicNs,
                                   observedAtUnixNs);
     }
     else

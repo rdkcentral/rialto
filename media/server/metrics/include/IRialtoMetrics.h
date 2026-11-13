@@ -48,8 +48,6 @@ struct ParsedMetricMessage
     std::int64_t observed_at_unix_ns{0};
 };
 
-const char *metricTypeToString(std::uint32_t type);
-
 class IRialtoMetrics
 {
 public:

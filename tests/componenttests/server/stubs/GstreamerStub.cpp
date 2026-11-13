@@ -242,14 +242,12 @@ void GstreamerStub::sendQos(GstElement *src)
     m_cv.notify_one();
 }
 
-void GstreamerStub::sendMetric(GstElement *src, guint metricType, guint phase, guint sourceId, guint sessionId,
-                               gint64 ptsNs)
+void GstreamerStub::sendMetric(GstElement *src, guint metricType, guint observationKind, gint64 ptsNs)
 {
     std::unique_lock lock(m_mutex);
-    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric_type", G_TYPE_UINT, metricType,
-                                                "phase", G_TYPE_UINT, phase, "source_id", G_TYPE_UINT, sourceId,
-                                                "session_id", G_TYPE_UINT, sessionId, "pts_ns", G_TYPE_INT64, ptsNs,
-                                                nullptr);
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, metricType,
+                                                "observation-kind", G_TYPE_UINT, observationKind, "pts-ns",
+                                                G_TYPE_INT64, ptsNs, nullptr);
     m_message = gst_message_new_element(GST_OBJECT(src), structure);
     m_cv.notify_one();
 }
