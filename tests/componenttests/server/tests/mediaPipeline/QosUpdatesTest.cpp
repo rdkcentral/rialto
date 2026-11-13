@@ -38,7 +38,7 @@ namespace
 {
 constexpr unsigned kFramesToPush{1};
 constexpr guint kVideoDecodeErrorMetric{3};
-constexpr guint kMetricObservationKindOccurrence{1};
+constexpr guint kMetricPhaseOccurrence{1};
 constexpr gint64 kMetricPtsNs{1234567890};
 constexpr guint64 kEpisodeCount{4};
 constexpr guint64 kEpisodeDurationNs{1000};
@@ -86,7 +86,7 @@ public:
 
     void sendVideoDecodeErrorMetric()
     {
-        m_gstreamerStub.sendMetric(&m_src, kVideoDecodeErrorMetric, kMetricObservationKindOccurrence, kMetricPtsNs);
+        m_gstreamerStub.sendMetric(&m_src, kVideoDecodeErrorMetric, kMetricPhaseOccurrence, kMetricPtsNs);
     }
 
     void expectVideoSinkMetricsLookups()
@@ -368,7 +368,7 @@ TEST_F(QosUpdatesTest, QosUpdates)
 
     // Playback metric message should be parsed and forwarded to the client.
     willGetStats();
-    ExpectMessage<firebolt::rialto::MediaPipelineMetric> expectedMetricEvent{m_clientStub};
+    ExpectMessage<firebolt::rialto::MediaPipelineMetricEvent> expectedMetricEvent{m_clientStub};
     sendVideoDecodeErrorMetric();
 
     // The source element is not registered with the ElementToSourceMapper in this test, so ids default to 0.
@@ -376,9 +376,9 @@ TEST_F(QosUpdatesTest, QosUpdates)
     ASSERT_TRUE(receivedMetricEvent);
     EXPECT_EQ(receivedMetricEvent->session_id(), 0u);
     EXPECT_EQ(receivedMetricEvent->source_id(), 0u);
-    EXPECT_EQ(receivedMetricEvent->metric(), static_cast<uint32_t>(kVideoDecodeErrorMetric));
+    EXPECT_EQ(receivedMetricEvent->type(), firebolt::rialto::MediaPipelineMetricEvent::VIDEO_DECODE_ERROR);
     EXPECT_EQ(receivedMetricEvent->pts_ns(), kMetricPtsNs);
-    EXPECT_EQ(receivedMetricEvent->observation_kind(), kMetricObservationKindOccurrence);
+    EXPECT_EQ(receivedMetricEvent->phase(), firebolt::rialto::MediaPipelineMetricEvent::OCCURRENCE);
 
     // Step 12: End of audio stream
     // Step 13: End of video stream
@@ -591,7 +591,7 @@ TEST_F(QosUpdatesTest, StatsFailure)
  *
  * Expected Results:
  *  Each message is parsed, forwarded to the client with its fields intact, and carries observed-at timestamps.
- *  Absent count and duration are serialized as 0.
+ *  Absent count and duration are not serialized.
  */
 TEST_F(QosUpdatesTest, PlaybackMetricMatrixIsParsedAndForwardedThroughIpc)
 {
@@ -629,15 +629,19 @@ TEST_F(QosUpdatesTest, PlaybackMetricMatrixIsParsedAndForwardedThroughIpc)
             }
 
             willGetStats();
-            ExpectMessage<firebolt::rialto::MediaPipelineMetric> expectedMetricEvent{m_clientStub};
+            ExpectMessage<firebolt::rialto::MediaPipelineMetricEvent> expectedMetricEvent{m_clientStub};
             m_gstreamerStub.sendMetric(&m_src, metric, observationKind, kMetricPtsNs, count, durationNs);
 
             const auto receivedMetricEvent{expectedMetricEvent.getMessage()};
             ASSERT_TRUE(receivedMetricEvent) << "metric " << metric << " observation-kind " << observationKind;
-            EXPECT_EQ(receivedMetricEvent->metric(), metric);
-            EXPECT_EQ(receivedMetricEvent->observation_kind(), observationKind);
+            EXPECT_EQ(receivedMetricEvent->type(),
+                      static_cast<firebolt::rialto::MediaPipelineMetricEvent::MetricType>(metric));
+            EXPECT_EQ(receivedMetricEvent->phase(),
+                      static_cast<firebolt::rialto::MediaPipelineMetricEvent::MetricPhase>(observationKind));
             EXPECT_EQ(receivedMetricEvent->pts_ns(), kMetricPtsNs);
+            EXPECT_EQ(receivedMetricEvent->has_count(), count.has_value());
             EXPECT_EQ(receivedMetricEvent->count(), count.value_or(0));
+            EXPECT_EQ(receivedMetricEvent->has_duration_ns(), durationNs.has_value());
             EXPECT_EQ(receivedMetricEvent->duration_ns(), durationNs.value_or(0));
             EXPECT_GT(receivedMetricEvent->observed_at_monotonic_ns(), 0u);
             EXPECT_GT(receivedMetricEvent->observed_at_unix_ns(), 0u);

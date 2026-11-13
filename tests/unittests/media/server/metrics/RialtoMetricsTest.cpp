@@ -9,6 +9,10 @@
 #include <vector>
 
 using namespace firebolt::rialto::server;
+using firebolt::rialto::MetricEvent;
+using firebolt::rialto::MetricPhase;
+using firebolt::rialto::MetricType;
+using firebolt::rialto::VideoFrameCounters;
 
 TEST(RialtoMetricsTest, ParsesElementMetricMessageWithMappedSessionAndSource)
 {
@@ -30,12 +34,11 @@ TEST(RialtoMetricsTest, ParsesElementMetricMessageWithMappedSessionAndSource)
     gst_message_unref(message);
 
     ASSERT_TRUE(parsed.has_value());
-    EXPECT_EQ(7, parsed->session_id);
-    EXPECT_EQ(11, parsed->source_id);
-    EXPECT_EQ(1U, parsed->metric);
-    EXPECT_EQ(1U, parsed->observation_kind);
-    ASSERT_TRUE(parsed->pts_ns.has_value());
-    EXPECT_EQ(9001, *parsed->pts_ns);
+    EXPECT_EQ(11, parsed->sourceId);
+    EXPECT_EQ(MetricType::VIDEO_FRAME_DROP, parsed->type);
+    EXPECT_EQ(MetricPhase::OCCURRENCE, parsed->phase);
+    ASSERT_TRUE(parsed->presentationTimeStampNs.has_value());
+    EXPECT_EQ(9001, *parsed->presentationTimeStampNs);
 }
 
 TEST(RialtoMetricsTest, UnmappedElementDefaultsSessionAndSourceToZero)
@@ -57,8 +60,7 @@ TEST(RialtoMetricsTest, UnmappedElementDefaultsSessionAndSourceToZero)
     gst_message_unref(message);
 
     ASSERT_TRUE(parsed.has_value());
-    EXPECT_EQ(0, parsed->session_id);
-    EXPECT_EQ(0, parsed->source_id);
+    EXPECT_EQ(0, parsed->sourceId);
 }
 
 TEST(RialtoMetricsTest, ObservedAtUsesGstMessageTimestamp)
@@ -87,9 +89,9 @@ TEST(RialtoMetricsTest, ObservedAtUsesGstMessageTimestamp)
     gst_message_unref(message);
 
     ASSERT_TRUE(parsed.has_value());
-    EXPECT_EQ(nowNs - kAgeNs, parsed->observed_at_monotonic_ns);
+    EXPECT_EQ(nowNs - kAgeNs, parsed->observedAtMonotonicNs);
     // The unix value is derived from the same instant, so it is at least the message age before the call.
-    EXPECT_LE(parsed->observed_at_unix_ns, unixBefore - static_cast<std::int64_t>(kAgeNs));
+    EXPECT_LE(parsed->observedAtUnixNs, unixBefore - static_cast<std::int64_t>(kAgeNs));
 }
 
 TEST(RialtoMetricsTest, IgnoresMalformedElementMetricMessage)
@@ -110,7 +112,7 @@ TEST(RialtoMetricsTest, IgnoresMalformedElementMetricMessage)
     gst_message_unref(message);
 
     EXPECT_FALSE(parsed.has_value());
-    FrameCounters counters;
+    CounterSnapshot counters;
     EXPECT_FALSE(metrics.getFrameCounters(7, 11, counters));
 }
 
@@ -139,8 +141,7 @@ TEST(RialtoMetricsTest, AcceptsValidMessageAfterRejectedMessage)
     gst_object_unref(source);
 
     ASSERT_TRUE(parsed.has_value());
-    EXPECT_EQ(7, parsed->session_id);
-    EXPECT_EQ(11, parsed->source_id);
+    EXPECT_EQ(11, parsed->sourceId);
 }
 
 TEST(RialtoMetricsTest, CountsVideoDecodeErrorOccurrencesAsCorrupted)
@@ -171,10 +172,10 @@ TEST(RialtoMetricsTest, CountsVideoDecodeErrorOccurrencesAsCorrupted)
     postMetric(1U, 1U);
 
     gst_object_unref(source);
-    FrameCounters counters;
+    CounterSnapshot counters;
     ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
-    EXPECT_EQ(2U, counters.corrupted);
-    EXPECT_EQ(0U, counters.dropped);
+    EXPECT_EQ(2U, counters.counters.corruptedFrames);
+    EXPECT_EQ(0U, counters.counters.droppedFrames);
 }
 
 TEST(RialtoMetricsTest, RepeatedMessagesWithIncreasingPtsDoNotChangeOrDuplicateCounters)
@@ -199,7 +200,7 @@ TEST(RialtoMetricsTest, RepeatedMessagesWithIncreasingPtsDoNotChangeOrDuplicateC
         const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
         gst_message_unref(message);
         ASSERT_TRUE(parsed.has_value());
-        EXPECT_EQ(static_cast<std::int64_t>(nextPts), parsed->pts_ns.value());
+        EXPECT_EQ(static_cast<std::int64_t>(nextPts), parsed->presentationTimeStampNs.value());
         nextPts += 1000;
     };
 
@@ -208,7 +209,7 @@ TEST(RialtoMetricsTest, RepeatedMessagesWithIncreasingPtsDoNotChangeOrDuplicateC
     {
         postMetric(1U, 1U);
     }
-    FrameCounters counters;
+    CounterSnapshot counters;
     EXPECT_FALSE(metrics.getFrameCounters(7, 11, counters));
 
     // Each decode error must increment corrupted exactly once, regardless of interleaved drops.
@@ -218,8 +219,8 @@ TEST(RialtoMetricsTest, RepeatedMessagesWithIncreasingPtsDoNotChangeOrDuplicateC
     postMetric(3U, 1U);
 
     ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
-    EXPECT_EQ(3U, counters.corrupted);
-    EXPECT_EQ(0U, counters.dropped);
+    EXPECT_EQ(3U, counters.counters.corruptedFrames);
+    EXPECT_EQ(0U, counters.counters.droppedFrames);
 
     gst_object_unref(source);
 }
@@ -228,14 +229,14 @@ TEST(RialtoMetricsTest, RepeatedMessagesWithIncreasingPtsDoNotChangeOrDuplicateC
 TEST(RialtoMetricsTest, ReturnsLatestSnapshotForSessionAndSource)
 {
     RialtoMetrics metrics;
-    metrics.updateFrameCounters(7, 11, FrameCounters{1, 2, 3, 4});
-    metrics.updateFrameCounters(7, 11, FrameCounters{5, 6, 7, 8});
+    metrics.updateFrameCounters(7, 11, CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 1, 2, 3}, 4});
+    metrics.updateFrameCounters(7, 11, CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 5, 6, 7}, 8});
 
-    FrameCounters counters;
+    CounterSnapshot counters;
     ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
-    EXPECT_EQ(5U, counters.rendered);
-    EXPECT_EQ(6U, counters.dropped);
-    EXPECT_EQ(7U, counters.corrupted);
+    EXPECT_EQ(5U, counters.counters.renderedFrames);
+    EXPECT_EQ(6U, counters.counters.droppedFrames);
+    EXPECT_EQ(7U, counters.counters.corruptedFrames);
     EXPECT_EQ(8U, counters.timestamp);
     EXPECT_FALSE(metrics.getFrameCounters(7, 12, counters));
 }
@@ -243,37 +244,37 @@ TEST(RialtoMetricsTest, ReturnsLatestSnapshotForSessionAndSource)
 TEST(RialtoMetricsTest, UpdatingSinkStatsUsesServerTimestampAndPreservesCorruption)
 {
     RialtoMetrics metrics;
-    metrics.updateFrameCounters(7, 11, FrameCounters{1, 2, 3, 4});
+    metrics.updateFrameCounters(7, 11, CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 1, 2, 3}, 4});
     metrics.updateSinkStats(7, 11, 9, 6);
 
-    FrameCounters counters;
+    CounterSnapshot counters;
     ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
-    EXPECT_EQ(9U, counters.rendered);
-    EXPECT_EQ(6U, counters.dropped);
-    EXPECT_EQ(3U, counters.corrupted);
+    EXPECT_EQ(9U, counters.counters.renderedFrames);
+    EXPECT_EQ(6U, counters.counters.droppedFrames);
+    EXPECT_EQ(3U, counters.counters.corruptedFrames);
     EXPECT_GT(counters.timestamp, 0U);
 
     const std::uint64_t lastTimestamp{counters.timestamp};
     metrics.updateSinkStats(7, 11, 0, 0);
     ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
-    EXPECT_EQ(9U, counters.rendered);
-    EXPECT_EQ(6U, counters.dropped);
-    EXPECT_EQ(3U, counters.corrupted);
+    EXPECT_EQ(9U, counters.counters.renderedFrames);
+    EXPECT_EQ(6U, counters.counters.droppedFrames);
+    EXPECT_EQ(3U, counters.counters.corruptedFrames);
     EXPECT_GE(counters.timestamp, lastTimestamp);
 }
 
 TEST(RialtoMetricsTest, FrameCountersNeverDecrease)
 {
     RialtoMetrics metrics;
-    metrics.updateFrameCounters(7, 11, FrameCounters{10, 5, 3, 100});
-    metrics.updateFrameCounters(7, 11, FrameCounters{8, 4, 2, 90});
+    metrics.updateFrameCounters(7, 11, CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 10, 5, 3}, 100});
+    metrics.updateFrameCounters(7, 11, CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 8, 4, 2}, 90});
     metrics.updateSinkStats(7, 11, 7, 3);
 
-    FrameCounters counters;
+    CounterSnapshot counters;
     ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
-    EXPECT_EQ(10U, counters.rendered);
-    EXPECT_EQ(5U, counters.dropped);
-    EXPECT_EQ(3U, counters.corrupted);
+    EXPECT_EQ(10U, counters.counters.renderedFrames);
+    EXPECT_EQ(5U, counters.counters.droppedFrames);
+    EXPECT_EQ(3U, counters.counters.corruptedFrames);
 }
 
 TEST(RialtoMetricsTest, ConcurrentQueriesReadConsistentSnapshots)
@@ -284,7 +285,7 @@ TEST(RialtoMetricsTest, ConcurrentQueriesReadConsistentSnapshots)
     constexpr unsigned int kReaderCount{4};
 
     RialtoMetrics metrics;
-    metrics.updateFrameCounters(kSessionId, kSourceId, FrameCounters{0, 1, 2, 3});
+    metrics.updateFrameCounters(kSessionId, kSourceId, CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 0, 1, 2}, 3});
 
     std::atomic<unsigned int> ready{0};
     std::atomic<bool> start{false};
@@ -303,11 +304,11 @@ TEST(RialtoMetricsTest, ConcurrentQueriesReadConsistentSnapshots)
 
                                  for (std::uint64_t i = 0; i < kIterations; ++i)
                                  {
-                                     FrameCounters counters;
+                                     CounterSnapshot counters;
                                      if (!metrics.getFrameCounters(kSessionId, kSourceId, counters) ||
-                                         counters.dropped != counters.rendered + 1 ||
-                                         counters.corrupted != counters.rendered + 2 ||
-                                         counters.timestamp != counters.rendered + 3)
+                                         counters.counters.droppedFrames != counters.counters.renderedFrames + 1 ||
+                                         counters.counters.corruptedFrames != counters.counters.renderedFrames + 2 ||
+                                         counters.timestamp != counters.counters.renderedFrames + 3)
                                      {
                                          snapshotsConsistent = false;
                                          return;
@@ -326,7 +327,7 @@ TEST(RialtoMetricsTest, ConcurrentQueriesReadConsistentSnapshots)
 
                            for (std::uint64_t i = 1; i <= kIterations; ++i)
                            {
-                               metrics.updateFrameCounters(kSessionId, kSourceId, FrameCounters{i, i + 1, i + 2, i + 3});
+                               metrics.updateFrameCounters(kSessionId, kSourceId, CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), i, i + 1, i + 2}, i + 3});
                            }
                        });
 
@@ -394,10 +395,10 @@ TEST(RialtoMetricsTest, RapidBusBurstOfValidAndInvalidMessagesLeavesStateConsist
     EXPECT_EQ(kMessageCount, receivedCount);
     EXPECT_EQ(kMessageCount / 2, parsedCount);
 
-    FrameCounters counters;
+    CounterSnapshot counters;
     ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
-    EXPECT_EQ(static_cast<std::uint64_t>(kMessageCount / 2), counters.corrupted);
-    EXPECT_EQ(0U, counters.dropped);
+    EXPECT_EQ(static_cast<std::uint64_t>(kMessageCount / 2), counters.counters.corruptedFrames);
+    EXPECT_EQ(0U, counters.counters.droppedFrames);
 
     gst_object_unref(bus);
     gst_object_unref(source);
@@ -419,7 +420,7 @@ TEST(ValidateMediaPipelineMetricTest, AcceptsValidMediaPipelineMetricStructureNa
     const GstStructure *msgStructure = gst_message_get_structure(message);
     ASSERT_NE(nullptr, msgStructure);
 
-    ParsedMetricMessage out;
+    MetricEvent out;
     GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
@@ -444,7 +445,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsStructureNamedMetric)
     const GstStructure *msgStructure = gst_message_get_structure(message);
     ASSERT_NE(nullptr, msgStructure);
 
-    ParsedMetricMessage out;
+    MetricEvent out;
     GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
@@ -469,7 +470,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsStructureNamedLegacyMetric)
     const GstStructure *msgStructure = gst_message_get_structure(message);
     ASSERT_NE(nullptr, msgStructure);
 
-    ParsedMetricMessage out;
+    MetricEvent out;
     GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
@@ -480,7 +481,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsStructureNamedLegacyMetric)
 
 TEST(ValidateMediaPipelineMetricTest, RejectsNullStructure)
 {
-    ParsedMetricMessage out;
+    MetricEvent out;
     GstFlowReturn result = ValidateMediaPipelineMetric(nullptr, out);
 
     EXPECT_EQ(GST_FLOW_ERROR, result);
@@ -502,7 +503,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsMissingMetricField)
     const GstStructure *msgStructure = gst_message_get_structure(message);
     ASSERT_NE(nullptr, msgStructure);
 
-    ParsedMetricMessage out;
+    MetricEvent out;
     GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
@@ -527,7 +528,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsMetricFieldWithWrongType)
     const GstStructure *msgStructure = gst_message_get_structure(message);
     ASSERT_NE(nullptr, msgStructure);
 
-    ParsedMetricMessage out;
+    MetricEvent out;
     GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
@@ -554,13 +555,13 @@ TEST(ValidateMediaPipelineMetricTest, AcceptsAllValidMetricValuesOneToSeven)
         const GstStructure *msgStructure = gst_message_get_structure(message);
         ASSERT_NE(nullptr, msgStructure);
 
-        ParsedMetricMessage out;
+        MetricEvent out;
         GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
 
         gst_message_unref(message);
 
         EXPECT_EQ(GST_FLOW_OK, result) << "Failed for metric value " << metricVal;
-        EXPECT_EQ(metricVal, out.metric) << "Metric value not correctly stored for value " << metricVal;
+        EXPECT_EQ(metricVal, static_cast<uint32_t>(out.type)) << "Metric value not correctly stored for value " << metricVal;
     }
 
     gst_object_unref(source);
@@ -582,7 +583,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsMetricValueZero)
     const GstStructure *msgStructure = gst_message_get_structure(message);
     ASSERT_NE(nullptr, msgStructure);
 
-    ParsedMetricMessage out;
+    MetricEvent out;
     GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
@@ -607,7 +608,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsMetricValueEight)
     const GstStructure *msgStructure = gst_message_get_structure(message);
     ASSERT_NE(nullptr, msgStructure);
 
-    ParsedMetricMessage out;
+    MetricEvent out;
     GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
@@ -632,7 +633,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsMetricValueTwoFiftFive)
     const GstStructure *msgStructure = gst_message_get_structure(message);
     ASSERT_NE(nullptr, msgStructure);
 
-    ParsedMetricMessage out;
+    MetricEvent out;
     GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
@@ -641,7 +642,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsMetricValueTwoFiftFive)
     EXPECT_EQ(GST_FLOW_ERROR, result);
 }
 
-TEST(ValidateMediaPipelineMetricTest, RejectsMissingObservationKindField)
+TEST(ValidateMediaPipelineMetricTest, RejectsMissingObservationPhaseField)
 {
     gst_init(nullptr, nullptr);
 
@@ -657,7 +658,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsMissingObservationKindField)
     const GstStructure *msgStructure = gst_message_get_structure(message);
     ASSERT_NE(nullptr, msgStructure);
 
-    ParsedMetricMessage out;
+    MetricEvent out;
     GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
@@ -666,7 +667,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsMissingObservationKindField)
     EXPECT_EQ(GST_FLOW_ERROR, result);
 }
 
-TEST(ValidateMediaPipelineMetricTest, RejectsObservationKindFieldWithWrongType)
+TEST(ValidateMediaPipelineMetricTest, RejectsObservationPhaseFieldWithWrongType)
 {
     gst_init(nullptr, nullptr);
 
@@ -685,7 +686,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsObservationKindFieldWithWrongType)
     const GstStructure *msgStructure = gst_message_get_structure(message);
     ASSERT_NE(nullptr, msgStructure);
 
-    ParsedMetricMessage out;
+    MetricEvent out;
     GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
@@ -694,7 +695,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsObservationKindFieldWithWrongType)
     EXPECT_EQ(GST_FLOW_ERROR, result);
 }
 
-TEST(ValidateMediaPipelineMetricTest, AcceptsAllValidObservationKindValues)
+TEST(ValidateMediaPipelineMetricTest, AcceptsAllValidObservationPhaseValues)
 {
     gst_init(nullptr, nullptr);
 
@@ -715,19 +716,19 @@ TEST(ValidateMediaPipelineMetricTest, AcceptsAllValidObservationKindValues)
         const GstStructure *msgStructure = gst_message_get_structure(message);
         ASSERT_NE(nullptr, msgStructure);
 
-        ParsedMetricMessage out;
+        MetricEvent out;
         GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
 
         gst_message_unref(message);
 
         EXPECT_EQ(GST_FLOW_OK, result) << "Failed for observation-kind value " << kindVal;
-        EXPECT_EQ(kindVal, out.observation_kind) << "Observation-kind value not correctly stored for value " << kindVal;
+        EXPECT_EQ(kindVal, static_cast<uint32_t>(out.phase)) << "Observation-kind value not correctly stored for value " << kindVal;
     }
 
     gst_object_unref(source);
 }
 
-TEST(ValidateMediaPipelineMetricTest, RejectsObservationKindValueZero)
+TEST(ValidateMediaPipelineMetricTest, RejectsObservationPhaseValueZero)
 {
     gst_init(nullptr, nullptr);
 
@@ -746,7 +747,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsObservationKindValueZero)
     const GstStructure *msgStructure = gst_message_get_structure(message);
     ASSERT_NE(nullptr, msgStructure);
 
-    ParsedMetricMessage out;
+    MetricEvent out;
     GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
@@ -755,7 +756,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsObservationKindValueZero)
     EXPECT_EQ(GST_FLOW_ERROR, result);
 }
 
-TEST(ValidateMediaPipelineMetricTest, RejectsObservationKindValueFour)
+TEST(ValidateMediaPipelineMetricTest, RejectsObservationPhaseValueFour)
 {
     gst_init(nullptr, nullptr);
 
@@ -774,7 +775,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsObservationKindValueFour)
     const GstStructure *msgStructure = gst_message_get_structure(message);
     ASSERT_NE(nullptr, msgStructure);
 
-    ParsedMetricMessage out;
+    MetricEvent out;
     GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
@@ -800,7 +801,7 @@ std::string validateAndCaptureWarnings(GstStructure *structure, GstFlowReturn &r
                   },
                   true);
 
-    ParsedMetricMessage out;
+    MetricEvent out;
     result = ValidateMediaPipelineMetric(structure, out);
     setLogHandler(RIALTO_COMPONENT_SERVER, nullptr, false);
     return logs;
@@ -968,7 +969,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsCountValueZero)
     const GstStructure *msgStructure = gst_message_get_structure(message);
     ASSERT_NE(nullptr, msgStructure);
 
-    ParsedMetricMessage out;
+    MetricEvent out;
     GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
@@ -977,7 +978,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsCountValueZero)
     EXPECT_EQ(GST_FLOW_ERROR, result);
 }
 
-static GstFlowReturn validateOwnedStructure(GstStructure *structure, ParsedMetricMessage &out)
+static GstFlowReturn validateOwnedStructure(GstStructure *structure, MetricEvent &out)
 {
     gst_init(nullptr, nullptr);
     GstElement *source = gst_pipeline_new("test-source");
@@ -996,10 +997,10 @@ TEST(ValidateMediaPipelineMetricTest, AcceptsPtsNsAsInt64IncludingZeroAndNegativ
         GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
                                                      "observation-kind", G_TYPE_UINT, 1U,
                                                      "pts-ns", G_TYPE_INT64, pts, nullptr);
-        ParsedMetricMessage out;
+        MetricEvent out;
         EXPECT_EQ(GST_FLOW_OK, validateOwnedStructure(structure, out));
-        ASSERT_TRUE(out.pts_ns.has_value());
-        EXPECT_EQ(pts, *out.pts_ns);
+        ASSERT_TRUE(out.presentationTimeStampNs.has_value());
+        EXPECT_EQ(pts, *out.presentationTimeStampNs);
     }
 }
 
@@ -1008,7 +1009,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsPtsNsWithWrongType)
     GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
                                                  "observation-kind", G_TYPE_UINT, 1U,
                                                  "pts-ns", G_TYPE_UINT64, guint64{5}, nullptr);
-    ParsedMetricMessage out;
+    MetricEvent out;
     EXPECT_EQ(GST_FLOW_ERROR, validateOwnedStructure(structure, out));
 }
 
@@ -1017,10 +1018,10 @@ TEST(ValidateMediaPipelineMetricTest, AcceptsDurationNsAsUint64)
     GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 6U,
                                                  "observation-kind", G_TYPE_UINT, 3U,
                                                  "duration-ns", G_TYPE_UINT64, guint64{250000}, nullptr);
-    ParsedMetricMessage out;
+    MetricEvent out;
     EXPECT_EQ(GST_FLOW_OK, validateOwnedStructure(structure, out));
-    ASSERT_TRUE(out.duration_ns.has_value());
-    EXPECT_EQ(250000U, *out.duration_ns);
+    ASSERT_TRUE(out.durationNs.has_value());
+    EXPECT_EQ(250000U, *out.durationNs);
 }
 
 TEST(ValidateMediaPipelineMetricTest, RejectsDurationNsWithWrongType)
@@ -1028,7 +1029,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsDurationNsWithWrongType)
     GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 6U,
                                                  "observation-kind", G_TYPE_UINT, 3U,
                                                  "duration-ns", G_TYPE_INT64, gint64{250000}, nullptr);
-    ParsedMetricMessage out;
+    MetricEvent out;
     EXPECT_EQ(GST_FLOW_ERROR, validateOwnedStructure(structure, out));
 }
 
@@ -1039,7 +1040,7 @@ TEST(ValidateMediaPipelineMetricTest, AcceptsCountValuesAboveOne)
         GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 5U,
                                                      "observation-kind", G_TYPE_UINT, 3U,
                                                      "count", G_TYPE_UINT64, count, nullptr);
-        ParsedMetricMessage out;
+        MetricEvent out;
         EXPECT_EQ(GST_FLOW_OK, validateOwnedStructure(structure, out));
         ASSERT_TRUE(out.count.has_value());
         EXPECT_EQ(count, *out.count);
@@ -1051,7 +1052,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsCountWithWrongType)
     GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 5U,
                                                  "observation-kind", G_TYPE_UINT, 3U,
                                                  "count", G_TYPE_UINT, 4U, nullptr);
-    ParsedMetricMessage out;
+    MetricEvent out;
     EXPECT_EQ(GST_FLOW_ERROR, validateOwnedStructure(structure, out));
 }
 
@@ -1060,7 +1061,7 @@ TEST(ValidateMediaPipelineMetricTest, AcceptsEpisodeResolvedWithCountForVideoFra
     GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 5U,
                                                  "observation-kind", G_TYPE_UINT, 3U,
                                                  "count", G_TYPE_UINT64, guint64{4}, nullptr);
-    ParsedMetricMessage out;
+    MetricEvent out;
     EXPECT_EQ(GST_FLOW_OK, validateOwnedStructure(structure, out));
 }
 
@@ -1069,7 +1070,7 @@ TEST(ValidateMediaPipelineMetricTest, AcceptsEpisodeResolvedWithDurationForAudio
     GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 6U,
                                                  "observation-kind", G_TYPE_UINT, 3U,
                                                  "duration-ns", G_TYPE_UINT64, guint64{100}, nullptr);
-    ParsedMetricMessage out;
+    MetricEvent out;
     EXPECT_EQ(GST_FLOW_OK, validateOwnedStructure(structure, out));
 }
 
@@ -1078,11 +1079,11 @@ TEST(ValidateMediaPipelineMetricTest, RejectsBufferUnderflowEpisodeResolvedWithC
     GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 7U,
                                                  "observation-kind", G_TYPE_UINT, 3U,
                                                  "count", G_TYPE_UINT64, guint64{2}, nullptr);
-    ParsedMetricMessage out;
+    MetricEvent out;
     EXPECT_EQ(GST_FLOW_ERROR, validateOwnedStructure(structure, out));
 }
 
-TEST(ValidateMediaPipelineMetricTest, RejectsObservationKindValueTwoFiftFive)
+TEST(ValidateMediaPipelineMetricTest, RejectsObservationPhaseValueTwoFiftFive)
 {
     gst_init(nullptr, nullptr);
 
@@ -1101,7 +1102,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsObservationKindValueTwoFiftFive)
     const GstStructure *msgStructure = gst_message_get_structure(message);
     ASSERT_NE(nullptr, msgStructure);
 
-    ParsedMetricMessage out;
+    MetricEvent out;
     GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
