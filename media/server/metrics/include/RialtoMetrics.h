@@ -13,13 +13,13 @@ class RialtoMetrics final : public IRialtoMetrics
 public:
     ~RialtoMetrics() override;
     void setSessionId(int32_t sessionId) override;
-    std::optional<ParsedMetricMessage> onMetricMessage(
+    std::optional<MetricEvent> onMetricMessage(
         GstMessage *message, const std::optional<std::uint64_t> &renderedFrames,
         const std::optional<std::uint64_t> &droppedFrames) override;
-    void updateFrameCounters(int32_t sessionId, int32_t sourceId, const FrameCounters &counters) override;
+    void updateFrameCounters(int32_t sessionId, int32_t sourceId, const CounterSnapshot &snapshot) override;
     void updateSinkStats(int32_t sessionId, int32_t sourceId, std::uint64_t renderedFrames,
                          std::uint64_t droppedFrames) override;
-    bool getFrameCounters(int32_t sessionId, int32_t sourceId, FrameCounters &counters) const override;
+    bool getFrameCounters(int32_t sessionId, int32_t sourceId, CounterSnapshot &snapshot) const override;
     ElementToSourceMapper* getElementToSourceMapper() override;
 
 private:
@@ -27,7 +27,7 @@ private:
 
     mutable std::mutex m_counterMutex;
     int32_t m_sessionId{-1};
-    std::map<CounterKey, FrameCounters> m_counterCache;
+    std::map<CounterKey, CounterSnapshot> m_counterCache;
     std::unique_ptr<ElementToSourceMapper> m_elementToSourceMapper;
 };
 } // namespace firebolt::rialto::server

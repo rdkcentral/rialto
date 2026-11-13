@@ -40,10 +40,7 @@ public:
                 (override));
     MOCK_METHOD(void, notifyPosition, (int64_t position), (override));
     MOCK_METHOD(void, notifyQos, (int32_t sourceId, const QosInfo &qosInfo), (override));
-    MOCK_METHOD(void, notifyMetricEvent,
-                (int32_t sourceId, uint64_t ptsNs, uint32_t metric, uint32_t observationKind, uint64_t count,
-                 uint64_t durationNs, uint64_t observedAtMonotonicNs, int64_t observedAtUnixNs),
-                (override));
+    MOCK_METHOD(void, notifyMetric, (const MetricEvent &metric), (override));
     MOCK_METHOD(void, notifyBufferUnderflow, (int32_t sourceId), (override));
     MOCK_METHOD(void, notifyFirstFrameReceived, (int32_t sourceId), (override));
     MOCK_METHOD(void, notifyPlaybackError, (int32_t sourceId, PlaybackError error), (override));

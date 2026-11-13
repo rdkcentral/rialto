@@ -215,7 +215,7 @@ private:
      */
     void onQos(const std::shared_ptr<firebolt::rialto::QosEvent> &event);
 
-    void handleMetricEvent(const std::shared_ptr<firebolt::rialto::MediaPipelineMetric> &event);
+    void handleMetricEvent(const std::shared_ptr<firebolt::rialto::MediaPipelineMetricEvent> &event);
 
     /**
      * @brief Handler for a buffer underflow notification from the server.

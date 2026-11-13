@@ -125,7 +125,7 @@ void RialtoMetrics::setSessionId(int32_t sessionId)
 	m_sessionId = sessionId;
 }
 
-std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
+std::optional<MetricEvent> RialtoMetrics::onMetricMessage(
 	GstMessage *message, const std::optional<std::uint64_t> &renderedFrames,
 	const std::optional<std::uint64_t> &droppedFrames)
 {
@@ -150,7 +150,7 @@ std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
 	}
 
 	// Validate the metric message using the new ValidateMediaPipelineMetric function
-	ParsedMetricMessage parsedMessage;
+	MetricEvent parsedMessage;
 	GstFlowReturn validationResult = ValidateMediaPipelineMetric(structure, parsedMessage, message, m_elementToSourceMapper.get());
 	
 	if (validationResult != GST_FLOW_OK)
@@ -159,48 +159,62 @@ std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
 		return std::nullopt;
 	}
 
-	// The GstMessage timestamp is taken from a monotonic clock when the message was posted on the bus.
+	// The GstMessage timestamp is taken from a monotonic clock when the message was posted on the bus. Unix time is
+	// derived with the same offset so both observed-at values describe one instant. If the timestamp is invalid or in
+	// the future, the current time is used instead.
 	const std::uint64_t nowMonotonicNs = getMonotonicTimestampNs();
 	const std::int64_t nowUnixNs = getUnixTimestampNs();
 	const GstClockTime messageTimestamp = GST_MESSAGE_TIMESTAMP(message);
 	if (GST_CLOCK_TIME_IS_VALID(messageTimestamp) && messageTimestamp <= nowMonotonicNs)
 	{
-		parsedMessage.observed_at_monotonic_ns = messageTimestamp;
-		parsedMessage.observed_at_unix_ns = nowUnixNs - static_cast<std::int64_t>(nowMonotonicNs - messageTimestamp);
+		parsedMessage.observedAtMonotonicNs = messageTimestamp;
+		parsedMessage.observedAtUnixNs = nowUnixNs - static_cast<std::int64_t>(nowMonotonicNs - messageTimestamp);
 	}
 	else
 	{
-		parsedMessage.observed_at_monotonic_ns = nowMonotonicNs;
-		parsedMessage.observed_at_unix_ns = nowUnixNs;
+		parsedMessage.observedAtMonotonicNs = nowMonotonicNs;
+		parsedMessage.observedAtUnixNs = nowUnixNs;
 	}
 
-	if (parsedMessage.metric == static_cast<std::uint32_t>(MediaMetricType::MEDIA_METRIC_VIDEO_DECODE_ERROR) &&
-	    parsedMessage.observation_kind == static_cast<std::uint32_t>(ObservationKind::OCCURRENCE))
+	// The session id is not part of MetricEvent; it is only needed to key the counter cache and for logging.
+	int32_t sessionId = 0;
+	uint32_t mappedSessionId = 0;
+	uint32_t mappedSourceId = 0;
+	GstElement* sourceElement = GST_MESSAGE_SRC(message);
+	if (sourceElement && m_elementToSourceMapper &&
+	    m_elementToSourceMapper->MapElement(sourceElement, mappedSessionId, mappedSourceId))
+	{
+		sessionId = static_cast<int32_t>(mappedSessionId);
+	}
+
+	// Counted after validation, so rejected messages never reach the counters.
+	if (parsedMessage.type == MetricType::VIDEO_DECODE_ERROR && parsedMessage.phase == MetricPhase::OCCURRENCE)
 	{
 		std::lock_guard<std::mutex> lock{m_counterMutex};
-		++m_counterCache[{parsedMessage.session_id, parsedMessage.source_id}].corrupted;
+		++m_counterCache[{sessionId, parsedMessage.sourceId}].counters.corruptedFrames;
 	}
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
 					 "RialtoMetrics::onMetricMessage validated metric: %u, observation_kind: %u, session_id: %d, source_id: %d",
-					 parsedMessage.metric, parsedMessage.observation_kind, parsedMessage.session_id, parsedMessage.source_id);
+					 static_cast<uint32_t>(parsedMessage.type), static_cast<uint32_t>(parsedMessage.phase), sessionId,
+					 parsedMessage.sourceId);
 	
 	return parsedMessage;
 }
 
-void RialtoMetrics::updateFrameCounters(int32_t sessionId, int32_t sourceId, const FrameCounters &counters)
+void RialtoMetrics::updateFrameCounters(int32_t sessionId, int32_t sourceId, const CounterSnapshot &snapshot)
 {
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
 					 "RialtoMetrics::updateFrameCounters sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, timestamp: %llu",
-					 sessionId, sourceId, static_cast<unsigned long long>(counters.rendered),
-					 static_cast<unsigned long long>(counters.dropped),
-					 static_cast<unsigned long long>(counters.corrupted),
-					 static_cast<unsigned long long>(counters.timestamp));
+					 sessionId, sourceId, static_cast<unsigned long long>(snapshot.counters.renderedFrames),
+					 static_cast<unsigned long long>(snapshot.counters.droppedFrames),
+					 static_cast<unsigned long long>(snapshot.counters.corruptedFrames),
+					 static_cast<unsigned long long>(snapshot.timestamp));
 	std::lock_guard<std::mutex> lock{m_counterMutex};
 	auto &current = m_counterCache[{sessionId, sourceId}];
-	current.rendered = std::max(current.rendered, counters.rendered);
-	current.dropped = std::max(current.dropped, counters.dropped);
-	current.corrupted = std::max(current.corrupted, counters.corrupted);
-	current.timestamp = counters.timestamp;
+	current.counters.renderedFrames = std::max(current.counters.renderedFrames, snapshot.counters.renderedFrames);
+	current.counters.droppedFrames = std::max(current.counters.droppedFrames, snapshot.counters.droppedFrames);
+	current.counters.corruptedFrames = std::max(current.counters.corruptedFrames, snapshot.counters.corruptedFrames);
+	current.timestamp = snapshot.timestamp;
 }
 
 void RialtoMetrics::updateSinkStats(int32_t sessionId, int32_t sourceId, std::uint64_t renderedFrames,
@@ -212,12 +226,12 @@ void RialtoMetrics::updateSinkStats(int32_t sessionId, int32_t sourceId, std::ui
 					 static_cast<unsigned long long>(droppedFrames));
 	std::lock_guard<std::mutex> lock{m_counterMutex};
 	auto &counters = m_counterCache[{sessionId, sourceId}];
-	counters.rendered = std::max(counters.rendered, renderedFrames);
-	counters.dropped = std::max(counters.dropped, droppedFrames);
+	counters.counters.renderedFrames = std::max(counters.counters.renderedFrames, renderedFrames);
+	counters.counters.droppedFrames = std::max(counters.counters.droppedFrames, droppedFrames);
 	counters.timestamp = getMonotonicTimestampNs();
 }
 
-bool RialtoMetrics::getFrameCounters(int32_t sessionId, int32_t sourceId, FrameCounters &counters) const
+bool RialtoMetrics::getFrameCounters(int32_t sessionId, int32_t sourceId, CounterSnapshot &snapshot) const
 {
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
 					 "RialtoMetrics::getFrameCounters sessionId: %d, sourceId: %d", sessionId, sourceId);
@@ -227,7 +241,7 @@ bool RialtoMetrics::getFrameCounters(int32_t sessionId, int32_t sourceId, FrameC
 		const auto it = m_counterCache.find({sessionId, sourceId});
 		if (it != m_counterCache.end())
 		{
-			counters = it->second;
+			snapshot = it->second;
 			found = true;
 		}
 	}
@@ -239,10 +253,10 @@ bool RialtoMetrics::getFrameCounters(int32_t sessionId, int32_t sourceId, FrameC
 
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
 					 "RialtoMetrics::getFrameCounters found rendered: %llu, dropped: %llu, corrupted: %llu, timestamp: %llu",
-					 static_cast<unsigned long long>(counters.rendered),
-					 static_cast<unsigned long long>(counters.dropped),
-					 static_cast<unsigned long long>(counters.corrupted),
-					 static_cast<unsigned long long>(counters.timestamp));
+					 static_cast<unsigned long long>(snapshot.counters.renderedFrames),
+					 static_cast<unsigned long long>(snapshot.counters.droppedFrames),
+					 static_cast<unsigned long long>(snapshot.counters.corruptedFrames),
+					 static_cast<unsigned long long>(snapshot.timestamp));
 	return true;
 }
 
@@ -251,7 +265,11 @@ ElementToSourceMapper* RialtoMetrics::getElementToSourceMapper()
 	return m_elementToSourceMapper.get();
 }
 
-GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricMessage& out, GstMessage* gstMessage,
+// Validates a "media-pipeline-metric" structure and fills out. Checks run in order: structure name, metric,
+// observation-kind, optional pts-ns, duration-ns and count, then field combinations. Any failure logs a warning and
+// returns GST_FLOW_ERROR, so the caller drops only that message. Session and source IDs are filled in last from
+// GST_MESSAGE_SRC(); an unregistered element keeps source 0 rather than rejecting the message.
+GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, MetricEvent& out, GstMessage* gstMessage,
 										   ElementToSourceMapper* mapper)
 {
 	if (!msg)
@@ -288,18 +306,18 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricM
 	}
 
 	guint metricVal = g_value_get_uint(metricValue);
-	if (metricVal < static_cast<guint>(MediaMetricType::MEDIA_METRIC_VIDEO_FRAME_DROP) || 
-	    metricVal > static_cast<guint>(MediaMetricType::MEDIA_METRIC_BUFFER_UNDERFLOW))
+	if (metricVal < static_cast<guint>(MetricType::VIDEO_FRAME_DROP) || 
+	    metricVal > static_cast<guint>(MetricType::BUFFER_UNDERFLOW))
 	{
 		RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER,
 						"ValidateMediaPipelineMetric: field 'metric' value %u is outside valid range %u-%u",
 						metricVal,
-						static_cast<guint>(MediaMetricType::MEDIA_METRIC_VIDEO_FRAME_DROP),
-						static_cast<guint>(MediaMetricType::MEDIA_METRIC_BUFFER_UNDERFLOW));
+						static_cast<guint>(MetricType::VIDEO_FRAME_DROP),
+						static_cast<guint>(MetricType::BUFFER_UNDERFLOW));
 		return GST_FLOW_ERROR;
 	}
 
-	out.metric = metricVal;
+	out.type = static_cast<MetricType>(metricVal);
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: metric field validation passed with value %u", metricVal);
 
 	// Validate 'observation-kind' field - required, must be G_TYPE_UINT, value in {1, 2, 3}
@@ -319,18 +337,18 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricM
 	}
 
 	guint observationKindVal = g_value_get_uint(observationKindValue);
-	if (observationKindVal < static_cast<guint>(ObservationKind::OCCURRENCE) || 
-	    observationKindVal > static_cast<guint>(ObservationKind::EPISODE_RESOLVED))
+	if (observationKindVal < static_cast<guint>(MetricPhase::OCCURRENCE) || 
+	    observationKindVal > static_cast<guint>(MetricPhase::EPISODE_RESOLVED))
 	{
 		RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER,
 						"ValidateMediaPipelineMetric: field 'observation-kind' value %u is outside valid range %u-%u",
 						observationKindVal,
-						static_cast<guint>(ObservationKind::OCCURRENCE),
-						static_cast<guint>(ObservationKind::EPISODE_RESOLVED));
+						static_cast<guint>(MetricPhase::OCCURRENCE),
+						static_cast<guint>(MetricPhase::EPISODE_RESOLVED));
 		return GST_FLOW_ERROR;
 	}
 
-	out.observation_kind = observationKindVal;
+	out.phase = static_cast<MetricPhase>(observationKindVal);
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: observation-kind field validation passed with value %u", observationKindVal);
 
 	// Validate 'pts-ns' field - optional, when present must be G_TYPE_INT64
@@ -346,7 +364,7 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricM
 		}
 
 		gint64 ptsNsVal = g_value_get_int64(ptsNsValue);
-		out.pts_ns = ptsNsVal;
+		out.presentationTimeStampNs = ptsNsVal;
 		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: pts-ns field validation passed with value %ld", ptsNsVal);
 	}
 
@@ -363,7 +381,7 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricM
 		}
 
 		guint64 durationNsVal = g_value_get_uint64(durationNsValue);
-		out.duration_ns = durationNsVal;
+		out.durationNs = durationNsVal;
 		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: duration-ns field validation passed with value %llu", 
 						 static_cast<unsigned long long>(durationNsVal));
 	}
@@ -395,7 +413,7 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricM
 
 	// Semantic field-combination validation
 	// Reject OCCURRENCE (observation-kind=1) with duration-ns or count present
-	if (observationKindVal == static_cast<guint>(ObservationKind::OCCURRENCE))
+	if (observationKindVal == static_cast<guint>(MetricPhase::OCCURRENCE))
 	{
 		if (gst_structure_has_field(msg, "duration-ns"))
 		{
@@ -412,8 +430,8 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricM
 	}
 
 	// Reject BUFFER_UNDERFLOW (metric=7) in EPISODE_RESOLVED (observation-kind=3) with count present
-	if (metricVal == static_cast<guint>(MediaMetricType::MEDIA_METRIC_BUFFER_UNDERFLOW) &&
-		observationKindVal == static_cast<guint>(ObservationKind::EPISODE_RESOLVED))
+	if (metricVal == static_cast<guint>(MetricType::BUFFER_UNDERFLOW) &&
+		observationKindVal == static_cast<guint>(MetricPhase::EPISODE_RESOLVED))
 	{
 		if (gst_structure_has_field(msg, "count"))
 		{
@@ -423,7 +441,8 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricM
 		}
 	}
 
-	// Enrichment: Extract source element from GstMessage and map to session_id and source_id
+	out.sourceId = 0;
+	// Enrichment: Extract source element from GstMessage and map to session_id (log only) and source_id
 	if (gstMessage && mapper)
 	{
 		GstElement* sourceElement = GST_MESSAGE_SRC(gstMessage);
@@ -434,11 +453,11 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricM
 			
 			if (mapper->MapElement(sourceElement, enrichedSessionId, enrichedSourceId))
 			{
-				out.session_id = static_cast<int32_t>(enrichedSessionId);
-				out.source_id = static_cast<int32_t>(enrichedSourceId);
+				const int32_t sessionIdForLog = static_cast<int32_t>(enrichedSessionId);
+				out.sourceId = static_cast<int32_t>(enrichedSourceId);
 				RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
 								"ValidateMediaPipelineMetric: enriched message with session_id %d, source_id %d",
-								out.session_id, out.source_id);
+								sessionIdForLog, out.sourceId);
 			}
 			else
 			{

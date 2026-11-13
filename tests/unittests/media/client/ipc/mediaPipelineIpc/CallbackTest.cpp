@@ -119,15 +119,15 @@ TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyQos)
 }
 
 /**
- * Test that a MediaPipelineMetric serialized by the server is parsed and every field is forwarded to the client.
+ * Test that a MediaPipelineMetricEvent serialized by the server is parsed and every field is forwarded to the client.
  */
 TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyMetricEventRoundTripsSerializedProto)
 {
-    firebolt::rialto::MediaPipelineMetric sent;
+    firebolt::rialto::MediaPipelineMetricEvent sent;
     sent.set_session_id(m_sessionId);
     sent.set_source_id(m_sourceId);
-    sent.set_metric(5);
-    sent.set_observation_kind(3);
+    sent.set_type(firebolt::rialto::MediaPipelineMetricEvent::VIDEO_FRAME_REPEAT);
+    sent.set_phase(firebolt::rialto::MediaPipelineMetricEvent::EPISODE_RESOLVED);
     sent.set_pts_ns(9001);
     sent.set_count(4);
     sent.set_duration_ns(8000000);
@@ -136,11 +136,26 @@ TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyMetricEventRoundTripsSeri
 
     std::string payload;
     ASSERT_TRUE(sent.SerializeToString(&payload));
-    auto received = std::make_shared<firebolt::rialto::MediaPipelineMetric>();
+    auto received = std::make_shared<firebolt::rialto::MediaPipelineMetricEvent>();
     ASSERT_TRUE(received->ParseFromString(payload));
 
     EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
-    EXPECT_CALL(*m_clientMock, notifyMetricEvent(m_sourceId, 9001, 5, 3, 4, 8000000, 42, 1700000000));
+    EXPECT_CALL(*m_clientMock, notifyMetric(_))
+        .WillOnce(Invoke(
+            [this](const MetricEvent &metric)
+            {
+                EXPECT_EQ(metric.type, MetricType::VIDEO_FRAME_REPEAT);
+                EXPECT_EQ(metric.phase, MetricPhase::EPISODE_RESOLVED);
+                EXPECT_EQ(metric.sourceId, m_sourceId);
+                ASSERT_TRUE(metric.presentationTimeStampNs.has_value());
+                EXPECT_EQ(*metric.presentationTimeStampNs, 9001);
+                ASSERT_TRUE(metric.count.has_value());
+                EXPECT_EQ(*metric.count, 4u);
+                ASSERT_TRUE(metric.durationNs.has_value());
+                EXPECT_EQ(*metric.durationNs, 8000000u);
+                EXPECT_EQ(metric.observedAtMonotonicNs, 42u);
+                EXPECT_EQ(metric.observedAtUnixNs, 1700000000);
+            }));
 
     m_metricEventCb(received);
 }

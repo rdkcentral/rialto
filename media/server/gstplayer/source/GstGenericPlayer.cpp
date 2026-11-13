@@ -1448,6 +1448,9 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
                 renderedFrames = renderedFramesTmp;
                 droppedFrames = droppedFramesTmp;
                 returnValue = true;
+                RIALTO_SERVER_LOG_DEBUG("Sink stats from '%s' rendered: %llu, dropped: %llu", GST_ELEMENT_NAME(sink),
+                                        static_cast<unsigned long long>(renderedFrames),
+                                        static_cast<unsigned long long>(droppedFrames));
             }
             else
             {
@@ -3280,15 +3283,15 @@ void GstGenericPlayer::handleMetricMessage(GstMessage *message)
         return;
     }
 
-    const uint64_t ptsNs = parsedMetric->pts_ns.value_or(0);
+    const uint64_t ptsNs = parsedMetric->presentationTimeStampNs.value_or(0);
     const uint64_t count = parsedMetric->count.value_or(0);
-    const uint64_t durationNs = parsedMetric->duration_ns.value_or(0);
+    const uint64_t durationNs = parsedMetric->durationNs.value_or(0);
 
     RIALTO_SERVER_LOG_DEBUG(
         "Parsed playback metric sourceId: %d, sessionId: %d, metric: %u, observation_kind: %u, ptsNs: %llu, count: %llu, durationNs: %llu",
-        parsedMetric->source_id, parsedMetric->session_id, parsedMetric->metric, parsedMetric->observation_kind,
-        static_cast<unsigned long long>(ptsNs), static_cast<unsigned long long>(count),
-        static_cast<unsigned long long>(durationNs));
+        parsedMetric->sourceId, m_metricSessionId.load(), static_cast<uint32_t>(parsedMetric->type),
+        static_cast<uint32_t>(parsedMetric->phase), static_cast<unsigned long long>(ptsNs),
+        static_cast<unsigned long long>(count), static_cast<unsigned long long>(durationNs));
     if (!m_gstPlayerClient)
     {
         RIALTO_SERVER_LOG_WARN("Cannot forward playback metric - player client is unavailable");
@@ -3296,8 +3299,8 @@ void GstGenericPlayer::handleMetricMessage(GstMessage *message)
     }
 
     RIALTO_SERVER_LOG_DEBUG("Forwarding playback metric event for sourceId: %d, observation_kind: %u",
-                            parsedMetric->source_id, parsedMetric->observation_kind);
-    m_gstPlayerClient->notifyMetricEvent(*parsedMetric);
+                            parsedMetric->sourceId, static_cast<uint32_t>(parsedMetric->phase));
+    m_gstPlayerClient->notifyMetric(*parsedMetric);
 }
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)

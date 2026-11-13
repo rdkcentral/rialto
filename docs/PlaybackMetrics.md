@@ -6,14 +6,14 @@ Playback metrics use two IPC flows: a synchronous snapshot query and an asynchro
 
 ## Westeros Bus Messages
 
-The Broadcom Westeros sink posts `media-pipeline-metric` element messages containing `metric`, `observation-kind`, and
-signed `pts-ns`. Rialto validates the message fields and enriches the event with the session and source IDs registered
+The Broadcom Westeros sink posts `media-pipeline-metric` element messages with the fields listed in
+[Bus Message Fields](#bus-message-fields). Rialto validates the message fields and enriches the event with the session and source IDs registered
 for the posting element in the `ElementToSourceMapper`. If the element is not registered, Rialto logs a warning and
 uses `0` for both IDs instead of rejecting the message.
-Snapshot queries are restricted to the active pipeline and an attached video source. Rialto interprets occurrence-phase
+Snapshot queries are restricted to the active pipeline and an attached video source. Rialto interprets occurrence (`observation-kind` 1)
 video-decode-error messages as one corrupted frame. Started/resolved episode messages do not increment that counter.
 Rendered and dropped frame counts are read from the sink's existing `stats` property via `getStats` when processing a
-metric message and refreshing a snapshot query. Video-frame-drop messages are still forwarded with their phase, but
+metric message and refreshing a snapshot query. Video-frame-drop messages are still forwarded with their observation kind, but
 do not increment the dropped count. If sink stats are unavailable, Rialto logs a warning and retains the cached rendered
 and dropped counts (zero until stats are first available).
 
@@ -39,12 +39,12 @@ consumer tests:
 - **Counter stability:** Rendered, dropped, and corrupted counters in a cached snapshot do not decrease during a
     session/source lifetime. Sink-stat refreshes and metric updates preserve the maximum observed count. Counter reset
     semantics are not defined by this contract; a reset requires a new source/session identity.
-- **Message type validation:** The GStreamer consumer's application-bus metric message uses 64-bit unsigned values
-    for counters and PTS. Validator fixtures must use those same GTypes so the tests check the message that is actually
+- **Message type validation:** The GStreamer consumer's application-bus metric message uses signed 64-bit `pts-ns` and
+    unsigned 64-bit `duration-ns` and `count` values. Validator fixtures must use those same GTypes so the tests check the message that is actually
     emitted.
 
 The query and push mechanisms are deliberately separate. Reading the MSE sink's `frame-counters` property triggers a
-synchronous `GetFrameCounters` query; Rialto does not poll that property automatically. `MediaPipelineMetric` is an
+synchronous `GetFrameCounters` query; Rialto does not poll that property automatically. `MediaPipelineMetricEvent` is an
 asynchronous push path. In the GStreamer client, the event is converted to a `media-pipeline-metric` application-bus
 message for consumers that handle pipeline bus messages. Receiving a push event does not invoke the query property.
 
@@ -75,39 +75,74 @@ It supplies its session ID and the caller-provided source ID in the request. Out
 
 ## Push Event
 
-The server sends `MediaPipelineMetric` with these fields:
+The server sends `MediaPipelineMetricEvent` with these fields. The enums `MetricType` and `MetricPhase` are nested in
+the message, and the wire numbers match the public `MetricType` and `MetricPhase` values:
 
 | Field | Type | Meaning |
 |---|---|---|
-| `metric` | `uint32` | Metric number: 1 (video frame drop) through 7 (buffer underflow), see Message Types |
-| `observation_kind` | `uint32` | Westeros observation kind: 1 occurrence, 2 episode started, 3 episode resolved |
-| `session_id` | `uint32` | Owning media pipeline session |
-| `source_id` | `uint32` | Source that produced the event |
+| `type` | `MetricType` enum (required) | Metric category: 1 (video frame drop) through 7 (buffer underflow), see Message Types |
+| `phase` | `MetricPhase` enum (required) | Westeros observation phase: 1 occurrence, 2 episode started, 3 episode resolved |
+| `source_id` | `int32` (required) | Source that produced the event |
 | `pts_ns` | `int64` (optional) | Presentation timestamp (PTS) associated with the metric event, in nanoseconds |
 | `count` | `uint64` (optional) | Metric repetition count |
 | `duration_ns` | `uint64` (optional) | Metric duration, in nanoseconds |
-| `observed_at_monotonic_ns` | `uint64` | Monotonic timestamp taken by the Rialto server when the metric message was received |
-| `observed_at_unix_ns` | `int64` | Unix timestamp taken by the Rialto server when the metric message was received |
+| `observed_at_monotonic_ns` | `uint64` (required) | Monotonic timestamp taken by the Rialto server when the metric message was received |
+| `observed_at_unix_ns` | `int64` (required) | Unix timestamp taken by the Rialto server when the metric message was received |
+| `session_id` | `uint32` (optional) | Owning media pipeline session, used for routing; not part of the public `MetricEvent` |
 
-The event carries the PTS as `pts_ns` and preserves the Westeros observation kind. Cumulative rendered/dropped/corrupted values remain on the snapshot query path and are not required in the event payload.
+The event carries the PTS as `pts_ns` and preserves the Westeros observation phase. Cumulative rendered/dropped/corrupted values remain on the snapshot query path and are not required in the event payload.
 
-The server forwards events through the public `IMediaPipelineClient::notifyMetricEvent` call. Absent `pts_ns`, `count`, and `duration_ns` values are sent as `0`, and the receiving side cannot distinguish them from an explicit zero. `observed_at_monotonic_ns` and `observed_at_unix_ns` are required on the wire. The Rialto server takes them from the `GstMessage` timestamp when it receives the bus message, so they are not set by the GStreamer element or the application.
-
-```cpp
-void notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, uint32_t metric, uint32_t observationKind,
-                       uint64_t count = 0, uint64_t durationNs = 0,
-                       uint64_t observedAtMonotonicNs = 0, int64_t observedAtUnixNs = 0);
-```
-
-The server's `IMediaPipelineClient::notifyMetricEvent` call maps to the event as follows: the server IPC client fills in its session ID and passes `metric` and `observationKind` through unchanged. The client IPC layer subscribes to this event type when setting up the IPC channel. It dispatches events on its event thread, forwards events for the current session without further filtering, and passes the event to `IMediaPipelineIpcClient::notifyMetricEvent`. `MediaPipeline` forwards that callback to the registered `IMediaPipelineClient` when it is still available.
-
-Applications receive the same signature from `IMediaPipelineClient`:
+The public event type is `MetricEvent`:
 
 ```cpp
-void notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, uint32_t metric, uint32_t observationKind,
-                       uint64_t count = 0, uint64_t durationNs = 0,
-                       uint64_t observedAtMonotonicNs = 0, int64_t observedAtUnixNs = 0);
+struct MetricEvent
+{
+    MetricType type{MetricType::VIDEO_FRAME_DROP};
+    MetricPhase phase{MetricPhase::OCCURRENCE};
+    int32_t sourceId{-1};
+    std::optional<int64_t> presentationTimeStampNs;
+    std::optional<uint64_t> count;
+    std::optional<uint64_t> durationNs;
+    uint64_t observedAtMonotonicNs{0};
+    int64_t observedAtUnixNs{0};
+};
 ```
+
+Absent `pts_ns`, `count`, and `duration_ns` values stay absent (`std::nullopt` in `MetricEvent`, unset on the wire and
+`has_*` false in the proto). They are never sent as `0`, so an absent value cannot be confused with an explicit zero.
+`observed_at_monotonic_ns` and `observed_at_unix_ns` are required on the wire. The Rialto server takes them from the `GstMessage` timestamp when it receives the bus message, so they are not set by the GStreamer element or the application.
+
+The server forwards events through the public `IMediaPipelineClient::notifyMetric` call. The server IPC client fills in its session ID in the proto message and passes the `MetricEvent` fields through unchanged. The client IPC layer subscribes to this event type when setting up the IPC channel. It dispatches events on its event thread, converts the proto message to `MetricEvent` (setting optional fields only when present), forwards events for the current session without further filtering, and passes the event to `IMediaPipelineIpcClient::notifyMetric`. `MediaPipeline` forwards that callback to the registered `IMediaPipelineClient` when it is still available.
+
+Applications receive the same call from `IMediaPipelineClient`:
+
+```cpp
+virtual void notifyMetric(const MetricEvent &metric) = 0;
+```
+
+## Bus Message Fields
+
+The `media-pipeline-metric` structure must be named exactly `media-pipeline-metric`. Field types are checked by
+`ValidateMediaPipelineMetric`; a message that fails any check is logged and dropped without changing counters.
+
+| Field | GType | Required | Constraints |
+|---|---|---|---|
+| `metric` | `G_TYPE_UINT` | Yes | 1 (video frame drop) through 7 (buffer underflow) |
+| `observation-kind` | `G_TYPE_UINT` | Yes | 1 (occurrence), 2 (episode-started), or 3 (episode-resolved) |
+| `pts-ns` | `G_TYPE_INT64` | No | Presentation timestamp in nanoseconds; may be zero or negative |
+| `duration-ns` | `G_TYPE_UINT64` | No | Episode duration in nanoseconds |
+| `count` | `G_TYPE_UINT64` | No | Repetition count; must be at least 1 |
+
+Field semantics depend on `observation-kind`:
+
+| `observation-kind` | Allowed optional fields |
+|---|---|
+| 1 (occurrence) | `pts-ns` only. `duration-ns` and `count` are rejected. |
+| 2 (episode-started) | `pts-ns`. No additional restriction. |
+| 3 (episode-resolved) | `pts-ns`, `duration-ns`, and `count`. For `BUFFER_UNDERFLOW` (metric 7), `count` is rejected. |
+
+The `session_id` and `source_id` are not in the SoC payload. Rialto enriches them from `GST_MESSAGE_SRC()` through the
+`ElementToSourceMapper`.
 
 ## Message Types
 
@@ -123,5 +158,6 @@ The protocol defines these metric categories, carried in `metric` as their 1-bas
 | 6 | `AUDIO_GAP` |
 | 7 | `BUFFER_UNDERFLOW` |
 
-`observationKind` carries 1 for `occurrence`, 2 for `episode-started`, and 3 for `episode-resolved`.
+`MetricEvent::phase` carries `MetricPhase::OCCURRENCE` (1), `EPISODE_STARTED` (2), or `EPISODE_RESOLVED` (3), which correspond to the Westeros `observation-kind` values `occurrence`, `episode-started`, and `episode-resolved`. See
+[Bus Message Fields](#bus-message-fields) for which optional fields each observation kind may carry.
 

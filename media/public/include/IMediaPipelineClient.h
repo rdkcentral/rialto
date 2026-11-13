@@ -191,13 +191,13 @@ public:
     /**
      * @brief Notifies the client about a playback metric event.
      *
-     * @param[in] metric          : Metric type: 1 video frame drop, 2 audio frame drop, 3 video decode error,
-     *                              4 audio decode error, 5 video frame repeat, 6 audio gap, 7 buffer underflow.
-     * @param[in] observationKind : 1 occurrence, 2 episode started, 3 episode resolved.
+     * Optional fields of the event that are not known are left as std::nullopt.
+     *
+     * @param[in] metric : The metric event, with its type (1 video frame drop, 2 audio frame drop, 3 video decode
+     *                     error, 4 audio decode error, 5 video frame repeat, 6 audio gap, 7 buffer underflow),
+     *                     its phase (1 occurrence, 2 episode started, 3 episode resolved) and timing information.
      */
-    virtual void notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, uint32_t metric, uint32_t observationKind,
-                                   uint64_t count = 0, uint64_t durationNs = 0, uint64_t observedAtMonotonicNs = 0,
-                                   int64_t observedAtUnixNs = 0) = 0;
+    virtual void notifyMetric(const MetricEvent &metric) = 0;
 
     /**
      * @brief Notifies the client that buffer underflow occurred.

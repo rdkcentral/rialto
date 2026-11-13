@@ -540,7 +540,8 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersSucc
     loadGstPlayer();
     const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
     auto metrics = std::make_shared<RialtoMetrics>();
-    metrics->updateFrameCounters(m_kSessionId, sourceId, FrameCounters{3141, 95, 7, 1234});
+    metrics->updateFrameCounters(m_kSessionId, sourceId,
+                                 CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 3141, 95, 7}, 1234});
 
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getRialtoMetrics()).WillOnce(Return(metrics));
@@ -577,7 +578,8 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersRefr
     loadGstPlayer();
     const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
     auto metrics = std::make_shared<RialtoMetrics>();
-    metrics->updateFrameCounters(m_kSessionId, sourceId, FrameCounters{3141, 95, 7, 1234});
+    metrics->updateFrameCounters(m_kSessionId, sourceId,
+                                 CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 3141, 95, 7}, 1234});
 
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getRialtoMetrics()).WillOnce(Return(metrics));
@@ -600,12 +602,12 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersRefr
     EXPECT_EQ(7U, corruptedFrames);
     EXPECT_GT(timestamp, 1234U);
 
-    FrameCounters counters;
-    ASSERT_TRUE(metrics->getFrameCounters(m_kSessionId, sourceId, counters));
-    EXPECT_EQ(4000U, counters.rendered);
-    EXPECT_EQ(120U, counters.dropped);
-    EXPECT_EQ(7U, counters.corrupted);
-    EXPECT_GT(counters.timestamp, 1234U);
+    CounterSnapshot snapshot;
+    ASSERT_TRUE(metrics->getFrameCounters(m_kSessionId, sourceId, snapshot));
+    EXPECT_EQ(4000U, snapshot.counters.renderedFrames);
+    EXPECT_EQ(120U, snapshot.counters.droppedFrames);
+    EXPECT_EQ(7U, snapshot.counters.corruptedFrames);
+    EXPECT_GT(snapshot.timestamp, 1234U);
 }
 
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersReadsSinkStatsWithoutBusMessages)

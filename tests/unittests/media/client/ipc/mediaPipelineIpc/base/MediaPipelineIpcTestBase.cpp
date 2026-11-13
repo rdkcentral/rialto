@@ -103,7 +103,7 @@ void MediaPipelineIpcTestBase::expectSubscribeEvents()
                 return static_cast<int>(EventTags::QosEvent);
             }))
         .RetiresOnSaturation();
-        EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.MediaPipelineMetric", _, _))
+        EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.MediaPipelineMetricEvent", _, _))
             .WillOnce(Invoke(
                 [this](const std::string &, const google::protobuf::Descriptor *,
                        std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
