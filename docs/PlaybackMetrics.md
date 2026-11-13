@@ -120,6 +120,18 @@ Applications receive the same call from `IMediaPipelineClient`:
 virtual void notifyMetric(const MetricEvent &metric) = 0;
 ```
 
+## Subscription
+
+By default, all metric types are subscribed, so every `MetricType` produces `notifyMetric` calls. Applications narrow the set with `IMediaPipeline::setMetricSubscription`:
+
+```cpp
+virtual bool setMetricSubscription(const std::vector<MetricType> &types) = 0;
+```
+
+The call replaces the whole subscription with the given set. An empty vector disables metric notifications. The server checks the subscription only when it delivers an event. Unsubscribed events are dropped before they are queued to the client, and they are still counted for the snapshot query path. Frame counters from `getFrameCounters` are unaffected by the subscription.
+
+To make the default empty instead, set `kSubscribeAllMetricsByDefault` to `false` in `media/server/main/source/MediaPipelineServerInternal.cpp`. Clients then opt in with `setMetricSubscription`.
+
 ## Bus Message Fields
 
 The `media-pipeline-metric` structure must be named exactly `media-pipeline-metric`. Field types are checked by

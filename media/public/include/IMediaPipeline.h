@@ -1241,6 +1241,18 @@ public:
     virtual bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) = 0;
 
     /**
+     * @brief Sets the metric types the client is notified about.
+     *
+     * Replace-all semantics: the given set becomes the full subscription. An empty vector means no metric
+     * notifications are delivered. All metric types are subscribed by default.
+     *
+     * @param[in] types : The metric types to subscribe to
+     *
+     * @retval true on success.
+     */
+    virtual bool setMetricSubscription(const std::vector<MetricType> &types) = 0;
+
+    /**
      * @brief Gets the queued frames for this source.
      *
      * This method is synchronous, it gets the queued frames property

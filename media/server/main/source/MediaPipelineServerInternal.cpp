@@ -58,6 +58,23 @@ std::int32_t generateSourceId()
     static std::int32_t sourceId{1};
     return sourceId++;
 }
+
+using firebolt::rialto::MetricType;
+
+// Set to false to make metric subscription empty by default; clients then opt in via setMetricSubscription().
+constexpr bool kSubscribeAllMetricsByDefault = true;
+
+std::set<MetricType> defaultMetricSubscription()
+{
+    std::set<MetricType> types;
+    if (kSubscribeAllMetricsByDefault)
+    {
+        types = {MetricType::VIDEO_FRAME_DROP, MetricType::AUDIO_FRAME_DROP, MetricType::VIDEO_DECODE_ERROR,
+                 MetricType::AUDIO_DECODE_ERROR, MetricType::VIDEO_FRAME_REPEAT, MetricType::AUDIO_GAP,
+                 MetricType::BUFFER_UNDERFLOW};
+    }
+    return types;
+}
 } // namespace
 
 namespace firebolt::rialto
@@ -144,6 +161,7 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
+    m_metricSubscription = defaultMetricSubscription();
     m_mainThread = mainThreadFactory->getMainThread();
     if (!m_mainThread)
     {
@@ -687,6 +705,25 @@ bool MediaPipelineServerInternal::setReportDecodeErrorsInternal(int32_t sourceId
     }
 
     return m_gstPlayer->setReportDecodeErrors(sourceIter->first, reportDecodeErrors);
+}
+
+bool MediaPipelineServerInternal::setMetricSubscription(const std::vector<MetricType> &types)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setMetricSubscriptionInternal(types); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setMetricSubscriptionInternal(const std::vector<MetricType> &types)
+{
+    std::lock_guard<std::mutex> lock{m_metricSubscriptionMutex};
+    m_metricSubscription = std::set<MetricType>(types.begin(), types.end());
+    RIALTO_SERVER_LOG_DEBUG("Metric subscription replaced, number of metric types: %zu", types.size());
+    return true;
 }
 
 bool MediaPipelineServerInternal::getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
@@ -1749,6 +1786,15 @@ void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, con
 
 void MediaPipelineServerInternal::notifyMetric(const MetricEvent &metric)
 {
+    {
+        std::lock_guard<std::mutex> lock{m_metricSubscriptionMutex};
+        if (m_metricSubscription.find(metric.type) == m_metricSubscription.end())
+        {
+            RIALTO_SERVER_LOG_DEBUG("Dropping unsubscribed metric type %u", static_cast<uint32_t>(metric.type));
+            return;
+        }
+    }
+
     RIALTO_SERVER_LOG_DEBUG(
         "Queueing playback metric event sourceId: %d, ptsNs: %llu, metric: %u, observationKind: %u, count: %llu, durationNs: %llu, observedAtMonotonicNs: %llu, observedAtUnixNs: %lld",
         metric.sourceId, static_cast<unsigned long long>(metric.presentationTimeStampNs.value_or(0)),
