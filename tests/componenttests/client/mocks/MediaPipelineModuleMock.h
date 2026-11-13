@@ -79,6 +79,10 @@ public:
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::SetReportDecodeErrorsRequest *request,
                  ::firebolt::rialto::SetReportDecodeErrorsResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setMetricSubscription,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::SetMediaMetricsRequest *request,
+                 ::firebolt::rialto::SetMediaMetricsResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, getQueuedFrames,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetQueuedFramesRequest *request,
                  ::firebolt::rialto::GetQueuedFramesResponse *response, ::google::protobuf::Closure *done));

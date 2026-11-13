@@ -29,6 +29,7 @@
 #include <optional>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 namespace
 {
@@ -882,6 +883,30 @@ void MediaPipelineModuleService::setReportDecodeErrors(::google::protobuf::RpcCo
                                                       request->report_decode_errors()))
     {
         RIALTO_SERVER_LOG_ERROR("Set Report Decode Error failed");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::setMetricSubscription(::google::protobuf::RpcController *controller,
+                                                       const ::firebolt::rialto::SetMediaMetricsRequest *request,
+                                                       ::firebolt::rialto::SetMediaMetricsResponse *response,
+                                                       ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    std::vector<MetricType> types;
+    types.reserve(request->types_size());
+    for (const auto &type : request->types())
+    {
+        types.push_back(static_cast<MetricType>(static_cast<uint32_t>(type)));
+    }
+
+    const bool result = m_mediaPipelineService.setMetricSubscription(request->session_id(), types);
+    response->set_result(result);
+    if (!result)
+    {
+        RIALTO_SERVER_LOG_ERROR("Set Metric Subscription failed");
         controller->SetFailed("Operation failed");
     }
     done->Run();

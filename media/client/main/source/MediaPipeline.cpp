@@ -326,6 +326,11 @@ bool MediaPipeline::setReportDecodeErrors(int32_t sourceId, bool reportDecodeErr
     return m_mediaPipelineIpc->setReportDecodeErrors(sourceId, reportDecodeErrors);
 }
 
+bool MediaPipeline::setMetricSubscription(const std::vector<MetricType> &types)
+{
+    return m_mediaPipelineIpc->setMetricSubscription(types);
+}
+
 bool MediaPipeline::getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
 {
     return m_mediaPipelineIpc->getQueuedFrames(sourceId, queuedFrames);

@@ -30,6 +30,8 @@
 #include "NeedDataDelayCalculator.h"
 #include <map>
 #include <memory>
+#include <mutex>
+#include <set>
 #include <shared_mutex>
 #include <string>
 #include <unordered_map>
@@ -117,6 +119,8 @@ public:
     bool setImmediateOutput(int32_t sourceId, bool immediateOutput) override;
 
     bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) override;
+
+    bool setMetricSubscription(const std::vector<MetricType> &types) override;
 
     bool getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames) override;
 
@@ -326,6 +330,16 @@ protected:
     NeedDataDelayCalculator m_needDataDelayCalculator;
 
     /**
+     * @brief The metric types the client is notified about. Initialised in the constructor from the default subscription.
+     */
+    std::set<MetricType> m_metricSubscription;
+
+    /**
+     * @brief Guards m_metricSubscription, which is read on the caller thread of notifyMetric().
+     */
+    std::mutex m_metricSubscriptionMutex;
+
+    /**
      * @brief Load internally, only to be called on the main thread.
      *
      * @param[in] type     : The media type.
@@ -426,6 +440,15 @@ protected:
      * @retval true on success.
      */
     bool setReportDecodeErrorsInternal(int32_t sourceId, bool reportDecodeErrors);
+
+    /**
+     * @brief Replaces the set of metric types the client is notified about, only to be called on the main thread.
+     *
+     * @param[in] types : The metric types to subscribe to. An empty vector disables metric notifications.
+     *
+     * @retval true on success.
+     */
+    bool setMetricSubscriptionInternal(const std::vector<MetricType> &types);
 
     /**
      * @brief Gets the queued frames for this source.

@@ -305,6 +305,20 @@ bool MediaPipelineService::setReportDecodeErrors(int sessionId, int32_t sourceId
     return mediaPipelineIter->second->setReportDecodeErrors(sourceId, reportDecodeErrors);
 }
 
+bool MediaPipelineService::setMetricSubscription(int sessionId, const std::vector<MetricType> &types)
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to setMetricSubscription, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setMetricSubscription(types);
+}
+
 bool MediaPipelineService::getQueuedFrames(int sessionId, int32_t sourceId, uint32_t &queuedFrames)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to getQueuedFrames, session id: %d", sessionId);

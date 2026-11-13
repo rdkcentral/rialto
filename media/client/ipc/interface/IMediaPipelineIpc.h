@@ -24,9 +24,8 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
-#include "IMediaPipeline.h"
-#include "IMediaPipelineIpcClient.h"
 #include "MediaCommon.h"
 
 namespace firebolt::rialto::client
@@ -200,6 +199,15 @@ public:
      * @retval true on success.
      */
     virtual bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) = 0;
+
+    /**
+     * @brief Replaces the set of metric types the client is notified about.
+     *
+     * @param[in] types : The metric types to subscribe to. An empty vector disables metric notifications.
+     *
+     * @retval true on success.
+     */
+    virtual bool setMetricSubscription(const std::vector<MetricType> &types) = 0;
 
     /**
      * @brief Gets the queued frames for this source.

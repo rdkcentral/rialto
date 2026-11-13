@@ -714,6 +714,22 @@ message SetReportDecodeErrorsRequest {
 message SetReportDecodeErrorsResponse {
 }
 
+/**
+ * @fn bool setMetricSubscription(int session_id, MetricType types[])
+ * @brief Replaces the set of metric types the client is notified about. An empty list disables notifications.
+ *
+ * @param[in] session_id  The id of the A/V session.
+ * @param[in] types       The metric types to subscribe to.
+ */
+message SetMediaMetricsRequest {
+    required int32 session_id = 1;
+    repeated MediaPipelineMetricEvent.MetricType types = 2;
+}
+
+message SetMediaMetricsResponse {
+    required bool result = 1;
+}
+
 
 /**
  * @fn void getImmediateOutput(int session_id, int source_id, bool &immediate_output)
@@ -1201,6 +1217,13 @@ service MediaPipelineModule {
     */
     rpc setReportDecodeErrors(SetReportDecodeErrorsRequest)
         returns (SetReportDecodeErrorsResponse) {
+    }
+
+    /**
+     * @brief Replaces the set of metric types the client is notified about.
+     * @see SetMediaMetricsRequest
+     */
+    rpc setMetricSubscription(SetMediaMetricsRequest) returns (SetMediaMetricsResponse) {
     }
 
     /**

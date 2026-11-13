@@ -26,6 +26,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <vector>
 
 namespace firebolt::rialto::server::ipc
 {
@@ -93,6 +94,10 @@ public:
     void setReportDecodeErrors(::google::protobuf::RpcController *controller,
                                const ::firebolt::rialto::SetReportDecodeErrorsRequest *request,
                                ::firebolt::rialto::SetReportDecodeErrorsResponse *response,
+                               ::google::protobuf::Closure *done) override;
+    void setMetricSubscription(::google::protobuf::RpcController *controller,
+                               const ::firebolt::rialto::SetMediaMetricsRequest *request,
+                               ::firebolt::rialto::SetMediaMetricsResponse *response,
                                ::google::protobuf::Closure *done) override;
     void getQueuedFrames(::google::protobuf::RpcController *controller,
                          const ::firebolt::rialto::GetQueuedFramesRequest *request,
