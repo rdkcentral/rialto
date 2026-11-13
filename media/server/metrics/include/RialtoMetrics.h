@@ -23,21 +23,11 @@ public:
     ElementToSourceMapper* getElementToSourceMapper() override;
 
 private:
-    struct MetricEpisodeState
-    {
-        std::uint64_t startPtsNs{0};
-        std::uint64_t count{0};
-        std::uint64_t durationNs{0};
-        bool active{false};
-    };
-
     using CounterKey = std::pair<int32_t, int32_t>;
-    using EpisodeKey = std::tuple<int32_t, int32_t, std::uint32_t>;
 
     mutable std::mutex m_counterMutex;
     int32_t m_sessionId{-1};
     std::map<CounterKey, FrameCounters> m_counterCache;
-    std::map<EpisodeKey, MetricEpisodeState> m_metricEpisodes;
     std::unique_ptr<ElementToSourceMapper> m_elementToSourceMapper;
 };
 } // namespace firebolt::rialto::server

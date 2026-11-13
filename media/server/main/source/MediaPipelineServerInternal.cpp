@@ -1751,25 +1751,26 @@ void MediaPipelineServerInternal::notifyMetricEvent(const ParsedMetricMessage &m
 {
     const int32_t sourceId{metric.source_id};
     const uint64_t ptsNs{static_cast<uint64_t>(metric.pts_ns.value_or(0))};
-    const std::string errorInfo{metricTypeToString(metric.metric)};
-    const uint32_t phase{metric.observation_kind};
+    const uint32_t metricType{metric.metric};
+    const uint32_t observationKind{metric.observation_kind};
     const uint64_t count{metric.count.value_or(0)};
     const uint64_t durationNs{metric.duration_ns.value_or(0)};
     const uint64_t observedAtMonotonicNs{metric.observed_at_monotonic_ns};
     const int64_t observedAtUnixNs{metric.observed_at_unix_ns};
 
     RIALTO_SERVER_LOG_DEBUG(
-        "Queueing playback metric event sourceId: %d, ptsNs: %llu, type: %s, phase: %u, count: %llu, durationNs: %llu, observedAtMonotonicNs: %llu, observedAtUnixNs: %lld",
-        sourceId, static_cast<unsigned long long>(ptsNs), errorInfo.c_str(), phase,
+        "Queueing playback metric event sourceId: %d, ptsNs: %llu, metric: %u, observationKind: %u, count: %llu, durationNs: %llu, observedAtMonotonicNs: %llu, observedAtUnixNs: %lld",
+        sourceId, static_cast<unsigned long long>(ptsNs), metricType, observationKind,
         static_cast<unsigned long long>(count), static_cast<unsigned long long>(durationNs),
         static_cast<unsigned long long>(observedAtMonotonicNs), static_cast<long long>(observedAtUnixNs));
-    auto task = [&, sourceId, ptsNs, errorInfo, phase, count, durationNs, observedAtMonotonicNs, observedAtUnixNs]()
+    auto task = [&, sourceId, ptsNs, metricType, observationKind, count, durationNs, observedAtMonotonicNs,
+                 observedAtUnixNs]()
     {
         if (m_mediaPipelineClient)
         {
-            RIALTO_SERVER_LOG_DEBUG("Forwarding queued playback metric event for sourceId: %d, phase: %u", sourceId,
-                                    phase);
-            m_mediaPipelineClient->notifyMetricEvent(sourceId, ptsNs, errorInfo, phase, count, durationNs,
+            RIALTO_SERVER_LOG_DEBUG("Forwarding queued playback metric event for sourceId: %d, observationKind: %u",
+                                    sourceId, observationKind);
+            m_mediaPipelineClient->notifyMetricEvent(sourceId, ptsNs, metricType, observationKind, count, durationNs,
                                                      observedAtMonotonicNs, observedAtUnixNs);
         }
         else

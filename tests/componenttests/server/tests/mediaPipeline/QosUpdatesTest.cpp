@@ -36,7 +36,7 @@ namespace
 {
 constexpr unsigned kFramesToPush{1};
 constexpr guint kVideoDecodeErrorMetric{3};
-constexpr guint kMetricOccurrencePhase{0};
+constexpr guint kMetricObservationKindOccurrence{1};
 constexpr gint64 kMetricPtsNs{1234567890};
 const std::string kAudioSourceName{"Audio"};
 const std::string kVideoSourceName{"Video"};
@@ -80,10 +80,9 @@ public:
         EXPECT_EQ(receivedQos->qos_info().dropped(), kQosInfo.dropped);
     }
 
-    void sendVideoDecodeErrorMetric(int sourceId)
+    void sendVideoDecodeErrorMetric()
     {
-        m_gstreamerStub.sendMetric(&m_src, kVideoDecodeErrorMetric, kMetricOccurrencePhase,
-                                   static_cast<guint>(sourceId), static_cast<guint>(m_sessionId), kMetricPtsNs);
+        m_gstreamerStub.sendMetric(&m_src, kVideoDecodeErrorMetric, kMetricObservationKindOccurrence, kMetricPtsNs);
     }
 
     void expectVideoSinkMetricsLookups()
@@ -366,15 +365,16 @@ TEST_F(QosUpdatesTest, QosUpdates)
     // Playback metric message should be parsed and forwarded to the client.
     willGetStats();
     ExpectMessage<firebolt::rialto::MediaPipelineMetric> expectedMetricEvent{m_clientStub};
-    sendVideoDecodeErrorMetric(m_videoSourceId);
+    sendVideoDecodeErrorMetric();
 
+    // The source element is not registered with the ElementToSourceMapper in this test, so ids default to 0.
     const auto receivedMetricEvent{expectedMetricEvent.getMessage()};
     ASSERT_TRUE(receivedMetricEvent);
-    EXPECT_EQ(receivedMetricEvent->session_id(), static_cast<uint32_t>(m_sessionId));
-    EXPECT_EQ(receivedMetricEvent->source_id(), static_cast<uint32_t>(m_videoSourceId));
+    EXPECT_EQ(receivedMetricEvent->session_id(), 0u);
+    EXPECT_EQ(receivedMetricEvent->source_id(), 0u);
     EXPECT_EQ(receivedMetricEvent->metric(), static_cast<uint32_t>(kVideoDecodeErrorMetric));
     EXPECT_EQ(receivedMetricEvent->pts_ns(), kMetricPtsNs);
-    EXPECT_EQ(receivedMetricEvent->observation_kind(), kMetricOccurrencePhase);
+    EXPECT_EQ(receivedMetricEvent->observation_kind(), kMetricObservationKindOccurrence);
 
     // Step 12: End of audio stream
     // Step 13: End of video stream

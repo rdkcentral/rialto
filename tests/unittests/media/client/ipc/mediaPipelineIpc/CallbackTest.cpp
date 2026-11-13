@@ -140,8 +140,7 @@ TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyMetricEventRoundTripsSeri
     ASSERT_TRUE(received->ParseFromString(payload));
 
     EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
-    EXPECT_CALL(*m_clientMock,
-                notifyMetricEvent(m_sourceId, 9001, "METRIC_VIDEO_FRAME_REPEAT", 3, 4, 8000000, 42, 1700000000));
+    EXPECT_CALL(*m_clientMock, notifyMetricEvent(m_sourceId, 9001, 5, 3, 4, 8000000, 42, 1700000000));
 
     m_metricEventCb(received);
 }

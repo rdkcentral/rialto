@@ -1651,46 +1651,20 @@ void MediaPipelineIpc::onQos(const std::shared_ptr<firebolt::rialto::QosEvent> &
     }
 }
 
-namespace
-{
-std::string metricTypeToLabel(uint32_t metric)
-{
-    switch (metric)
-    {
-    case 1:
-        return "METRIC_VIDEO_FRAME_DROP";
-    case 2:
-        return "METRIC_AUDIO_FRAME_DROP";
-    case 3:
-        return "METRIC_VIDEO_DECODE_ERROR";
-    case 4:
-        return "METRIC_AUDIO_DECODE_ERROR";
-    case 5:
-        return "METRIC_VIDEO_FRAME_REPEAT";
-    case 6:
-        return "METRIC_AUDIO_GAP";
-    case 7:
-        return "METRIC_BUFFER_UNDERFLOW";
-    default:
-        return "METRIC_UNKNOWN";
-    }
-}
-} // namespace
-
 void MediaPipelineIpc::handleMetricEvent(const std::shared_ptr<firebolt::rialto::MediaPipelineMetric> &event)
 {
     const auto sessionId = static_cast<int32_t>(event->session_id());
     RIALTO_CLIENT_LOG_DEBUG(
-        "Dispatching playback metric event sessionId: %d, sourceId: %u, ptsNs: %lld, type: %s, phase: %u, count: %llu, durationNs: %llu",
-        sessionId, event->source_id(), static_cast<long long>(event->pts_ns()),
-        metricTypeToLabel(event->metric()).c_str(), event->observation_kind(),
-        static_cast<unsigned long long>(event->count()), static_cast<unsigned long long>(event->duration_ns()));
+        "Dispatching playback metric event sessionId: %d, sourceId: %u, ptsNs: %lld, metric: %u, observationKind: %u, count: %llu, durationNs: %llu",
+        sessionId, event->source_id(), static_cast<long long>(event->pts_ns()), event->metric(),
+        event->observation_kind(), static_cast<unsigned long long>(event->count()),
+        static_cast<unsigned long long>(event->duration_ns()));
     if (sessionId == m_sessionId)
     {
         m_mediaPipelineIpcClient->notifyMetricEvent(static_cast<int32_t>(event->source_id()),
-                                                    static_cast<uint64_t>(event->pts_ns()),
-                                                    metricTypeToLabel(event->metric()), event->observation_kind(),
-                                                    event->count(), event->duration_ns(), event->observed_at_monotonic_ns(),
+                                                    static_cast<uint64_t>(event->pts_ns()), event->metric(),
+                                                    event->observation_kind(), event->count(), event->duration_ns(),
+                                                    event->observed_at_monotonic_ns(),
                                                     event->observed_at_unix_ns());
     }
     else

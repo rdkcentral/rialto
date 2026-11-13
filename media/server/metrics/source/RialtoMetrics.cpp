@@ -10,14 +10,6 @@
 
 namespace firebolt::rialto::server
 {
-enum MetricPhase : guint
-{
-	OCCURRENCE = 0,
-	STARTED = 1,
-	RESOLVED = 2,
-	INVALID = 3
-};
-
 class ElementToSourceMapperImpl : public ElementToSourceMapper
 {
 private:
@@ -116,31 +108,6 @@ std::int64_t getUnixTimestampNs()
 }
 } // namespace
 
-const char *metricTypeToString(std::uint32_t type)
-{
-	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "metricTypeToString requested for type: %u",
-					 static_cast<unsigned int>(type));
-	switch (type)
-	{
-	case 1:
-		return "METRIC_VIDEO_FRAME_DROP";
-	case 2:
-		return "METRIC_AUDIO_FRAME_DROP";
-	case 3:
-		return "METRIC_VIDEO_DECODE_ERROR";
-	case 4:
-		return "METRIC_AUDIO_DECODE_ERROR";
-	case 5:
-		return "METRIC_VIDEO_FRAME_REPEAT";
-	case 6:
-		return "METRIC_AUDIO_GAP";
-	case 7:
-		return "METRIC_BUFFER_UNDERFLOW";
-	default:
-		return "METRIC_UNKNOWN";
-	}
-}
-
 RialtoMetrics::RialtoMetrics() : m_elementToSourceMapper(std::make_unique<ElementToSourceMapperImpl>())
 {
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics created");
@@ -207,6 +174,12 @@ std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
 		parsedMessage.observed_at_unix_ns = nowUnixNs;
 	}
 
+	if (parsedMessage.metric == static_cast<std::uint32_t>(MediaMetricType::MEDIA_METRIC_VIDEO_DECODE_ERROR) &&
+	    parsedMessage.observation_kind == static_cast<std::uint32_t>(ObservationKind::OCCURRENCE))
+	{
+		std::lock_guard<std::mutex> lock{m_counterMutex};
+		++m_counterCache[{parsedMessage.session_id, parsedMessage.source_id}].corrupted;
+	}
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
 					 "RialtoMetrics::onMetricMessage validated metric: %u, observation_kind: %u, session_id: %d, source_id: %d",
 					 parsedMessage.metric, parsedMessage.observation_kind, parsedMessage.session_id, parsedMessage.source_id);
@@ -278,7 +251,8 @@ ElementToSourceMapper* RialtoMetrics::getElementToSourceMapper()
 	return m_elementToSourceMapper.get();
 }
 
-GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricMessage& out)
+GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricMessage& out, GstMessage* gstMessage,
+										   ElementToSourceMapper* mapper)
 {
 	if (!msg)
 	{
@@ -407,13 +381,20 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricM
 		}
 
 		guint64 countVal = g_value_get_uint64(countValue);
+		if (countVal < 1)
+		{
+			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER,
+							"ValidateMediaPipelineMetric: field 'count' must be >= 1, got %llu",
+							static_cast<unsigned long long>(countVal));
+			return GST_FLOW_ERROR;
+		}
 		out.count = countVal;
 		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: count field validation passed with value %llu", 
 						 static_cast<unsigned long long>(countVal));
 	}
 
 	// Legacy field-name rejection - reject messages with old field names
-	const char* legacyFieldNames[] = {"metric_type", "phase", "pts_ns"};
+	const char* legacyFieldNames[] = {"metric_type", "phase", "pts_ns", "source_id", "session_id"};
 	for (const auto& legacyName : legacyFieldNames)
 	{
 		if (gst_structure_has_field(msg, legacyName))
