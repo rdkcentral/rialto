@@ -2,9 +2,9 @@
 
 ## 1. RialtoMetrics Parser Interface and Validation Layer
 
-- [x] 1.1 Update existing `ParsedMetricMessage` struct in `IRialtoMetrics.h` to match the 0.7 contract schema: rename `type` → `metric`, `phase` → `observation_kind`, `ptsNs` → `pts_ns`, `durationNs` → `duration_ns`; remove `counters` field (FrameCounters moved to separate tracking); convert `pts_ns`, `duration_ns`, `count` to `std::optional<>` for conditional presence. **IMPORTANT: `session_id` and `source_id` are NOT part of the SoC media-pipeline-metric message—they are added during Rialto enrichment only.** The struct should have fields for session_id and source_id to store enriched context, but validation must NOT expect them in the incoming GstStructure. Remove legacy field aliases. Write unit tests verifying struct compiles, integrates with existing code, and field types/optionality match spec.
+- [x] 1.1 Update existing `MetricEvent` struct in `IRialtoMetrics.h` to match the 0.7 contract schema: rename `type` → `metric`, `phase` → `observation_kind`, `ptsNs` → `pts_ns`, `durationNs` → `duration_ns`; remove `counters` field (FrameCounters moved to separate tracking); convert `pts_ns`, `duration_ns`, `count` to `std::optional<>` for conditional presence. **IMPORTANT: `session_id` and `source_id` are NOT part of the SoC media-pipeline-metric message—they are added during Rialto enrichment only.** The struct should have fields for session_id and source_id to store enriched context, but validation must NOT expect them in the incoming GstStructure. Remove legacy field aliases. Write unit tests verifying struct compiles, integrates with existing code, and field types/optionality match spec.
 
-- [x] 1.2 Add validation function signature `GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricMessage& out)` to `IRialtoMetrics.h`. This function returns GST_FLOW_OK if the message passes all 0.7 contract checks, otherwise returns an error flow and logs the validation failure.
+- [x] 1.2 Add validation function signature `GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, MetricEvent& out)` to `IRialtoMetrics.h`. This function returns GST_FLOW_OK if the message passes all 0.7 contract checks, otherwise returns an error flow and logs the validation failure.
 
 - [x] 1.3 Implement message structure-name validation in `RialtoMetrics.cpp::ValidateMediaPipelineMetric()`. Check that the structure name is exactly `"media-pipeline-metric"`, reject otherwise. Write unit tests verifying rejection of structures named `"metric"`, `"legacy-metric"`, and acceptance of `"media-pipeline-metric"`.
 
@@ -28,7 +28,7 @@
 
 - [x] 2.2 Implement `ElementToSourceMapper` in `RialtoMetrics.cpp` using a concurrent map (e.g., `std::unordered_map` with mutex or thread-safe equivalent) keyed by element pointer. Implement `RegisterElement()` and `MapElement()` with proper locking and error handling (return failure if element not found).
 
-- [x] 2.3 Integrate `ElementToSourceMapper::MapElement()` into `ValidateMediaPipelineMetric()`. Extract the producing element via `GST_MESSAGE_SRC(message)`, call `MapElement()` to retrieve Rialto (session_id, source_id), and populate the enrichment context in the returned `ParsedMetricMessage`. **IMPORTANT:** The incoming GstStructure from the SoC producer does NOT contain source_id or session_id fields. These must be looked up from the GStreamer message source element and mapped via ElementToSourceMapper. If mapping fails, follow the design decision: currently logs a warning and continues with default/placeholder values. Write unit tests for both successful and failed enrichment scenarios.
+- [x] 2.3 Integrate `ElementToSourceMapper::MapElement()` into `ValidateMediaPipelineMetric()`. Extract the producing element via `GST_MESSAGE_SRC(message)`, call `MapElement()` to retrieve Rialto (session_id, source_id), and populate the enrichment context in the returned `MetricEvent`. **IMPORTANT:** The incoming GstStructure from the SoC producer does NOT contain source_id or session_id fields. These must be looked up from the GStreamer message source element and mapped via ElementToSourceMapper. If mapping fails, follow the design decision: currently logs a warning and continues with default/placeholder values. Write unit tests for both successful and failed enrichment scenarios.
 
 - [x] 2.4 Add registration hooks to connect GStreamer element creation with `ElementToSourceMapper::RegisterElement()`. This occurs when a decoder or output element is instantiated and linked to a Rialto source. Identify where in the codebase (likely `GstGenericPlayer` or similar) this registration should be called and add the call. Write integration tests to verify registration occurs and enrichment succeeds.
 
@@ -36,27 +36,27 @@
 
 - [x] 3.1 Update `RialtoMetrics::OnGstMessage()` or equivalent bus message handler to call the new `ValidateMediaPipelineMetric()` function for all incoming `"media-pipeline-metric"` structures. Reject and discard invalid messages; forward validated messages. Write unit tests simulating bus messages with valid and invalid payloads.
 
-- [x] 3.2 Ensure the enriched `ParsedMetricMessage` from `ValidateMediaPipelineMetric()` is passed to downstream consumers (MediaPipelineServerInternal, IPC serializer). Modify the existing metrics-forwarding interface to carry the enriched data. Verify compilation and existing downstream tests still pass (backward compatibility).
+- [x] 3.2 Ensure the enriched `MetricEvent` from `ValidateMediaPipelineMetric()` is passed to downstream consumers (MediaPipelineServerInternal, IPC serializer). Modify the existing metrics-forwarding interface to carry the enriched data. Verify compilation and existing downstream tests still pass (backward compatibility).
 
 - [x] 3.3 Update logging/debugging in the parser to report validation failures with full context (field name, expected type/value, actual type/value) to aid troubleshooting. Verify log output is readable and consistent for rejection scenarios. Test via unit tests that log output is generated for each failure case.
 
-- [x] 3.4 Update `GstDispatcherThread` to receive `ParsedMetricMessage` with the new field names and optional-field semantics. Ensure the dispatcher forwards the struct without modification (pass-through). Write unit tests for metric flow through the dispatcher.
+- [x] 3.4 Update `GstDispatcherThread` to receive `MetricEvent` with the new field names and optional-field semantics. Ensure the dispatcher forwards the struct without modification (pass-through). Write unit tests for metric flow through the dispatcher.
 
-- [x] 3.5 Update `MediaPipelineServerInternal::onMetricMessage()` (or equivalent handler) to accept the new `ParsedMetricMessage` struct and map its fields to internal event/notification formats. Handle optional fields correctly (pts_ns, duration_ns, count may be absent). Write unit tests for all combinations of optional field presence.
+- [x] 3.5 Update `MediaPipelineServerInternal::onMetricMessage()` (or equivalent handler) to accept the new `MetricEvent` struct and map its fields to internal event/notification formats. Handle optional fields correctly (pts_ns, duration_ns, count may be absent). Write unit tests for all combinations of optional field presence.
 
-- [x] 3.6 Update the notification event generation in `MediaPipelineServerInternal` to use the new `ParsedMetricMessage` fields (`metric`, `observation_kind`, `pts_ns`, `duration_ns`, `count`) when constructing the event payload. Ensure the event contract matches the new spec field names and types. Write integration tests verifying event notification carries correct data.
+- [x] 3.6 Update the notification event generation in `MediaPipelineServerInternal` to use the new `MetricEvent` fields (`metric`, `observation_kind`, `pts_ns`, `duration_ns`, `count`) when constructing the event payload. Ensure the event contract matches the new spec field names and types. Write integration tests verifying event notification carries correct data.
 
 ## 4. IPC Schema and Serialization
 
 - [x] 4.1 Update `rialto/proto/mediapipelinemodule.proto` with a `MediaPipelineMetric` message containing: required `metric` (uint32), required `observation_kind` (uint32), optional `pts_ns` (int64), optional `duration_ns` (uint64), optional `count` (uint64), optional `session_id` (uint32), optional `source_id` (uint32). Field names use underscores per proto convention. **NOTE:** The SoC producer sends only the core fields (`metric`, `observation_kind`, `pts_ns`, `duration_ns`, `count`). The `session_id` and `source_id` are added by Rialto during enrichment via `ElementToSourceMapper`. The proto message includes all fields for the enriched payload sent to clients.
 
-- [x] 4.2 Implement serialization from `ParsedMetricMessage` to the proto `MediaPipelineMetric` message in `MediaPipelineClient.cpp`. Map the enriched metric fields and optional fields correctly. Write unit tests for all metric types and observation kinds, verifying round-trip serialization/deserialization.
+- [x] 4.2 Implement serialization from `MetricEvent` to the proto `MediaPipelineMetricEvent` message in `MediaPipelineClient.cpp`. Map the enriched metric fields and optional fields correctly. Write unit tests for all metric types and observation kinds, verifying round-trip serialization/deserialization.
 
 - [x] 4.3 Verify the IPC client deserialization path correctly reads the proto `MediaPipelineMetric` message and reconstructs the metric data for downstream consumers. Write integration tests ensuring end-to-end proto serialization works.
 
 - [x] 4.4 Update `MediaPipelineClient` notification event payload to use the proto `MediaPipelineMetric` message with all fields including the enriched context: `metric`, `observation_kind`, `pts_ns`, `duration_ns`, `count`, `session_id` (enriched), `source_id` (enriched). Ensure clients consuming the event use the new field names. Write integration tests for notification delivery with the updated schema. **NOTE:** The `session_id` and `source_id` should be populated by Rialto before serialization to proto.
 
-- [x] 4.5 Update all downstream event/notification handlers that consume the `ParsedMetricMessage` or proto event (e.g., analytics, logging, metrics aggregation services) to use the new field names and handle optional fields correctly. Verify no regressions in downstream processing. Write tests for each handler consuming the updated message.
+- [x] 4.5 Update all downstream event/notification handlers that consume the `MetricEvent` or proto event (e.g., analytics, logging, metrics aggregation services) to use the new field names and handle optional fields correctly. Verify no regressions in downstream processing. Write tests for each handler consuming the updated message.
 
 ## 5. Unit Tests for Validation and Parser
 
@@ -86,11 +86,11 @@
 
 ## 7. Documentation and Validation
 
-- [ ] 7.1 Update `rialto/docs/PlaybackMetrics.md` to document the 0.7 `media-pipeline-metric` contract: structure name, required fields (`metric`, `observation-kind`), optional fields (`pts-ns`, `duration-ns`, `count`), observation-kind enum values (1=OCCURRENCE, 2=EPISODE_STARTED, 3=EPISODE_RESOLVED), metric type enum values (1–7), field type requirements, and field semantics per observation-kind. Include note that `source_id` and `session_id` are enriched by Rialto from GST_MESSAGE_SRC(), not present in the SoC payload.
+- [x] 7.1 Update `rialto/docs/PlaybackMetrics.md` to document the 0.7 `media-pipeline-metric` contract: structure name, required fields (`metric`, `observation-kind`), optional fields (`pts-ns`, `duration-ns`, `count`), observation-kind enum values (1=OCCURRENCE, 2=EPISODE_STARTED, 3=EPISODE_RESOLVED), metric type enum values (1–7), field type requirements, and field semantics per observation-kind. Include note that `source_id` and `session_id` are enriched by Rialto from GST_MESSAGE_SRC(), not present in the SoC payload.
 
-- [ ] 7.2 Add inline code comments in `RialtoMetrics.cpp` explaining the validation flow, error conditions, and design decisions. Ensure future maintainers can understand the contract enforcement and enrichment steps.
+- [x] 7.2 Add inline code comments in `RialtoMetrics.cpp` explaining the validation flow, error conditions, and design decisions. Ensure future maintainers can understand the contract enforcement and enrichment steps.
 
-- [ ] 7.3 Run `openspec validate --change "playback-metrics-0.7v" --strict` to check spec compliance (requirement descriptions length, scenario format, etc.). Fix any validation warnings.
+- [x] 7.3 Run `openspec validate --change "playback-metrics-0.7v" --strict` to check spec compliance (requirement descriptions length, scenario format, etc.). Fix any validation warnings.
 
 ## 8. Final Integration Verification
 

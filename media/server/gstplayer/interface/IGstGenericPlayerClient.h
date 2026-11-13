@@ -165,9 +165,9 @@ public:
     /**
      * @brief Notifies the client of a validated playback metric event.
      *
-     * @param[in] metric       : The parsed and validated metric message.
+     * @param[in] metric       : The parsed and validated metric event.
      */
-    virtual void notifyMetricEvent(const ParsedMetricMessage &metric) = 0;
+    virtual void notifyMetric(const MetricEvent &metric) = 0;
 
     /**
      * @brief Notifies the client that buffer underflow occurred.

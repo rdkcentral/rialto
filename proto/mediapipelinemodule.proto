@@ -989,21 +989,40 @@ message QosEvent {
 }
 
 /**
- * @brief Media pipeline metric observation, enriched with session and source ids before serialization.
+ * @brief Media pipeline metric event, enriched with the source id before serialization.
  *
- * The producer supplies metric, observation_kind and the optional timing/count fields.
- * session_id and source_id are added by Rialto from the ElementToSourceMapper.
+ * The enums are nested so that their values stay scoped to this message and do not clash with the public
+ * firebolt::rialto::MetricType and MetricPhase types. The numeric values match those of the public types.
+ * Optional fields are only set when the value is known.
  */
-message MediaPipelineMetric {
-    required uint32 metric = 1;
-    required uint32 observation_kind = 2;
-    optional int64 pts_ns = 3;
-    optional uint64 duration_ns = 4;
+message MediaPipelineMetricEvent {
+    enum MetricType {
+        METRIC_TYPE_UNKNOWN = 0;
+        VIDEO_FRAME_DROP = 1;
+        AUDIO_FRAME_DROP = 2;
+        VIDEO_DECODE_ERROR = 3;
+        AUDIO_DECODE_ERROR = 4;
+        VIDEO_FRAME_REPEAT = 5;
+        AUDIO_GAP = 6;
+        BUFFER_UNDERFLOW = 7;
+    }
+
+    enum MetricPhase {
+        METRIC_PHASE_UNKNOWN = 0;
+        OCCURRENCE = 1;
+        EPISODE_STARTED = 2;
+        EPISODE_RESOLVED = 3;
+    }
+
+    required MetricType type = 1;
+    required MetricPhase phase = 2;
+    required int32 source_id = 3;
+    optional int64 pts_ns = 4;
     optional uint64 count = 5;
-    optional uint32 session_id = 6;
-    optional uint32 source_id = 7;
-    required uint64 observed_at_monotonic_ns = 8;
-    required int64 observed_at_unix_ns = 9;
+    optional uint64 duration_ns = 6;
+    required uint64 observed_at_monotonic_ns = 7;
+    required int64 observed_at_unix_ns = 8;
+    optional uint32 session_id = 9;
 }
 
 /**

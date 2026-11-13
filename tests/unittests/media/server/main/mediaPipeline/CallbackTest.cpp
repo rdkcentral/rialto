@@ -260,7 +260,7 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyQosFailureSourceIdNotFound)
     m_gstPlayerCallback->notifyQos(mediaSourceType, qosInfo);
 }
 
-TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricEventMapsEveryOptionalFieldPresence)
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricMapsEveryOptionalFieldPresence)
 {
     constexpr int32_t kSourceId{11};
     constexpr int64_t kPtsNs{9001};
@@ -268,37 +268,44 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricEventMapsEveryOptional
     constexpr uint64_t kDurationNs{5000};
     constexpr uint64_t kObservedAtMonotonicNs{42};
     constexpr int64_t kObservedAtUnixNs{1700000000};
-    const auto metricType = firebolt::rialto::server::MediaMetricType::MEDIA_METRIC_AUDIO_GAP;
-    const auto observationKind = firebolt::rialto::server::ObservationKind::EPISODE_STARTED;
+    const auto metricType = firebolt::rialto::MetricType::AUDIO_GAP;
+    const auto metricPhase = firebolt::rialto::MetricPhase::EPISODE_STARTED;
 
-    // Bit 0: pts_ns, bit 1: count, bit 2: duration_ns. Absent fields are forwarded as 0.
+    // Bit 0: presentationTimeStampNs, bit 1: count, bit 2: durationNs. Absent fields stay unset.
     for (uint32_t mask = 0; mask < 8; ++mask)
     {
         SCOPED_TRACE("optional field mask " + std::to_string(mask));
-        firebolt::rialto::server::ParsedMetricMessage metric;
-        metric.source_id = kSourceId;
-        metric.metric = static_cast<uint32_t>(metricType);
-        metric.observation_kind = static_cast<uint32_t>(observationKind);
+        firebolt::rialto::MetricEvent metric;
+        metric.sourceId = kSourceId;
+        metric.type = metricType;
+        metric.phase = metricPhase;
         if (mask & 1)
-            metric.pts_ns = kPtsNs;
+            metric.presentationTimeStampNs = kPtsNs;
         if (mask & 2)
             metric.count = kCount;
         if (mask & 4)
-            metric.duration_ns = kDurationNs;
-        metric.observed_at_monotonic_ns = kObservedAtMonotonicNs;
-        metric.observed_at_unix_ns = kObservedAtUnixNs;
+            metric.durationNs = kDurationNs;
+        metric.observedAtMonotonicNs = kObservedAtMonotonicNs;
+        metric.observedAtUnixNs = kObservedAtUnixNs;
 
-        const auto expectedPts = (mask & 1) ? static_cast<uint64_t>(kPtsNs) : 0U;
-        const auto expectedCount = (mask & 2) ? kCount : 0U;
-        const auto expectedDuration = (mask & 4) ? kDurationNs : 0U;
+        const std::optional<int64_t> expectedPts = (mask & 1) ? std::optional<int64_t>{kPtsNs} : std::nullopt;
+        const std::optional<uint64_t> expectedCount = (mask & 2) ? std::optional<uint64_t>{kCount} : std::nullopt;
+        const std::optional<uint64_t> expectedDuration =
+            (mask & 4) ? std::optional<uint64_t>{kDurationNs} : std::nullopt;
 
         mainThreadWillEnqueueTask();
         EXPECT_CALL(*m_mediaPipelineClientMock,
-                    notifyMetricEvent(kSourceId, expectedPts, static_cast<uint32_t>(metricType),
-                                      static_cast<uint32_t>(observationKind), expectedCount, expectedDuration,
-                                      kObservedAtMonotonicNs, kObservedAtUnixNs));
+                    notifyMetric(::testing::AllOf(
+                        ::testing::Field(&firebolt::rialto::MetricEvent::sourceId, kSourceId),
+                        ::testing::Field(&firebolt::rialto::MetricEvent::type, metricType),
+                        ::testing::Field(&firebolt::rialto::MetricEvent::phase, metricPhase),
+                        ::testing::Field(&firebolt::rialto::MetricEvent::presentationTimeStampNs, expectedPts),
+                        ::testing::Field(&firebolt::rialto::MetricEvent::count, expectedCount),
+                        ::testing::Field(&firebolt::rialto::MetricEvent::durationNs, expectedDuration),
+                        ::testing::Field(&firebolt::rialto::MetricEvent::observedAtMonotonicNs, kObservedAtMonotonicNs),
+                        ::testing::Field(&firebolt::rialto::MetricEvent::observedAtUnixNs, kObservedAtUnixNs))));
 
-        m_gstPlayerCallback->notifyMetricEvent(metric);
+        m_gstPlayerCallback->notifyMetric(metric);
     }
 }
 

@@ -151,10 +151,10 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         return false;
     m_eventTags.push_back(eventTag);
 
-    eventTag = ipcChannel->subscribe<firebolt::rialto::MediaPipelineMetric>(
-        [this](const std::shared_ptr<firebolt::rialto::MediaPipelineMetric> &event)
+    eventTag = ipcChannel->subscribe<firebolt::rialto::MediaPipelineMetricEvent>(
+        [this](const std::shared_ptr<firebolt::rialto::MediaPipelineMetricEvent> &event)
         {
-            RIALTO_CLIENT_LOG_DEBUG("Received playback metric IPC event for sessionId: %u, sourceId: %u",
+            RIALTO_CLIENT_LOG_DEBUG("Received playback metric IPC event for sessionId: %u, sourceId: %d",
                                     event->session_id(), event->source_id());
             m_eventThread->add(&MediaPipelineIpc::handleMetricEvent, this, event);
         });
@@ -1651,21 +1651,37 @@ void MediaPipelineIpc::onQos(const std::shared_ptr<firebolt::rialto::QosEvent> &
     }
 }
 
-void MediaPipelineIpc::handleMetricEvent(const std::shared_ptr<firebolt::rialto::MediaPipelineMetric> &event)
+void MediaPipelineIpc::handleMetricEvent(const std::shared_ptr<firebolt::rialto::MediaPipelineMetricEvent> &event)
 {
     const auto sessionId = static_cast<int32_t>(event->session_id());
+    MetricEvent metric;
+    metric.type = static_cast<MetricType>(static_cast<uint32_t>(event->type()));
+    metric.phase = static_cast<MetricPhase>(static_cast<uint32_t>(event->phase()));
+    metric.sourceId = event->source_id();
+    if (event->has_pts_ns())
+    {
+        metric.presentationTimeStampNs = event->pts_ns();
+    }
+    if (event->has_count())
+    {
+        metric.count = event->count();
+    }
+    if (event->has_duration_ns())
+    {
+        metric.durationNs = event->duration_ns();
+    }
+    metric.observedAtMonotonicNs = event->observed_at_monotonic_ns();
+    metric.observedAtUnixNs = event->observed_at_unix_ns();
+
     RIALTO_CLIENT_LOG_DEBUG(
-        "Dispatching playback metric event sessionId: %d, sourceId: %u, ptsNs: %lld, metric: %u, observationKind: %u, count: %llu, durationNs: %llu",
-        sessionId, event->source_id(), static_cast<long long>(event->pts_ns()), event->metric(),
-        event->observation_kind(), static_cast<unsigned long long>(event->count()),
-        static_cast<unsigned long long>(event->duration_ns()));
+        "Dispatching playback metric event sessionId: %d, sourceId: %d, ptsNs: %lld, metric: %u, observationKind: %u, count: %llu, durationNs: %llu",
+        sessionId, metric.sourceId, static_cast<long long>(metric.presentationTimeStampNs.value_or(0)),
+        static_cast<uint32_t>(metric.type), static_cast<uint32_t>(metric.phase),
+        static_cast<unsigned long long>(metric.count.value_or(0)),
+        static_cast<unsigned long long>(metric.durationNs.value_or(0)));
     if (sessionId == m_sessionId)
     {
-        m_mediaPipelineIpcClient->notifyMetricEvent(static_cast<int32_t>(event->source_id()),
-                                                    static_cast<uint64_t>(event->pts_ns()), event->metric(),
-                                                    event->observation_kind(), event->count(), event->duration_ns(),
-                                                    event->observed_at_monotonic_ns(),
-                                                    event->observed_at_unix_ns());
+        m_mediaPipelineIpcClient->notifyMetric(metric);
     }
     else
     {

@@ -591,7 +591,7 @@ bool MediaPipelineServerInternal::getFrameCountersInternal(int32_t sessionId, in
         return false;
     }
 
-    FrameCounters counters;
+    CounterSnapshot counters;
     bool hasCounters = metrics->getFrameCounters(sessionId, sourceId, counters);
     uint64_t currentRenderedFrames{0};
     uint64_t currentDroppedFrames{0};
@@ -611,9 +611,9 @@ bool MediaPipelineServerInternal::getFrameCountersInternal(int32_t sessionId, in
         return false;
     }
 
-    renderedFrames = counters.rendered;
-    droppedFrames = counters.dropped;
-    corruptedFrames = counters.corrupted;
+    renderedFrames = counters.counters.renderedFrames;
+    droppedFrames = counters.counters.droppedFrames;
+    corruptedFrames = counters.counters.corruptedFrames;
     timestamp = counters.timestamp;
     RIALTO_SERVER_LOG_DEBUG(
         "Returning playback metrics sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, timestamp: %llu",
@@ -1747,36 +1747,27 @@ void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, con
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
-void MediaPipelineServerInternal::notifyMetricEvent(const ParsedMetricMessage &metric)
+void MediaPipelineServerInternal::notifyMetric(const MetricEvent &metric)
 {
-    const int32_t sourceId{metric.source_id};
-    const uint64_t ptsNs{static_cast<uint64_t>(metric.pts_ns.value_or(0))};
-    const uint32_t metricType{metric.metric};
-    const uint32_t observationKind{metric.observation_kind};
-    const uint64_t count{metric.count.value_or(0)};
-    const uint64_t durationNs{metric.duration_ns.value_or(0)};
-    const uint64_t observedAtMonotonicNs{metric.observed_at_monotonic_ns};
-    const int64_t observedAtUnixNs{metric.observed_at_unix_ns};
-
     RIALTO_SERVER_LOG_DEBUG(
         "Queueing playback metric event sourceId: %d, ptsNs: %llu, metric: %u, observationKind: %u, count: %llu, durationNs: %llu, observedAtMonotonicNs: %llu, observedAtUnixNs: %lld",
-        sourceId, static_cast<unsigned long long>(ptsNs), metricType, observationKind,
-        static_cast<unsigned long long>(count), static_cast<unsigned long long>(durationNs),
-        static_cast<unsigned long long>(observedAtMonotonicNs), static_cast<long long>(observedAtUnixNs));
-    auto task = [&, sourceId, ptsNs, metricType, observationKind, count, durationNs, observedAtMonotonicNs,
-                 observedAtUnixNs]()
+        metric.sourceId, static_cast<unsigned long long>(metric.presentationTimeStampNs.value_or(0)),
+        static_cast<uint32_t>(metric.type), static_cast<uint32_t>(metric.phase),
+        static_cast<unsigned long long>(metric.count.value_or(0)),
+        static_cast<unsigned long long>(metric.durationNs.value_or(0)),
+        static_cast<unsigned long long>(metric.observedAtMonotonicNs), static_cast<long long>(metric.observedAtUnixNs));
+    auto task = [&, metric]()
     {
         if (m_mediaPipelineClient)
         {
             RIALTO_SERVER_LOG_DEBUG("Forwarding queued playback metric event for sourceId: %d, observationKind: %u",
-                                    sourceId, observationKind);
-            m_mediaPipelineClient->notifyMetricEvent(sourceId, ptsNs, metricType, observationKind, count, durationNs,
-                                                     observedAtMonotonicNs, observedAtUnixNs);
+                                    metric.sourceId, static_cast<uint32_t>(metric.phase));
+            m_mediaPipelineClient->notifyMetric(metric);
         }
         else
         {
             RIALTO_SERVER_LOG_WARN("Dropping playback metric event for sourceId: %d - pipeline client is unavailable",
-                                   sourceId);
+                                   metric.sourceId);
         }
     };
 

@@ -202,7 +202,7 @@ public:
 
     void notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo) override;
 
-    void notifyMetricEvent(const ParsedMetricMessage &metric) override;
+    void notifyMetric(const MetricEvent &metric) override;
 
     void notifyBufferUnderflow(MediaSourceType mediaSourceType) override;
 

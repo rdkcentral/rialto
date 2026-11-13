@@ -1,6 +1,6 @@
 # Complete Metric Notification Event Path - Updated Structure Flow
 
-This document outlines the complete path that metric events take through the Rialto system, and identifies all points where the updated `ParsedMetricMessage` struct (with new 0.7 contract field names) must be used.
+This document outlines the complete path that metric events take through the Rialto system, and identifies all points where the updated `MetricEvent` struct (with new 0.7 contract field names) must be used.
 
 ## Full Event Flow with Task Mapping
 
@@ -30,7 +30,7 @@ This document outlines the complete path that metric events take through the Ria
     ├─> Task 1.9: Reject legacy field names
     ├─> Task 1.10: Validate semantic field combinations
     │
-    └─> Returns: ParsedMetricMessage with validated data
+    └─> Returns: MetricEvent with validated data
         (struct fields: metric, observation_kind, pts_ns, duration_ns, count)
     
     ✓ Output struct uses NEW field names (not old type/phase/ptsNs)
@@ -44,7 +44,7 @@ This document outlines the complete path that metric events take through the Ria
     ├─> Task 2.2: ElementToSourceMapper implemented (concurrent map)
     ├─> Task 2.3: Extract GST_MESSAGE_SRC() and map to (session_id, source_id)
     │
-    └─> Returns: ParsedMetricMessage enriched with Rialto context
+    └─> Returns: MetricEvent enriched with Rialto context
         (struct fields: metric, observation_kind, pts_ns, duration_ns, count,
                         session_id, source_id)
     
@@ -55,10 +55,10 @@ This document outlines the complete path that metric events take through the Ria
 │ Task: 3.4 - GstDispatcherThread                                            │
 └─────────────────────────────────────────────────────────────────────────────┘
     │
-    ├─> Task 3.4: Forward ParsedMetricMessage without modification
+    ├─> Task 3.4: Forward MetricEvent without modification
     │   (pass-through with no field transformations)
     │
-    └─> Output: ParsedMetricMessage (unchanged)
+    └─> Output: MetricEvent (unchanged)
         (struct fields: metric, observation_kind, pts_ns, duration_ns, count,
                         session_id, source_id)
     
@@ -70,7 +70,7 @@ This document outlines the complete path that metric events take through the Ria
 └─────────────────────────────────────────────────────────────────────────────┘
     │
     ├─> Task 3.5: MediaPipelineServerInternal::onMetricMessage()
-    │   Receives ParsedMetricMessage and maps to internal event format
+    │   Receives MetricEvent and maps to internal event format
     │   (handles optional fields: pts_ns, duration_ns, count)
     │
     └─> Task 3.6: Notification event generation
@@ -89,7 +89,7 @@ This document outlines the complete path that metric events take through the Ria
     │   (proto fields: metric, observation_kind, pts_ns, duration_ns, count,
     │                  session_id, source_id - all with underscores per proto)
     │
-    ├─> Task 4.2: Serialize ParsedMetricMessage → proto MediaPipelineMetric
+    ├─> Task 4.2: Serialize MetricEvent → proto MediaPipelineMetricEvent
     │   (map struct fields to proto fields, handle optional fields)
     │
     └─> Task 4.3: Verify deserialization path
@@ -132,7 +132,7 @@ This document outlines the complete path that metric events take through the Ria
 
 ### Before (Legacy)
 ```cpp
-struct ParsedMetricMessage {
+struct MetricEvent {
     int32_t sessionId;
     uint32_t type;           // ← RENAMED TO: metric
     uint32_t phase;          // ← RENAMED TO: observation_kind
@@ -146,7 +146,7 @@ struct ParsedMetricMessage {
 
 ### After (0.7 Contract)
 ```cpp
-struct ParsedMetricMessage {
+struct MetricEvent {
     uint32_t metric;                            // required
     uint32_t observation_kind;                  // required
     std::optional<int64_t> pts_ns;             // optional

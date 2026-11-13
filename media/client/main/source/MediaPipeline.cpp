@@ -889,24 +889,24 @@ void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
     }
 }
 
-void MediaPipeline::notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, uint32_t metric, uint32_t observationKind,
-                                      uint64_t count, uint64_t durationNs, uint64_t observedAtMonotonicNs,
-                                      int64_t observedAtUnixNs)
+void MediaPipeline::notifyMetric(const MetricEvent &metric)
 {
     RIALTO_CLIENT_LOG_DEBUG(
         "Forwarding playback metric event sourceId: %d, ptsNs: %llu, metric: %u, observationKind: %u, count: %llu, durationNs: %llu",
-        sourceId, static_cast<unsigned long long>(ptsNs), metric, observationKind,
-        static_cast<unsigned long long>(count), static_cast<unsigned long long>(durationNs));
+        metric.sourceId, static_cast<unsigned long long>(metric.presentationTimeStampNs.value_or(0)),
+        static_cast<uint32_t>(metric.type), static_cast<uint32_t>(metric.phase),
+        static_cast<unsigned long long>(metric.count.value_or(0)),
+        static_cast<unsigned long long>(metric.durationNs.value_or(0)));
 
     std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
     if (client)
     {
-        client->notifyMetricEvent(sourceId, ptsNs, metric, observationKind, count, durationNs, observedAtMonotonicNs,
-                                  observedAtUnixNs);
+        client->notifyMetric(metric);
     }
     else
     {
-        RIALTO_CLIENT_LOG_DEBUG("Dropping playback metric event for sourceId: %d - client is unavailable", sourceId);
+        RIALTO_CLIENT_LOG_DEBUG("Dropping playback metric event for sourceId: %d - client is unavailable",
+                                metric.sourceId);
     }
 }
 
