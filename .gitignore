@@ -18,3 +18,4 @@
 /stubs/rdk_gstreamer_utils/third-party/*
 /stubs/wpeframework-core/third-party/*
 /stubs/wpeframework-com/third-party/*
+build_ut/
