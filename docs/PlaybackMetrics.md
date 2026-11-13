@@ -44,7 +44,7 @@ consumer tests:
     emitted.
 
 The query and push mechanisms are deliberately separate. Reading the MSE sink's `frame-counters` property triggers a
-synchronous `GetFrameCounters` query; Rialto does not poll that property automatically. `NotifyMetricEvent` is an
+synchronous `GetFrameCounters` query; Rialto does not poll that property automatically. `MediaPipelineMetric` is an
 asynchronous push path. In the GStreamer client, the event is converted to a `media-pipeline-metric` application-bus
 message for consumers that handle pipeline bus messages. Receiving a push event does not invoke the query property.
 
@@ -75,39 +75,41 @@ It supplies its session ID and the caller-provided source ID in the request. Out
 
 ## Push Event
 
-The server sends `NotifyMetricEvent` with these fields:
+The server sends `MediaPipelineMetric` with these fields:
 
 | Field | Type | Meaning |
 |---|---|---|
-| `session_id` | `int32` | Owning media pipeline session |
-| `source_id` | `int32` | Source that produced the event |
-| `pts_ns` | `uint64` | Presentation timestamp (PTS) associated with the metric event, in nanoseconds |
-| `error_info` | `string` | Metric type name (for example, `METRIC_VIDEO_FRAME_DROP`) |
-| `phase` | `uint32` | Westeros metric phase: 0 occurrence, 1 started, 2 resolved |
-| `count` | `uint64` | Metric repetition count |
-| `duration_ns` | `uint64` | Metric duration, in nanoseconds |
-| `type` | `MetricType` | Numeric metric category |
-| `observed_at_monotonic_ns` | `uint64` | Server monotonic time when the event was observed |
-| `observed_at_unix_ns` | `int64` | Unix time when the event was observed |
+| `metric` | `uint32` | Metric number: 1 `METRIC_VIDEO_FRAME_DROP` through 7 `METRIC_BUFFER_UNDERFLOW` |
+| `observation_kind` | `uint32` | Westeros observation kind: 1 occurrence, 2 episode started, 3 episode resolved |
+| `session_id` | `uint32` | Owning media pipeline session |
+| `source_id` | `uint32` | Source that produced the event |
+| `pts_ns` | `int64` (optional) | Presentation timestamp (PTS) associated with the metric event, in nanoseconds |
+| `count` | `uint64` (optional) | Metric repetition count |
+| `duration_ns` | `uint64` (optional) | Metric duration, in nanoseconds |
+| `observed_at_monotonic_ns` | `uint64` | Monotonic timestamp taken by the Rialto server when the metric message was received |
+| `observed_at_unix_ns` | `int64` | Unix timestamp taken by the Rialto server when the metric message was received |
 
-The event carries the PTS as `pts_ns` and preserves the Westeros `phase`. Cumulative rendered/dropped/corrupted values remain on the snapshot query path and are not required in the event payload.
+The event carries the PTS as `pts_ns` and preserves the Westeros observation kind. Cumulative rendered/dropped/corrupted values remain on the snapshot query path and are not required in the event payload.
 
-The server-side notification signature is:
+The server forwards events through the public `IMediaPipelineClient::notifyMetricEvent` call. Absent `pts_ns`, `count`, and `duration_ns` values are sent as `0`, and the receiving side cannot distinguish them from an explicit zero. `observed_at_monotonic_ns` and `observed_at_unix_ns` are required on the wire. The Rialto server takes them from the `GstMessage` timestamp when it receives the bus message, so they are not set by the GStreamer element or the application.
 
 ```cpp
 void notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, const std::string &errorInfo, uint32_t phase,
-                       uint64_t count = 0, uint64_t durationNs = 0);
+                       uint64_t count = 0, uint64_t durationNs = 0,
+                       uint64_t observedAtMonotonicNs = 0, int64_t observedAtUnixNs = 0);
 ```
 
-The server IPC client fills in its session ID, copies the remaining values into the event, and sends it. The client IPC layer subscribes to this event type when setting up the IPC channel. It dispatches events on its event thread, forwards events for the current session without further filtering, and passes the event metadata fields, including `pts_ns`, `phase`, `count`, and `duration_ns`, to `IMediaPipelineIpcClient::notifyMetricEvent`. `MediaPipeline` forwards that callback to the registered `IMediaPipelineClient` when it is still available.
+The server's `IMediaPipelineClient::notifyMetricEvent` call maps to the event as follows: the server IPC client fills in its session ID, converts `errorInfo` to the numeric `metric`, sets the observed-at fields, and the value of `phase` becomes `observation_kind`. The client IPC layer subscribes to this event type when setting up the IPC channel. It dispatches events on its event thread, forwards events for the current session without further filtering, converts `metric` back to its `METRIC_*` label, and passes the event to `IMediaPipelineIpcClient::notifyMetricEvent`. `MediaPipeline` forwards that callback to the registered `IMediaPipelineClient` when it is still available.
 
 Applications receive the callback as:
 
 ```cpp
 void notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, const std::string &errorInfo, uint32_t phase,
-                       uint64_t count = 0, uint64_t durationNs = 0);
+                       uint64_t count = 0, uint64_t durationNs = 0,
+                       uint64_t observedAtMonotonicNs = 0, int64_t observedAtUnixNs = 0);
 ```
 
 ## Message Types
 
-The protocol defines these metric categories: `VIDEO_FRAME_DROP`, `AUDIO_FRAME_DROP`, `VIDEO_DECODE_ERROR`, `AUDIO_DECODE_ERROR`, `VIDEO_FRAME_REPEAT`, `AUDIO_GAP`, and `BUFFER_UNDERFLOW`. The push event's `error_info` contains the corresponding string name prefixed with `METRIC_` (or `METRIC_UNKNOWN` for an unrecognized type); the numeric enum is not part of the payload.
+The protocol defines these metric categories: `VIDEO_FRAME_DROP`, `AUDIO_FRAME_DROP`, `VIDEO_DECODE_ERROR`, `AUDIO_DECODE_ERROR`, `VIDEO_FRAME_REPEAT`, `AUDIO_GAP`, and `BUFFER_UNDERFLOW`. On the wire, `metric` carries their 1-based numbers (1 to 7). The application callback's `errorInfo` contains the corresponding string name prefixed with `METRIC_` (or `METRIC_UNKNOWN` for an unrecognized type).
+

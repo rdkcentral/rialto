@@ -35,7 +35,7 @@ using testing::StrEq;
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr guint kVideoDecodeErrorMetric{2};
+constexpr guint kVideoDecodeErrorMetric{3};
 constexpr guint kMetricOccurrencePhase{0};
 constexpr gint64 kMetricPtsNs{1234567890};
 const std::string kAudioSourceName{"Audio"};
@@ -365,19 +365,16 @@ TEST_F(QosUpdatesTest, QosUpdates)
 
     // Playback metric message should be parsed and forwarded to the client.
     willGetStats();
-    ExpectMessage<firebolt::rialto::NotifyMetricEvent> expectedMetricEvent{m_clientStub};
+    ExpectMessage<firebolt::rialto::MediaPipelineMetric> expectedMetricEvent{m_clientStub};
     sendVideoDecodeErrorMetric(m_videoSourceId);
 
     const auto receivedMetricEvent{expectedMetricEvent.getMessage()};
     ASSERT_TRUE(receivedMetricEvent);
-    EXPECT_EQ(receivedMetricEvent->session_id(), m_sessionId);
-    EXPECT_EQ(receivedMetricEvent->source_id(), m_videoSourceId);
-    EXPECT_EQ(receivedMetricEvent->rendered_frames(), kRenderedFrames);
-    EXPECT_EQ(receivedMetricEvent->dropped_frames(), kDroppedFrames);
-    EXPECT_EQ(receivedMetricEvent->corrupted_frames(), 1U);
-    EXPECT_EQ(receivedMetricEvent->pts_ns(), static_cast<uint64_t>(kMetricPtsNs));
-    EXPECT_EQ(receivedMetricEvent->error_info(), "METRIC_VIDEO_DECODE_ERROR");
-    EXPECT_EQ(receivedMetricEvent->phase(), kMetricOccurrencePhase);
+    EXPECT_EQ(receivedMetricEvent->session_id(), static_cast<uint32_t>(m_sessionId));
+    EXPECT_EQ(receivedMetricEvent->source_id(), static_cast<uint32_t>(m_videoSourceId));
+    EXPECT_EQ(receivedMetricEvent->metric(), static_cast<uint32_t>(kVideoDecodeErrorMetric));
+    EXPECT_EQ(receivedMetricEvent->pts_ns(), kMetricPtsNs);
+    EXPECT_EQ(receivedMetricEvent->observation_kind(), kMetricOccurrencePhase);
 
     // Step 12: End of audio stream
     // Step 13: End of video stream

@@ -1,14 +1,11 @@
 #ifndef FIREBOLT_RIALTO_SERVER_METRICS_I_RIALTO_METRICS_H_
 #define FIREBOLT_RIALTO_SERVER_METRICS_I_RIALTO_METRICS_H_
 
+#include <gst/gst.h>
+
 #include <cstdint>
 #include <optional>
 #include <utility>
-
-typedef struct _GstMessage GstMessage;
-typedef struct _GstStructure GstStructure;
-typedef struct _GstElement GstElement;
-typedef int GstFlowReturn;
 
 namespace firebolt::rialto::server
 {
@@ -47,6 +44,8 @@ struct ParsedMetricMessage
     std::optional<std::int64_t> pts_ns;
     std::optional<std::uint64_t> count;
     std::optional<std::uint64_t> duration_ns;
+    std::uint64_t observed_at_monotonic_ns{0};
+    std::int64_t observed_at_unix_ns{0};
 };
 
 const char *metricTypeToString(std::uint32_t type);

@@ -108,6 +108,12 @@ std::uint64_t getMonotonicTimestampNs()
 	                                      std::chrono::steady_clock::now().time_since_epoch())
 	                                      .count());
 }
+
+std::int64_t getUnixTimestampNs()
+{
+	return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch())
+	    .count();
+}
 } // namespace
 
 const char *metricTypeToString(std::uint32_t type)
@@ -116,19 +122,19 @@ const char *metricTypeToString(std::uint32_t type)
 					 static_cast<unsigned int>(type));
 	switch (type)
 	{
-	case 0:
-		return "METRIC_VIDEO_FRAME_DROP";
 	case 1:
-		return "METRIC_AUDIO_FRAME_DROP";
+		return "METRIC_VIDEO_FRAME_DROP";
 	case 2:
-		return "METRIC_VIDEO_DECODE_ERROR";
+		return "METRIC_AUDIO_FRAME_DROP";
 	case 3:
-		return "METRIC_AUDIO_DECODE_ERROR";
+		return "METRIC_VIDEO_DECODE_ERROR";
 	case 4:
-		return "METRIC_VIDEO_FRAME_REPEAT";
+		return "METRIC_AUDIO_DECODE_ERROR";
 	case 5:
-		return "METRIC_AUDIO_GAP";
+		return "METRIC_VIDEO_FRAME_REPEAT";
 	case 6:
+		return "METRIC_AUDIO_GAP";
+	case 7:
 		return "METRIC_BUFFER_UNDERFLOW";
 	default:
 		return "METRIC_UNKNOWN";
@@ -184,6 +190,21 @@ std::optional<ParsedMetricMessage> RialtoMetrics::onMetricMessage(
 	{
 		RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, "RialtoMetrics::onMetricMessage validation failed for metric message");
 		return std::nullopt;
+	}
+
+	// The GstMessage timestamp is taken from a monotonic clock when the message was posted on the bus.
+	const std::uint64_t nowMonotonicNs = getMonotonicTimestampNs();
+	const std::int64_t nowUnixNs = getUnixTimestampNs();
+	const GstClockTime messageTimestamp = GST_MESSAGE_TIMESTAMP(message);
+	if (GST_CLOCK_TIME_IS_VALID(messageTimestamp) && messageTimestamp <= nowMonotonicNs)
+	{
+		parsedMessage.observed_at_monotonic_ns = messageTimestamp;
+		parsedMessage.observed_at_unix_ns = nowUnixNs - static_cast<std::int64_t>(nowMonotonicNs - messageTimestamp);
+	}
+	else
+	{
+		parsedMessage.observed_at_monotonic_ns = nowMonotonicNs;
+		parsedMessage.observed_at_unix_ns = nowUnixNs;
 	}
 
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,

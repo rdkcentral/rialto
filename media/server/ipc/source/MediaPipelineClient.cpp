@@ -18,44 +18,23 @@
  */
 
 #include "MediaPipelineClient.h"
+#include "IRialtoMetrics.h"
 #include "RialtoServerLogging.h"
 #include "mediapipelinemodule.pb.h"
 #include <IIpcServer.h>
-#include <chrono>
 
 namespace
 {
-firebolt::rialto::MetricType convertMetricType(const std::string &errorInfo)
+uint32_t convertMetricType(const std::string &errorInfo)
 {
-    if (errorInfo == "METRIC_VIDEO_FRAME_DROP")
+    for (uint32_t metric = 1; metric <= 7; ++metric)
     {
-        return firebolt::rialto::MetricType::VIDEO_FRAME_DROP;
+        if (errorInfo == firebolt::rialto::server::metricTypeToString(metric))
+        {
+            return metric;
+        }
     }
-    if (errorInfo == "METRIC_AUDIO_FRAME_DROP")
-    {
-        return firebolt::rialto::MetricType::AUDIO_FRAME_DROP;
-    }
-    if (errorInfo == "METRIC_VIDEO_DECODE_ERROR")
-    {
-        return firebolt::rialto::MetricType::VIDEO_DECODE_ERROR;
-    }
-    if (errorInfo == "METRIC_AUDIO_DECODE_ERROR")
-    {
-        return firebolt::rialto::MetricType::AUDIO_DECODE_ERROR;
-    }
-    if (errorInfo == "METRIC_VIDEO_FRAME_REPEAT")
-    {
-        return firebolt::rialto::MetricType::VIDEO_FRAME_REPEAT;
-    }
-    if (errorInfo == "METRIC_AUDIO_GAP")
-    {
-        return firebolt::rialto::MetricType::AUDIO_GAP;
-    }
-    if (errorInfo == "METRIC_BUFFER_UNDERFLOW")
-    {
-        return firebolt::rialto::MetricType::BUFFER_UNDERFLOW;
-    }
-    return firebolt::rialto::MetricType::VIDEO_FRAME_DROP;
+    return 0;
 }
 
 firebolt::rialto::PlaybackStateChangeEvent_PlaybackState
@@ -268,31 +247,23 @@ void MediaPipelineClient::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
 }
 
 void MediaPipelineClient::notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, const std::string &errorInfo,
-                                            uint32_t phase, uint64_t count, uint64_t durationNs)
+                                            uint32_t phase, uint64_t count, uint64_t durationNs,
+                                            uint64_t observedAtMonotonicNs, int64_t observedAtUnixNs)
 {
-    const auto metricType = convertMetricType(errorInfo);
-    const auto observedAtMonotonicNs = static_cast<uint64_t>(
-        std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch())
-            .count());
-    const auto observedAtUnixNs = static_cast<int64_t>(
-        std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch())
-            .count());
-
     RIALTO_SERVER_LOG_DEBUG(
         "Sending playback metric IPC event sessionId: %d, sourceId: %d, ptsNs: %llu, type: %s, phase: %u, count: %llu, durationNs: %llu, observedAtMonotonicNs: %llu, observedAtUnixNs: %lld",
         m_sessionId, sourceId, static_cast<unsigned long long>(ptsNs), errorInfo.c_str(), phase,
         static_cast<unsigned long long>(count), static_cast<unsigned long long>(durationNs),
         static_cast<unsigned long long>(observedAtMonotonicNs), static_cast<long long>(observedAtUnixNs));
 
-    auto event = std::make_shared<firebolt::rialto::NotifyMetricEvent>();
-    event->set_session_id(m_sessionId);
-    event->set_source_id(sourceId);
-    event->set_pts_ns(ptsNs);
-    event->set_error_info(errorInfo);
-    event->set_phase(phase);
+    auto event = std::make_shared<firebolt::rialto::MediaPipelineMetric>();
+    event->set_metric(convertMetricType(errorInfo));
+    event->set_observation_kind(phase);
+    event->set_session_id(static_cast<uint32_t>(m_sessionId));
+    event->set_source_id(static_cast<uint32_t>(sourceId));
+    event->set_pts_ns(static_cast<int64_t>(ptsNs));
     event->set_count(count);
     event->set_duration_ns(durationNs);
-    event->set_type(metricType);
     event->set_observed_at_monotonic_ns(observedAtMonotonicNs);
     event->set_observed_at_unix_ns(observedAtUnixNs);
 

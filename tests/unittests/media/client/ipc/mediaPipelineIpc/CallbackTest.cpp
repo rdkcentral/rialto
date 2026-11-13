@@ -118,19 +118,32 @@ TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyQos)
     m_qosCb(updateQosEvent);
 }
 
-TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyMetricEvent)
+/**
+ * Test that a MediaPipelineMetric serialized by the server is parsed and every field is forwarded to the client.
+ */
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyMetricEventRoundTripsSerializedProto)
 {
-    auto metricEvent = std::make_shared<firebolt::rialto::NotifyMetricEvent>();
-    metricEvent->set_session_id(m_sessionId);
-    metricEvent->set_source_id(m_sourceId);
-    metricEvent->set_pts_ns(9001);
-    metricEvent->set_error_info("decoder error");
-    metricEvent->set_phase(2);
+    firebolt::rialto::MediaPipelineMetric sent;
+    sent.set_session_id(m_sessionId);
+    sent.set_source_id(m_sourceId);
+    sent.set_metric(5);
+    sent.set_observation_kind(3);
+    sent.set_pts_ns(9001);
+    sent.set_count(4);
+    sent.set_duration_ns(8000000);
+    sent.set_observed_at_monotonic_ns(42);
+    sent.set_observed_at_unix_ns(1700000000);
+
+    std::string payload;
+    ASSERT_TRUE(sent.SerializeToString(&payload));
+    auto received = std::make_shared<firebolt::rialto::MediaPipelineMetric>();
+    ASSERT_TRUE(received->ParseFromString(payload));
 
     EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
-    EXPECT_CALL(*m_clientMock, notifyMetricEvent(m_sourceId, 9001, "decoder error", 2));
+    EXPECT_CALL(*m_clientMock,
+                notifyMetricEvent(m_sourceId, 9001, "METRIC_VIDEO_FRAME_REPEAT", 3, 4, 8000000, 42, 1700000000));
 
-    m_metricEventCb(metricEvent);
+    m_metricEventCb(received);
 }
 
 /**
