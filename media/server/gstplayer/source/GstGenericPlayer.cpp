@@ -18,9 +18,19 @@
  */
 
 #include <atomic>  // RDKAI
+#include <climits>  // RDKAI
+#include <cmath>    // RDKAI
+#include <cstdint>  // RDKAI
 #include <cstdio>   // RDKAI
 #include <cstdlib>  // RDKAI
+#include <memory>   // RDKAI
+#include <mutex>    // RDKAI
 #include <string>   // RDKAI
+#include <thread>   // RDKAI
+#include <vector>   // RDKAI
+#include <gst/audio/audio.h> // RDKAI
+#include <sys/stat.h>        // RDKAI
+#include <unistd.h>          // RDKAI
 #include <algorithm>
 #include <chrono>
 #include <cinttypes>
@@ -457,10 +467,658 @@ void rdkaiVolNotify(GObject *obj, GParamSpec *, gpointer)
     RIALTO_SERVER_LOG_MIL("RDKAI-67: orig-vol changed externally -> volume=%.2f mute=%d", v, static_cast<int>(m));
 }
 
+// ---- RDKAI-68: TTS injection (tts-src -> audiomixer), ducking, PTS-anchored to the main audio ----
+// The TTS feed is driven by the main path: every main buffer gets a TTS buffer covering the same
+// span (silence when no line is active), and main caps/segment/flush/EOS are mirrored, so seeks,
+// pauses and per-source flushes stay aligned without any seek handling of our own.
+constexpr const char *kTtsDir = "/tmp/edgeai";
+constexpr const char *kTtsCtl = "/tmp/edgeai/tts.ctl";
+constexpr gint64 kTtsMaxWavBytes = 128 * 1024 * 1024;
+constexpr gint64 kTtsCtlPollUs = 200 * 1000;
+constexpr int kTtsBlockMs = 10;
+
+struct RdkaiTtsTrack
+{
+    std::string path;
+    int rate{0};
+    std::vector<int16_t> pcm; // mono
+    std::vector<float> gain;  // orig-vol gain per kTtsBlockMs block
+};
+
+double rdkaiEnvDouble(const char *name, double def, double lo, double hi)
+{
+    const char *v = getenv(name);
+    if (!v || !v[0])
+        return def;
+    const double d = atof(v);
+    return (d >= lo && d <= hi) ? d : def;
+}
+
+// Dir must be root/self-owned and not group/world-writable; file must resolve inside it
+bool rdkaiTtsPathAllowed(const std::string &path, std::string &resolved, std::string &why)
+{
+    struct stat dst{};
+    if (stat(kTtsDir, &dst) != 0 || !S_ISDIR(dst.st_mode) || (dst.st_uid != 0 && dst.st_uid != geteuid()) ||
+        (dst.st_mode & (S_IWGRP | S_IWOTH)))
+    {
+        why = std::string(kTtsDir) + " missing, not owned by root/self, or group/world-writable";
+        return false;
+    }
+    char buf[PATH_MAX];
+    if (!realpath(path.c_str(), buf))
+    {
+        why = "cannot resolve '" + path + "'";
+        return false;
+    }
+    resolved = buf;
+    const std::string prefix = std::string(kTtsDir) + "/";
+    if (resolved.compare(0, prefix.size(), prefix) != 0)
+    {
+        why = "'" + resolved + "' is outside " + kTtsDir;
+        return false;
+    }
+    return true;
+}
+
+uint32_t rdkaiLe32(const unsigned char *p)
+{
+    return p[0] | (p[1] << 8) | (p[2] << 16) | (static_cast<uint32_t>(p[3]) << 24);
+}
+
+uint16_t rdkaiLe16(const unsigned char *p)
+{
+    return static_cast<uint16_t>(p[0] | (p[1] << 8));
+}
+
+// Loads a 16-bit PCM WAV (mono/stereo, any rate) as mono and precomputes the ducking envelope
+std::shared_ptr<RdkaiTtsTrack> rdkaiLoadTtsWav(const std::string &path, double duck, int fadeMs, std::string &why)
+{
+    std::string resolved;
+    if (!rdkaiTtsPathAllowed(path, resolved, why))
+        return nullptr;
+    struct stat st{};
+    if (stat(resolved.c_str(), &st) != 0 || !S_ISREG(st.st_mode) || st.st_size < 44 || st.st_size > kTtsMaxWavBytes)
+    {
+        why = "'" + resolved + "' is not a regular file of 44 B..128 MB";
+        return nullptr;
+    }
+    std::vector<unsigned char> data(static_cast<size_t>(st.st_size));
+    FILE *f = fopen(resolved.c_str(), "rb");
+    if (!f)
+    {
+        why = "cannot open '" + resolved + "'";
+        return nullptr;
+    }
+    const size_t got = fread(data.data(), 1, data.size(), f);
+    fclose(f);
+    if (got != data.size() || memcmp(data.data(), "RIFF", 4) != 0 || memcmp(data.data() + 8, "WAVE", 4) != 0)
+    {
+        why = "'" + resolved + "' is not a RIFF/WAVE file";
+        return nullptr;
+    }
+    int channels = 0, rate = 0, bits = 0, fmtTag = 0;
+    const unsigned char *pcm = nullptr;
+    size_t pcmBytes = 0;
+    for (size_t off = 12; off + 8 <= data.size();)
+    {
+        const uint32_t len = rdkaiLe32(&data[off + 4]);
+        const size_t body = off + 8;
+        if (len > data.size() - body)
+            break;
+        if (memcmp(&data[off], "fmt ", 4) == 0 && len >= 16)
+        {
+            fmtTag = rdkaiLe16(&data[body]);
+            channels = rdkaiLe16(&data[body + 2]);
+            rate = static_cast<int>(rdkaiLe32(&data[body + 4]));
+            bits = rdkaiLe16(&data[body + 14]);
+        }
+        else if (memcmp(&data[off], "data", 4) == 0)
+        {
+            pcm = &data[body];
+            pcmBytes = len;
+        }
+        off = body + len + (len & 1u);
+    }
+    if ((fmtTag != 1 && fmtTag != 0xFFFE) || bits != 16 || channels < 1 || channels > 2 || rate < 8000 ||
+        rate > 96000 || !pcm)
+    {
+        why = "'" + resolved + "': need 16-bit PCM, 1-2 channels, 8-96 kHz (got tag=" + std::to_string(fmtTag) +
+              " bits=" + std::to_string(bits) + " ch=" + std::to_string(channels) + " rate=" + std::to_string(rate) +
+              ")";
+        return nullptr;
+    }
+
+    auto track = std::make_shared<RdkaiTtsTrack>();
+    track->path = resolved;
+    track->rate = rate;
+    const size_t frames = pcmBytes / (2u * static_cast<size_t>(channels));
+    track->pcm.resize(frames);
+    for (size_t i = 0; i < frames; ++i)
+    {
+        const unsigned char *s = pcm + i * 2u * static_cast<size_t>(channels);
+        int v = static_cast<int16_t>(rdkaiLe16(s));
+        if (channels == 2)
+            v = (v + static_cast<int16_t>(rdkaiLe16(s + 2))) / 2;
+        track->pcm[i] = static_cast<int16_t>(v);
+    }
+
+    // Envelope: duck where a block has speech (|s| above ~-36 dBFS), linear ramp of fadeMs either side
+    const size_t blockFrames = static_cast<size_t>(rate) * kTtsBlockMs / 1000;
+    const size_t blocks = (frames + blockFrames - 1) / blockFrames;
+    std::vector<int> dist(blocks, INT_MAX / 2);
+    for (size_t b = 0; b < blocks; ++b)
+    {
+        const size_t end = std::min(frames, (b + 1) * blockFrames);
+        for (size_t i = b * blockFrames; i < end; ++i)
+        {
+            if (std::abs(static_cast<int>(track->pcm[i])) > 500)
+            {
+                dist[b] = 0;
+                break;
+            }
+        }
+    }
+    for (size_t b = 1; b < blocks; ++b)
+        dist[b] = std::min(dist[b], dist[b - 1] + kTtsBlockMs);
+    for (size_t b = blocks; b-- > 1;)
+        dist[b - 1] = std::min(dist[b - 1], dist[b] + kTtsBlockMs);
+    track->gain.resize(blocks);
+    for (size_t b = 0; b < blocks; ++b)
+    {
+        const double t = fadeMs > 0 ? std::min(1.0, static_cast<double>(dist[b]) / fadeMs) : (dist[b] ? 1.0 : 0.0);
+        track->gain[b] = static_cast<float>(duck + (1.0 - duck) * t);
+    }
+    return track;
+}
+
+struct RdkaiTtsCtx
+{
+    GstElement *vol{nullptr};
+    GstElement *mixCaps{nullptr};
+    GstPad *ttsPad{nullptr};
+    double duck{0.25};
+    int fadeMs{100};
+    gint64 offsetNs{0};
+
+    std::mutex trackLock; // track is swapped by the loader thread
+    std::shared_ptr<const RdkaiTtsTrack> track;
+    std::thread loader;
+    std::atomic<bool> loading{false};
+
+    std::mutex segLock; // main segment is read by the mixer's thread
+    GstSegment mainSeg{};
+    bool mainSegValid{false};
+
+    // main streaming thread only
+    GstAudioInfo mainInfo{};
+    bool mainInfoValid{false};
+    gdouble lastGain{1.0};
+    gint64 lastPollUs{0};
+    bool ctlSeen{false};
+    struct timespec ctlMtime{};
+    ino_t ctlIno{0};
+    bool loggedNoTrack{false};
+    bool loggedPushError{false};
+
+    // mixer src thread only
+    GstSegment mixSeg{};
+    bool mixSegValid{false};
+
+    ~RdkaiTtsCtx()
+    {
+        if (loader.joinable())
+            loader.join();
+        if (ttsPad)
+        {
+            gst_pad_set_active(ttsPad, FALSE);
+            gst_object_unref(ttsPad);
+        }
+    }
+};
+
+void rdkaiTtsCtxFree(gpointer data)
+{
+    delete static_cast<std::shared_ptr<RdkaiTtsCtx> *>(data);
+}
+
+void rdkaiTtsSetTrack(RdkaiTtsCtx &ctx, std::shared_ptr<const RdkaiTtsTrack> track)
+{
+    std::lock_guard<std::mutex> lock(ctx.trackLock);
+    ctx.track = std::move(track);
+}
+
+// Loads off the streaming thread; a load already in progress makes this a no-op until it finishes
+void rdkaiTtsStartLoad(RdkaiTtsCtx &ctx, const std::string &path)
+{
+    if (ctx.loading.exchange(true))
+        return;
+    if (ctx.loader.joinable())
+        ctx.loader.join();
+    ctx.loader = std::thread(
+        [&ctx, path]()
+        {
+            std::string why;
+            auto track = rdkaiLoadTtsWav(path, ctx.duck, ctx.fadeMs, why);
+            if (track)
+            {
+                RIALTO_SERVER_LOG_MIL("RDKAI-68 tts: loaded '%s' rate=%d frames=%zu (%.1f s)", track->path.c_str(),
+                                      track->rate, track->pcm.size(),
+                                      static_cast<double>(track->pcm.size()) / track->rate);
+                rdkaiTtsSetTrack(ctx, track);
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_ERROR("RDKAI-68 tts: load failed, keeping current track: %s", why.c_str());
+            }
+            ctx.loading = false;
+        });
+}
+
+// Control file: one line, a WAV path under /tmp/edgeai or "off". Only root/self-owned, not group/world-writable.
+void rdkaiTtsPollCtl(RdkaiTtsCtx &ctx)
+{
+    const gint64 now = g_get_monotonic_time();
+    if (now - ctx.lastPollUs < kTtsCtlPollUs)
+        return;
+    ctx.lastPollUs = now;
+    struct stat st{};
+    if (lstat(kTtsCtl, &st) != 0)
+        return;
+    if (ctx.ctlSeen && st.st_ino == ctx.ctlIno && st.st_mtim.tv_sec == ctx.ctlMtime.tv_sec &&
+        st.st_mtim.tv_nsec == ctx.ctlMtime.tv_nsec)
+        return;
+    ctx.ctlSeen = true;
+    ctx.ctlIno = st.st_ino;
+    ctx.ctlMtime = st.st_mtim;
+    if (!S_ISREG(st.st_mode) || (st.st_uid != 0 && st.st_uid != geteuid()) || (st.st_mode & (S_IWGRP | S_IWOTH)) ||
+        st.st_size > 1024)
+    {
+        RIALTO_SERVER_LOG_ERROR("RDKAI-68 tts: ignoring %s (not a small regular file owned by root/self, or "
+                                "group/world-writable)",
+                                kTtsCtl);
+        return;
+    }
+    char line[1100] = {0};
+    FILE *f = fopen(kTtsCtl, "r");
+    if (!f)
+        return;
+    const size_t n = fread(line, 1, sizeof(line) - 1, f);
+    fclose(f);
+    std::string cmd(line, n);
+    const auto first = cmd.find_first_not_of(" \t\r\n");
+    const auto last = cmd.find_last_not_of(" \t\r\n");
+    cmd = (first == std::string::npos) ? std::string() : cmd.substr(first, last - first + 1);
+    if (cmd.empty() || cmd == "off")
+    {
+        RIALTO_SERVER_LOG_MIL("RDKAI-68 tts: control file says off -> original audio");
+        rdkaiTtsSetTrack(ctx, nullptr);
+        return;
+    }
+    RIALTO_SERVER_LOG_MIL("RDKAI-68 tts: control file -> '%s'", cmd.c_str());
+    rdkaiTtsStartLoad(ctx, cmd);
+}
+
+void rdkaiTtsPush(RdkaiTtsCtx &ctx, GstMiniObject *obj)
+{
+    GstFlowReturn ret = GST_FLOW_OK;
+    if (GST_IS_EVENT(obj))
+    {
+        gst_pad_push_event(ctx.ttsPad, GST_EVENT_CAST(obj));
+        return;
+    }
+    ret = gst_pad_push(ctx.ttsPad, GST_BUFFER_CAST(obj));
+    if (ret != GST_FLOW_OK && ret != GST_FLOW_FLUSHING && !ctx.loggedPushError)
+    {
+        ctx.loggedPushError = true;
+        RIALTO_SERVER_LOG_ERROR("RDKAI-68 tts: push into mixer returned %s", gst_flow_get_name(ret));
+    }
+}
+
+// Builds the TTS buffer for one main buffer and returns the orig-vol gain for it
+GstBuffer *rdkaiTtsMakeBuffer(RdkaiTtsCtx &ctx, GstBuffer *main, gdouble &gainOut)
+{
+    gainOut = 1.0;
+    const int rate = GST_AUDIO_INFO_RATE(&ctx.mainInfo);
+    const int channels = GST_AUDIO_INFO_CHANNELS(&ctx.mainInfo);
+    const gsize frames = gst_buffer_get_size(main) / GST_AUDIO_INFO_BPF(&ctx.mainInfo);
+    GstBuffer *out = gst_buffer_new_allocate(nullptr, frames * 2u * static_cast<gsize>(channels), nullptr);
+    GST_BUFFER_PTS(out) = GST_BUFFER_PTS(main);
+    GST_BUFFER_DURATION(out) = GST_BUFFER_DURATION_IS_VALID(main)
+                                   ? GST_BUFFER_DURATION(main)
+                                   : gst_util_uint64_scale_int(frames, GST_SECOND, rate);
+    if (GST_BUFFER_IS_DISCONT(main))
+        GST_BUFFER_FLAG_SET(out, GST_BUFFER_FLAG_DISCONT);
+
+    GstMapInfo map;
+    if (!gst_buffer_map(out, &map, GST_MAP_WRITE))
+        return out;
+    memset(map.data, 0, map.size);
+
+    std::shared_ptr<const RdkaiTtsTrack> track;
+    {
+        std::lock_guard<std::mutex> lock(ctx.trackLock);
+        track = ctx.track;
+    }
+    guint64 stream = GST_CLOCK_TIME_NONE;
+    double segRate = 1.0;
+    {
+        std::lock_guard<std::mutex> lock(ctx.segLock);
+        if (ctx.mainSegValid && GST_BUFFER_PTS_IS_VALID(main))
+        {
+            stream = gst_segment_to_stream_time(&ctx.mainSeg, GST_FORMAT_TIME, GST_BUFFER_PTS(main));
+            segRate = ctx.mainSeg.rate;
+        }
+    }
+    if (!track)
+    {
+        if (!ctx.loggedNoTrack)
+        {
+            ctx.loggedNoTrack = true;
+            RIALTO_SERVER_LOG_MIL("RDKAI-68 tts: no TTS track loaded, feeding silence");
+        }
+    }
+    else if (stream != GST_CLOCK_TIME_NONE && segRate == 1.0)
+    {
+        ctx.loggedNoTrack = false;
+        const double startSec = (static_cast<double>(stream) - static_cast<double>(ctx.offsetNs)) / GST_SECOND;
+        const double step = static_cast<double>(track->rate) / rate;
+        const double last = static_cast<double>(track->pcm.size()) - 1.0;
+        int16_t *dst = reinterpret_cast<int16_t *>(map.data);
+        double pos = startSec * track->rate;
+        for (gsize i = 0; i < frames; ++i, pos += step)
+        {
+            int16_t s = 0;
+            if (pos >= 0.0 && pos < last)
+            {
+                const size_t k = static_cast<size_t>(pos);
+                const double frac = pos - static_cast<double>(k);
+                s = static_cast<int16_t>(track->pcm[k] + frac * (track->pcm[k + 1] - track->pcm[k]));
+            }
+            for (int c = 0; c < channels; ++c)
+                *dst++ = GINT16_TO_LE(s);
+        }
+        const double midMs = (startSec * 1000.0) + 500.0 * static_cast<double>(frames) / rate;
+        if (midMs >= 0.0)
+        {
+            const size_t block = static_cast<size_t>(midMs) / kTtsBlockMs;
+            if (block < track->gain.size())
+                gainOut = track->gain[block];
+        }
+    }
+    gst_buffer_unmap(out, &map);
+    return out;
+}
+
+// Probe on the tee sink pad: mirrors main events into tts-src and pushes a matching TTS buffer before each main buffer
+GstPadProbeReturn rdkaiTtsMainProbe(GstPad *, GstPadProbeInfo *info, gpointer userData)
+{
+    RdkaiTtsCtx &ctx = **static_cast<std::shared_ptr<RdkaiTtsCtx> *>(userData);
+    if (GST_PAD_PROBE_INFO_TYPE(info) & GST_PAD_PROBE_TYPE_BUFFER)
+    {
+        GstBuffer *main = GST_PAD_PROBE_INFO_BUFFER(info);
+        if (!ctx.mainInfoValid)
+            return GST_PAD_PROBE_OK;
+        rdkaiTtsPollCtl(ctx);
+        gdouble gain = 1.0;
+        GstBuffer *tts = rdkaiTtsMakeBuffer(ctx, main, gain);
+        if (std::fabs(gain - ctx.lastGain) > 0.001)
+        {
+            ctx.lastGain = gain;
+            g_object_set(ctx.vol, "volume", gain, nullptr); // orig-vol runs right after, in this thread
+        }
+        rdkaiTtsPush(ctx, GST_MINI_OBJECT_CAST(tts));
+        return GST_PAD_PROBE_OK;
+    }
+
+    GstEvent *ev = GST_PAD_PROBE_INFO_EVENT(info);
+    if (!ev)
+        return GST_PAD_PROBE_OK;
+    switch (GST_EVENT_TYPE(ev))
+    {
+    case GST_EVENT_STREAM_START:
+    {
+        GstEvent *ss = gst_event_new_stream_start("rdkai-tts");
+        guint group = 0;
+        if (gst_event_parse_group_id(ev, &group))
+            gst_event_set_group_id(ss, group);
+        rdkaiTtsPush(ctx, GST_MINI_OBJECT_CAST(ss));
+        break;
+    }
+    case GST_EVENT_CAPS:
+    {
+        GstCaps *caps = nullptr;
+        gst_event_parse_caps(ev, &caps);
+        GstAudioInfo in;
+        if (!caps || !gst_audio_info_from_caps(&in, caps) || GST_AUDIO_INFO_LAYOUT(&in) != GST_AUDIO_LAYOUT_INTERLEAVED)
+        {
+            gchar *s = caps ? gst_caps_to_string(caps) : nullptr;
+            RIALTO_SERVER_LOG_ERROR("RDKAI-68 tts: unsupported main caps %s, TTS disabled", s ? s : "none");
+            g_free(s);
+            ctx.mainInfoValid = false;
+            rdkaiTtsPush(ctx, GST_MINI_OBJECT_CAST(gst_event_new_eos())); // mixer must not wait on tts-src
+            break;
+        }
+        ctx.mainInfo = in;
+        ctx.mainInfoValid = true;
+        GstAudioInfo ttsInfo;
+        gst_audio_info_set_format(&ttsInfo, GST_AUDIO_FORMAT_S16LE, GST_AUDIO_INFO_RATE(&in),
+                                  GST_AUDIO_INFO_CHANNELS(&in), in.position);
+        GstCaps *ttsCaps = gst_audio_info_to_caps(&ttsInfo);
+        rdkaiTtsPush(ctx, GST_MINI_OBJECT_CAST(gst_event_new_caps(ttsCaps)));
+        gst_caps_unref(ttsCaps);
+        g_object_set(ctx.mixCaps, "caps", caps, nullptr); // mixer outputs what the sink received before
+        break;
+    }
+    case GST_EVENT_SEGMENT:
+    {
+        const GstSegment *seg = nullptr;
+        gst_event_parse_segment(ev, &seg);
+        {
+            std::lock_guard<std::mutex> lock(ctx.segLock);
+            gst_segment_copy_into(seg, &ctx.mainSeg);
+            ctx.mainSegValid = true;
+        }
+        GstEvent *copy = gst_event_new_segment(seg);
+        gst_event_set_seqnum(copy, gst_event_get_seqnum(ev));
+        rdkaiTtsPush(ctx, GST_MINI_OBJECT_CAST(copy));
+        break;
+    }
+    case GST_EVENT_GAP:
+    case GST_EVENT_EOS:
+    case GST_EVENT_FLUSH_START:
+    case GST_EVENT_FLUSH_STOP:
+        if (GST_EVENT_TYPE(ev) == GST_EVENT_FLUSH_STOP)
+        {
+            std::lock_guard<std::mutex> lock(ctx.segLock);
+            ctx.mainSegValid = false;
+        }
+        rdkaiTtsPush(ctx, GST_MINI_OBJECT_CAST(gst_event_copy(ev)));
+        break;
+    default:
+        break;
+    }
+    return GST_PAD_PROBE_OK;
+}
+
+// Probe on the mixer src pad: re-stamps output onto the main segment, so the platform sink (sync=FALSE,
+// hardware A/V sync on Broadcom) sees exactly the PTS and segment it would have seen without the mixer
+GstPadProbeReturn rdkaiTtsMixerProbe(GstPad *, GstPadProbeInfo *info, gpointer userData)
+{
+    RdkaiTtsCtx &ctx = **static_cast<std::shared_ptr<RdkaiTtsCtx> *>(userData);
+    GstEvent *ev = (GST_PAD_PROBE_INFO_TYPE(info) & GST_PAD_PROBE_TYPE_BUFFER) ? nullptr : GST_PAD_PROBE_INFO_EVENT(info);
+    if (ev && GST_EVENT_TYPE(ev) == GST_EVENT_SEGMENT)
+    {
+        const GstSegment *seg = nullptr;
+        gst_event_parse_segment(ev, &seg);
+        gst_segment_copy_into(seg, &ctx.mixSeg);
+        ctx.mixSegValid = true;
+    }
+    else if (ev && GST_EVENT_TYPE(ev) == GST_EVENT_FLUSH_STOP)
+    {
+        ctx.mixSegValid = false;
+    }
+    GstSegment main;
+    {
+        std::lock_guard<std::mutex> lock(ctx.segLock);
+        if (!ctx.mainSegValid)
+            return GST_PAD_PROBE_OK;
+        gst_segment_copy_into(&ctx.mainSeg, &main);
+    }
+    if (GST_PAD_PROBE_INFO_TYPE(info) & GST_PAD_PROBE_TYPE_BUFFER)
+    {
+        GstBuffer *buf = GST_PAD_PROBE_INFO_BUFFER(info);
+        if (!ctx.mixSegValid || !GST_BUFFER_PTS_IS_VALID(buf))
+            return GST_PAD_PROBE_OK;
+        const guint64 running = gst_segment_to_running_time(&ctx.mixSeg, GST_FORMAT_TIME, GST_BUFFER_PTS(buf));
+        const guint64 pts = gst_segment_position_from_running_time(&main, GST_FORMAT_TIME, running);
+        if (running == GST_CLOCK_TIME_NONE || pts == GST_CLOCK_TIME_NONE || pts == GST_BUFFER_PTS(buf))
+            return GST_PAD_PROBE_OK;
+        buf = gst_buffer_make_writable(buf);
+        GST_BUFFER_PTS(buf) = pts;
+        GST_PAD_PROBE_INFO_DATA(info) = buf;
+        return GST_PAD_PROBE_OK;
+    }
+    if (ev && GST_EVENT_TYPE(ev) == GST_EVENT_SEGMENT)
+    {
+        GstEvent *replacement = gst_event_new_segment(&main);
+        gst_event_set_seqnum(replacement, gst_event_get_seqnum(ev));
+        gst_event_unref(ev);
+        GST_PAD_PROBE_INFO_DATA(info) = replacement;
+    }
+    return GST_PAD_PROBE_OK;
+}
+
+// tts-src answers the mixer's upstream queries/events itself (it has no upstream)
+gboolean rdkaiTtsPadQuery(GstPad *pad, GstObject *, GstQuery *query)
+{
+    switch (GST_QUERY_TYPE(query))
+    {
+    case GST_QUERY_LATENCY:
+        gst_query_set_latency(query, FALSE, 0, GST_CLOCK_TIME_NONE);
+        return TRUE;
+    case GST_QUERY_CAPS:
+    {
+        GstCaps *current = gst_pad_get_current_caps(pad);
+        GstCaps *caps = current ? current : gst_caps_from_string("audio/x-raw,format=S16LE,layout=interleaved");
+        gst_query_set_caps_result(query, caps);
+        gst_caps_unref(caps);
+        return TRUE;
+    }
+    case GST_QUERY_ACCEPT_CAPS:
+        gst_query_set_accept_caps_result(query, TRUE);
+        return TRUE;
+    default:
+        return FALSE;
+    }
+}
+
+gboolean rdkaiTtsPadEvent(GstPad *, GstObject *, GstEvent *event)
+{
+    gst_event_unref(event); // seeks/QoS/reconfigure: the feed follows the main path, nothing to do
+    return TRUE;
+}
+
+// Adds RDKAI_TTS_LATENCY_MS to the latency the platform sink gets back from upstream (post-query probe)
+GstPadProbeReturn rdkaiTtsLatencyProbe(GstPad *, GstPadProbeInfo *info, gpointer userData)
+{
+    GstQuery *query = GST_PAD_PROBE_INFO_QUERY(info);
+    if (!query || GST_QUERY_TYPE(query) != GST_QUERY_LATENCY)
+        return GST_PAD_PROBE_OK;
+    const GstClockTime extra = static_cast<GstClockTime>(GPOINTER_TO_UINT(userData)) * GST_MSECOND;
+    gboolean live{FALSE};
+    GstClockTime minLat{0};
+    GstClockTime maxLat{GST_CLOCK_TIME_NONE};
+    gst_query_parse_latency(query, &live, &minLat, &maxLat);
+    gst_query_set_latency(query, live, minLat + extra, GST_CLOCK_TIME_IS_VALID(maxLat) ? maxLat + extra : maxLat);
+    static std::atomic<bool> logged{false};
+    if (!logged.exchange(true))
+    {
+        RIALTO_SERVER_LOG_MIL("RDKAI-68 tts: latency query live=%d min=%" GST_TIME_FORMAT " (+%" GST_TIME_FORMAT
+                              " processing latency)",
+                              static_cast<int>(live), GST_TIME_ARGS(minLat + extra), GST_TIME_ARGS(extra));
+    }
+    return GST_PAD_PROBE_OK;
+}
+
+// Adds audiomixer + tts-src between orig-vol and the sink. Returns false on failure (caller falls back).
+bool rdkaiTtsAttach(GstElement *bin, GstElement *tee, GstElement *vol, GstElement *sink)
+{
+    GstElement *mixer = gst_element_factory_make("audiomixer", "rdkai_mixer");
+    GstElement *mixCaps = gst_element_factory_make("capsfilter", "rdkai_mix_caps");
+    if (!mixer || !mixCaps)
+    {
+        RIALTO_SERVER_LOG_ERROR("RDKAI-68 tts: audiomixer/capsfilter not available on this image");
+        if (mixer)
+            gst_object_unref(mixer);
+        if (mixCaps)
+            gst_object_unref(mixCaps);
+        return false;
+    }
+    gst_bin_add_many(GST_BIN(bin), mixer, mixCaps, nullptr);
+    if (!gst_element_link_many(vol, mixer, mixCaps, sink, nullptr))
+    {
+        RIALTO_SERVER_LOG_ERROR("RDKAI-68 tts: failed to link orig-vol -> mixer -> sink");
+        return false;
+    }
+
+    auto ctx = std::make_shared<RdkaiTtsCtx>();
+    ctx->vol = vol;
+    ctx->mixCaps = mixCaps;
+    ctx->duck = rdkaiEnvDouble("RDKAI_TTS_DUCK", 0.25, 0.0, 1.0);
+    ctx->fadeMs = static_cast<int>(rdkaiEnvDouble("RDKAI_TTS_FADE_MS", 100, 0, 1000));
+    ctx->offsetNs = static_cast<gint64>(rdkaiEnvDouble("RDKAI_TTS_OFFSET_MS", 0, -3600000, 3600000) * GST_MSECOND);
+    ctx->ttsPad = gst_pad_new("tts-src", GST_PAD_SRC);
+    gst_pad_set_query_function(ctx->ttsPad, rdkaiTtsPadQuery);
+    gst_pad_set_event_function(ctx->ttsPad, rdkaiTtsPadEvent);
+    gst_pad_set_active(ctx->ttsPad, TRUE);
+    GstPad *mixSink = gst_element_get_request_pad(mixer, "sink_%u");
+    const GstPadLinkReturn link = mixSink ? gst_pad_link(ctx->ttsPad, mixSink) : GST_PAD_LINK_REFUSED;
+    if (mixSink)
+        gst_object_unref(mixSink);
+    if (link != GST_PAD_LINK_OK)
+    {
+        RIALTO_SERVER_LOG_ERROR("RDKAI-68 tts: failed to link tts-src to the mixer (%d)", static_cast<int>(link));
+        return false;
+    }
+
+    GstPad *teeSink = gst_element_get_static_pad(tee, "sink");
+    gst_pad_add_probe(teeSink,
+                      static_cast<GstPadProbeType>(GST_PAD_PROBE_TYPE_BUFFER | GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM |
+                                                   GST_PAD_PROBE_TYPE_EVENT_FLUSH),
+                      rdkaiTtsMainProbe, new std::shared_ptr<RdkaiTtsCtx>(ctx), rdkaiTtsCtxFree);
+    gst_object_unref(teeSink);
+    GstPad *mixSrc = gst_element_get_static_pad(mixer, "src");
+    gst_pad_add_probe(mixSrc,
+                      static_cast<GstPadProbeType>(GST_PAD_PROBE_TYPE_BUFFER | GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM |
+                                                   GST_PAD_PROBE_TYPE_EVENT_FLUSH),
+                      rdkaiTtsMixerProbe, new std::shared_ptr<RdkaiTtsCtx>(ctx), rdkaiTtsCtxFree);
+    gst_object_unref(mixSrc);
+
+    const guint latencyMs = static_cast<guint>(rdkaiEnvDouble("RDKAI_TTS_LATENCY_MS", 0, 0, 10000));
+    GstPad *platformSink = gst_element_get_static_pad(sink, "sink");
+    if (platformSink)
+    {
+        gst_pad_add_probe(platformSink,
+                          static_cast<GstPadProbeType>(GST_PAD_PROBE_TYPE_QUERY_UPSTREAM | GST_PAD_PROBE_TYPE_PULL),
+                          rdkaiTtsLatencyProbe, GUINT_TO_POINTER(latencyMs), nullptr);
+        gst_object_unref(platformSink);
+    }
+
+    const char *wav = getenv("RDKAI_TTS_WAV");
+    if (wav && wav[0])
+        rdkaiTtsStartLoad(*ctx, wav);
+    RIALTO_SERVER_LOG_MIL("RDKAI-68 tts: mixer attached (duck=%.2f fade=%d ms offset=%lld ms latency=%u ms, "
+                          "initial wav=%s, control file=%s)",
+                          ctx->duck, ctx->fadeMs, static_cast<long long>(ctx->offsetNs / GST_MSECOND), latencyMs,
+                          (wav && wav[0]) ? wav : "(none)", kTtsCtl);
+    return true;
+}
+
 // RDKAI-67 bin: ghost sink -> [optional audioconvert/resample/S16LE caps] -> tee
 //                 tee -> orig-vol -> platform sink                        (main path)
 //                 tee -> leaky queue -> convert -> resample -> caps -> appsink "bed-tap"
-GstElement *rdkaiCreateTeeAudioBin()
+// RDKAI-68 (withTts): orig-vol -> audiomixer (+ tts-src) -> caps -> platform sink
+GstElement *rdkaiCreateTeeAudioBin(bool withTts)
 {
     const char *convEnv = getenv("RDKAI_BIN_CONVERT");
     const bool convert = (convEnv && convEnv[0] == '1');
@@ -498,7 +1156,7 @@ GstElement *rdkaiCreateTeeAudioBin()
     {
         gst_bin_add_many(GST_BIN(bin), conv, res, cf, nullptr);
     }
-    bool linked = gst_element_link_many(tee, vol, sink, nullptr) &&
+    bool linked = (withTts ? gst_element_link(tee, vol) : gst_element_link_many(tee, vol, sink, nullptr)) &&
                   gst_element_link_many(tee, tq, tconv, tres, tcf, app, nullptr);
     if (convert)
     {
@@ -510,6 +1168,11 @@ GstElement *rdkaiCreateTeeAudioBin()
     if (!linked)
     {
         RIALTO_SERVER_LOG_ERROR("RDKAI-67: failed to link tee bin");
+        gst_object_unref(bin);
+        return nullptr;
+    }
+    if (withTts && !rdkaiTtsAttach(bin, tee, vol, sink))
+    {
         gst_object_unref(bin);
         return nullptr;
     }
@@ -552,8 +1215,11 @@ GstElement *rdkaiCreateTeeAudioBin()
     g_object_get(vol, "volume", &v, nullptr);
     RIALTO_SERVER_LOG_MIL("RDKAI-67: orig-vol restored -> %.2f (expect 1.00), tap rate=%d, front convert=%d", v, rate,
                           static_cast<int>(convert));
-    g_signal_connect(vol, "notify::volume", G_CALLBACK(rdkaiVolNotify), nullptr);
-    g_signal_connect(vol, "notify::mute", G_CALLBACK(rdkaiVolNotify), nullptr);
+    if (!withTts) // in mode 3 ducking changes orig-vol on every speech line
+    {
+        g_signal_connect(vol, "notify::volume", G_CALLBACK(rdkaiVolNotify), nullptr);
+        g_signal_connect(vol, "notify::mute", G_CALLBACK(rdkaiVolNotify), nullptr);
+    }
 
     GstElement *head = convert ? conv : tee;
     GstPad *headSink = gst_element_get_static_pad(head, "sink");
@@ -563,11 +1229,19 @@ GstElement *rdkaiCreateTeeAudioBin()
     return bin;
 }
 
-// RDKAI_PASSTHROUGH=1 -> identity bin, =2 -> tee bin
+// RDKAI_PASSTHROUGH=1 -> identity bin, =2 -> tee bin, =3 -> tee bin + TTS mixer (falls back to 2)
 GstElement *rdkaiCreateSelectedAudioBin()
 {
     const char *mode = getenv("RDKAI_PASSTHROUGH");
-    return (mode && mode[0] == '2') ? rdkaiCreateTeeAudioBin() : rdkaiCreatePassthroughAudioBin();
+    if (mode && mode[0] == '3')
+    {
+        GstElement *bin = rdkaiCreateTeeAudioBin(true);
+        if (bin)
+            return bin;
+        RIALTO_SERVER_LOG_ERROR("RDKAI-68: TTS bin failed, falling back to mode 2");
+        return rdkaiCreateTeeAudioBin(false);
+    }
+    return (mode && mode[0] == '2') ? rdkaiCreateTeeAudioBin(false) : rdkaiCreatePassthroughAudioBin();
 }
 } // namespace
 // ---------------- end RDKAI ----------------
@@ -579,9 +1253,9 @@ void GstGenericPlayer::initMsePipeline()
     // Set pipeline flags
     setPlaybinFlags(true);
 
-    // RDKAI prototype: splice a test bin as playbin "audio-sink" (RDKAI_PASSTHROUGH=1 identity, =2 tee)
+    // RDKAI prototype: splice a test bin as playbin "audio-sink" (RDKAI_PASSTHROUGH=1 identity, =2 tee, =3 tee+TTS)
     const char *rdkaiEnv = getenv("RDKAI_PASSTHROUGH");
-    if (rdkaiEnv && (rdkaiEnv[0] == '1' || rdkaiEnv[0] == '2'))
+    if (rdkaiEnv && (rdkaiEnv[0] == '1' || rdkaiEnv[0] == '2' || rdkaiEnv[0] == '3'))
     {
         GstElement *rdkaiBin = rdkaiCreateSelectedAudioBin();
         if (rdkaiBin)
