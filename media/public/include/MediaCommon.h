@@ -486,6 +486,58 @@ enum class LimitedDurationLicense
     ENABLED,       /**< The license has a limited duration */
     DISABLED       /**< The license does not have a limited duration */
 };
+
+/**
+ * @brief Type of playback metric.
+ */
+enum class MetricType : uint32_t
+{
+    VIDEO_FRAME_DROP = 1,   /**< Video frames dropped by the sink */
+    AUDIO_FRAME_DROP = 2,   /**< Audio frames dropped by the sink */
+    VIDEO_DECODE_ERROR = 3, /**< Video decode error */
+    AUDIO_DECODE_ERROR = 4, /**< Audio decode error */
+    VIDEO_FRAME_REPEAT = 5, /**< Video frame repeated */
+    AUDIO_GAP = 6,          /**< Gap in audio samples */
+    BUFFER_UNDERFLOW = 7    /**< Buffer underflow */
+};
+
+/**
+ * @brief Phase of a playback metric observation.
+ */
+enum class MetricPhase : uint32_t
+{
+    OCCURRENCE = 1,        /**< A single occurrence */
+    EPISODE_STARTED = 2,   /**< Start of an episode */
+    EPISODE_RESOLVED = 3   /**< End of an episode */
+};
+
+/**
+ * @brief A single playback metric event.
+ *
+ * Optional fields that are absent are left as std::nullopt.
+ */
+struct MetricEvent
+{
+    MetricType type{MetricType::VIDEO_FRAME_DROP};     /**< The metric type */
+    MetricPhase phase{MetricPhase::OCCURRENCE};        /**< The observation phase */
+    int32_t sourceId{-1};                              /**< The source the metric belongs to */
+    std::optional<int64_t> presentationTimeStampNs;    /**< Presentation timestamp in nanoseconds, if known */
+    std::optional<uint64_t> count;                     /**< Count associated with the event, if known */
+    std::optional<uint64_t> durationNs;                /**< Duration in nanoseconds, if known */
+    uint64_t observedAtMonotonicNs{0};                 /**< Monotonic time of observation in nanoseconds */
+    int64_t observedAtUnixNs{0};                       /**< Unix time of observation in nanoseconds */
+};
+
+/**
+ * @brief Frame counters of a video sink.
+ */
+struct VideoFrameCounters
+{
+    uint32_t size{sizeof(VideoFrameCounters)}; /**< Size of the structure */
+    uint64_t renderedFrames{0};                /**< Number of rendered frames */
+    uint64_t droppedFrames{0};                 /**< Number of dropped frames */
+    uint64_t corruptedFrames{0};               /**< Number of corrupted frames */
+};
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_MEDIA_COMMON_H_

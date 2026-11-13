@@ -42,15 +42,18 @@ public:
     /**
      * @brief Construct an ocdm session.
      *
-     * @param[in]  sessionType  : The session type.
-     * @param[in]  initDataType : The init data type.
-     * @param[in]  initData     : The init data pointer.
-     * @param[in]  initDataSize : The size of the init data pointed too by initData.
+     * @param[in]  sessionType   : The session type.
+     * @param[in]  initDataType  : The init data type.
+     * @param[in]  initData      : The init data pointer.
+     * @param[in]  initDataSize  : The size of the init data pointed too by initData.
+     * @param[in]  CDMData       : The CDM data pointer.
+     * @param[in]  cdmDataLength : The size of the CDM data pointed too by CDMData.
      *
      * @retval the return status.
      */
     virtual MediaKeyErrorStatus constructSession(KeySessionType sessionType, InitDataType initDataType,
-                                                 const uint8_t initData[], uint32_t initDataSize) = 0;
+                                                 const uint8_t initData[], uint32_t initDataSize,
+                                                 const uint8_t cdmData[] = nullptr, const uint16_t cdmDataLength = 0) = 0;
 
     /**
      * @brief Gets challenge data for session.

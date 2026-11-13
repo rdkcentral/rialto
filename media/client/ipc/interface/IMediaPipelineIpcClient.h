@@ -88,6 +88,13 @@ public:
     virtual void notifyQos(int32_t sourceId, const QosInfo &qosInfo) = 0;
 
     /**
+     * @brief Notifies the rialto client of a playback metric event.
+     *
+     * @param[in] metric   : The metric event, with optional fields left as std::nullopt when absent.
+     */
+    virtual void notifyMetric(const MetricEvent &metric) = 0;
+
+    /**
      * @brief Notifies the client that buffer underflow occurred.
      *
      * Notification shall be sent whenever a video/audio buffer underflow occurs

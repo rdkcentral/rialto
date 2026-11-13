@@ -22,6 +22,7 @@
 #include "GlibWrapperMock.h"
 #include "GstDispatcherThreadClientMock.h"
 #include "GstWrapperMock.h"
+#include "IRialtoMetrics.h"
 #include <condition_variable>
 #include <gst/gst.h>
 #include <gtest/gtest.h>
@@ -44,6 +45,15 @@ namespace
 // their addresses are only ever compared, never dereferenced, so fake sentinel pointers are safe here.
 GMainContext *const kMainContext = reinterpret_cast<GMainContext *>(0x1);
 GMainLoop *const kMainLoop = reinterpret_cast<GMainLoop *>(0x2);
+
+GstMessage *createMetricMessage(GstStructure *structure)
+{
+    gst_init(nullptr, nullptr);
+    GstElement *source = gst_pipeline_new("metric-source");
+    GstMessage *message = gst_message_new_application(GST_OBJECT(source), structure);
+    gst_object_unref(source);
+    return message;
+}
 } // namespace
 
 class GstDispatcherThreadTest : public ::testing::Test
@@ -155,6 +165,111 @@ TEST_F(GstDispatcherThreadTest, UnfilteredMessageTypeIsIgnored)
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_BUFFERING;
     EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(&m_message));
+
+    expectDestructorShutdown();
+    expectDestruction();
+    sut.reset();
+}
+
+TEST_F(GstDispatcherThreadTest, ApplicationMessageIsForwardedToMetricsClient)
+{
+    auto sut = createSut();
+
+    gst_init(nullptr, nullptr);
+    GstElement *source = gst_pipeline_new("metric-source");
+    ASSERT_NE(nullptr, source);
+    GstMessage *message = gst_message_new_application(
+        GST_OBJECT(source), gst_structure_new_empty("media-pipeline-metric"));
+    gst_object_unref(source);
+    ASSERT_NE(nullptr, message);
+
+    EXPECT_CALL(m_client, handleMetricMessage(message));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageRef(message)).WillOnce(Return(message));
+    EXPECT_CALL(m_client, handleBusMessage(message));
+
+    EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(message));
+    gst_message_unref(message);
+
+    expectDestructorShutdown();
+    expectDestruction();
+    sut.reset();
+}
+
+/**
+ * Test that a 0.7 media-pipeline-metric message carrying all optional fields is forwarded to the metrics
+ * client as the same message, with its field names, types and values unchanged.
+ */
+TEST_F(GstDispatcherThreadTest, MetricMessageWithAllFieldsIsForwardedUnmodified)
+{
+    auto sut = createSut();
+
+    GstMessage *message = createMetricMessage(gst_structure_new(
+        "media-pipeline-metric", "metric", G_TYPE_UINT,
+        static_cast<guint>(firebolt::rialto::MetricType::AUDIO_GAP), "observation-kind", G_TYPE_UINT,
+        static_cast<guint>(firebolt::rialto::MetricPhase::EPISODE_RESOLVED), "pts-ns", G_TYPE_INT64, gint64{1000},
+        "duration-ns", G_TYPE_UINT64, guint64{500}, "count", G_TYPE_UINT64, guint64{4}, nullptr));
+    ASSERT_NE(nullptr, message);
+
+    EXPECT_CALL(m_client, handleMetricMessage(message))
+        .WillOnce(Invoke(
+            [message](GstMessage *forwarded)
+            {
+                EXPECT_EQ(message, forwarded);
+                const GstStructure *structure = gst_message_get_structure(forwarded);
+                guint metric{0};
+                guint observationKind{0};
+                gint64 ptsNs{0};
+                guint64 durationNs{0};
+                guint64 count{0};
+                EXPECT_TRUE(gst_structure_get_uint(structure, "metric", &metric));
+                EXPECT_TRUE(gst_structure_get_uint(structure, "observation-kind", &observationKind));
+                EXPECT_TRUE(gst_structure_get_int64(structure, "pts-ns", &ptsNs));
+                EXPECT_TRUE(gst_structure_get_uint64(structure, "duration-ns", &durationNs));
+                EXPECT_TRUE(gst_structure_get_uint64(structure, "count", &count));
+                EXPECT_EQ(static_cast<guint>(firebolt::rialto::MetricType::AUDIO_GAP), metric);
+                EXPECT_EQ(static_cast<guint>(firebolt::rialto::MetricPhase::EPISODE_RESOLVED), observationKind);
+                EXPECT_EQ(1000, ptsNs);
+                EXPECT_EQ(500U, durationNs);
+                EXPECT_EQ(4U, count);
+            }));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageRef(message)).WillOnce(Return(message));
+    EXPECT_CALL(m_client, handleBusMessage(message));
+
+    EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(message));
+    gst_message_unref(message);
+
+    expectDestructorShutdown();
+    expectDestruction();
+    sut.reset();
+}
+
+/**
+ * Test that a 0.7 media-pipeline-metric message without optional fields is forwarded without gaining them.
+ */
+TEST_F(GstDispatcherThreadTest, MetricMessageWithoutOptionalFieldsStaysWithoutThem)
+{
+    auto sut = createSut();
+
+    GstMessage *message = createMetricMessage(gst_structure_new(
+        "media-pipeline-metric", "metric", G_TYPE_UINT,
+        static_cast<guint>(firebolt::rialto::MetricType::VIDEO_FRAME_DROP), "observation-kind", G_TYPE_UINT,
+        static_cast<guint>(firebolt::rialto::MetricPhase::OCCURRENCE), nullptr));
+    ASSERT_NE(nullptr, message);
+
+    EXPECT_CALL(m_client, handleMetricMessage(message))
+        .WillOnce(Invoke(
+            [](GstMessage *forwarded)
+            {
+                const GstStructure *structure = gst_message_get_structure(forwarded);
+                EXPECT_FALSE(gst_structure_has_field(structure, "pts-ns"));
+                EXPECT_FALSE(gst_structure_has_field(structure, "duration-ns"));
+                EXPECT_FALSE(gst_structure_has_field(structure, "count"));
+            }));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageRef(message)).WillOnce(Return(message));
+    EXPECT_CALL(m_client, handleBusMessage(message));
+
+    EXPECT_EQ(G_SOURCE_CONTINUE, triggerBusMessage(message));
+    gst_message_unref(message);
 
     expectDestructorShutdown();
     expectDestruction();

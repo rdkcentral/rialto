@@ -380,6 +380,22 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetStats)
     sendGetStatsRequestAndReceiveResponseWithoutStatsMatch();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldGetFrameCounters)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillGetFrameCounters();
+    sendGetFrameCountersRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetFrameCounters)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToGetFrameCounters();
+    sendGetFrameCountersRequestAndReceiveFail();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldSendPlaybackStateChangedEvent)
 {
     mediaPipelineServiceWillCreateSession();

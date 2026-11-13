@@ -136,11 +136,11 @@ MediaKeyErrorStatus MediaKeys::generateRequest(int32_t keySessionId, InitDataTyp
     return m_mediaKeysIpc->generateRequest(keySessionId, initDataType, initData, ldlState);
 }
 
-MediaKeyErrorStatus MediaKeys::loadSession(int32_t keySessionId)
+MediaKeyErrorStatus MediaKeys::loadSession(int32_t keySessionId, const std::string &cdmKeySessionId)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return m_mediaKeysIpc->loadSession(keySessionId);
+    return m_mediaKeysIpc->loadSession(keySessionId, cdmKeySessionId);
 }
 
 MediaKeyErrorStatus MediaKeys::updateSession(int32_t keySessionId, const std::vector<uint8_t> &responseData)

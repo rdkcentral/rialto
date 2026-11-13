@@ -770,6 +770,18 @@ message GetStatsResponse {
     optional int64 dropped_frames = 2 [default = -1];
 }
 
+message GetFrameCountersRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+}
+
+message GetFrameCountersResponse {
+    optional uint64 rendered_frames = 1 [default = 0];
+    optional uint64 dropped_frames = 2 [default = 0];
+    optional uint64 corrupted_frames = 3 [default = 0];
+    optional uint64 timestamp = 4 [default = 0]; // Server monotonic timestamp in nanoseconds.
+}
+
 /**
  * @fn void processAudioGap(int64 position, uint32 duration, uint32 level)
  * @brief Process audio gap.
@@ -977,6 +989,43 @@ message QosEvent {
 }
 
 /**
+ * @brief Media pipeline metric event, enriched with the source id before serialization.
+ *
+ * The enums are nested so that their values stay scoped to this message and do not clash with the public
+ * firebolt::rialto::MetricType and MetricPhase types. The numeric values match those of the public types.
+ * Optional fields are only set when the value is known.
+ */
+message MediaPipelineMetricEvent {
+    enum MetricType {
+        METRIC_TYPE_UNKNOWN = 0;
+        VIDEO_FRAME_DROP = 1;
+        AUDIO_FRAME_DROP = 2;
+        VIDEO_DECODE_ERROR = 3;
+        AUDIO_DECODE_ERROR = 4;
+        VIDEO_FRAME_REPEAT = 5;
+        AUDIO_GAP = 6;
+        BUFFER_UNDERFLOW = 7;
+    }
+
+    enum MetricPhase {
+        METRIC_PHASE_UNKNOWN = 0;
+        OCCURRENCE = 1;
+        EPISODE_STARTED = 2;
+        EPISODE_RESOLVED = 3;
+    }
+
+    required MetricType type = 1;
+    required MetricPhase phase = 2;
+    required int32 source_id = 3;
+    optional int64 pts_ns = 4;
+    optional uint64 count = 5;
+    optional uint64 duration_ns = 6;
+    required uint64 observed_at_monotonic_ns = 7;
+    required int64 observed_at_unix_ns = 8;
+    optional uint32 session_id = 9;
+}
+
+/**
  * @brief Event sent by the server when a buffer underflow has been raised.
  *
  * @param session_id        The id of the A/V session the request is for.
@@ -1173,6 +1222,13 @@ service MediaPipelineModule {
      * @see GetStatsRequest
      */
     rpc getStats(GetStatsRequest) returns (GetStatsResponse) {
+    }
+
+    /**
+     * @brief Gets the latest frame-counter snapshot for a source.
+     * @see GetFrameCountersRequest
+     */
+    rpc getFrameCounters(GetFrameCountersRequest) returns (GetFrameCountersResponse) {
     }
 
     /**

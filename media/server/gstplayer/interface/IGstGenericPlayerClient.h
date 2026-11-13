@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_GENERIC_PLAYER_CLIENT_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_GENERIC_PLAYER_CLIENT_H_
 
+#include <IRialtoMetrics.h>
 #include <MediaCommon.h>
 #include <stdint.h>
 #include <string>
@@ -160,6 +161,13 @@ public:
      * @param[in] sourceType    : The type of source that sent the message.
      */
     virtual void notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo) = 0;
+
+    /**
+     * @brief Notifies the client of a validated playback metric event.
+     *
+     * @param[in] metric       : The parsed and validated metric event.
+     */
+    virtual void notifyMetric(const MetricEvent &metric) = 0;
 
     /**
      * @brief Notifies the client that buffer underflow occurred.

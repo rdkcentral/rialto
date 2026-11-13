@@ -18,6 +18,7 @@
  */
 
 #include "MediaPipelineClient.h"
+#include "IRialtoMetrics.h"
 #include "RialtoServerLogging.h"
 #include "mediapipelinemodule.pb.h"
 #include <IIpcServer.h>
@@ -229,6 +230,41 @@ void MediaPipelineClient::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
     event->set_source_id(sourceId);
     event->mutable_qos_info()->set_processed(qosInfo.processed);
     event->mutable_qos_info()->set_dropped(qosInfo.dropped);
+
+    m_ipcClient->sendEvent(event);
+}
+
+void MediaPipelineClient::notifyMetric(const MetricEvent &metric)
+{
+    RIALTO_SERVER_LOG_DEBUG(
+        "Sending playback metric IPC event sessionId: %d, sourceId: %d, ptsNs: %llu, metric: %u, observationKind: %u, count: %llu, durationNs: %llu, observedAtMonotonicNs: %llu, observedAtUnixNs: %lld",
+        m_sessionId, metric.sourceId, static_cast<unsigned long long>(metric.presentationTimeStampNs.value_or(0)),
+        static_cast<uint32_t>(metric.type), static_cast<uint32_t>(metric.phase),
+        static_cast<unsigned long long>(metric.count.value_or(0)),
+        static_cast<unsigned long long>(metric.durationNs.value_or(0)),
+        static_cast<unsigned long long>(metric.observedAtMonotonicNs), static_cast<long long>(metric.observedAtUnixNs));
+
+    auto event = std::make_shared<firebolt::rialto::MediaPipelineMetricEvent>();
+    event->set_type(static_cast<firebolt::rialto::MediaPipelineMetricEvent::MetricType>(
+        static_cast<uint32_t>(metric.type)));
+    event->set_phase(static_cast<firebolt::rialto::MediaPipelineMetricEvent::MetricPhase>(
+        static_cast<uint32_t>(metric.phase)));
+    event->set_session_id(static_cast<uint32_t>(m_sessionId));
+    event->set_source_id(metric.sourceId);
+    if (metric.presentationTimeStampNs)
+    {
+        event->set_pts_ns(*metric.presentationTimeStampNs);
+    }
+    if (metric.count)
+    {
+        event->set_count(*metric.count);
+    }
+    if (metric.durationNs)
+    {
+        event->set_duration_ns(*metric.durationNs);
+    }
+    event->set_observed_at_monotonic_ns(metric.observedAtMonotonicNs);
+    event->set_observed_at_unix_ns(metric.observedAtUnixNs);
 
     m_ipcClient->sendEvent(event);
 }

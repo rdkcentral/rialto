@@ -25,6 +25,7 @@
 #include "IGstGenericPlayer.h"
 #include "IMainThread.h"
 #include "IMediaPipelineServerInternal.h"
+#include "IRialtoMetrics.h"
 #include "ITimer.h"
 #include "NeedDataDelayCalculator.h"
 #include <map>
@@ -123,6 +124,9 @@ public:
 
     bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
 
+    bool getFrameCounters(int32_t sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
+                          uint64_t &corruptedFrames, uint64_t &timestamp) override;
+
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
     bool haveData(MediaSourceStatus status, uint32_t needDataRequestId) override;
@@ -197,6 +201,8 @@ public:
     void invalidateActiveRequests(const MediaSourceType &type) override;
 
     void notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo) override;
+
+    void notifyMetric(const MetricEvent &metric) override;
 
     void notifyBufferUnderflow(MediaSourceType mediaSourceType) override;
 
@@ -457,6 +463,9 @@ protected:
      * @retval true on success.
      */
     bool getStatsInternal(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames);
+
+    bool getFrameCountersInternal(int32_t sessionId, int32_t sourceId, uint64_t &renderedFrames,
+                                  uint64_t &droppedFrames, uint64_t &corruptedFrames, uint64_t &timestamp);
 
     /**
      * @brief Set video window internally, only to be called on the main thread.

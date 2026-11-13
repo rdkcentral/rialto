@@ -42,7 +42,7 @@ public:
                 (int32_t keySessionId, InitDataType initDataType, const std::vector<uint8_t> &initData,
                  const LimitedDurationLicense &ldlState),
                 (override));
-    MOCK_METHOD(MediaKeyErrorStatus, loadSession, (int32_t keySessionId), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, loadSession, (int32_t keySessionId, const std::string &cdmKeySessionId), (override));
     MOCK_METHOD(MediaKeyErrorStatus, updateSession, (int32_t keySessionId, const std::vector<uint8_t> &responseData),
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, setDrmHeader, (int32_t keySessionId, const std::vector<uint8_t> &requestData),

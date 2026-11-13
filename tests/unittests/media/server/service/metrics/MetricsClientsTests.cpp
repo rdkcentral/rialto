@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include "MediaCommon.h"
 #include "MediaPipelineClientMock.h"
 #include "MediaPipelineMetricsClient.h"
 #include "PrivateMetricsServiceMock.h"
@@ -73,6 +74,17 @@ TEST(MetricsClientsTests, mediaPipelineCallbacksAreForwarded)
     sut.notifyCancelNeedMediaData(5);
     EXPECT_CALL(*client, notifyQos(6, Ref(qosInfo)));
     sut.notifyQos(6, qosInfo);
+    MetricEvent metric;
+    metric.type = MetricType::VIDEO_DECODE_ERROR;
+    metric.phase = MetricPhase::EPISODE_STARTED;
+    metric.sourceId = 6;
+    metric.presentationTimeStampNs = 9001;
+    metric.count = 4;
+    metric.durationNs = 8000000;
+    metric.observedAtMonotonicNs = 42;
+    metric.observedAtUnixNs = 1700000000;
+    EXPECT_CALL(*client, notifyMetric(Ref(metric)));
+    sut.notifyMetric(metric);
     EXPECT_CALL(*client, notifyBufferUnderflow(7));
     sut.notifyBufferUnderflow(7);
     EXPECT_CALL(*client, notifyFirstFrameReceived(8));

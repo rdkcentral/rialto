@@ -33,6 +33,8 @@ public:
     GstGenericPlayerMock() = default;
     virtual ~GstGenericPlayerMock() = default;
 
+    MOCK_METHOD(std::shared_ptr<IRialtoMetrics>, getRialtoMetrics, (), (const, override));
+    MOCK_METHOD(void, setMetricSessionId, (int32_t), (override));
     MOCK_METHOD(void, attachSource, (const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource), (override));
     MOCK_METHOD(void, removeSource, (const MediaSourceType &mediaSourceType), (override));
     MOCK_METHOD(void, allSourcesAttached, (), (override));

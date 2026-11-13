@@ -190,9 +190,22 @@ void MediaKeySession::getChallenge(const LimitedDurationLicense &ldlState)
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
-MediaKeyErrorStatus MediaKeySession::loadSession()
+MediaKeyErrorStatus MediaKeySession::loadSession(const std::string &cdmKeySessionId)
 {
     initOcdmErrorChecking();
+
+    if (!m_isSessionConstructed && m_kSessionType == KeySessionType::PERSISTENT_LICENCE && !cdmKeySessionId.empty())
+    {
+        std::vector<uint8_t> cdmData(cdmKeySessionId.begin(), cdmKeySessionId.end());
+        MediaKeyErrorStatus status = m_ocdmSession->constructSession(m_kSessionType, InitDataType::UNKNOWN, nullptr, 0,
+                                                                     &cdmData[0], cdmData.size());
+        if (MediaKeyErrorStatus::OK != status)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to restore persistent license");
+            return status;
+        }
+        m_isSessionConstructed = true;
+    }
 
     MediaKeyErrorStatus status = m_ocdmSession->load();
     if (MediaKeyErrorStatus::OK != status)

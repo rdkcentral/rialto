@@ -314,7 +314,8 @@ void MediaKeysModuleService::loadSession(::google::protobuf::RpcController *cont
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status = m_cdmService.loadSession(request->media_keys_handle(), request->key_session_id());
+    MediaKeyErrorStatus status = m_cdmService.loadSession(request->media_keys_handle(), request->key_session_id(),
+                                                          request->cdm_key_session_id());
     response->set_error_status(convertMediaKeyErrorStatus(status));
     done->Run();
 }

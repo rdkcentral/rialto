@@ -39,6 +39,7 @@ public:
     void createMediaKeysWidevine();
     void createMediaKeysNetflix();
     void createKeySession();
+    void createPersistentKeySession();
     void ocdmSessionWillBeCreated();
 
     void willGenerateRequestPlayready();
@@ -49,6 +50,9 @@ public:
 
     void willCloseKeySessionPlayready();
     void closeKeySessionPlayready();
+
+    void willLoadKeySession();
+    void loadKeySession();
 
     void willTeardown();
     void willRelease();
@@ -67,6 +71,7 @@ protected:
     const std::vector<unsigned char> m_kUpdateSessionNetflixResponse{5, 6};
     const std::vector<unsigned char> m_kInitData{1, 2, 7};
     const std::vector<uint8_t> m_kLicenseRequestMessage{'d', 'z', 'f'};
+    const std::string m_kCdmSessionId{"cdm_session_id"};
 };
 
 } // namespace firebolt::rialto::server::ct

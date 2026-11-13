@@ -19,6 +19,7 @@
 
 #include "HeartbeatHandlerMock.h"
 #include "MediaPipelineTestBase.h"
+#include "RialtoMetrics.h"
 #include <thread>
 
 using ::testing::ByMove;
@@ -532,6 +533,137 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStatsSuccess)
     EXPECT_TRUE(m_mediaPipeline->getStats(videoSourceId, renderedFrames, droppedFrames));
     EXPECT_EQ(renderedFrames, m_kRenderedFrames);
     EXPECT_EQ(droppedFrames, m_kDroppedFrames);
+}
+
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersSuccess)
+{
+    loadGstPlayer();
+    const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    auto metrics = std::make_shared<RialtoMetrics>();
+    metrics->updateFrameCounters(m_kSessionId, sourceId,
+                                 CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 3141, 95, 7}, 1234});
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getRialtoMetrics()).WillOnce(Return(metrics));
+    EXPECT_CALL(*m_gstPlayerMock, getStats(MediaSourceType::VIDEO, _, _)).WillOnce(Return(false));
+
+    uint64_t renderedFrames{0};
+    uint64_t droppedFrames{0};
+    uint64_t corruptedFrames{0};
+    uint64_t timestamp{0};
+    EXPECT_TRUE(m_mediaPipeline->getFrameCounters(m_kSessionId, sourceId, renderedFrames, droppedFrames,
+                                                  corruptedFrames, timestamp));
+    EXPECT_EQ(3141U, renderedFrames);
+    EXPECT_EQ(95U, droppedFrames);
+    EXPECT_EQ(7U, corruptedFrames);
+    EXPECT_EQ(1234U, timestamp);
+}
+
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersFailsForAudioSource)
+{
+    loadGstPlayer();
+    const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::AUDIO, "audio/x-opus");
+    mainThreadWillEnqueueTaskAndWait();
+
+    uint64_t renderedFrames{0};
+    uint64_t droppedFrames{0};
+    uint64_t corruptedFrames{0};
+    uint64_t timestamp{0};
+    EXPECT_FALSE(m_mediaPipeline->getFrameCounters(m_kSessionId, sourceId, renderedFrames, droppedFrames,
+                                                   corruptedFrames, timestamp));
+}
+
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersRefreshesSinkStats)
+{
+    loadGstPlayer();
+    const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    auto metrics = std::make_shared<RialtoMetrics>();
+    metrics->updateFrameCounters(m_kSessionId, sourceId,
+                                 CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 3141, 95, 7}, 1234});
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getRialtoMetrics()).WillOnce(Return(metrics));
+    EXPECT_CALL(*m_gstPlayerMock, getStats(MediaSourceType::VIDEO, _, _))
+        .WillOnce(Invoke([](const MediaSourceType &, uint64_t &rendered, uint64_t &dropped)
+                         {
+                             rendered = 4000;
+                             dropped = 120;
+                             return true;
+                         }));
+
+    uint64_t renderedFrames{0};
+    uint64_t droppedFrames{0};
+    uint64_t corruptedFrames{0};
+    uint64_t timestamp{0};
+    EXPECT_TRUE(m_mediaPipeline->getFrameCounters(m_kSessionId, sourceId, renderedFrames, droppedFrames,
+                                                  corruptedFrames, timestamp));
+    EXPECT_EQ(4000U, renderedFrames);
+    EXPECT_EQ(120U, droppedFrames);
+    EXPECT_EQ(7U, corruptedFrames);
+    EXPECT_GT(timestamp, 1234U);
+
+    CounterSnapshot snapshot;
+    ASSERT_TRUE(metrics->getFrameCounters(m_kSessionId, sourceId, snapshot));
+    EXPECT_EQ(4000U, snapshot.counters.renderedFrames);
+    EXPECT_EQ(120U, snapshot.counters.droppedFrames);
+    EXPECT_EQ(7U, snapshot.counters.corruptedFrames);
+    EXPECT_GT(snapshot.timestamp, 1234U);
+}
+
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersReadsSinkStatsWithoutBusMessages)
+{
+    loadGstPlayer();
+    const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    auto metrics = std::make_shared<RialtoMetrics>();
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getRialtoMetrics()).WillOnce(Return(metrics));
+    EXPECT_CALL(*m_gstPlayerMock, getStats(MediaSourceType::VIDEO, _, _))
+        .WillOnce(Invoke([](const MediaSourceType &, uint64_t &rendered, uint64_t &dropped)
+                         {
+                             rendered = 101;
+                             dropped = 7;
+                             return true;
+                         }));
+
+    uint64_t renderedFrames{0};
+    uint64_t droppedFrames{0};
+    uint64_t corruptedFrames{0};
+    uint64_t timestamp{0};
+    EXPECT_TRUE(m_mediaPipeline->getFrameCounters(m_kSessionId, sourceId, renderedFrames, droppedFrames,
+                                                  corruptedFrames, timestamp));
+    EXPECT_EQ(101U, renderedFrames);
+    EXPECT_EQ(7U, droppedFrames);
+    EXPECT_EQ(0U, corruptedFrames);
+    EXPECT_GT(timestamp, 0U);
+}
+
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersFailsForUnknownSource)
+{
+    loadGstPlayer();
+    const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+
+    uint64_t renderedFrames{0};
+    uint64_t droppedFrames{0};
+    uint64_t corruptedFrames{0};
+    uint64_t timestamp{0};
+    EXPECT_FALSE(m_mediaPipeline->getFrameCounters(m_kSessionId, sourceId + 1, renderedFrames, droppedFrames,
+                                                   corruptedFrames, timestamp));
+}
+
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersFailsForUnknownSession)
+{
+    loadGstPlayer();
+    const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+
+    uint64_t renderedFrames{0};
+    uint64_t droppedFrames{0};
+    uint64_t corruptedFrames{0};
+    uint64_t timestamp{0};
+    EXPECT_FALSE(m_mediaPipeline->getFrameCounters(m_kSessionId + 1, sourceId, renderedFrames, droppedFrames,
+                                                   corruptedFrames, timestamp));
 }
 
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, RenderFrameSuccess)

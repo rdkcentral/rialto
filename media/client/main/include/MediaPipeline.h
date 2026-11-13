@@ -158,6 +158,8 @@ public:
 
     void notifyQos(int32_t sourceId, const QosInfo &qosInfo) override;
 
+    void notifyMetric(const MetricEvent &metric) override;
+
     void notifyBufferUnderflow(int32_t sourceId) override;
 
     void notifyFirstFrameReceived(int32_t sourceId) override;

@@ -73,6 +73,40 @@ TEST_F(RialtoClientMediaPipelineCallbackTest, NotifyQos)
     m_mediaPipelineCallback->notifyQos(sourceId, qosInfo);
 }
 
+TEST_F(RialtoClientMediaPipelineCallbackTest, NotifyMetric)
+{
+    constexpr int32_t kSourceId{22};
+    constexpr uint64_t kCount{4};
+    constexpr uint64_t kDurationNs{8000000};
+    constexpr uint64_t kObservedAtMonotonicNs{42};
+    constexpr int64_t kObservedAtUnixNs{1700000000};
+
+    MetricEvent metric;
+    metric.sourceId = kSourceId;
+    metric.type = MetricType::VIDEO_DECODE_ERROR;
+    metric.phase = MetricPhase::EPISODE_STARTED;
+    metric.presentationTimeStampNs = 9001;
+    metric.count = kCount;
+    metric.durationNs = kDurationNs;
+    metric.observedAtMonotonicNs = kObservedAtMonotonicNs;
+    metric.observedAtUnixNs = kObservedAtUnixNs;
+
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyMetric(_))
+        .WillOnce(Invoke(
+            [&](const MetricEvent &received)
+            {
+                EXPECT_EQ(received.sourceId, kSourceId);
+                EXPECT_EQ(received.type, MetricType::VIDEO_DECODE_ERROR);
+                EXPECT_EQ(received.phase, MetricPhase::EPISODE_STARTED);
+                EXPECT_EQ(received.presentationTimeStampNs, std::optional<int64_t>{9001});
+                EXPECT_EQ(received.count, std::optional<uint64_t>{kCount});
+                EXPECT_EQ(received.durationNs, std::optional<uint64_t>{kDurationNs});
+                EXPECT_EQ(received.observedAtMonotonicNs, kObservedAtMonotonicNs);
+                EXPECT_EQ(received.observedAtUnixNs, kObservedAtUnixNs);
+            }));
+    m_mediaPipelineCallback->notifyMetric(metric);
+}
+
 /**
  * Test a notification of playback error is forwarded to the registered client.
  */

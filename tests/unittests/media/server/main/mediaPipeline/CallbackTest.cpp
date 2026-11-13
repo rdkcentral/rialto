@@ -260,6 +260,55 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyQosFailureSourceIdNotFound)
     m_gstPlayerCallback->notifyQos(mediaSourceType, qosInfo);
 }
 
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricMapsEveryOptionalFieldPresence)
+{
+    constexpr int32_t kSourceId{11};
+    constexpr int64_t kPtsNs{9001};
+    constexpr uint64_t kCount{4};
+    constexpr uint64_t kDurationNs{5000};
+    constexpr uint64_t kObservedAtMonotonicNs{42};
+    constexpr int64_t kObservedAtUnixNs{1700000000};
+    const auto metricType = firebolt::rialto::MetricType::AUDIO_GAP;
+    const auto metricPhase = firebolt::rialto::MetricPhase::EPISODE_STARTED;
+
+    // Bit 0: presentationTimeStampNs, bit 1: count, bit 2: durationNs. Absent fields stay unset.
+    for (uint32_t mask = 0; mask < 8; ++mask)
+    {
+        SCOPED_TRACE("optional field mask " + std::to_string(mask));
+        firebolt::rialto::MetricEvent metric;
+        metric.sourceId = kSourceId;
+        metric.type = metricType;
+        metric.phase = metricPhase;
+        if (mask & 1)
+            metric.presentationTimeStampNs = kPtsNs;
+        if (mask & 2)
+            metric.count = kCount;
+        if (mask & 4)
+            metric.durationNs = kDurationNs;
+        metric.observedAtMonotonicNs = kObservedAtMonotonicNs;
+        metric.observedAtUnixNs = kObservedAtUnixNs;
+
+        const std::optional<int64_t> expectedPts = (mask & 1) ? std::optional<int64_t>{kPtsNs} : std::nullopt;
+        const std::optional<uint64_t> expectedCount = (mask & 2) ? std::optional<uint64_t>{kCount} : std::nullopt;
+        const std::optional<uint64_t> expectedDuration =
+            (mask & 4) ? std::optional<uint64_t>{kDurationNs} : std::nullopt;
+
+        mainThreadWillEnqueueTask();
+        EXPECT_CALL(*m_mediaPipelineClientMock,
+                    notifyMetric(::testing::AllOf(
+                        ::testing::Field(&firebolt::rialto::MetricEvent::sourceId, kSourceId),
+                        ::testing::Field(&firebolt::rialto::MetricEvent::type, metricType),
+                        ::testing::Field(&firebolt::rialto::MetricEvent::phase, metricPhase),
+                        ::testing::Field(&firebolt::rialto::MetricEvent::presentationTimeStampNs, expectedPts),
+                        ::testing::Field(&firebolt::rialto::MetricEvent::count, expectedCount),
+                        ::testing::Field(&firebolt::rialto::MetricEvent::durationNs, expectedDuration),
+                        ::testing::Field(&firebolt::rialto::MetricEvent::observedAtMonotonicNs, kObservedAtMonotonicNs),
+                        ::testing::Field(&firebolt::rialto::MetricEvent::observedAtUnixNs, kObservedAtUnixNs))));
+
+        m_gstPlayerCallback->notifyMetric(metric);
+    }
+}
+
 /**
  * Test a notification of playback error is forwarded to the registered client.
  */
