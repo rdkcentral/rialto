@@ -177,6 +177,53 @@ TEST(RialtoMetricsTest, CountsVideoDecodeErrorOccurrencesAsCorrupted)
     EXPECT_EQ(0U, counters.dropped);
 }
 
+TEST(RialtoMetricsTest, RepeatedMessagesWithIncreasingPtsDoNotChangeOrDuplicateCounters)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("metrics-source");
+    ASSERT_NE(nullptr, source);
+    RialtoMetrics metrics;
+    metrics.setSessionId(7);
+    metrics.getElementToSourceMapper()->RegisterElement(source, 7U, 11U);
+
+    guint64 nextPts{1000};
+    auto postMetric = [&](guint metric, guint observationKind)
+    {
+        GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, metric,
+                                                     "observation-kind", G_TYPE_UINT, observationKind,
+                                                     "pts-ns", G_TYPE_INT64, static_cast<gint64>(nextPts), nullptr);
+        ASSERT_NE(nullptr, structure);
+        GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+        ASSERT_NE(nullptr, message);
+        const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
+        gst_message_unref(message);
+        ASSERT_TRUE(parsed.has_value());
+        EXPECT_EQ(static_cast<std::int64_t>(nextPts), parsed->pts_ns.value());
+        nextPts += 1000;
+    };
+
+    // Frame drops are reported through sink stats, so parsing them must not create or change counters.
+    for (int i = 0; i < 5; ++i)
+    {
+        postMetric(1U, 1U);
+    }
+    FrameCounters counters;
+    EXPECT_FALSE(metrics.getFrameCounters(7, 11, counters));
+
+    // Each decode error must increment corrupted exactly once, regardless of interleaved drops.
+    postMetric(3U, 1U);
+    postMetric(1U, 1U);
+    postMetric(3U, 1U);
+    postMetric(3U, 1U);
+
+    ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
+    EXPECT_EQ(3U, counters.corrupted);
+    EXPECT_EQ(0U, counters.dropped);
+
+    gst_object_unref(source);
+}
+
 
 TEST(RialtoMetricsTest, ReturnsLatestSnapshotForSessionAndSource)
 {

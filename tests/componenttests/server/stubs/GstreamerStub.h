@@ -28,6 +28,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 
 namespace firebolt::rialto::server::ct
 {
@@ -47,7 +48,8 @@ public:
     void sendStateChanged(GstState oldState, GstState newState, GstState pendingState, bool handleParseCall = false);
     void sendEos();
     void sendQos(GstElement *src);
-    void sendMetric(GstElement *src, guint metricType, guint observationKind, gint64 ptsNs);
+    void sendMetric(GstElement *src, guint metricType, guint observationKind, gint64 ptsNs,
+                    std::optional<guint64> count = std::nullopt, std::optional<guint64> durationNs = std::nullopt);
     void sendWarning(GstElement *src, GError *error, const gchar *debug);
 
 private:

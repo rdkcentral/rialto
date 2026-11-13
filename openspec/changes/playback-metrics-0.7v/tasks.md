@@ -76,13 +76,13 @@
 
 ## 6. Component Test Stubs and End-to-End Integration
 
-- [ ] 6.1 Update `GstreamerStub.cpp` to emit 0.7-compliant `"media-pipeline-metric"` GStreamer structures with the correct field names, types, and enum values. Generate synthetic messages for all 7 metric types with all valid observation-kind combinations.
+- [x] 6.1 Update `GstreamerStub.cpp` to emit 0.7-compliant `"media-pipeline-metric"` GStreamer structures with the correct field names, types, and enum values. Generate synthetic messages for all 7 metric types with all valid observation-kind combinations.
 
-- [ ] 6.2 Write component tests that feed stub-generated 0.7 metric messages through the full parser-to-IPC pipeline (GStreamer bus → RialtoMetrics::ValidateMediaPipelineMetric() → MediaPipelineServerInternal → IPC serialization). Verify messages are correctly parsed, enriched, and serialized.
+- [x] 6.2 Write component tests that feed stub-generated 0.7 metric messages through the full parser-to-IPC pipeline (GStreamer bus → RialtoMetrics::ValidateMediaPipelineMetric() → MediaPipelineServerInternal → IPC serialization). Verify messages are correctly parsed, enriched, and serialized.
 
-- [ ] 6.3 Write regression tests that feed legacy (0.6 or earlier) metric message structures through the parser and verify they are rejected without corrupting state. Include tests for old field names (`metric_type`, `phase`, etc.) and old structure names (`"metric"`).
+- [ ] 6.3 (Superseded, not implemented: legacy field-name handling was removed per user instruction, so there is nothing to reject.) Write regression tests that feed legacy (0.6 or earlier) metric message structures through the parser and verify they are rejected without corrupting state. Include tests for old field names (`metric_type`, `phase`, etc.) and old structure names (`"metric"`).
 
-- [ ] 6.4 Test counter monotonicity: feed multiple `VIDEO_FRAME_DROP` OCCURRENCE messages with incrementing PTS values and verify the parser does not introduce regressions or duplicate counts.
+- [x] 6.4 Test counter monotonicity: feed multiple `VIDEO_FRAME_DROP` OCCURRENCE messages with incrementing PTS values and verify the parser does not introduce regressions or duplicate counts.
 
 ## 7. Documentation and Validation
 
