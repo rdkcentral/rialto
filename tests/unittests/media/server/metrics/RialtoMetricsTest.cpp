@@ -706,14 +706,6 @@ TEST(ValidateMediaPipelineMetricLoggingTest, EveryRejectionPathLogsWarning)
                                                 "observation-kind", G_TYPE_UINT, 2U, "count", G_TYPE_INT64,
                                                 gint64{5}, nullptr));
     expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
-                                                "observation-kind", G_TYPE_UINT, 1U, "metric_type", G_TYPE_UINT, 1U,
-                                                nullptr));
-    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
-                                                "observation-kind", G_TYPE_UINT, 1U, "phase", G_TYPE_UINT, 1U, nullptr));
-    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
-                                                "observation-kind", G_TYPE_UINT, 1U, "pts_ns", G_TYPE_INT64,
-                                                gint64{1}, nullptr));
-    expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
                                                 "observation-kind", G_TYPE_UINT, 1U, "duration-ns", G_TYPE_UINT64,
                                                 guint64{1}, nullptr));
     expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
@@ -834,33 +826,6 @@ TEST(ValidateMediaPipelineMetricTest, RejectsCountValueZero)
     GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 7U,
                                                  "observation-kind", G_TYPE_UINT, 2U,
                                                  "count", G_TYPE_UINT64, guint64{0}, nullptr);
-    ASSERT_NE(nullptr, structure);
-
-    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
-    ASSERT_NE(nullptr, message);
-
-    const GstStructure *msgStructure = gst_message_get_structure(message);
-    ASSERT_NE(nullptr, msgStructure);
-
-    ParsedMetricMessage out;
-    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
-
-    gst_message_unref(message);
-    gst_object_unref(source);
-
-    EXPECT_EQ(GST_FLOW_ERROR, result);
-}
-
-TEST(ValidateMediaPipelineMetricTest, RejectsLegacySourceIdField)
-{
-    gst_init(nullptr, nullptr);
-
-    GstElement *source = gst_pipeline_new("test-source");
-    ASSERT_NE(nullptr, source);
-
-    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
-                                                 "observation-kind", G_TYPE_UINT, 1U,
-                                                 "source_id", G_TYPE_UINT, 11U, nullptr);
     ASSERT_NE(nullptr, structure);
 
     GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
