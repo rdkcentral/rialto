@@ -36,14 +36,17 @@ PlaybackService::PlaybackService(std::shared_ptr<IMediaPipelineServerInternalFac
                                  std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
                                  std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
                                  std::shared_ptr<IPerInstanceSharedMemoryFactory> &&sharedMemoryFactory,
-                                 IDecryptionService &decryptionService)
-    : m_sharedMemoryFactory{std::move(sharedMemoryFactory)}, m_isActive{false}, m_maxPlaybacks{0},
+                                 IDecryptionService &decryptionService,
+                                 std::shared_ptr<IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory)
+    : m_sharedMemoryFactory{std::move(sharedMemoryFactory)},
+      m_mediaCapabilitiesFactory{std::move(mediaCapabilitiesFactory)}, m_isActive{false}, m_maxPlaybacks{0},
       m_maxWebAudioPlayers{0},
       m_privateMetricsService{std::make_unique<PrivateMetricsService>(IMetricsCollectorFactory::createFactory())},
       m_mediaPipelineService{std::make_unique<MediaPipelineService>(*this, std::move(mediaPipelineFactory),
                                                                     std::move(mediaPipelineCapabilitiesFactory),
                                                                     m_sharedMemoryFactory, decryptionService,
-                                                                    *m_privateMetricsService)},
+                                                                    *m_privateMetricsService,
+                                                                    std::move(mediaCapabilitiesFactory))},
       m_webAudioPlayerService{std::make_unique<WebAudioPlayerService>(*this, std::move(webAudioPlayerFactory),
                                                                       m_sharedMemoryFactory, *m_privateMetricsService)}
 {

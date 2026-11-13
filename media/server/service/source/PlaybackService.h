@@ -22,6 +22,7 @@
 
 #include "IDecryptionService.h"
 #include "IHeartbeatProcedure.h"
+#include "IMediaCapabilitiesServerInternal.h"
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "IPerInstanceSharedMemory.h"
@@ -50,7 +51,8 @@ public:
                     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
                     std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
                     std::shared_ptr<IPerInstanceSharedMemoryFactory> &&sharedMemoryFactory,
-                    IDecryptionService &decryptionService);
+                    IDecryptionService &decryptionService,
+                    std::shared_ptr<IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory);
     ~PlaybackService() override;
     PlaybackService(const PlaybackService &) = delete;
     PlaybackService(PlaybackService &&) = delete;
@@ -74,6 +76,7 @@ public:
 
 private:
     std::shared_ptr<IPerInstanceSharedMemoryFactory> m_sharedMemoryFactory;
+    std::shared_ptr<IMediaCapabilitiesServerInternalFactory> m_mediaCapabilitiesFactory;
     std::atomic<bool> m_isActive;
     std::atomic<int> m_maxPlaybacks;
     std::atomic<int> m_maxWebAudioPlayers;

@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_SERVICE_MEDIA_PIPELINE_SERVICE_H_
 
 #include "IDecryptionService.h"
+#include "IMediaCapabilitiesServerInternal.h"
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "IMediaPipelineService.h"
@@ -47,7 +48,8 @@ public:
                          std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
                          std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
                          const std::shared_ptr<IPerInstanceSharedMemoryFactory> &sharedMemoryFactory,
-                         IDecryptionService &decryptionService, IPrivateMetricsService &metricsService);
+                         IDecryptionService &decryptionService, IPrivateMetricsService &metricsService,
+                         std::shared_ptr<IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory);
     ~MediaPipelineService() override;
     MediaPipelineService(const MediaPipelineService &) = delete;
     MediaPipelineService(MediaPipelineService &&) = delete;
@@ -108,6 +110,10 @@ public:
     std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
                                                     const std::vector<std::string> &propertyNames) override;
     void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) override;
+    common::AudioDecoderCapabilities getSupportedAudioCapabilities() override;
+    common::VideoDecoderCapabilities getSupportedVideoCapabilities() override;
+    void setPreloadedCapabilities(const std::optional<common::AudioDecoderCapabilities> &audioCaps,
+                                  const std::optional<common::VideoDecoderCapabilities> &videoCaps) override;
 
     void clearMediaPipelines();
 
@@ -118,6 +124,8 @@ private:
     std::shared_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
     IDecryptionService &m_decryptionService;
     IPrivateMetricsService &m_metricsService;
+    std::shared_ptr<IMediaCapabilitiesServerInternalFactory> m_mediaCapabilitiesFactory;
+    std::shared_ptr<IMediaCapabilitiesServerInternal> m_mediaCapabilities;
     std::map<int, std::unique_ptr<IMediaPipelineServerInternal>> m_mediaPipelines;
     std::mutex m_mediaPipelineMutex;
 };

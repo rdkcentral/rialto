@@ -33,11 +33,14 @@ MediaPipelineService::MediaPipelineService(
     IPlaybackService &playbackService, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
     const std::shared_ptr<IPerInstanceSharedMemoryFactory> &sharedMemoryFactory, IDecryptionService &decryptionService,
-    IPrivateMetricsService &metricsService)
+    IPrivateMetricsService &metricsService,
+    std::shared_ptr<IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory)
     : m_playbackService{playbackService}, m_mediaPipelineFactory{std::move(mediaPipelineFactory)},
       m_sharedMemoryFactory{sharedMemoryFactory},
       m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
-      m_decryptionService{decryptionService}, m_metricsService{metricsService}
+      m_decryptionService{decryptionService}, m_metricsService{metricsService},
+      m_mediaCapabilitiesFactory{std::move(mediaCapabilitiesFactory)},
+      m_mediaCapabilities{m_mediaCapabilitiesFactory->createMediaCapabilitiesServerInternal()}
 {
     if (!m_mediaPipelineCapabilities)
     {
@@ -738,6 +741,25 @@ void MediaPipelineService::ping(const std::shared_ptr<IHeartbeatProcedure> &hear
         auto &mediaPipeline = mediaPipelinePair.second;
         mediaPipeline->ping(heartbeatProcedure->createHandler());
     }
+}
+
+common::AudioDecoderCapabilities MediaPipelineService::getSupportedAudioCapabilities()
+{
+    RIALTO_SERVER_LOG_DEBUG("Get supported audio capabilities requested");
+    return m_mediaCapabilities->getSupportedAudioCapabilities();
+}
+
+common::VideoDecoderCapabilities MediaPipelineService::getSupportedVideoCapabilities()
+{
+    RIALTO_SERVER_LOG_DEBUG("Get supported video capabilities requested");
+    return m_mediaCapabilities->getSupportedVideoCapabilities();
+}
+
+void MediaPipelineService::setPreloadedCapabilities(const std::optional<common::AudioDecoderCapabilities> &audioCaps,
+                                                   const std::optional<common::VideoDecoderCapabilities> &videoCaps)
+{
+    RIALTO_SERVER_LOG_DEBUG("Set preloaded capabilities requested");
+    m_mediaCapabilities->setPreloadedCapabilities(audioCaps, videoCaps);
 }
 
 } // namespace firebolt::rialto::server::service
