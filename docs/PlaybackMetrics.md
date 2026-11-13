@@ -6,8 +6,10 @@ Playback metrics use two IPC flows: a synchronous snapshot query and an asynchro
 
 ## Westeros Bus Messages
 
-The Broadcom Westeros sink posts `media-pipeline-metric` element messages containing `metric_type`, `phase`, `source_id`,
-`session_id`, and signed `pts_ns`. Rialto validates the message fields and matches the session ID to the active pipeline.
+The Broadcom Westeros sink posts `media-pipeline-metric` element messages containing `metric`, `observation-kind`, and
+signed `pts-ns`. Rialto validates the message fields and enriches the event with the session and source IDs registered
+for the posting element in the `ElementToSourceMapper`. If the element is not registered, Rialto logs a warning and
+uses `0` for both IDs instead of rejecting the message.
 Snapshot queries are restricted to the active pipeline and an attached video source. Rialto interprets occurrence-phase
 video-decode-error messages as one corrupted frame. Started/resolved episode messages do not increment that counter.
 Rendered and dropped frame counts are read from the sink's existing `stats` property via `getStats` when processing a
@@ -15,11 +17,9 @@ metric message and refreshing a snapshot query. Video-frame-drop messages are st
 do not increment the dropped count. If sink stats are unavailable, Rialto logs a warning and retains the cached rendered
 and dropped counts (zero until stats are first available).
 
-Rialto sets the sink's `metrics-session-id` and `metrics-source-id` properties from the active media pipeline identity.
-The session ID is stored during pipeline load and the source ID during video source attachment. If the sink does not
-yet exist, property assignment is deferred until the video sink's `element-setup` callback. Auto-video-sink children
-are configured directly when added, including replacement children. If the video sink already exists when an ID is
-assigned, its supported property is set immediately.
+Decoder and sink elements are registered in the `ElementToSourceMapper` when they are added to the pipeline, and are
+unregistered when they are removed. The Westeros sink does not need `metrics-session-id` or `metrics-source-id`
+properties.
 The Westeros message does not carry cumulative frame-counter fields; only corruption totals are accumulated by
 Rialto from occurrence messages. Sink stats replace the cached rendered and dropped totals without changing the
 corruption count or the last metric PTS.
@@ -79,7 +79,7 @@ The server sends `MediaPipelineMetric` with these fields:
 
 | Field | Type | Meaning |
 |---|---|---|
-| `metric` | `uint32` | Metric number: 1 `METRIC_VIDEO_FRAME_DROP` through 7 `METRIC_BUFFER_UNDERFLOW` |
+| `metric` | `uint32` | Metric number: 1 (video frame drop) through 7 (buffer underflow), see Message Types |
 | `observation_kind` | `uint32` | Westeros observation kind: 1 occurrence, 2 episode started, 3 episode resolved |
 | `session_id` | `uint32` | Owning media pipeline session |
 | `source_id` | `uint32` | Source that produced the event |
@@ -94,22 +94,34 @@ The event carries the PTS as `pts_ns` and preserves the Westeros observation kin
 The server forwards events through the public `IMediaPipelineClient::notifyMetricEvent` call. Absent `pts_ns`, `count`, and `duration_ns` values are sent as `0`, and the receiving side cannot distinguish them from an explicit zero. `observed_at_monotonic_ns` and `observed_at_unix_ns` are required on the wire. The Rialto server takes them from the `GstMessage` timestamp when it receives the bus message, so they are not set by the GStreamer element or the application.
 
 ```cpp
-void notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, const std::string &errorInfo, uint32_t phase,
+void notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, uint32_t metric, uint32_t observationKind,
                        uint64_t count = 0, uint64_t durationNs = 0,
                        uint64_t observedAtMonotonicNs = 0, int64_t observedAtUnixNs = 0);
 ```
 
-The server's `IMediaPipelineClient::notifyMetricEvent` call maps to the event as follows: the server IPC client fills in its session ID, converts `errorInfo` to the numeric `metric`, sets the observed-at fields, and the value of `phase` becomes `observation_kind`. The client IPC layer subscribes to this event type when setting up the IPC channel. It dispatches events on its event thread, forwards events for the current session without further filtering, converts `metric` back to its `METRIC_*` label, and passes the event to `IMediaPipelineIpcClient::notifyMetricEvent`. `MediaPipeline` forwards that callback to the registered `IMediaPipelineClient` when it is still available.
+The server's `IMediaPipelineClient::notifyMetricEvent` call maps to the event as follows: the server IPC client fills in its session ID and passes `metric` and `observationKind` through unchanged. The client IPC layer subscribes to this event type when setting up the IPC channel. It dispatches events on its event thread, forwards events for the current session without further filtering, and passes the event to `IMediaPipelineIpcClient::notifyMetricEvent`. `MediaPipeline` forwards that callback to the registered `IMediaPipelineClient` when it is still available.
 
-Applications receive the callback as:
+Applications receive the same signature from `IMediaPipelineClient`:
 
 ```cpp
-void notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, const std::string &errorInfo, uint32_t phase,
+void notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, uint32_t metric, uint32_t observationKind,
                        uint64_t count = 0, uint64_t durationNs = 0,
                        uint64_t observedAtMonotonicNs = 0, int64_t observedAtUnixNs = 0);
 ```
 
 ## Message Types
 
-The protocol defines these metric categories: `VIDEO_FRAME_DROP`, `AUDIO_FRAME_DROP`, `VIDEO_DECODE_ERROR`, `AUDIO_DECODE_ERROR`, `VIDEO_FRAME_REPEAT`, `AUDIO_GAP`, and `BUFFER_UNDERFLOW`. On the wire, `metric` carries their 1-based numbers (1 to 7). The application callback's `errorInfo` contains the corresponding string name prefixed with `METRIC_` (or `METRIC_UNKNOWN` for an unrecognized type).
+The protocol defines these metric categories, carried in `metric` as their 1-based numbers:
+
+| `metric` | Category |
+|---|---|
+| 1 | `VIDEO_FRAME_DROP` |
+| 2 | `AUDIO_FRAME_DROP` |
+| 3 | `VIDEO_DECODE_ERROR` |
+| 4 | `AUDIO_DECODE_ERROR` |
+| 5 | `VIDEO_FRAME_REPEAT` |
+| 6 | `AUDIO_GAP` |
+| 7 | `BUFFER_UNDERFLOW` |
+
+`observationKind` carries 1 for `occurrence`, 2 for `episode-started`, and 3 for `episode-resolved`.
 

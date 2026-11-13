@@ -25,18 +25,6 @@
 
 namespace
 {
-uint32_t convertMetricType(const std::string &errorInfo)
-{
-    for (uint32_t metric = 1; metric <= 7; ++metric)
-    {
-        if (errorInfo == firebolt::rialto::server::metricTypeToString(metric))
-        {
-            return metric;
-        }
-    }
-    return 0;
-}
-
 firebolt::rialto::PlaybackStateChangeEvent_PlaybackState
 convertPlaybackState(const firebolt::rialto::PlaybackState &playbackState)
 {
@@ -246,19 +234,19 @@ void MediaPipelineClient::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
     m_ipcClient->sendEvent(event);
 }
 
-void MediaPipelineClient::notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, const std::string &errorInfo,
-                                            uint32_t phase, uint64_t count, uint64_t durationNs,
+void MediaPipelineClient::notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, uint32_t metric,
+                                            uint32_t observationKind, uint64_t count, uint64_t durationNs,
                                             uint64_t observedAtMonotonicNs, int64_t observedAtUnixNs)
 {
     RIALTO_SERVER_LOG_DEBUG(
-        "Sending playback metric IPC event sessionId: %d, sourceId: %d, ptsNs: %llu, type: %s, phase: %u, count: %llu, durationNs: %llu, observedAtMonotonicNs: %llu, observedAtUnixNs: %lld",
-        m_sessionId, sourceId, static_cast<unsigned long long>(ptsNs), errorInfo.c_str(), phase,
+        "Sending playback metric IPC event sessionId: %d, sourceId: %d, ptsNs: %llu, metric: %u, observationKind: %u, count: %llu, durationNs: %llu, observedAtMonotonicNs: %llu, observedAtUnixNs: %lld",
+        m_sessionId, sourceId, static_cast<unsigned long long>(ptsNs), metric, observationKind,
         static_cast<unsigned long long>(count), static_cast<unsigned long long>(durationNs),
         static_cast<unsigned long long>(observedAtMonotonicNs), static_cast<long long>(observedAtUnixNs));
 
     auto event = std::make_shared<firebolt::rialto::MediaPipelineMetric>();
-    event->set_metric(convertMetricType(errorInfo));
-    event->set_observation_kind(phase);
+    event->set_metric(metric);
+    event->set_observation_kind(observationKind);
     event->set_session_id(static_cast<uint32_t>(m_sessionId));
     event->set_source_id(static_cast<uint32_t>(sourceId));
     event->set_pts_ns(static_cast<int64_t>(ptsNs));

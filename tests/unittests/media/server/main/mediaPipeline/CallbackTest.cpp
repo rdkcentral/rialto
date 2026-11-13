@@ -270,7 +270,6 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricEventMapsEveryOptional
     constexpr int64_t kObservedAtUnixNs{1700000000};
     const auto metricType = firebolt::rialto::server::MediaMetricType::MEDIA_METRIC_AUDIO_GAP;
     const auto observationKind = firebolt::rialto::server::ObservationKind::EPISODE_STARTED;
-    const std::string errorInfo{firebolt::rialto::server::metricTypeToString(static_cast<uint32_t>(metricType))};
 
     // Bit 0: pts_ns, bit 1: count, bit 2: duration_ns. Absent fields are forwarded as 0.
     for (uint32_t mask = 0; mask < 8; ++mask)
@@ -295,8 +294,9 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricEventMapsEveryOptional
 
         mainThreadWillEnqueueTask();
         EXPECT_CALL(*m_mediaPipelineClientMock,
-                    notifyMetricEvent(kSourceId, expectedPts, errorInfo, static_cast<uint32_t>(observationKind),
-                                      expectedCount, expectedDuration, kObservedAtMonotonicNs, kObservedAtUnixNs));
+                    notifyMetricEvent(kSourceId, expectedPts, static_cast<uint32_t>(metricType),
+                                      static_cast<uint32_t>(observationKind), expectedCount, expectedDuration,
+                                      kObservedAtMonotonicNs, kObservedAtUnixNs));
 
         m_gstPlayerCallback->notifyMetricEvent(metric);
     }

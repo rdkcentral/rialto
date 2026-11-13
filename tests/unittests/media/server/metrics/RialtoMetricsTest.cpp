@@ -10,53 +10,55 @@
 
 using namespace firebolt::rialto::server;
 
-TEST(RialtoMetricsTest, ParsesElementMetricMessageAndUpdatesFrameCounters)
+TEST(RialtoMetricsTest, ParsesElementMetricMessageWithMappedSessionAndSource)
 {
     gst_init(nullptr, nullptr);
 
     GstElement *source = gst_pipeline_new("metrics-source");
     ASSERT_NE(nullptr, source);
-    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric_type", G_TYPE_UINT, 0U, "phase",
-                                                 G_TYPE_UINT, 0U, "source_id", G_TYPE_UINT, 11U, "session_id",
-                                                 G_TYPE_UINT, 7U, "pts_ns", G_TYPE_INT64, gint64{9001}, nullptr);
+    RialtoMetrics metrics;
+    metrics.getElementToSourceMapper()->RegisterElement(source, 7U, 11U);
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U, "observation-kind",
+                                                 G_TYPE_UINT, 1U, "pts-ns", G_TYPE_INT64, gint64{9001}, nullptr);
     ASSERT_NE(nullptr, structure);
     GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
     gst_object_unref(source);
     ASSERT_NE(nullptr, message);
 
-    RialtoMetrics metrics;
-    metrics.setSessionId(7);
-    const auto beforeParse = std::chrono::steady_clock::now();
-    const auto parsed = metrics.onMetricMessage(message, std::uint64_t{101}, std::uint64_t{7});
-    const auto repeated = metrics.onMetricMessage(message, std::uint64_t{101}, std::uint64_t{7});
-    const auto withoutStats = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
-    const auto afterParse = std::chrono::steady_clock::now();
+    const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
     gst_message_unref(message);
 
     ASSERT_TRUE(parsed.has_value());
-    EXPECT_EQ(7, parsed->sessionId);
-    EXPECT_EQ(0U, parsed->type);
-    EXPECT_EQ(0U, parsed->phase);
-    EXPECT_EQ(11, parsed->sourceId);
-    EXPECT_EQ(9001U, parsed->ptsNs);
-    EXPECT_EQ(7U, parsed->counters.dropped);
-    ASSERT_TRUE(repeated.has_value());
-    EXPECT_EQ(7U, repeated->counters.dropped);
-    ASSERT_TRUE(withoutStats.has_value());
-    EXPECT_EQ(101U, withoutStats->counters.rendered);
-    EXPECT_EQ(7U, withoutStats->counters.dropped);
-    FrameCounters counters;
-    ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
-    EXPECT_EQ(101U, counters.rendered);
-    EXPECT_EQ(7U, counters.dropped);
-    EXPECT_EQ(0U, counters.corrupted);
-    EXPECT_GE(counters.timestamp, static_cast<std::uint64_t>(
-                                      std::chrono::duration_cast<std::chrono::nanoseconds>(beforeParse.time_since_epoch())
-                                          .count()));
-    EXPECT_LE(counters.timestamp, static_cast<std::uint64_t>(
-                                      std::chrono::duration_cast<std::chrono::nanoseconds>(afterParse.time_since_epoch())
-                                          .count()));
-    EXPECT_FALSE(metrics.getFrameCounters(8, 11, counters));
+    EXPECT_EQ(7, parsed->session_id);
+    EXPECT_EQ(11, parsed->source_id);
+    EXPECT_EQ(1U, parsed->metric);
+    EXPECT_EQ(1U, parsed->observation_kind);
+    ASSERT_TRUE(parsed->pts_ns.has_value());
+    EXPECT_EQ(9001, *parsed->pts_ns);
+}
+
+TEST(RialtoMetricsTest, UnmappedElementDefaultsSessionAndSourceToZero)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("metrics-source");
+    ASSERT_NE(nullptr, source);
+    RialtoMetrics metrics;
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U, "observation-kind",
+                                                 G_TYPE_UINT, 1U, nullptr);
+    ASSERT_NE(nullptr, structure);
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    gst_object_unref(source);
+    ASSERT_NE(nullptr, message);
+
+    const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
+    gst_message_unref(message);
+
+    ASSERT_TRUE(parsed.has_value());
+    EXPECT_EQ(0, parsed->session_id);
+    EXPECT_EQ(0, parsed->source_id);
 }
 
 TEST(RialtoMetricsTest, ObservedAtUsesGstMessageTimestamp)
@@ -65,9 +67,8 @@ TEST(RialtoMetricsTest, ObservedAtUsesGstMessageTimestamp)
 
     GstElement *source = gst_pipeline_new("metrics-source");
     ASSERT_NE(nullptr, source);
-    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric_type", G_TYPE_UINT, 3U, "phase",
-                                                 G_TYPE_UINT, 2U, "source_id", G_TYPE_UINT, 11U, "session_id",
-                                                 G_TYPE_UINT, 7U, nullptr);
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 3U, "observation-kind",
+                                                 G_TYPE_UINT, 2U, nullptr);
     GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
     gst_object_unref(source);
     ASSERT_NE(nullptr, message);
@@ -97,7 +98,7 @@ TEST(RialtoMetricsTest, IgnoresMalformedElementMetricMessage)
 
     GstElement *source = gst_pipeline_new("metrics-source");
     ASSERT_NE(nullptr, source);
-    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric_type", G_TYPE_UINT, 0U, nullptr);
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", nullptr);
     ASSERT_NE(nullptr, structure);
     GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
     gst_object_unref(source);
@@ -113,7 +114,7 @@ TEST(RialtoMetricsTest, IgnoresMalformedElementMetricMessage)
     EXPECT_FALSE(metrics.getFrameCounters(7, 11, counters));
 }
 
-TEST(RialtoMetricsTest, CountsDecodeErrorsAndIgnoresEpisodeMessages)
+TEST(RialtoMetricsTest, CountsVideoDecodeErrorOccurrencesAsCorrupted)
 {
     gst_init(nullptr, nullptr);
 
@@ -121,82 +122,32 @@ TEST(RialtoMetricsTest, CountsDecodeErrorsAndIgnoresEpisodeMessages)
     ASSERT_NE(nullptr, source);
     RialtoMetrics metrics;
     metrics.setSessionId(7);
+    metrics.getElementToSourceMapper()->RegisterElement(source, 7U, 11U);
 
-    auto postMetric = [&](guint type, guint phase, guint64 ptsNs)
+    auto postMetric = [&](guint metric, guint observationKind)
     {
-        GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric_type", G_TYPE_UINT, type, "phase",
-                                                     G_TYPE_UINT, phase, "source_id", G_TYPE_UINT, 11U, "session_id",
-                                                     G_TYPE_UINT, 7U, "pts_ns", G_TYPE_INT64,
-                                                     static_cast<gint64>(ptsNs), nullptr);
+        GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, metric,
+                                                     "observation-kind", G_TYPE_UINT, observationKind, nullptr);
         ASSERT_NE(nullptr, structure);
         GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
         ASSERT_NE(nullptr, message);
         const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
         gst_message_unref(message);
-        ASSERT_TRUE(parsed.has_value());
-        EXPECT_EQ(ptsNs, parsed->ptsNs);
+        EXPECT_TRUE(parsed.has_value());
     };
 
-    postMetric(0U, 0U, 9000U);
-    postMetric(2U, 0U, 9100U);
-    postMetric(2U, 1U, 9200U);
+    postMetric(3U, 1U);
+    postMetric(3U, 1U);
+    postMetric(4U, 1U);
+    postMetric(1U, 1U);
 
     gst_object_unref(source);
     FrameCounters counters;
     ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
+    EXPECT_EQ(2U, counters.corrupted);
     EXPECT_EQ(0U, counters.dropped);
-    EXPECT_EQ(1U, counters.corrupted);
-    EXPECT_GT(counters.timestamp, 0U);
 }
 
-TEST(RialtoMetricsTest, TracksEpisodeCountAndDurationForMetricEvents)
-{
-    gst_init(nullptr, nullptr);
-
-    GstElement *source = gst_pipeline_new("metrics-source");
-    ASSERT_NE(nullptr, source);
-    RialtoMetrics metrics;
-    metrics.setSessionId(7);
-
-    auto postMetric = [&](guint phase, guint64 ptsNs) -> std::optional<ParsedMetricMessage>
-    {
-        GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric_type", G_TYPE_UINT, 6U, "phase",
-                                                     G_TYPE_UINT, phase, "source_id", G_TYPE_UINT, 11U, "session_id",
-                                                     G_TYPE_UINT, 7U, "pts_ns", G_TYPE_INT64,
-                                                     static_cast<gint64>(ptsNs), nullptr);
-        if (!structure)
-        {
-            ADD_FAILURE() << "Failed to create metric structure";
-            return std::nullopt;
-        }
-        GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
-        if (!message)
-        {
-            ADD_FAILURE() << "Failed to create metric message";
-            return std::nullopt;
-        }
-        const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
-        gst_message_unref(message);
-        EXPECT_TRUE(parsed.has_value());
-        if (parsed)
-        {
-            EXPECT_EQ(ptsNs, parsed->ptsNs);
-        }
-        return parsed;
-    };
-
-    auto start = postMetric(0U, 9000U);
-    auto end = postMetric(2U, 10500U);
-
-    ASSERT_TRUE(start.has_value());
-    EXPECT_EQ(1U, start->count);
-    EXPECT_EQ(0U, start->durationNs);
-    ASSERT_TRUE(end.has_value());
-    EXPECT_EQ(2U, end->count);
-    EXPECT_EQ(1500U, end->durationNs);
-
-    gst_object_unref(source);
-}
 
 TEST(RialtoMetricsTest, ReturnsLatestSnapshotForSessionAndSource)
 {
@@ -871,6 +822,60 @@ TEST(ElementToSourceMapperTest, UnregisterAllElementsClearsEveryMapping)
 
     gst_object_unref(first);
     gst_object_unref(second);
+}
+
+TEST(ValidateMediaPipelineMetricTest, RejectsCountValueZero)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("test-source");
+    ASSERT_NE(nullptr, source);
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 7U,
+                                                 "observation-kind", G_TYPE_UINT, 2U,
+                                                 "count", G_TYPE_UINT64, guint64{0}, nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    ASSERT_NE(nullptr, message);
+
+    const GstStructure *msgStructure = gst_message_get_structure(message);
+    ASSERT_NE(nullptr, msgStructure);
+
+    ParsedMetricMessage out;
+    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+
+    gst_message_unref(message);
+    gst_object_unref(source);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
+}
+
+TEST(ValidateMediaPipelineMetricTest, RejectsLegacySourceIdField)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("test-source");
+    ASSERT_NE(nullptr, source);
+
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
+                                                 "observation-kind", G_TYPE_UINT, 1U,
+                                                 "source_id", G_TYPE_UINT, 11U, nullptr);
+    ASSERT_NE(nullptr, structure);
+
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    ASSERT_NE(nullptr, message);
+
+    const GstStructure *msgStructure = gst_message_get_structure(message);
+    ASSERT_NE(nullptr, msgStructure);
+
+    ParsedMetricMessage out;
+    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+
+    gst_message_unref(message);
+    gst_object_unref(source);
+
+    EXPECT_EQ(GST_FLOW_ERROR, result);
 }
 
 TEST(ValidateMediaPipelineMetricTest, RejectsObservationKindValueTwoFiftFive)

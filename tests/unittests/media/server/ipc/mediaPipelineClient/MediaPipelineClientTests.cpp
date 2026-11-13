@@ -1,5 +1,4 @@
 #include "ClientMock.h"
-#include "IRialtoMetrics.h"
 #include "MediaPipelineClient.h"
 #include "mediapipelinemodule.pb.h"
 #include <gtest/gtest.h>
@@ -16,7 +15,7 @@ TEST(MediaPipelineClientTests, NotifyMetricEventSerializesAndPreservesPayload)
 {
     constexpr int kSessionId{8};
     constexpr int32_t kSourceId{14};
-    constexpr uint32_t kPhase{2};
+    constexpr uint32_t kObservationKind{2};
     constexpr uint64_t kCount{12};
     constexpr uint64_t kDurationNs{45678};
     constexpr uint64_t kObservedAtMonotonicNs{123456789};
@@ -43,9 +42,8 @@ TEST(MediaPipelineClientTests, NotifyMetricEventSerializesAndPreservesPayload)
                 EXPECT_EQ(static_cast<uint32_t>(kSessionId), decoded.session_id());
                 EXPECT_EQ(static_cast<uint32_t>(kSourceId), decoded.source_id());
                 EXPECT_EQ(9001, decoded.pts_ns());
-                EXPECT_EQ(static_cast<uint32_t>(firebolt::rialto::server::MediaMetricType::MEDIA_METRIC_VIDEO_DECODE_ERROR),
-                          decoded.metric());
-                EXPECT_EQ(kPhase, decoded.observation_kind());
+                EXPECT_EQ(3U, decoded.metric());
+                EXPECT_EQ(kObservationKind, decoded.observation_kind());
                 EXPECT_EQ(kCount, decoded.count());
                 EXPECT_EQ(kDurationNs, decoded.duration_ns());
                 EXPECT_EQ(kObservedAtMonotonicNs, decoded.observed_at_monotonic_ns());
@@ -53,5 +51,6 @@ TEST(MediaPipelineClientTests, NotifyMetricEventSerializesAndPreservesPayload)
                 return true;
             }));
 
-    EXPECT_FALSE(decoded.has_duration_ns());
+    client.notifyMetricEvent(kSourceId, 9001, 3U, kObservationKind, kCount, kDurationNs, kObservedAtMonotonicNs,
+                             kObservedAtUnixNs);
 }
