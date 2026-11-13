@@ -59,6 +59,38 @@ TEST(RialtoMetricsTest, ParsesElementMetricMessageAndUpdatesFrameCounters)
     EXPECT_FALSE(metrics.getFrameCounters(8, 11, counters));
 }
 
+TEST(RialtoMetricsTest, ObservedAtUsesGstMessageTimestamp)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *source = gst_pipeline_new("metrics-source");
+    ASSERT_NE(nullptr, source);
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric_type", G_TYPE_UINT, 3U, "phase",
+                                                 G_TYPE_UINT, 2U, "source_id", G_TYPE_UINT, 11U, "session_id",
+                                                 G_TYPE_UINT, 7U, nullptr);
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    gst_object_unref(source);
+    ASSERT_NE(nullptr, message);
+
+    const auto nowNs = static_cast<std::uint64_t>(
+        std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
+    constexpr std::uint64_t kAgeNs{1000000};
+    GST_MESSAGE_TIMESTAMP(message) = nowNs - kAgeNs;
+
+    RialtoMetrics metrics;
+    metrics.setSessionId(7);
+    const auto unixBefore = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                std::chrono::system_clock::now().time_since_epoch())
+                                .count();
+    const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
+    gst_message_unref(message);
+
+    ASSERT_TRUE(parsed.has_value());
+    EXPECT_EQ(nowNs - kAgeNs, parsed->observed_at_monotonic_ns);
+    // The unix value is derived from the same instant, so it is at least the message age before the call.
+    EXPECT_LE(parsed->observed_at_unix_ns, unixBefore - static_cast<std::int64_t>(kAgeNs));
+}
+
 TEST(RialtoMetricsTest, IgnoresMalformedElementMetricMessage)
 {
     gst_init(nullptr, nullptr);

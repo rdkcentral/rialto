@@ -151,10 +151,10 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         return false;
     m_eventTags.push_back(eventTag);
 
-    eventTag = ipcChannel->subscribe<firebolt::rialto::NotifyMetricEvent>(
-        [this](const std::shared_ptr<firebolt::rialto::NotifyMetricEvent> &event)
+    eventTag = ipcChannel->subscribe<firebolt::rialto::MediaPipelineMetric>(
+        [this](const std::shared_ptr<firebolt::rialto::MediaPipelineMetric> &event)
         {
-            RIALTO_CLIENT_LOG_DEBUG("Received playback metric IPC event for sessionId: %d, sourceId: %d",
+            RIALTO_CLIENT_LOG_DEBUG("Received playback metric IPC event for sessionId: %u, sourceId: %u",
                                     event->session_id(), event->source_id());
             m_eventThread->add(&MediaPipelineIpc::handleMetricEvent, this, event);
         });
@@ -1651,24 +1651,52 @@ void MediaPipelineIpc::onQos(const std::shared_ptr<firebolt::rialto::QosEvent> &
     }
 }
 
-void MediaPipelineIpc::handleMetricEvent(const std::shared_ptr<firebolt::rialto::NotifyMetricEvent> &event)
+namespace
 {
-    RIALTO_CLIENT_LOG_DEBUG(
-        "Dispatching playback metric event sessionId: %d, sourceId: %d, ptsNs: %llu, type: %s, phase: %u, count: %llu, durationNs: %llu, observedAtMonotonicNs: %llu, observedAtUnixNs: %lld",
-        event->session_id(), event->source_id(), static_cast<unsigned long long>(event->pts_ns()),
-        event->error_info().c_str(), event->phase(), static_cast<unsigned long long>(event->count()),
-        static_cast<unsigned long long>(event->duration_ns()),
-        static_cast<unsigned long long>(event->observed_at_monotonic_ns()),
-        static_cast<long long>(event->observed_at_unix_ns()));
-    if (event->session_id() == m_sessionId)
+std::string metricTypeToLabel(uint32_t metric)
+{
+    switch (metric)
     {
-        m_mediaPipelineIpcClient->notifyMetricEvent(event->source_id(), event->pts_ns(), event->error_info(),
-                                                    event->phase(), event->count(), event->duration_ns());
+    case 1:
+        return "METRIC_VIDEO_FRAME_DROP";
+    case 2:
+        return "METRIC_AUDIO_FRAME_DROP";
+    case 3:
+        return "METRIC_VIDEO_DECODE_ERROR";
+    case 4:
+        return "METRIC_AUDIO_DECODE_ERROR";
+    case 5:
+        return "METRIC_VIDEO_FRAME_REPEAT";
+    case 6:
+        return "METRIC_AUDIO_GAP";
+    case 7:
+        return "METRIC_BUFFER_UNDERFLOW";
+    default:
+        return "METRIC_UNKNOWN";
+    }
+}
+} // namespace
+
+void MediaPipelineIpc::handleMetricEvent(const std::shared_ptr<firebolt::rialto::MediaPipelineMetric> &event)
+{
+    const auto sessionId = static_cast<int32_t>(event->session_id());
+    RIALTO_CLIENT_LOG_DEBUG(
+        "Dispatching playback metric event sessionId: %d, sourceId: %u, ptsNs: %lld, type: %s, phase: %u, count: %llu, durationNs: %llu",
+        sessionId, event->source_id(), static_cast<long long>(event->pts_ns()),
+        metricTypeToLabel(event->metric()).c_str(), event->observation_kind(),
+        static_cast<unsigned long long>(event->count()), static_cast<unsigned long long>(event->duration_ns()));
+    if (sessionId == m_sessionId)
+    {
+        m_mediaPipelineIpcClient->notifyMetricEvent(static_cast<int32_t>(event->source_id()),
+                                                    static_cast<uint64_t>(event->pts_ns()),
+                                                    metricTypeToLabel(event->metric()), event->observation_kind(),
+                                                    event->count(), event->duration_ns(), event->observed_at_monotonic_ns(),
+                                                    event->observed_at_unix_ns());
     }
     else
     {
-        RIALTO_CLIENT_LOG_DEBUG("Ignoring playback metric event for sessionId: %d (current sessionId: %d)",
-                                event->session_id(), m_sessionId.load());
+        RIALTO_CLIENT_LOG_DEBUG("Ignoring playback metric event for sessionId: %d (current sessionId: %d)", sessionId,
+                                m_sessionId.load());
     }
 }
 

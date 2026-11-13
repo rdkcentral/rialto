@@ -64,7 +64,7 @@ protected:
         NetworkStateChangeEvent,
         NeedMediaDataEvent,
         QosEvent,
-        NotifyMetricEvent,
+        MediaPipelineMetric,
         BufferUnderflowEvent,
         FirstFrameReceivedEvent,
         PlaybackErrorEvent,
