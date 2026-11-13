@@ -393,18 +393,6 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, ParsedMetricM
 						 static_cast<unsigned long long>(countVal));
 	}
 
-	// Legacy field-name rejection - reject messages with old field names
-	const char* legacyFieldNames[] = {"metric_type", "phase", "pts_ns", "source_id", "session_id"};
-	for (const auto& legacyName : legacyFieldNames)
-	{
-		if (gst_structure_has_field(msg, legacyName))
-		{
-			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, 
-							"ValidateMediaPipelineMetric: legacy field name '%s' found in message, rejecting", legacyName);
-			return GST_FLOW_ERROR;
-		}
-	}
-
 	// Semantic field-combination validation
 	// Reject OCCURRENCE (observation-kind=1) with duration-ns or count present
 	if (observationKindVal == static_cast<guint>(ObservationKind::OCCURRENCE))
