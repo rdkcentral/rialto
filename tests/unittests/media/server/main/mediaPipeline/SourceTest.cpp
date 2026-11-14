@@ -164,8 +164,25 @@ TEST_F(RialtoServerMediaPipelineSourceTest, UpdateSourceIdNotChanged)
     mediaSource->setId(-1);
 
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), false);
+}
+
+TEST_F(RialtoServerMediaPipelineSourceTest, AttachSourceFailureDoesNotReserveSourceAndCanRetry)
+{
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceSubtitle>(m_kMimeType, "SERVICE1");
+
+    loadGstPlayer();
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource))).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->attachSource(mediaSource));
+    EXPECT_EQ(mediaSource->getId(), -1);
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource))).WillOnce(Return(true));
+    EXPECT_TRUE(m_mediaPipeline->attachSource(mediaSource));
+    EXPECT_NE(mediaSource->getId(), -1);
 }
 
 /**

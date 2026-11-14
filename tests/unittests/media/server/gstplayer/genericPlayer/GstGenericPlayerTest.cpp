@@ -26,6 +26,9 @@
 #include "MediaSourceUtil.h"
 #include "PlayerTaskMock.h"
 #include "TimerMock.h"
+#include <atomic>
+#include <chrono>
+#include <future>
 #include <thread>
 
 using testing::_;
@@ -171,6 +174,75 @@ TEST_F(GstGenericPlayerTest, shouldIgnoreSubtitleClockResyncCallbackAfterShutdow
     lateTimerCallback.join();
 }
 
+TEST_F(GstGenericPlayerTest, shouldWaitForInFlightSubtitleClockResyncCallbackBeforeShutdown)
+{
+    std::function<void()> timerCallback;
+    auto timer = std::make_unique<StrictMock<TimerMock>>();
+    auto *timerMock = timer.get();
+    EXPECT_CALL(*m_timerFactoryMock,
+                createTimer(std::chrono::milliseconds{10000}, _, firebolt::rialto::common::TimerType::PERIODIC))
+        .WillOnce(DoAll(SaveArg<1>(&timerCallback), Return(ByMove(std::move(timer)))));
+
+    auto *player = dynamic_cast<IGstGenericPlayerPrivate *>(m_sut.get());
+    ASSERT_NE(nullptr, player);
+    player->startSubtitleClockResyncTimer();
+
+    std::unique_ptr<IPlayerTask> synchroniseTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*synchroniseTask), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSynchroniseSubtitleClock(_, Ref(*player)))
+        .WillOnce(Return(ByMove(std::move(synchroniseTask))));
+
+    std::promise<void> callbackEnqueueStarted;
+    auto callbackEnqueueStartedFuture = callbackEnqueueStarted.get_future();
+    std::promise<void> releaseCallback;
+    auto releaseCallbackFuture = releaseCallback.get_future();
+    std::promise<void> timerCancelCalled;
+    auto timerCancelCalledFuture = timerCancelCalled.get_future();
+    EXPECT_CALL(*timerMock, isActive()).WillOnce(Return(true));
+    EXPECT_CALL(*timerMock, cancel()).WillOnce(Invoke([&timerCancelCalled]() { timerCancelCalled.set_value(); }));
+
+    gstPlayerWillBeDestroyed();
+    std::atomic<unsigned int> enqueueCount{0};
+    EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
+        .Times(2)
+        .WillRepeatedly(Invoke(
+            [&callbackEnqueueStarted, &releaseCallbackFuture, &enqueueCount](std::unique_ptr<IPlayerTask> &&task)
+            {
+                if (enqueueCount.fetch_add(1) == 0)
+                {
+                    callbackEnqueueStarted.set_value();
+                    releaseCallbackFuture.wait();
+                }
+                task->execute();
+            }));
+
+    std::thread timerCallbackThread{timerCallback};
+    const auto callbackStatus = callbackEnqueueStartedFuture.wait_for(std::chrono::seconds{1});
+    if (callbackStatus != std::future_status::ready)
+    {
+        releaseCallback.set_value();
+        timerCallbackThread.join();
+        FAIL() << "Timer callback did not reach task enqueue";
+        return;
+    }
+
+    std::promise<void> destructionStarted;
+    auto destructionStartedFuture = destructionStarted.get_future();
+    std::thread destructionThread{[this, &destructionStarted]()
+                                  {
+                                      destructionStarted.set_value();
+                                      m_sut.reset();
+                                  }};
+    destructionStartedFuture.wait();
+    const auto cancelStatus = timerCancelCalledFuture.wait_for(std::chrono::milliseconds{100});
+
+    releaseCallback.set_value();
+    timerCallbackThread.join();
+    destructionThread.join();
+
+    EXPECT_EQ(std::future_status::timeout, cancelStatus);
+}
+
 TEST_F(GstGenericPlayerTest, shouldAttachSource)
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
@@ -180,7 +252,18 @@ TEST_F(GstGenericPlayerTest, shouldAttachSource)
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createAttachSource(_, _, Ref(source))).WillOnce(Return(ByMove(std::move(task))));
 
-    m_sut->attachSource(source);
+    EXPECT_TRUE(m_sut->attachSource(source));
+}
+
+TEST_F(GstGenericPlayerTest, shouldRejectSubtitleSourceWhenTextSinkPropertyIsMissing)
+{
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceSubtitle>("application/ttml+xml", "SERVICE1");
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(&m_pipeline), StrEq("text-sink")))
+        .WillOnce(Return(nullptr));
+
+    EXPECT_FALSE(m_sut->attachSource(source));
 }
 
 TEST_F(GstGenericPlayerTest, shouldRemoveSource)

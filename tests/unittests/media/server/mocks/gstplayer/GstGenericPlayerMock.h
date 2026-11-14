@@ -30,10 +30,10 @@ namespace firebolt::rialto::server
 class GstGenericPlayerMock : public IGstGenericPlayer
 {
 public:
-    GstGenericPlayerMock() = default;
+    GstGenericPlayerMock() { ON_CALL(*this, attachSource(::testing::_)).WillByDefault(::testing::Return(true)); }
     virtual ~GstGenericPlayerMock() = default;
 
-    MOCK_METHOD(void, attachSource, (const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource), (override));
+    MOCK_METHOD(bool, attachSource, (const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource), (override));
     MOCK_METHOD(void, removeSource, (const MediaSourceType &mediaSourceType), (override));
     MOCK_METHOD(void, allSourcesAttached, (), (override));
     MOCK_METHOD(void, play, (bool &async), (override));
