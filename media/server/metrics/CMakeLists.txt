@@ -5,9 +5,6 @@ add_library(
         RialtoMetrics
         STATIC
 
-        PUBLIC
-        RialtoPlayerPublic
-
         source/RialtoMetrics.cpp
 )
 
@@ -25,6 +22,10 @@ set_property(
 
 target_link_libraries(
         RialtoMetrics
+
+        
+        PUBLIC
+        RialtoPlayerPublic
 
         PRIVATE
         PkgConfig::RialtoMetricsGStreamer
