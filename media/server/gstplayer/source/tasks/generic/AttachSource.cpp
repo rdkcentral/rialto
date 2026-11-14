@@ -96,7 +96,8 @@ void AttachSource::addSource() const
     {
         if (!m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_context.pipeline), "text-sink"))
         {
-            RIALTO_SERVER_LOG_ERROR("Pipeline does not expose 'text-sink' property, subtitle source cannot be attached");
+            RIALTO_SERVER_LOG_ERROR(
+                "Pipeline does not expose 'text-sink' property, subtitle source cannot be attached");
             m_glibWrapper->gFree(capsStr);
             m_gstWrapper->gstCapsUnref(caps);
             return;
