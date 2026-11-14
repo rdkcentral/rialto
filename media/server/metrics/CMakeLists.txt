@@ -5,9 +5,6 @@ add_library(
         RialtoMetrics
         STATIC
 
-        PUBLIC
-        RialtoPlayerPublic
-
         source/RialtoMetrics.cpp
 )
 
