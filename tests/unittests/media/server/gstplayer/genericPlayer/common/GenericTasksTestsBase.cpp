@@ -3672,8 +3672,7 @@ void GenericTasksTestsBase::shouldSetSubtitleOffset()
 
 void GenericTasksTestsBase::shouldSetSubtitleOffset(std::int64_t offset)
 {
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectSetInt64Stub(&testContext->m_textTrackSink, StrEq("offset"), offset));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetInt64Stub(&testContext->m_textTrackSink, StrEq("offset"), offset));
 }
 
 void GenericTasksTestsBase::triggerSetSubtitleOffset()
