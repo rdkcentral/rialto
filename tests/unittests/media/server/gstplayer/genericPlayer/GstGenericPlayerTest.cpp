@@ -72,6 +72,28 @@ public:
 private:
     std::function<void()> m_callback;
 };
+
+class PlayerShutdownGuard
+{
+public:
+    explicit PlayerShutdownGuard(std::function<void()> shutdown) : m_shutdown{std::move(shutdown)} {}
+    ~PlayerShutdownGuard() { run(); }
+
+    PlayerShutdownGuard(const PlayerShutdownGuard &) = delete;
+    PlayerShutdownGuard &operator=(const PlayerShutdownGuard &) = delete;
+
+    void run()
+    {
+        if (m_shutdown)
+        {
+            auto shutdown = std::move(m_shutdown);
+            shutdown();
+        }
+    }
+
+private:
+    std::function<void()> m_shutdown;
+};
 } // namespace
 
 class GstGenericPlayerTest : public GstGenericPlayerTestCommon
@@ -355,6 +377,14 @@ TEST_F(GstGenericPlayerRealTimerTest, shouldStopRestartAndShutdownRealSubtitleCl
     std::mutex synchroniseMutex;
     std::condition_variable synchroniseCondition;
     unsigned int synchroniseCount{0};
+    PlayerShutdownGuard shutdownGuard{[this]()
+                                      {
+                                          if (m_sut)
+                                          {
+                                              gstPlayerWillBeDestroyed(true);
+                                              m_sut.reset();
+                                          }
+                                      }};
     EXPECT_CALL(m_taskFactoryMock, createSynchroniseSubtitleClock(_, Ref(*player)))
         .WillRepeatedly(Invoke(
             [&synchroniseMutex, &synchroniseCondition,
@@ -393,8 +423,7 @@ TEST_F(GstGenericPlayerRealTimerTest, shouldStopRestartAndShutdownRealSubtitleCl
     player->startSubtitleClockResyncTimer();
     ASSERT_TRUE(waitForMoreSynchronisations(stoppedCount, std::chrono::seconds{2}));
 
-    gstPlayerWillBeDestroyed(true);
-    m_sut.reset();
+    shutdownGuard.run();
     unsigned int shutdownCount;
     {
         std::lock_guard<std::mutex> lock{synchroniseMutex};
