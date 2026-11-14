@@ -37,6 +37,7 @@
 #include "tasks/IPlayerTask.h"
 #include <IMediaPipeline.h>
 #include <atomic>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -496,6 +497,7 @@ private:
         std::mutex mutex;
         bool isActive{false};
         bool isShuttingDown{false};
+        std::uint64_t generation{0};
     };
 
     /**

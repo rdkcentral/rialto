@@ -2805,12 +2805,13 @@ void GstGenericPlayer::startSubtitleClockResyncTimer()
     }
 
     state->isActive = true;
+    const auto generation = ++state->generation;
     m_subtitleClockResyncTimer = m_timerFactory->createTimer(
         kSubtitleClockResyncInterval,
-        [this, state = std::move(state)]()
+        [this, state = std::move(state), generation]()
         {
             std::lock_guard<std::mutex> callbackLock{state->mutex};
-            if (state->isActive && !state->isShuttingDown && m_workerThread)
+            if (state->isActive && !state->isShuttingDown && state->generation == generation && m_workerThread)
             {
                 m_workerThread->enqueueTask(m_taskFactory->createSynchroniseSubtitleClock(m_context, *this));
             }
@@ -2828,6 +2829,7 @@ void GstGenericPlayer::cancelSubtitleClockResyncTimer(bool shuttingDown)
     const auto state = m_subtitleClockResyncTimerState;
     std::lock_guard<std::mutex> lock{state->mutex};
     state->isActive = false;
+    ++state->generation;
     state->isShuttingDown = state->isShuttingDown || shuttingDown;
 
     if (m_subtitleClockResyncTimer)
