@@ -26,6 +26,7 @@
 #include "MediaSourceUtil.h"
 #include "PlayerTaskMock.h"
 #include "TimerMock.h"
+#include <thread>
 
 using testing::_;
 using testing::ByMove;
@@ -33,6 +34,7 @@ using testing::DoAll;
 using testing::Invoke;
 using testing::Ref;
 using testing::Return;
+using testing::SaveArg;
 using testing::SetArgumentPointee;
 using testing::StrEq;
 
@@ -65,8 +67,11 @@ protected:
     ~GstGenericPlayerTest() override
     {
         gst_object_unref(m_element);
-        gstPlayerWillBeDestroyed();
-        m_sut.reset();
+        if (m_sut)
+        {
+            gstPlayerWillBeDestroyed();
+            m_sut.reset();
+        }
     }
 
     void getContext(const std::function<void(GenericPlayerContext &)> &fun)
@@ -134,6 +139,37 @@ protected:
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
     }
 };
+
+TEST_F(GstGenericPlayerTest, shouldIgnoreSubtitleClockResyncCallbackAfterShutdown)
+{
+    std::function<void()> timerCallback;
+    auto timer = std::make_unique<StrictMock<TimerMock>>();
+    auto *timerMock = timer.get();
+    EXPECT_CALL(*m_timerFactoryMock,
+                createTimer(std::chrono::milliseconds{10000}, _, firebolt::rialto::common::TimerType::PERIODIC))
+        .WillOnce(DoAll(SaveArg<1>(&timerCallback), Return(ByMove(std::move(timer)))));
+
+    auto *player = dynamic_cast<IGstGenericPlayerPrivate *>(m_sut.get());
+    ASSERT_NE(nullptr, player);
+    player->startSubtitleClockResyncTimer();
+
+    EXPECT_CALL(*timerMock, isActive()).WillOnce(Return(true));
+    EXPECT_CALL(*timerMock, cancel());
+    gstPlayerWillBeDestroyed();
+    EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
+        .WillOnce(Invoke(
+            [player](std::unique_ptr<IPlayerTask> &&task)
+            {
+                player->startSubtitleClockResyncTimer();
+                task->execute();
+            }));
+
+    m_sut.reset();
+
+    ASSERT_TRUE(timerCallback);
+    std::thread lateTimerCallback{timerCallback};
+    lateTimerCallback.join();
+}
 
 TEST_F(GstGenericPlayerTest, shouldAttachSource)
 {

@@ -135,6 +135,11 @@ TEST_F(AttachSourceTest, shouldAttachSubtitleSource)
     checkSubtitleSourceAttached();
 }
 
+TEST_F(AttachSourceTest, shouldNotAttachSubtitleSourceWhenTextSinkPropertyIsMissing)
+{
+    shouldNotAttachSubtitleSourceWhenTextSinkPropertyIsMissing();
+}
+
 TEST_F(AttachSourceTest, shouldAttachVideoSourceWithStringCodecData)
 {
     shouldAttachVideoSourceWithStringCodecData();
