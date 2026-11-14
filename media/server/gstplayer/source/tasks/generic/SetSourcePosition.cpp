@@ -75,6 +75,12 @@ void SetSourcePosition::execute() const
 
 void SetSourcePosition::setSubtitlePosition(GstElement *source) const
 {
+    if (m_position < 0)
+    {
+        RIALTO_SERVER_LOG_WARN("Invalid negative position for subtitle sink");
+        return;
+    }
+
     // in case of subtitles, all data might be already in the sink and we might not get any data anymore,
     // so set position here and to not depend on any following buffers
     if (m_context.setupSourceFinished)

@@ -22,6 +22,7 @@
 
 #include "ITextTrackSession.h"
 #include <atomic>
+#include <limits>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -29,6 +30,23 @@
 
 namespace firebolt::rialto::server
 {
+inline uint64_t calculateSubtitlePosition(uint64_t position, int64_t offset)
+{
+    if (offset < 0)
+    {
+        const uint64_t offsetMagnitude = static_cast<uint64_t>(-(offset + 1)) + 1;
+        return position < offsetMagnitude ? 0 : position - offsetMagnitude;
+    }
+
+    const uint64_t positiveOffset = static_cast<uint64_t>(offset);
+    if (position > std::numeric_limits<uint64_t>::max() - positiveOffset)
+    {
+        return std::numeric_limits<uint64_t>::max();
+    }
+
+    return position + positiveOffset;
+}
+
 struct GstRialtoTextTrackSinkPrivate
 {
     std::unique_ptr<ITextTrackSession> m_textTrackSession;
@@ -38,8 +56,8 @@ struct GstRialtoTextTrackSinkPrivate
     bool m_capsSet{false};
     std::optional<uint64_t> m_position;
     std::optional<uint64_t> m_queuedPosition;
-    std::optional<uint64_t> m_offset;
-    std::optional<uint64_t> m_queuedOffset;
+    std::optional<int64_t> m_offset;
+    std::optional<int64_t> m_queuedOffset;
     std::mutex m_mutex;
 };
 }; // namespace firebolt::rialto::server

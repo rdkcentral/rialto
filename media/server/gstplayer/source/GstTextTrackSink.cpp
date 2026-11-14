@@ -128,8 +128,8 @@ static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *k
                                                         GParamFlags(G_PARAM_READWRITE)));
 
     g_object_class_install_property(gobjectClass, PROP_OFFSET,
-                                    g_param_spec_uint64("offset", "Offset", "Offset", 0, G_MAXUINT64, 0,
-                                                        GParamFlags(G_PARAM_WRITABLE)));
+                                    g_param_spec_int64("offset", "Offset", "Offset", G_MININT64, G_MAXINT64, 0,
+                                                       GParamFlags(G_PARAM_WRITABLE)));
 
     gst_element_class_add_pad_template(elementClass, gst_static_pad_template_get(&sinkTemplate));
     gst_element_class_set_static_metadata(elementClass, "Rialto TextTrack Sink", "Sink/Parser/Subtitle",
@@ -224,12 +224,14 @@ static gboolean gst_rialto_text_track_sink_set_position(GstRialtoTextTrackSink *
         return FALSE;
     }
 
-    uint64_t positionWithOffset = textTrackSink->priv->m_position.value_or(0) + textTrackSink->priv->m_offset.value_or(0);
+    uint64_t positionWithOffset =
+        firebolt::rialto::server::calculateSubtitlePosition(textTrackSink->priv->m_position.value_or(0),
+                                                            textTrackSink->priv->m_offset.value_or(0));
 
     GST_DEBUG_OBJECT(textTrackSink,
-                     "Setting position to %" GST_TIME_FORMAT " (pts %" GST_TIME_FORMAT ", offset %" GST_TIME_FORMAT ")",
+                     "Setting position to %" GST_TIME_FORMAT " (pts %" GST_TIME_FORMAT ", offset %" PRId64 ")",
                      GST_TIME_ARGS(positionWithOffset), GST_TIME_ARGS(textTrackSink->priv->m_position.value_or(0)),
-                     GST_TIME_ARGS(textTrackSink->priv->m_offset.value_or(0)));
+                     textTrackSink->priv->m_offset.value_or(0));
 
     textTrackSink->priv->m_textTrackSession->setPosition(positionWithOffset / GST_MSECOND);
     return TRUE;
@@ -511,7 +513,7 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
     }
     case PROP_OFFSET:
     {
-        uint64_t offset = g_value_get_uint64(value);
+        int64_t offset = g_value_get_int64(value);
         std::unique_lock lock{priv->m_mutex};
         if (priv->m_textTrackSession && priv->m_capsSet)
         {
