@@ -255,8 +255,18 @@ TEST_F(GstGenericPlayerTest, shouldIgnoreSubtitleClockResyncCallbackFromStoppedT
     auto *restartedTimerMock = restartedTimer.get();
     EXPECT_CALL(*m_timerFactoryMock,
                 createTimer(std::chrono::milliseconds{10000}, _, firebolt::rialto::common::TimerType::PERIODIC))
-        .WillOnce(DoAll(SaveArg<1>(&stoppedTimerCallback), Return(ByMove(std::move(stoppedTimer)))))
-        .WillOnce(DoAll(SaveArg<1>(&restartedTimerCallback), Return(ByMove(std::move(restartedTimer)))));
+        .WillOnce(
+            [&stoppedTimerCallback, timer = std::move(stoppedTimer)](auto, auto callback, auto) mutable
+            {
+                stoppedTimerCallback = std::move(callback);
+                return std::move(timer);
+            })
+        .WillOnce(
+            [&restartedTimerCallback, timer = std::move(restartedTimer)](auto, auto callback, auto) mutable
+            {
+                restartedTimerCallback = std::move(callback);
+                return std::move(timer);
+            });
 
     auto *player = dynamic_cast<IGstGenericPlayerPrivate *>(m_sut.get());
     ASSERT_NE(nullptr, player);
@@ -264,6 +274,7 @@ TEST_F(GstGenericPlayerTest, shouldIgnoreSubtitleClockResyncCallbackFromStoppedT
 
     EXPECT_CALL(*stoppedTimerMock, isActive()).WillOnce(Return(true));
     EXPECT_CALL(*stoppedTimerMock, cancel());
+    EXPECT_CALL(m_workerThreadMock, enqueueTask(_)).Times(0);
     player->stopSubtitleClockResyncTimer();
     ASSERT_TRUE(stoppedTimerCallback);
     stoppedTimerCallback();
@@ -272,6 +283,7 @@ TEST_F(GstGenericPlayerTest, shouldIgnoreSubtitleClockResyncCallbackFromStoppedT
     ASSERT_TRUE(restartedTimerCallback);
     stoppedTimerCallback();
 
+    EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(&m_workerThreadMock));
     std::unique_ptr<IPlayerTask> synchroniseTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*synchroniseTask), execute());
     EXPECT_CALL(m_taskFactoryMock, createSynchroniseSubtitleClock(_, Ref(*player)))
