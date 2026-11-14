@@ -58,7 +58,8 @@ public:
     MediaKeyErrorStatus generateRequest(int mediaKeysHandle, int32_t keySessionId, InitDataType initDataType,
                                         const std::vector<uint8_t> &initData,
                                         const LimitedDurationLicense &ldlState) override;
-    MediaKeyErrorStatus loadSession(int mediaKeysHandle, int32_t keySessionId) override;
+    MediaKeyErrorStatus loadSession(int mediaKeysHandle, int32_t keySessionId,
+                                    const std::string &cdmKeySessionId) override;
     MediaKeyErrorStatus updateSession(int mediaKeysHandle, int32_t keySessionId,
                                       const std::vector<uint8_t> &responseData) override;
     MediaKeyErrorStatus closeKeySession(int mediaKeysHandle, int32_t keySessionId) override;

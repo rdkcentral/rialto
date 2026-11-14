@@ -81,7 +81,7 @@ protected:
     // Common variables
     const int32_t m_kKeySessionId = 123;
     const int32_t m_kMainThreadClientId = {5};
-    KeySessionType m_keySessionType = KeySessionType::PERSISTENT_RELEASE_MESSAGE;
+    KeySessionType m_keySessionType = KeySessionType::PERSISTENT_LICENCE;
     bool m_isLDL = false;
     const InitDataType m_kInitDataType{InitDataType::CENC};
     const std::vector<uint8_t> m_kInitData{1, 2, 3};
