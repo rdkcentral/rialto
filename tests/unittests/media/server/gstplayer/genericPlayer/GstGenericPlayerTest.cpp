@@ -260,7 +260,9 @@ TEST_F(GstGenericPlayerTest, shouldRejectSubtitleSourceWhenTextSinkPropertyIsMis
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceSubtitle>("application/ttml+xml", "SERVICE1");
 
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(&m_pipeline), StrEq("text-sink")))
+    EXPECT_CALL(*m_glibWrapperMock,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(&this->GstGenericPlayerTestCommon::m_pipeline),
+                                         StrEq("text-sink")))
         .WillOnce(Return(nullptr));
 
     EXPECT_FALSE(m_sut->attachSource(source));
