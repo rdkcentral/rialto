@@ -224,20 +224,16 @@ static gboolean gst_rialto_text_track_sink_set_position(GstRialtoTextTrackSink *
         return FALSE;
     }
 
-    int64_t positionWithOffset = static_cast<int64_t>(textTrackSink->priv->m_position.value_or(0)) +
-                                 textTrackSink->priv->m_offset.value_or(0);
-    if (positionWithOffset < 0)
-    {
-        positionWithOffset = 0;
-    }
+    uint64_t positionWithOffset =
+        firebolt::rialto::server::calculateSubtitlePosition(textTrackSink->priv->m_position.value_or(0),
+                                                            textTrackSink->priv->m_offset.value_or(0));
 
     GST_DEBUG_OBJECT(textTrackSink,
                      "Setting position to %" GST_TIME_FORMAT " (pts %" GST_TIME_FORMAT ", offset %" PRId64 ")",
-                     GST_TIME_ARGS(static_cast<uint64_t>(positionWithOffset)),
-                     GST_TIME_ARGS(textTrackSink->priv->m_position.value_or(0)),
+                     GST_TIME_ARGS(positionWithOffset), GST_TIME_ARGS(textTrackSink->priv->m_position.value_or(0)),
                      textTrackSink->priv->m_offset.value_or(0));
 
-    textTrackSink->priv->m_textTrackSession->setPosition(static_cast<uint64_t>(positionWithOffset) / GST_MSECOND);
+    textTrackSink->priv->m_textTrackSession->setPosition(positionWithOffset / GST_MSECOND);
     return TRUE;
 }
 

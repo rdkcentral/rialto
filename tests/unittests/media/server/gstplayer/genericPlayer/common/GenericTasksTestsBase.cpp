@@ -3596,10 +3596,15 @@ void GenericTasksTestsBase::shouldSetSubtitleSourcePosition()
 
 void GenericTasksTestsBase::triggerSetSourcePosition(firebolt::rialto::MediaSourceType sourceType)
 {
+    triggerSetSourcePosition(sourceType, kPosition);
+}
+
+void GenericTasksTestsBase::triggerSetSourcePosition(firebolt::rialto::MediaSourceType sourceType, std::int64_t position)
+{
     firebolt::rialto::server::tasks::generic::SetSourcePosition task{testContext->m_context,
                                                                      testContext->m_glibWrapper,
                                                                      sourceType,
-                                                                     kPosition,
+                                                                     position,
                                                                      kResetTime,
                                                                      kAppliedRate,
                                                                      kStopPosition};
@@ -3641,14 +3646,34 @@ void GenericTasksTestsBase::checkInitialPositionSet(firebolt::rialto::MediaSourc
 
 void GenericTasksTestsBase::checkInitialPositionNotSet(firebolt::rialto::MediaSourceType sourceType)
 {
-    GstElement *source = sourceType == firebolt::rialto::MediaSourceType::AUDIO ? &testContext->m_appSrcAudio
-                                                                                : &testContext->m_appSrcVideo;
+    GstElement *source{nullptr};
+    switch (sourceType)
+    {
+    case firebolt::rialto::MediaSourceType::AUDIO:
+        source = &testContext->m_appSrcAudio;
+        break;
+    case firebolt::rialto::MediaSourceType::VIDEO:
+        source = &testContext->m_appSrcVideo;
+        break;
+    case firebolt::rialto::MediaSourceType::SUBTITLE:
+        source = &testContext->m_appSrcSubtitle;
+        break;
+    default:
+        source = &testContext->m_appSrcVideo;
+        break;
+    }
     EXPECT_EQ(testContext->m_context.initialPositions.end(), testContext->m_context.initialPositions.find(source));
 }
 
 void GenericTasksTestsBase::shouldSetSubtitleOffset()
 {
-    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(&testContext->m_textTrackSink, StrEq("offset")));
+    shouldSetSubtitleOffset(kPosition);
+}
+
+void GenericTasksTestsBase::shouldSetSubtitleOffset(std::int64_t offset)
+{
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectSetInt64Stub(&testContext->m_textTrackSink, StrEq("offset"), offset));
 }
 
 void GenericTasksTestsBase::triggerSetSubtitleOffset()

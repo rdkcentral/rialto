@@ -452,11 +452,13 @@ protected:
     void shouldSetSubtitleSourcePosition();
 
     void triggerSetSourcePosition(firebolt::rialto::MediaSourceType sourceType);
+    void triggerSetSourcePosition(firebolt::rialto::MediaSourceType sourceType, std::int64_t position);
     void checkInitialPositionSet(firebolt::rialto::MediaSourceType sourceType);
     void checkInitialPositionNotSet(firebolt::rialto::MediaSourceType sourceType);
 
     // Set Subtitle Offset test methods
     void shouldSetSubtitleOffset();
+    void shouldSetSubtitleOffset(std::int64_t offset);
     void triggerSetSubtitleOffset();
     void triggerSetSubtitleOffset(std::int64_t position);
 

@@ -81,6 +81,11 @@ public:
                 const gchar *val = va_arg(args, const gchar *);
                 gObjectSetStrStub(object, kProperty, val);
             }
+            else if (g_strcmp0(kProperty, "offset") == 0)
+            {
+                gint64 val = va_arg(args, gint64);
+                gObjectSetInt64Stub(object, kProperty, val);
+            }
             else
             {
                 gObjectSetStub(object, kProperty);
@@ -97,6 +102,7 @@ public:
     MOCK_METHOD(void, gObjectSetStrStub, (gpointer object, const gchar *first_property_name, const gchar *val));
     MOCK_METHOD(void, gObjectSetBoolStub, (gpointer object, const gchar *first_property_name, gboolean val));
     MOCK_METHOD(void, gObjectSetIntStub, (gpointer object, const gchar *first_property_name, gint val));
+    MOCK_METHOD(void, gObjectSetInt64Stub, (gpointer object, const gchar *first_property_name, gint64 val));
     void gObjectGet(gpointer object, const gchar *first_property_name, ...) override
     {
         va_list args;
