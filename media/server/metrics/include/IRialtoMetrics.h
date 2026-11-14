@@ -50,5 +50,6 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, MetricEvent& 
 										   GstMessage* gstMessage = nullptr, 
 										   ElementToSourceMapper* mapper = nullptr);
 
+}
 
 #endif // FIREBOLT_RIALTO_SERVER_METRICS_I_RIALTO_METRICS_H_
