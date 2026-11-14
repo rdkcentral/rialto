@@ -20,6 +20,8 @@
 #include "GstGenericPlayerTestCommon.h"
 #include "Matchers.h"
 #include "PlayerTaskMock.h"
+#include "WorkerThread.h"
+#include "tasks/generic/Shutdown.h"
 #include <memory>
 #include <string>
 #include <utility>
@@ -30,7 +32,7 @@ using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::StrEq;
 
-void GstGenericPlayerTestCommon::gstPlayerWillBeCreated()
+void GstGenericPlayerTestCommon::gstPlayerWillBeCreated(bool useRealWorker)
 {
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     initFactories();
@@ -46,15 +48,23 @@ void GstGenericPlayerTestCommon::gstPlayerWillBeCreated()
     EXPECT_CALL(*m_gstSrcMock, initSrc());
     EXPECT_CALL(*m_gstProfilerFactoryMock, createGstProfiler(&m_pipeline, _, _))
         .WillOnce(Return(ByMove(std::move(m_gstProfiler))));
-    EXPECT_CALL(m_workerThreadFactoryMock, createWorkerThread()).WillOnce(Return(ByMove(std::move(workerThread))));
+    if (useRealWorker)
+    {
+        std::unique_ptr<IWorkerThread> realWorker{std::make_unique<WorkerThread>()};
+        EXPECT_CALL(m_workerThreadFactoryMock, createWorkerThread()).WillOnce(Return(ByMove(std::move(realWorker))));
+    }
+    else
+    {
+        EXPECT_CALL(m_workerThreadFactoryMock, createWorkerThread()).WillOnce(Return(ByMove(std::move(workerThread))));
+    }
     EXPECT_CALL(*m_gstProtectionMetadataFactoryMock, createProtectionMetadataWrapper(_))
         .WillOnce(Return(ByMove(std::move(m_gstProtectionMetadataWrapper))));
     executeTaskWhenEnqueued();
 }
 
-void GstGenericPlayerTestCommon::gstPlayerWillBeDestroyed()
+void GstGenericPlayerTestCommon::gstPlayerWillBeDestroyed(bool useRealWorker)
 {
-    expectShutdown();
+    expectShutdown(useRealWorker);
     expectStop();
     EXPECT_CALL(*m_timerFactoryMock, createTimer(_, _, _)).Times(0);
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
@@ -64,8 +74,16 @@ void GstGenericPlayerTestCommon::gstPlayerWillBeDestroyed()
     EXPECT_CALL(*m_glibWrapperMock, gThreadPoolStopUnusedThreads());
 }
 
-void GstGenericPlayerTestCommon::expectShutdown()
+void GstGenericPlayerTestCommon::expectShutdown(bool useRealWorker)
 {
+    if (useRealWorker)
+    {
+        EXPECT_CALL(m_taskFactoryMock, createShutdown(_))
+            .WillOnce(Invoke([](IGstGenericPlayerPrivate &player) -> std::unique_ptr<IPlayerTask>
+                             { return std::make_unique<tasks::generic::Shutdown>(player); }));
+        return;
+    }
+
     std::unique_ptr<IPlayerTask> shutdownTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*shutdownTask), execute());
     EXPECT_CALL(m_taskFactoryMock, createShutdown(_)).WillOnce(Return(ByMove(std::move(shutdownTask))));

@@ -112,9 +112,9 @@ public:
     void setPipelineState(const GstState &state);
 
 protected:
-    void gstPlayerWillBeCreated();
-    void gstPlayerWillBeDestroyed();
-    void expectShutdown();
+    void gstPlayerWillBeCreated(bool useRealWorker = false);
+    void gstPlayerWillBeDestroyed(bool useRealWorker = false);
+    void expectShutdown(bool useRealWorker = false);
     void expectStop();
     void executeTaskWhenEnqueued();
     void initFactories();

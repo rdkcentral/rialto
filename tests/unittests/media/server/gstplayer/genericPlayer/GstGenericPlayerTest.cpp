@@ -25,10 +25,13 @@
 #include "MatchersGenericPlayer.h"
 #include "MediaSourceUtil.h"
 #include "PlayerTaskMock.h"
+#include "Timer.h"
 #include "TimerMock.h"
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <future>
+#include <mutex>
 #include <thread>
 
 using testing::_;
@@ -41,10 +44,41 @@ using testing::SaveArg;
 using testing::SetArgumentPointee;
 using testing::StrEq;
 
+namespace
+{
+constexpr std::chrono::milliseconds kRuntimeTimerInterval{100};
+
+class AcceleratedTimerFactory : public firebolt::rialto::common::ITimerFactory
+{
+public:
+    std::unique_ptr<firebolt::rialto::common::ITimer>
+    createTimer(const std::chrono::milliseconds &, const std::function<void()> &callback,
+                firebolt::rialto::common::TimerType timerType) const override
+    {
+        return m_timerFactory.createTimer(kRuntimeTimerInterval, callback, timerType);
+    }
+
+private:
+    firebolt::rialto::common::TimerFactory m_timerFactory;
+};
+
+class CallbackPlayerTask : public IPlayerTask
+{
+public:
+    explicit CallbackPlayerTask(std::function<void()> callback) : m_callback{std::move(callback)} {}
+
+    void execute() const override { m_callback(); }
+
+private:
+    std::function<void()> m_callback;
+};
+} // namespace
+
 class GstGenericPlayerTest : public GstGenericPlayerTestCommon
 {
 protected:
     std::unique_ptr<IGstGenericPlayer> m_sut;
+    bool m_useRealWorker{false};
     VideoRequirements m_videoReq = {kMinPrimaryVideoWidth, kMinPrimaryVideoHeight};
     bool m_isLive{false};
     GstElement *m_pipeline;
@@ -54,15 +88,23 @@ protected:
     GstElement *m_element;
     GParamSpec m_prop{};
 
-    GstGenericPlayerTest()
+    explicit GstGenericPlayerTest(bool useRealWorker = false,
+                                  std::shared_ptr<firebolt::rialto::common::ITimerFactory> timerFactory = nullptr)
+        : m_useRealWorker{useRealWorker}
     {
-        gstPlayerWillBeCreated();
+        gstPlayerWillBeCreated(m_useRealWorker);
+        std::shared_ptr<firebolt::rialto::common::ITimerFactory> playerTimerFactory = timerFactory;
+        if (!playerTimerFactory)
+        {
+            playerTimerFactory = m_timerFactoryMock;
+        }
         m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
                                                    m_videoReq, m_isLive, m_gstWrapperMock, m_glibWrapperMock,
                                                    m_rdkGstreamerUtilsWrapperMock, m_gstInitialiserMock,
                                                    std::move(m_flushWatcher), m_gstSrcFactoryMock,
-                                                   m_gstProfilerFactoryMock, m_timerFactoryMock, std::move(m_taskFactory),
-                                                   std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
+                                                   m_gstProfilerFactoryMock, std::move(playerTimerFactory),
+                                                   std::move(m_taskFactory), std::move(workerThreadFactory),
+                                                   std::move(gstDispatcherThreadFactory),
                                                    m_gstProtectionMetadataFactoryMock);
         m_element = fakeElement();
     }
@@ -72,7 +114,7 @@ protected:
         gst_object_unref(m_element);
         if (m_sut)
         {
-            gstPlayerWillBeDestroyed();
+            gstPlayerWillBeDestroyed(m_useRealWorker);
             m_sut.reset();
         }
     }
@@ -141,6 +183,12 @@ protected:
 
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
     }
+};
+
+class GstGenericPlayerRealTimerTest : public GstGenericPlayerTest
+{
+protected:
+    GstGenericPlayerRealTimerTest() : GstGenericPlayerTest{true, std::make_shared<AcceleratedTimerFactory>()} {}
 };
 
 TEST_F(GstGenericPlayerTest, shouldIgnoreSubtitleClockResyncCallbackAfterShutdown)
@@ -297,6 +345,62 @@ TEST_F(GstGenericPlayerTest, shouldIgnoreSubtitleClockResyncCallbackFromStoppedT
     EXPECT_CALL(*restartedTimerMock, cancel());
     gstPlayerWillBeDestroyed();
     m_sut.reset();
+}
+
+TEST_F(GstGenericPlayerRealTimerTest, shouldStopRestartAndShutdownRealSubtitleClockTimer)
+{
+    auto *player = dynamic_cast<IGstGenericPlayerPrivate *>(m_sut.get());
+    ASSERT_NE(nullptr, player);
+
+    std::mutex synchroniseMutex;
+    std::condition_variable synchroniseCondition;
+    unsigned int synchroniseCount{0};
+    EXPECT_CALL(m_taskFactoryMock, createSynchroniseSubtitleClock(_, Ref(*player)))
+        .WillRepeatedly(Invoke(
+            [&synchroniseMutex, &synchroniseCondition,
+             &synchroniseCount](GenericPlayerContext &, IGstGenericPlayerPrivate &) -> std::unique_ptr<IPlayerTask>
+            {
+                return std::make_unique<CallbackPlayerTask>(
+                    [&synchroniseMutex, &synchroniseCondition, &synchroniseCount]()
+                    {
+                        std::lock_guard<std::mutex> lock{synchroniseMutex};
+                        ++synchroniseCount;
+                        synchroniseCondition.notify_all();
+                    });
+            }));
+
+    const auto waitForMoreSynchronisations =
+        [&synchroniseMutex, &synchroniseCondition, &synchroniseCount](unsigned int previousCount,
+                                                                      std::chrono::milliseconds timeout)
+    {
+        std::unique_lock<std::mutex> lock{synchroniseMutex};
+        return synchroniseCondition.wait_for(lock, timeout, [&synchroniseCount, previousCount]()
+                                             { return synchroniseCount > previousCount; });
+    };
+
+    player->startSubtitleClockResyncTimer();
+    ASSERT_TRUE(waitForMoreSynchronisations(0, std::chrono::seconds{2}));
+
+    player->stopSubtitleClockResyncTimer();
+    std::this_thread::sleep_for(kRuntimeTimerInterval * 3);
+    unsigned int stoppedCount;
+    {
+        std::lock_guard<std::mutex> lock{synchroniseMutex};
+        stoppedCount = synchroniseCount;
+    }
+    EXPECT_FALSE(waitForMoreSynchronisations(stoppedCount, kRuntimeTimerInterval * 5));
+
+    player->startSubtitleClockResyncTimer();
+    ASSERT_TRUE(waitForMoreSynchronisations(stoppedCount, std::chrono::seconds{2}));
+
+    gstPlayerWillBeDestroyed(true);
+    m_sut.reset();
+    unsigned int shutdownCount;
+    {
+        std::lock_guard<std::mutex> lock{synchroniseMutex};
+        shutdownCount = synchroniseCount;
+    }
+    EXPECT_FALSE(waitForMoreSynchronisations(shutdownCount, kRuntimeTimerInterval * 5));
 }
 
 TEST_F(GstGenericPlayerTest, shouldAttachSource)
