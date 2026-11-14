@@ -38,6 +38,7 @@
 #include <IMediaPipeline.h>
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -191,6 +192,7 @@ private:
     void stopNotifyPlaybackInfoTimer() override;
     void startSubtitleClockResyncTimer() override;
     void stopSubtitleClockResyncTimer() override;
+    void cancelSubtitleClockResyncTimer(bool shuttingDown);
     void stopWorkerThread() override;
     void cancelUnderflow(firebolt::rialto::MediaSourceType mediaSource) override;
     void setPendingPlaybackRate() override;
@@ -489,12 +491,19 @@ private:
      */
     std::unique_ptr<firebolt::rialto::common::ITimer> m_playbackInfoTimer{nullptr};
 
+    struct SubtitleClockResyncTimerState
+    {
+        std::mutex mutex;
+        bool isActive{false};
+        bool isShuttingDown{false};
+    };
+
     /**
      * @brief Timer to resync subtitle clock with AV clock
-     *
-     * Variable can be used only in worker thread
      */
     std::unique_ptr<firebolt::rialto::common::ITimer> m_subtitleClockResyncTimer{nullptr};
+    std::shared_ptr<SubtitleClockResyncTimerState> m_subtitleClockResyncTimerState{
+        std::make_shared<SubtitleClockResyncTimerState>()};
 
     /**
      * @brief The GstGenericPlayer task factory

@@ -359,6 +359,7 @@ GstGenericPlayer::~GstGenericPlayer()
 {
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is destructed.");
     m_gstDispatcherThread.reset();
+    cancelSubtitleClockResyncTimer(true);
 
     try
     {
@@ -2780,16 +2781,25 @@ void GstGenericPlayer::stopNotifyPlaybackInfoTimer()
 
 void GstGenericPlayer::startSubtitleClockResyncTimer()
 {
+    const auto state = m_subtitleClockResyncTimerState;
+    std::lock_guard<std::mutex> lock{state->mutex};
+    if (state->isShuttingDown)
+    {
+        return;
+    }
+
     if (m_subtitleClockResyncTimer && m_subtitleClockResyncTimer->isActive())
     {
         return;
     }
 
+    state->isActive = true;
     m_subtitleClockResyncTimer = m_timerFactory->createTimer(
         kSubtitleClockResyncInterval,
-        [this]()
+        [this, state]()
         {
-            if (m_workerThread)
+            std::lock_guard<std::mutex> callbackLock{state->mutex};
+            if (state->isActive && !state->isShuttingDown && m_workerThread)
             {
                 m_workerThread->enqueueTask(m_taskFactory->createSynchroniseSubtitleClock(m_context, *this));
             }
@@ -2799,9 +2809,22 @@ void GstGenericPlayer::startSubtitleClockResyncTimer()
 
 void GstGenericPlayer::stopSubtitleClockResyncTimer()
 {
-    if (m_subtitleClockResyncTimer && m_subtitleClockResyncTimer->isActive())
+    cancelSubtitleClockResyncTimer(false);
+}
+
+void GstGenericPlayer::cancelSubtitleClockResyncTimer(bool shuttingDown)
+{
+    const auto state = m_subtitleClockResyncTimerState;
+    std::lock_guard<std::mutex> lock{state->mutex};
+    state->isActive = false;
+    state->isShuttingDown = state->isShuttingDown || shuttingDown;
+
+    if (m_subtitleClockResyncTimer)
     {
-        m_subtitleClockResyncTimer->cancel();
+        if (m_subtitleClockResyncTimer->isActive())
+        {
+            m_subtitleClockResyncTimer->cancel();
+        }
         m_subtitleClockResyncTimer.reset();
     }
 }

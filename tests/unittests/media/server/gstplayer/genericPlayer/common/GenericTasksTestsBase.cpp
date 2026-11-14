@@ -2017,6 +2017,32 @@ void GenericTasksTestsBase::shouldAttachSubtitleSource()
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsUnref(&testContext->m_gstCaps2));
 }
 
+void GenericTasksTestsBase::shouldNotAttachSubtitleSourceWhenTextSinkPropertyIsMissing()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsNewEmpty()).WillOnce(Return(&testContext->m_gstCaps2));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsToString(&testContext->m_gstCaps2))
+        .WillOnce(Return(&testContext->m_capsStr));
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_pipeline), StrEq("text-sink")))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*testContext->m_glibWrapper, gFree(&testContext->m_capsStr));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsUnref(&testContext->m_gstCaps2));
+
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceSubtitle>("application/ttml+xml",
+                                                                                kTextTrackIdentifier);
+    firebolt::rialto::server::tasks::generic::AttachSource task{testContext->m_context,
+                                                                testContext->m_gstWrapper,
+                                                                testContext->m_glibWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
+                                                                testContext->m_gstPlayer,
+                                                                source};
+    task.execute();
+
+    EXPECT_TRUE(testContext->m_context.streamInfo.empty());
+    EXPECT_EQ(nullptr, testContext->m_context.subtitleSink);
+}
+
 void GenericTasksTestsBase::triggerAttachSubtitleSource()
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =

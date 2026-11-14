@@ -1000,6 +1000,8 @@ TEST_F(HandleBusMessageTest, shouldStopSubtitleClockResyncTimerOnStateChangedToR
     EXPECT_CALL(m_gstPlayer, stopNotifyPlaybackInfoTimer());
     EXPECT_CALL(m_gstPlayer, stopSubtitleClockResyncTimer());
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
     firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
                                                                     &m_gstPlayerClient, m_gstWrapper,
                                                                     m_glibWrapper,      &m_message,

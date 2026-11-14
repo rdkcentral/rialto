@@ -203,6 +203,7 @@ protected:
     void triggerAttachUnknownSource();
     void checkVideoSourceAttached();
     void shouldAttachSubtitleSource();
+    void shouldNotAttachSubtitleSourceWhenTextSinkPropertyIsMissing();
     void checkSubtitleSourceAttached();
     void triggerAttachSubtitleSource();
     void shouldAttachVideoSourceWithStringCodecData();
