@@ -171,7 +171,7 @@ MediaKeyErrorStatus CdmService::generateRequest(int mediaKeysHandle, int32_t key
     return mediaKeysIter->second->generateRequest(keySessionId, initDataType, initData, ldlState);
 }
 
-MediaKeyErrorStatus CdmService::loadSession(int mediaKeysHandle, int32_t keySessionId)
+MediaKeyErrorStatus CdmService::loadSession(int mediaKeysHandle, int32_t keySessionId, const std::string &cdmKeySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to load session: %d", mediaKeysHandle);
 
@@ -182,7 +182,7 @@ MediaKeyErrorStatus CdmService::loadSession(int mediaKeysHandle, int32_t keySess
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
         return MediaKeyErrorStatus::FAIL;
     }
-    return mediaKeysIter->second->loadSession(keySessionId);
+    return mediaKeysIter->second->loadSession(keySessionId, cdmKeySessionId);
 }
 
 MediaKeyErrorStatus CdmService::updateSession(int mediaKeysHandle, int32_t keySessionId,

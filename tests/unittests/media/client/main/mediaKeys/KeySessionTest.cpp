@@ -44,6 +44,7 @@ protected:
     std::string m_keySystem{"keySystem"};
     int32_t m_kKeySessionId{123};
     MediaKeyErrorStatus m_mediaKeyErrorStatus{MediaKeyErrorStatus::OK};
+    const std::string m_kCdmSessionId{"cdm_session_id"};
 
     RialtoClientMediaKeysKeySessionTest()
         : m_mediaKeysIpcFactoryMock{std::make_shared<StrictMock<MediaKeysIpcFactoryMock>>()},
@@ -94,9 +95,9 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, GenerateRequest)
  */
 TEST_F(RialtoClientMediaKeysKeySessionTest, LoadSession)
 {
-    EXPECT_CALL(*m_mediaKeysIpcMock, loadSession(m_kKeySessionId)).WillOnce(Return(m_mediaKeyErrorStatus));
+    EXPECT_CALL(*m_mediaKeysIpcMock, loadSession(m_kKeySessionId, m_kCdmSessionId)).WillOnce(Return(m_mediaKeyErrorStatus));
 
-    EXPECT_EQ(m_mediaKeys->loadSession(m_kKeySessionId), m_mediaKeyErrorStatus);
+    EXPECT_EQ(m_mediaKeys->loadSession(m_kKeySessionId, m_kCdmSessionId), m_mediaKeyErrorStatus);
 }
 
 /**
