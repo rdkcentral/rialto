@@ -19,11 +19,15 @@ The reference-player CLI SHALL accept `--expect-metric <type>` for `VIDEO_FRAME_
 - **THEN** the CLI reports an argument error and exits unsuccessfully before connecting to Rialto
 
 ### Requirement: Reference-player receives metrics through the public callback
-The reference player SHALL observe playback metric events through `IMediaPipelineClient::notifyMetric` and SHALL NOT treat `notifyQos`, `notifyBufferUnderflow`, or need-data callbacks as substitutes for a metric event.
+The reference player SHALL observe playback metric events through `IMediaPipelineClient::notifyMetric`, print every received metric event with its complete payload, and SHALL NOT treat `notifyQos`, `notifyBufferUnderflow`, or need-data callbacks as substitutes for a metric event.
 
 #### Scenario: Metric callback is delivered
 - **WHEN** Rialto delivers a `MetricEvent` to the active pipeline client
-- **THEN** the reference player records its type and preserves the event for expectation matching
+- **THEN** the reference player records the event for expectation matching and prints its type, phase, source ID, presentation timestamp, count, duration, and observation timestamps; absent optional fields are explicitly shown as absent
+
+#### Scenario: Non-matching metric is received
+- **WHEN** Rialto delivers a metric event whose type does not match the requested expected type
+- **THEN** the reference player still prints the complete event payload, and the event does not satisfy the expected-type check
 
 #### Scenario: Legacy underflow callback occurs without a metric
 - **WHEN** `notifyBufferUnderflow` is called but no `BUFFER_UNDERFLOW` `notifyMetric` event is delivered

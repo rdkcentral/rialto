@@ -1,8 +1,9 @@
 ## Why
-Rialto already forwards structured playback metric events to `IMediaPipelineClient::notifyMetric`, but the reference-player CLI does not currently record or assert those callbacks. There is also no deterministic way for the player test to trigger the four requested metric types through the real server-to-client notification path, making end-to-end coverage unreliable.
+Rialto already forwards structured playback metric events to `IMediaPipelineClient::notifyMetric`. The reference player records those callbacks and can require a metric type, but it does not yet print every received metric event with its complete payload. There is also no deterministic way for the player test to trigger the four requested metric types through the real server-to-client notification path, making end-to-end coverage unreliable.
 
 ## What Changes
 - Add a reference-player CLI expectation for a named playback metric; the run passes only if that metric type is received during the test window.
+- Print every received metric callback with its complete `MetricEvent` payload, including events that do not match the expected type.
 - Add a reference-player fault-stimulus option that manipulates the media it feeds to provoke video frame drop, video decode error, video frame repeat, or buffer underflow in the real pipeline.
 - Require the resulting metric to arrive through normal server processing, IPC, and the `notifyMetric` callback; the player must not fabricate metric callbacks.
 - Preserve the established metric categories, callback shape, and legacy `notifyBufferUnderflow()` behavior.

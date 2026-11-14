@@ -8,6 +8,8 @@
 // the last sample is acknowledged. Counters record pipeline lifetime and feed traffic.
 #pragma once
 
+#include "MediaCommon.h"
+
 #include <algorithm>
 #include <atomic>
 #include <chrono>
@@ -31,6 +33,12 @@ enum class MediaType
     UNKNOWN,
     MSE
 };
+
+inline int64_t mockMonotonicNowNs()
+{
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch())
+        .count();
+}
 
 enum class MediaSourceType
 {
@@ -172,6 +180,7 @@ public:
                                      const std::shared_ptr<MediaPlayerShmInfo> &shmInfo) = 0;
     virtual void notifyCancelNeedMediaData(int32_t sourceId) = 0;
     virtual void notifyQos(int32_t sourceId, const QosInfo &qosInfo) = 0;
+    virtual void notifyMetric(const MetricEvent &metric) = 0;
     virtual void notifyBufferUnderflow(int32_t sourceId) = 0;
     virtual void notifyFirstFrameReceived(int32_t sourceId) = 0;
     virtual void notifyPlaybackError(int32_t sourceId, PlaybackError error) = 0;
@@ -250,6 +259,8 @@ public:
         }
         void setSegmentAlignment(SegmentAlignment alignment) { m_alignment = alignment; }
         uint32_t size() const { return m_size; }
+        int64_t timestampNs() const { return m_timestamp; }
+        const uint8_t *data() const { return m_data; }
 
     protected:
         MediaSegment(int32_t sourceId, int64_t timestamp, int64_t duration)
@@ -335,11 +346,23 @@ struct MockPipelineCounters
 {
     std::atomic<int> livePipelines{0};
     std::atomic<int> segmentsAccepted{0};
+    std::atomic<int64_t> lastSegmentTimestampNs{-1};
+    std::atomic<int64_t> lastSegmentPositionNs{-1};
+    std::atomic<int> lastSegmentSize{0};
+    std::atomic<uint8_t> lastSegmentNalHeader{0};
+    std::atomic<int> invalidNalHeadersAccepted{0};
+    std::atomic<int64_t> playbackStartedAtNs{0};
+    std::atomic<int64_t> lastSegmentAcceptedAtNs{0};
+    std::atomic<bool> playbackActive{false};
     std::atomic<int> eosAcknowledged{0};
     std::atomic<int> stopsIssued{0};
     // Needdata requests the server will still issue; -1 is unlimited. A test sets a small
     // budget to hold the pipeline in PLAYING without reaching EOS.
     std::atomic<int> requestBudget{-1};
+    // Optional one-shot media position notification after the next successful haveData().
+    std::atomic<int64_t> positionAfterNextHaveDataNs{-1};
+    std::atomic<bool> suppressInitialPlayPosition{false};
+    std::atomic<int64_t> reportedPlaybackPositionNs{0};
     // Delay before the server acknowledges stop(), in ms. A real server takes time here, which
     // is the window in which a load() can arrive while the stop is still in progress.
     std::atomic<int> stopDelayMs{0};
@@ -410,16 +433,26 @@ public:
     bool play(bool &async) override
     {
         async = true;
-        post([](IMediaPipelineClient &c) {
+        const bool suppressPosition = g_mockPipelineCounters.suppressInitialPlayPosition;
+        post([suppressPosition](IMediaPipelineClient &c) {
+            g_mockPipelineCounters.playbackActive = true;
+            g_mockPipelineCounters.playbackStartedAtNs = mockMonotonicNowNs();
             c.notifyPlaybackState(PlaybackState::PLAYING);
-            c.notifyPosition(0);
+            if (!suppressPosition)
+            {
+                g_mockPipelineCounters.reportedPlaybackPositionNs = 0;
+                c.notifyPosition(0);
+            }
         });
         return true;
     }
 
     bool pause() override
     {
-        post([](IMediaPipelineClient &c) { c.notifyPlaybackState(PlaybackState::PAUSED); });
+        post([](IMediaPipelineClient &c) {
+            g_mockPipelineCounters.playbackActive = false;
+            c.notifyPlaybackState(PlaybackState::PAUSED);
+        });
         return true;
     }
 
@@ -436,6 +469,7 @@ public:
             {
                 std::this_thread::sleep_for(std::chrono::milliseconds(delayMs));
             }
+            g_mockPipelineCounters.playbackActive = false;
             c.notifyPlaybackState(PlaybackState::STOPPED);
         });
         return true;
@@ -515,6 +549,19 @@ public:
         {
             return AddSegmentStatus::ERROR;
         }
+        g_mockPipelineCounters.lastSegmentTimestampNs = segment->timestampNs();
+        g_mockPipelineCounters.lastSegmentAcceptedAtNs = mockMonotonicNowNs();
+        g_mockPipelineCounters.lastSegmentSize = static_cast<int>(segment->size());
+        if (segment->size() > 4 && segment->data())
+        {
+            const uint8_t nalHeader = segment->data()[4];
+            g_mockPipelineCounters.lastSegmentNalHeader = nalHeader;
+            if ((nalHeader & 0x80) != 0)
+            {
+                ++g_mockPipelineCounters.invalidNalHeadersAccepted;
+            }
+        }
+        g_mockPipelineCounters.lastSegmentPositionNs = g_mockPipelineCounters.reportedPlaybackPositionNs;
         ++g_mockPipelineCounters.segmentsAccepted;
         return AddSegmentStatus::OK;
     }
@@ -543,6 +590,14 @@ public:
         {
             // The server asks again for the source that was just served.
             enqueueLocked([this, sourceId](IMediaPipelineClient &c) { requestData(c, sourceId); });
+            const int64_t positionNs = g_mockPipelineCounters.positionAfterNextHaveDataNs.exchange(-1);
+            if (positionNs >= 0)
+            {
+                enqueueLocked([positionNs](IMediaPipelineClient &c) {
+                    g_mockPipelineCounters.reportedPlaybackPositionNs = positionNs;
+                    c.notifyPosition(positionNs);
+                });
+            }
         }
         return true;
     }

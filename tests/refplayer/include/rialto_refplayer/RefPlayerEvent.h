@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MediaCommon.h>
+
 #include "RefPlayerTypes.h"
 
 #include <cstdint>
@@ -17,7 +19,8 @@ enum class EventType
     Failed,            // playbackFailed         -> description
     BufferingChanged,  // bufferingChanged       -> buffering          (phase 2)
     SpeedsChanged,     // speedsChanged          -> speeds             (phase 2)
-    HttpResponseHeader // httpResponseHeader     -> payload            (phase 3)
+    HttpResponseHeader, // httpResponseHeader     -> payload            (phase 3)
+    MetricReceived      // Rialto playback metric callback (CLI/internal)
 };
 
 // One value type for every event. Only the fields named in the comment above are
@@ -31,6 +34,7 @@ struct Event
     bool buffering{false};
     std::vector<double> speeds;
     std::string headerPayload;
+    firebolt::rialto::MetricEvent metric;
 };
 
 class IRefPlayerClient

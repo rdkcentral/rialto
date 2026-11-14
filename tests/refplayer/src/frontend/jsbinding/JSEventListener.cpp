@@ -270,6 +270,8 @@ JSObjectRef JSEventListener::buildEventObject(const Event &event)
         // AAMP's payload is {header, response}. The library event carries one string.
         setProperty(m_context, object, "header", makeString(m_context, event.headerPayload), kJSPropertyAttributeReadOnly);
         break;
+    case EventType::MetricReceived:
+        break;
     }
     return object;
 }

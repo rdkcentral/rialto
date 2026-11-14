@@ -324,7 +324,7 @@ bool RefPlayer::ensurePipeline()
     }
     const firebolt::rialto::VideoRequirements requirements{options.maxVideoWidth, options.maxVideoHeight};
 
-    auto callbacks = std::make_shared<PipelineCallbacks>(m_state, m_position, m_feeder, m_logger);
+    auto callbacks = std::make_shared<PipelineCallbacks>(m_bus, m_state, m_position, m_feeder, m_logger);
     if (m_session->createPipeline(callbacks, requirements) != Result::Ok)
     {
         return false;
@@ -370,8 +370,13 @@ void RefPlayer::doLoad(const std::string &url, bool autoplay)
         return;
     }
     // The feeder starts before allSourcesAttached(), so the first needData cannot be missed.
+    std::optional<FeederFaultControl> feederFaultControl;
+    {
+        std::lock_guard<std::mutex> lock(m_optionsMutex);
+        feederFaultControl = m_options.feederFaultControl;
+    }
     m_feeder->start(pipeline, m_sources->tracks(), *m_sources->input(), m_sources->videoSourceId(),
-                    m_sources->audioSourceId());
+                    m_sources->audioSourceId(), feederFaultControl);
     m_sessionLoaded = true;
 
     if (!pipeline.allSourcesAttached())

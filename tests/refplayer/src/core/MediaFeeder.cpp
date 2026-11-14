@@ -1,6 +1,7 @@
 #include "MediaFeeder.h"
 
 #include <algorithm>
+#include <chrono>
 #include <vector>
 
 namespace rialto_refplayer
@@ -8,6 +9,55 @@ namespace rialto_refplayer
 
 using firebolt::rialto::AddSegmentStatus;
 using firebolt::rialto::MediaSourceStatus;
+using rialto_refplayer::FeederFaultStimulus;
+
+namespace
+{
+constexpr auto kLateFramePositionWait = std::chrono::seconds{2};
+constexpr auto kPlaybackActiveWait = std::chrono::seconds{2};
+constexpr auto kUnderflowStall = std::chrono::seconds{2};
+
+bool corruptFirstVideoSlice(std::vector<uint8_t> &accessUnit, const std::vector<uint8_t> &codecData)
+{
+    if (codecData.size() < 5 || codecData[0] != 1)
+    {
+        return false;
+    }
+
+    const size_t nalLengthSize = static_cast<size_t>(codecData[4] & 0x03) + 1;
+    size_t offset = 0;
+    while (offset < accessUnit.size())
+    {
+        if (accessUnit.size() - offset < nalLengthSize)
+        {
+            return false;
+        }
+
+        uint32_t nalLength = 0;
+        for (size_t byte = 0; byte < nalLengthSize; ++byte)
+        {
+            nalLength = (nalLength << 8) | accessUnit[offset++];
+        }
+        if (nalLength == 0 || nalLength > accessUnit.size() - offset)
+        {
+            return false;
+        }
+
+        const uint8_t nalType = accessUnit[offset] & 0x1f;
+        if (nalType >= 1 && nalType <= 5)
+        {
+            if ((accessUnit[offset] & 0x80) != 0)
+            {
+                return false;
+            }
+            accessUnit[offset] |= 0x80;
+            return true;
+        }
+        offset += nalLength;
+    }
+    return false;
+}
+} // namespace
 
 MediaFeeder::MediaFeeder(std::shared_ptr<Logger> logger) : m_logger(std::move(logger))
 {
@@ -19,7 +69,8 @@ MediaFeeder::~MediaFeeder()
 }
 
 void MediaFeeder::start(firebolt::rialto::IMediaPipeline &pipeline, const demux::TrackModel &tracks,
-                        std::istream &input, int32_t videoSourceId, int32_t audioSourceId)
+                        std::istream &input, int32_t videoSourceId, int32_t audioSourceId,
+                        std::optional<FeederFaultControl> faultControl)
 {
     stop();
 
@@ -30,10 +81,17 @@ void MediaFeeder::start(firebolt::rialto::IMediaPipeline &pipeline, const demux:
     m_audioSourceId = audioSourceId;
     m_nextVideoSample = 0;
     m_nextAudioSample = 0;
+    m_faultControl = std::move(faultControl);
+    m_playbackPositionNs = 0;
+    m_lateFrameInjected = false;
+    m_decodeErrorInjected = false;
+    m_frameRepeatInjected = false;
+    m_underflowInjected = false;
 
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_queue.clear();
+        m_playbackActive = false;
         m_stop = false;
         m_active = true;
     }
@@ -72,6 +130,24 @@ void MediaFeeder::enqueue(int32_t sourceId, size_t frameCount, uint32_t requestI
         m_queue.push_back(Request{sourceId, frameCount, requestId});
     }
     m_cv.notify_one();
+}
+
+void MediaFeeder::updatePlaybackPositionNs(int64_t positionNs)
+{
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_playbackPositionNs = positionNs;
+    }
+    m_cv.notify_all();
+}
+
+void MediaFeeder::updatePlaybackActive(bool active)
+{
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_playbackActive = active;
+    }
+    m_cv.notify_all();
 }
 
 void MediaFeeder::cancel(int32_t sourceId)
@@ -116,12 +192,37 @@ void MediaFeeder::feedRequest(const Request &request)
     while (sent < request.frameCount && nextSample < track.samples.size())
     {
         const demux::Sample &sample = track.samples[nextSample];
+        if (!isAudio && !waitForLateFrameDeadline(sample, nextSample))
+        {
+            status = MediaSourceStatus::ERROR;
+            break;
+        }
+        if (!isAudio && !waitForFrameRepeatDeadline(sample, nextSample))
+        {
+            status = MediaSourceStatus::ERROR;
+            break;
+        }
+        if (!isAudio && !stallForUnderflow(nextSample))
+        {
+            status = MediaSourceStatus::ERROR;
+            break;
+        }
         std::vector<uint8_t> frame(sample.size);
         m_input->clear();
         m_input->seekg(static_cast<std::streamoff>(sample.offset));
         if (!m_input->read(reinterpret_cast<char *>(frame.data()), static_cast<std::streamsize>(sample.size)))
         {
             m_logger->error(std::string("Failed to read ") + kind + " sample " + std::to_string(nextSample));
+            status = MediaSourceStatus::ERROR;
+            break;
+        }
+        const bool corruptSample = !isAudio && !m_decodeErrorInjected && m_faultControl &&
+                                   m_faultControl->stimulus == FeederFaultStimulus::VideoDecodeError &&
+                                   nextSample == m_faultControl->targetVideoSampleIndex;
+        if (corruptSample && !corruptFirstVideoSlice(frame, track.codecData))
+        {
+            m_logger->error("Cannot inject decode error into video sample " + std::to_string(nextSample) +
+                            ": no valid length-prefixed H.264 slice was found");
             status = MediaSourceStatus::ERROR;
             break;
         }
@@ -167,6 +268,11 @@ void MediaFeeder::feedRequest(const Request &request)
         }
         ++nextSample;
         ++sent;
+        if (corruptSample)
+        {
+            m_decodeErrorInjected = true;
+            m_logger->info("Decode-error stimulus: corrupted video access unit " + std::to_string(nextSample - 1));
+        }
     }
 
     if (status == MediaSourceStatus::OK && nextSample >= track.samples.size())
@@ -177,6 +283,113 @@ void MediaFeeder::feedRequest(const Request &request)
     {
         m_logger->warning("haveData() returned false for request " + std::to_string(request.requestId));
     }
+}
+
+bool MediaFeeder::waitForLateFrameDeadline(const demux::Sample &sample, size_t sampleIndex)
+{
+    if (m_lateFrameInjected || !m_faultControl ||
+        m_faultControl->stimulus != FeederFaultStimulus::VideoFrameDrop ||
+        sampleIndex != m_faultControl->targetVideoSampleIndex)
+    {
+        return true;
+    }
+
+    const int64_t deadlineNs = sample.ptsNs + std::max<int64_t>(sample.durationNs, 0);
+    std::unique_lock<std::mutex> lock(m_mutex);
+    const bool deadlinePassed = m_cv.wait_for(lock, kLateFramePositionWait, [this, deadlineNs] {
+        return m_stop || m_playbackPositionNs.load() > deadlineNs;
+    });
+    if (m_stop)
+    {
+        return false;
+    }
+
+    m_lateFrameInjected = true;
+    if (deadlinePassed)
+    {
+        m_logger->info("Late-frame stimulus: sending video sample " + std::to_string(sampleIndex) +
+                       " after its presentation deadline");
+    }
+    else
+    {
+        m_logger->warning("Late-frame stimulus timed out waiting for playback position; sending video sample " +
+                          std::to_string(sampleIndex) + " unchanged");
+    }
+    return true;
+}
+
+bool MediaFeeder::waitForFrameRepeatDeadline(const demux::Sample &sample, size_t sampleIndex)
+{
+    if (m_frameRepeatInjected || !m_faultControl ||
+        m_faultControl->stimulus != FeederFaultStimulus::VideoFrameRepeat ||
+        sampleIndex != m_faultControl->targetVideoSampleIndex)
+    {
+        return true;
+    }
+    if (sampleIndex == 0)
+    {
+        m_logger->warning("Frame-repeat stimulus needs a preceding video sample; sending sample 0 unchanged");
+        m_frameRepeatInjected = true;
+        return true;
+    }
+
+    std::unique_lock<std::mutex> lock(m_mutex);
+    const bool repeatWindowReached = m_cv.wait_for(lock, kLateFramePositionWait, [this, &sample] {
+        return m_stop || (m_playbackActive && m_playbackPositionNs.load() >= sample.ptsNs);
+    });
+    if (m_stop)
+    {
+        return false;
+    }
+
+    m_frameRepeatInjected = true;
+    if (repeatWindowReached)
+    {
+        m_logger->info("Frame-repeat stimulus: sending video sample " + std::to_string(sampleIndex) +
+                       " after its presentation time");
+    }
+    else
+    {
+        m_logger->warning("Frame-repeat stimulus timed out waiting for active playback; sending video sample " +
+                          std::to_string(sampleIndex) + " unchanged");
+    }
+    return true;
+}
+
+bool MediaFeeder::stallForUnderflow(size_t sampleIndex)
+{
+    if (m_underflowInjected || !m_faultControl ||
+        m_faultControl->stimulus != FeederFaultStimulus::BufferUnderflow ||
+        sampleIndex != m_faultControl->targetVideoSampleIndex)
+    {
+        return true;
+    }
+
+    std::unique_lock<std::mutex> lock(m_mutex);
+    const bool playbackStarted = m_cv.wait_for(lock, kPlaybackActiveWait, [this] {
+        return m_stop || m_playbackActive;
+    });
+    if (m_stop)
+    {
+        return false;
+    }
+    if (!playbackStarted)
+    {
+        m_underflowInjected = true;
+        m_logger->warning("Underflow stimulus timed out waiting for active playback; sending video sample " +
+                          std::to_string(sampleIndex) + " unchanged");
+        return true;
+    }
+
+    const bool stopped = m_cv.wait_for(lock, kUnderflowStall, [this] { return m_stop; });
+    if (stopped)
+    {
+        return false;
+    }
+    m_underflowInjected = true;
+    m_logger->info("Underflow stimulus: paused video delivery for " +
+                   std::to_string(kUnderflowStall.count()) + " seconds during playback");
+    return true;
 }
 
 } // namespace rialto_refplayer

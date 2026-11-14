@@ -260,6 +260,13 @@ void RawProbe::notifyQos(int32_t sourceId, const firebolt::rialto::QosInfo &qosI
            ", dropped=" + std::to_string(qosInfo.dropped));
 }
 
+void RawProbe::notifyMetric(const firebolt::rialto::MetricEvent &metric)
+{
+    cliLog("notifyMetric: type=" + std::to_string(static_cast<uint32_t>(metric.type)) +
+           ", phase=" + std::to_string(static_cast<uint32_t>(metric.phase)) +
+           ", sourceId=" + std::to_string(metric.sourceId));
+}
+
 void RawProbe::notifyBufferUnderflow(int32_t sourceId)
 {
     cliLog("notifyBufferUnderflow: sourceId=" + std::to_string(sourceId));

@@ -17,6 +17,7 @@
 #include <sstream>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 namespace rr = rialto_refplayer;
@@ -82,6 +83,19 @@ public:
         return out;
     }
 
+    std::vector<firebolt::rialto::MetricEvent> metrics()
+    {
+        std::vector<firebolt::rialto::MetricEvent> out;
+        for (const auto &event : snapshot())
+        {
+            if (event.type == rr::EventType::MetricReceived)
+            {
+                out.push_back(event.metric);
+            }
+        }
+        return out;
+    }
+
 private:
     std::mutex m_mutex;
     std::vector<rr::Event> m_events;
@@ -100,7 +114,7 @@ public:
         (void)error;
         model.video.width = 640;
         model.video.height = 360;
-        model.video.codecData = {1, 2, 3};
+        model.video.codecData = {1, 100, 0, 40, 0xff};
         for (int i = 0; i < kSamples; ++i)
         {
             rialto_refplayer::demux::Sample sample;
@@ -133,6 +147,21 @@ rr::RefPlayer::Dependencies fakeDependencies(bool demuxAvailable)
         return std::make_unique<std::istringstream>(std::string(kSamples * kSampleBytes, '\0'));
     };
     return deps;
+}
+
+std::string h264AccessUnitSamples()
+{
+    std::string bytes(kSamples * kSampleBytes, '\x55');
+    for (int sampleIndex = 0; sampleIndex < kSamples; ++sampleIndex)
+    {
+        const size_t offset = static_cast<size_t>(sampleIndex) * kSampleBytes;
+        bytes[offset + 0] = '\0';
+        bytes[offset + 1] = '\0';
+        bytes[offset + 2] = '\0';
+        bytes[offset + 3] = '\x0c';
+        bytes[offset + 4] = '\x65';
+    }
+    return bytes;
 }
 
 rr::Options options()
@@ -174,8 +203,218 @@ void resetMock()
     auto &counters = firebolt::rialto::g_mockPipelineCounters;
     counters.requestBudget = -1;
     counters.segmentsAccepted = 0;
+    counters.lastSegmentTimestampNs = -1;
+    counters.lastSegmentPositionNs = -1;
+    counters.lastSegmentSize = 0;
+    counters.lastSegmentNalHeader = 0;
+    counters.invalidNalHeadersAccepted = 0;
+    counters.playbackStartedAtNs = 0;
+    counters.lastSegmentAcceptedAtNs = 0;
+    counters.playbackActive = false;
     counters.eosAcknowledged = 0;
     counters.stopsIssued = 0;
+    counters.positionAfterNextHaveDataNs = -1;
+    counters.suppressInitialPlayPosition = false;
+    counters.reportedPlaybackPositionNs = 0;
+}
+
+void testMetricCallbacksAreRecordedAcrossThreads()
+{
+    auto bus = std::make_shared<rr::EventBus>();
+    auto logger = std::make_shared<rr::Logger>([](const std::string &) {});
+    auto state = std::make_shared<rr::PlayerStateMachine>(bus, logger);
+    auto position = std::make_shared<rr::PositionTracker>(bus, 20);
+    auto feeder = std::make_shared<rr::MediaFeeder>(logger);
+    rr::PipelineCallbacks callbacks(bus, state, position, feeder, logger);
+    auto recorder = std::make_shared<Recorder>();
+    bus->setClient(recorder);
+
+    constexpr int kThreadCount = 4;
+    constexpr int kMetricsPerThread = 25;
+    std::vector<std::thread> threads;
+    for (int threadIndex = 0; threadIndex < kThreadCount; ++threadIndex)
+    {
+        threads.emplace_back([&callbacks, threadIndex] {
+            firebolt::rialto::MetricEvent metric;
+            metric.type = firebolt::rialto::MetricType::VIDEO_FRAME_REPEAT;
+            metric.phase = firebolt::rialto::MetricPhase::EPISODE_RESOLVED;
+            metric.sourceId = threadIndex;
+            metric.presentationTimeStampNs = 123456789;
+            metric.count = 1;
+            metric.durationNs = 1000000;
+            metric.observedAtMonotonicNs = 987654321;
+            metric.observedAtUnixNs = 1234567890;
+            for (int eventIndex = 0; eventIndex < kMetricsPerThread; ++eventIndex)
+            {
+                callbacks.notifyMetric(metric);
+            }
+        });
+    }
+    for (auto &thread : threads)
+    {
+        thread.join();
+    }
+
+    const auto metrics = recorder->metrics();
+    CHECK(metrics.size() == static_cast<size_t>(kThreadCount * kMetricsPerThread));
+    for (const auto &metric : metrics)
+    {
+        CHECK(metric.type == firebolt::rialto::MetricType::VIDEO_FRAME_REPEAT);
+        CHECK(metric.phase == firebolt::rialto::MetricPhase::EPISODE_RESOLVED);
+        CHECK(metric.sourceId >= 0 && metric.sourceId < kThreadCount);
+        CHECK(metric.presentationTimeStampNs == 123456789);
+        CHECK(metric.count == 1);
+        CHECK(metric.durationNs == 1000000);
+        CHECK(metric.observedAtMonotonicNs == 987654321);
+        CHECK(metric.observedAtUnixNs == 1234567890);
+    }
+
+    callbacks.deactivate();
+    callbacks.notifyMetric(firebolt::rialto::MetricEvent{});
+    CHECK(recorder->metrics().size() == metrics.size());
+}
+
+void testNeedDataAndLegacyUnderflowDoNotCreateMetrics()
+{
+    auto bus = std::make_shared<rr::EventBus>();
+    auto logger = std::make_shared<rr::Logger>([](const std::string &) {});
+    auto state = std::make_shared<rr::PlayerStateMachine>(bus, logger);
+    auto position = std::make_shared<rr::PositionTracker>(bus, 20);
+    auto feeder = std::make_shared<rr::MediaFeeder>(logger);
+    rr::PipelineCallbacks callbacks(bus, state, position, feeder, logger);
+    auto recorder = std::make_shared<Recorder>();
+    bus->setClient(recorder);
+
+    callbacks.notifyNeedMediaData(1, 1, 1, nullptr);
+    callbacks.notifyBufferUnderflow(1);
+    CHECK(recorder->metrics().empty());
+
+    callbacks.deactivate();
+    feeder->stop();
+}
+
+void testDefaultFeederControlPreservesNormalSamples()
+{
+    resetMock();
+    firebolt::rialto::g_mockPipelineCounters.requestBudget = 1;
+
+    rr::RefPlayer player(fakeDependencies(true));
+    auto recorder = std::make_shared<Recorder>();
+    player.setClient(recorder);
+    const rr::Options playerOptions = options();
+    CHECK(!playerOptions.feederFaultControl);
+    CHECK(player.initialize(playerOptions) == Result::Ok);
+    CHECK(player.load("file:///fake/normal.mp4", true) == Result::Ok);
+    CHECK(waitFor([&] { return player.state() == PlayerState::Playing; }));
+    CHECK(waitFor([&] { return firebolt::rialto::g_mockPipelineCounters.segmentsAccepted == 8; }));
+    CHECK(firebolt::rialto::g_mockPipelineCounters.segmentsAccepted == 8);
+
+    CHECK(player.stop() == Result::Ok);
+    CHECK(waitFor([&] { return player.state() == PlayerState::Idle; }));
+    player.destroy();
+}
+
+void testLateFrameStimulusSendsTheDelayedSample()
+{
+    resetMock();
+    firebolt::rialto::g_mockPipelineCounters.requestBudget = 2;
+    firebolt::rialto::g_mockPipelineCounters.positionAfterNextHaveDataNs = 561000000;
+    firebolt::rialto::g_mockPipelineCounters.suppressInitialPlayPosition = true;
+
+    rr::RefPlayer player(fakeDependencies(true));
+    auto recorder = std::make_shared<Recorder>();
+    player.setClient(recorder);
+    rr::Options playerOptions = options();
+    playerOptions.feederFaultControl = rr::FeederFaultControl{rr::FeederFaultStimulus::VideoFrameDrop, 15};
+    CHECK(player.initialize(playerOptions) == Result::Ok);
+    CHECK(player.load("file:///fake/late-frame.mp4", true) == Result::Ok);
+    CHECK(waitFor([&] { return player.state() == PlayerState::Playing; }));
+    CHECK(waitFor([&] { return firebolt::rialto::g_mockPipelineCounters.segmentsAccepted == 16; }));
+    CHECK(firebolt::rialto::g_mockPipelineCounters.lastSegmentTimestampNs == 15 * 33000000LL);
+    CHECK(firebolt::rialto::g_mockPipelineCounters.lastSegmentPositionNs > 16 * 33000000LL);
+
+    CHECK(player.stop() == Result::Ok);
+    CHECK(waitFor([&] { return player.state() == PlayerState::Idle; }));
+    player.destroy();
+}
+
+void testDecodeErrorStimulusCorruptsExactlyOneSubmittedSample()
+{
+    resetMock();
+    firebolt::rialto::g_mockPipelineCounters.requestBudget = 2;
+
+    auto dependencies = fakeDependencies(true);
+    dependencies.source.openStream = [](const std::string &url) -> std::unique_ptr<std::istream> {
+        (void)url;
+        return std::make_unique<std::istringstream>(h264AccessUnitSamples());
+    };
+    rr::RefPlayer player(std::move(dependencies));
+    auto recorder = std::make_shared<Recorder>();
+    player.setClient(recorder);
+    rr::Options playerOptions = options();
+    playerOptions.feederFaultControl = rr::FeederFaultControl{rr::FeederFaultStimulus::VideoDecodeError, 15};
+    CHECK(player.initialize(playerOptions) == Result::Ok);
+    CHECK(player.load("file:///fake/decode-error.mp4", true) == Result::Ok);
+    CHECK(waitFor([&] { return player.state() == PlayerState::Playing; }));
+    CHECK(waitFor([&] { return firebolt::rialto::g_mockPipelineCounters.segmentsAccepted == 16; }));
+    CHECK(firebolt::rialto::g_mockPipelineCounters.lastSegmentTimestampNs == 15 * 33000000LL);
+    CHECK(firebolt::rialto::g_mockPipelineCounters.lastSegmentSize == static_cast<int>(kSampleBytes));
+    CHECK(firebolt::rialto::g_mockPipelineCounters.lastSegmentNalHeader == 0xe5);
+    CHECK(firebolt::rialto::g_mockPipelineCounters.invalidNalHeadersAccepted == 1);
+
+    CHECK(player.stop() == Result::Ok);
+    CHECK(waitFor([&] { return player.state() == PlayerState::Idle; }));
+    player.destroy();
+}
+
+void testFrameRepeatStimulusHoldsNextSampleUntilItsPresentationTime()
+{
+    resetMock();
+    firebolt::rialto::g_mockPipelineCounters.requestBudget = 2;
+    firebolt::rialto::g_mockPipelineCounters.positionAfterNextHaveDataNs = 330000000;
+    firebolt::rialto::g_mockPipelineCounters.suppressInitialPlayPosition = true;
+
+    rr::RefPlayer player(fakeDependencies(true));
+    auto recorder = std::make_shared<Recorder>();
+    player.setClient(recorder);
+    rr::Options playerOptions = options();
+    playerOptions.feederFaultControl = rr::FeederFaultControl{rr::FeederFaultStimulus::VideoFrameRepeat, 8};
+    CHECK(player.initialize(playerOptions) == Result::Ok);
+    CHECK(player.load("file:///fake/frame-repeat.mp4", true) == Result::Ok);
+    CHECK(waitFor([&] { return player.state() == PlayerState::Playing; }));
+    CHECK(waitFor([&] { return firebolt::rialto::g_mockPipelineCounters.segmentsAccepted == 16; }));
+    CHECK(firebolt::rialto::g_mockPipelineCounters.lastSegmentTimestampNs == 15 * 33000000LL);
+    CHECK(firebolt::rialto::g_mockPipelineCounters.lastSegmentPositionNs >= 8 * 33000000LL);
+    CHECK(recorder->metrics().empty());
+
+    CHECK(player.stop() == Result::Ok);
+    CHECK(waitFor([&] { return player.state() == PlayerState::Idle; }));
+    player.destroy();
+}
+
+void testUnderflowStimulusStallsDeliveryDuringPlayback()
+{
+    resetMock();
+    firebolt::rialto::g_mockPipelineCounters.requestBudget = 2;
+
+    rr::RefPlayer player(fakeDependencies(true));
+    auto recorder = std::make_shared<Recorder>();
+    player.setClient(recorder);
+    rr::Options playerOptions = options();
+    playerOptions.feederFaultControl = rr::FeederFaultControl{rr::FeederFaultStimulus::BufferUnderflow, 8};
+    CHECK(player.initialize(playerOptions) == Result::Ok);
+    CHECK(player.load("file:///fake/underflow.mp4", true) == Result::Ok);
+    CHECK(waitFor([&] { return player.state() == PlayerState::Playing; }));
+    CHECK(waitFor([&] { return firebolt::rialto::g_mockPipelineCounters.segmentsAccepted == 16; }));
+    CHECK(firebolt::rialto::g_mockPipelineCounters.playbackActive);
+    CHECK(firebolt::rialto::g_mockPipelineCounters.lastSegmentAcceptedAtNs -
+              firebolt::rialto::g_mockPipelineCounters.playbackStartedAtNs >=
+          1800000000LL);
+    CHECK(recorder->metrics().empty());
+
+    CHECK(player.stop() == Result::Ok);
+    CHECK(waitFor([&] { return player.state() == PlayerState::Idle; }));
+    player.destroy();
 }
 
 // Load, play to PLAYING, pause, seek, resume, stop. Checks the sequence in the design (§4.3, §4.6, §4.7).
@@ -405,6 +644,13 @@ void testRapidLoadStop()
 
 int main()
 {
+    testMetricCallbacksAreRecordedAcrossThreads();
+    testNeedDataAndLegacyUnderflowDoNotCreateMetrics();
+    testDefaultFeederControlPreservesNormalSamples();
+    testLateFrameStimulusSendsTheDelayedSample();
+    testDecodeErrorStimulusCorruptsExactlyOneSubmittedSample();
+    testFrameRepeatStimulusHoldsNextSampleUntilItsPresentationTime();
+    testUnderflowStimulusStallsDeliveryDuringPlayback();
     testPlayPauseSeekStopReleases();
     testEndOfStreamReachesComplete();
     testReloadWithoutStop();

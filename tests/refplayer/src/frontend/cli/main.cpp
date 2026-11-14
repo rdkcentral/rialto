@@ -1,9 +1,11 @@
 #include "CliLog.h"
 #include "ContractValidator.h"
+#include "CliTestSupport.h"
 #include "NegativeChecks.h"
 
 #include "rialto_refplayer/IRefPlayer.h"
 
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <condition_variable>
@@ -19,6 +21,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <vector>
 
 namespace rialto_refplayer_cli
 {
@@ -26,35 +29,11 @@ namespace rialto_refplayer_cli
 namespace
 {
 
-using rialto_refplayer::EventType;
 using rialto_refplayer::PlayerState;
 using rialto_refplayer::Result;
 
-constexpr int64_t kDefaultTimeoutMs = 30000;
 // The negative suite has no per-call timeout of its own, so the whole suite gets one ceiling.
 constexpr std::chrono::minutes kNegativeSuiteCeiling{5};
-
-struct CliOptions
-{
-    std::string url;
-    std::string mimeType{"video/mp4"};
-    bool isLive{false};
-    bool validateCapabilities{true};
-    bool useWebAudio{false};
-    bool enablePlayback{true};
-    bool negativeRuns{false};
-    std::optional<double> desiredVolume;
-    std::optional<int64_t> seekNs;
-    uint32_t priority{1};
-    int64_t timeoutMs{kDefaultTimeoutMs};
-};
-
-enum class ParseStatus
-{
-    Run,
-    Help,
-    Error
-};
 
 struct RunSummary
 {
@@ -63,225 +42,7 @@ struct RunSummary
     int64_t events{0};
 };
 
-void printUsage(std::ostream &out)
-{
-    out << "Usage: rialto_reference_player [options]\n"
-           "  --url <url>                 Media URL; a local file:// .mp4 (H.264) is demuxed and fed over MSE\n"
-           "  --mime <mime>               MIME type for the capability probes (default: video/mp4); phase 1 plays\n"
-           "                              only video/mp4 MP4 files, so playback ignores this value\n"
-           "  --live                      CLI only: do not wait for end of stream after PLAYING\n"
-           "  --web-audio                 Also create an IWebAudioPlayer and validate the PCM API\n"
-           "  --negative-runs             Run negative API checks after contract validation\n"
-           "  --set-volume <v>            Volume in [0.0, 1.0]; set and read back on a probe pipeline\n"
-           "  --seek <ns>                 Seek to a position in nanoseconds; needs --url, not --no-playback\n"
-           "  --priority <n>              Audio player priority (default: 1)\n"
-           "  --no-playback               Validate contract without calling play()\n"
-           "  --no-validate-capabilities  Skip capability tests\n"
-           "  --timeout-ms <ms>           Ceiling for each wait on a player state (default: 30000)\n"
-           "  --help                      Print this help text\n";
-}
-
-ParseStatus argumentError(const std::string &message)
-{
-    std::cerr << "[rialto-ref-player] error: " << message << std::endl;
-    return ParseStatus::Error;
-}
-
-bool parseDouble(const std::string &text, double &value)
-{
-    try
-    {
-        std::size_t used = 0;
-        value = std::stod(text, &used);
-        return used == text.size();
-    }
-    catch (const std::logic_error &)
-    {
-        return false;
-    }
-}
-
-bool parseInt64(const std::string &text, int64_t &value)
-{
-    try
-    {
-        std::size_t used = 0;
-        value = std::stoll(text, &used);
-        return used == text.size();
-    }
-    catch (const std::logic_error &)
-    {
-        return false;
-    }
-}
-
-ParseStatus parseArguments(int argc, char **argv, CliOptions &options)
-{
-    for (int i = 1; i < argc; ++i)
-    {
-        const std::string arg = argv[i];
-        if (arg == "--help")
-        {
-            printUsage(std::cout);
-            return ParseStatus::Help;
-        }
-        if (arg == "--live")
-        {
-            options.isLive = true;
-        }
-        else if (arg == "--no-validate-capabilities")
-        {
-            options.validateCapabilities = false;
-        }
-        else if (arg == "--web-audio")
-        {
-            options.useWebAudio = true;
-        }
-        else if (arg == "--no-playback")
-        {
-            options.enablePlayback = false;
-        }
-        else if (arg == "--negative-runs")
-        {
-            options.negativeRuns = true;
-        }
-        else if (arg == "--url" || arg == "--mime" || arg == "--set-volume" || arg == "--seek" ||
-                 arg == "--priority" || arg == "--timeout-ms")
-        {
-            if (i + 1 >= argc)
-            {
-                return argumentError("missing value for " + arg);
-            }
-            const std::string value = argv[++i];
-            if (arg == "--url")
-            {
-                options.url = value;
-            }
-            else if (arg == "--mime")
-            {
-                options.mimeType = value;
-            }
-            else if (arg == "--set-volume")
-            {
-                double volume = 0.0;
-                if (!parseDouble(value, volume) || !(volume >= 0.0 && volume <= 1.0))
-                {
-                    return argumentError("--set-volume must be a number in [0.0, 1.0]");
-                }
-                options.desiredVolume = volume;
-            }
-            else if (arg == "--seek")
-            {
-                int64_t ns = 0;
-                if (!parseInt64(value, ns) || ns < 0)
-                {
-                    return argumentError("--seek must be a non-negative integer in nanoseconds");
-                }
-                options.seekNs = ns;
-            }
-            else if (arg == "--priority")
-            {
-                int64_t priority = 0;
-                if (!parseInt64(value, priority) || priority < 0 ||
-                    priority > static_cast<int64_t>(std::numeric_limits<uint32_t>::max()))
-                {
-                    return argumentError("--priority must be a non-negative integer");
-                }
-                options.priority = static_cast<uint32_t>(priority);
-            }
-            else
-            {
-                int64_t timeout = 0;
-                if (!parseInt64(value, timeout) || timeout <= 0)
-                {
-                    return argumentError("--timeout-ms must be a positive integer");
-                }
-                options.timeoutMs = timeout;
-            }
-        }
-        else
-        {
-            return argumentError("unknown option " + arg + " (see --help)");
-        }
-    }
-
-    if (options.seekNs && options.url.empty())
-    {
-        return argumentError("--seek needs --url");
-    }
-    if (options.seekNs && !options.enablePlayback)
-    {
-        return argumentError("--seek cannot be combined with --no-playback");
-    }
-    return ParseStatus::Run;
-}
-
-// Receives events on any library thread and lets the driver wait for a state.
-class RecordingClient final : public rialto_refplayer::IRefPlayerClient
-{
-public:
-    enum class Wait
-    {
-        Reached,
-        Failed,
-        TimedOut
-    };
-
-    void onEvent(const rialto_refplayer::Event &event) override
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        ++m_events;
-        if (event.type == EventType::StateChanged)
-        {
-            const auto index = static_cast<std::size_t>(event.state);
-            if (index < m_seen.size())
-            {
-                m_seen[index] = true;
-            }
-            cliLog(std::string("state: ") + rialto_refplayer::toString(event.state));
-        }
-        else if (event.type == EventType::Failed)
-        {
-            m_failed = true;
-            cliLog("playbackFailed: " + event.description);
-        }
-        m_cv.notify_all();
-    }
-
-    // A state counts once it has been seen, so a short clip that passes PLAYING before the
-    // wait starts is still reached. ERROR and a Failed event end the wait early.
-    Wait waitForState(PlayerState target, std::chrono::milliseconds ceiling)
-    {
-        std::unique_lock<std::mutex> lock(m_mutex);
-        m_cv.wait_for(lock, ceiling,
-                      [this, target] { return seen(target) || seen(PlayerState::Error) || m_failed; });
-        if (seen(target))
-        {
-            return Wait::Reached;
-        }
-        return (m_failed || seen(PlayerState::Error)) ? Wait::Failed : Wait::TimedOut;
-    }
-
-    int64_t eventCount() const
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        return m_events;
-    }
-
-private:
-    // Requires m_mutex to be held.
-    bool seen(PlayerState state) const
-    {
-        const auto index = static_cast<std::size_t>(state);
-        return index < m_seen.size() && m_seen[index];
-    }
-
-    mutable std::mutex m_mutex;
-    std::condition_variable m_cv;
-    std::array<bool, 16> m_seen{}; // indexed by PlayerState; the library has 15 states
-    bool m_failed{false};
-    int64_t m_events{0};
-};
+// Argument parsing and the event recorder are implemented in CliTestSupport.
 
 // Runs a call that may block and waits for it with a ceiling. If the call has not returned
 // in time, the process stops with _Exit: the call still holds library state, so unwinding
@@ -322,6 +83,27 @@ bool awaitState(RecordingClient &client, PlayerState target, std::chrono::millis
         break;
     }
     cliLog("Timed out after " + std::to_string(ceiling.count()) + " ms waiting for " + name);
+    return false;
+}
+
+bool awaitMetric(RecordingClient &client, MetricType expected, std::chrono::milliseconds ceiling)
+{
+    switch (client.waitForExpectedMetricOrPlaybackEnd(ceiling))
+    {
+    case RecordingClient::MetricWait::Received:
+        cliLog(std::string("Received expected metric ") + metricTypeName(expected));
+        return true;
+    case RecordingClient::MetricWait::PlaybackEnded:
+        cliLog(std::string("Playback ended without expected metric ") + metricTypeName(expected));
+        return false;
+    case RecordingClient::MetricWait::Failed:
+        cliLog(std::string("Playback failed before expected metric ") + metricTypeName(expected));
+        return false;
+    case RecordingClient::MetricWait::TimedOut:
+        cliLog("Timed out after " + std::to_string(ceiling.count()) + " ms waiting for metric " +
+               metricTypeName(expected));
+        return false;
+    }
     return false;
 }
 
@@ -377,8 +159,13 @@ RunSummary runPlayback(const CliOptions &options)
     // set before initialize() so that no event is lost.
     const auto client = std::make_shared<RecordingClient>();
     player->setClient(client);
+    if (options.expectedMetric)
+    {
+        client->expectMetric(*options.expectedMetric);
+    }
 
-    const rialto_refplayer::Options libraryOptions{};
+    rialto_refplayer::Options libraryOptions{};
+    libraryOptions.feederFaultControl = options.feederFaultControl;
     const Result initResult = runWithCeiling(
         "initialize()", timeout, [player, libraryOptions] { return player->initialize(libraryOptions); });
     logResult("initialize()", initResult);
@@ -422,6 +209,10 @@ RunSummary runPlayback(const CliOptions &options)
     if (ok)
     {
         ok = runContractChecks(options);
+    }
+    if (ok && options.expectedMetric)
+    {
+        ok = awaitMetric(*client, *options.expectedMetric, timeout);
     }
     if (ok && options.enablePlayback && !options.isLive)
     {

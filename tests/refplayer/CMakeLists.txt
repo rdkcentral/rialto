@@ -74,12 +74,13 @@ target_include_directories(RefPlayerCore
 # libRialtoRefPlayer: the only symbol family it exports is createRefPlayer().
 add_library(RialtoRefPlayer SHARED $<TARGET_OBJECTS:RefPlayerCore>)
 set_target_properties(RialtoRefPlayer PROPERTIES OUTPUT_NAME RialtoRefPlayer)
-target_include_directories(RialtoRefPlayer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(RialtoRefPlayer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${RIALTO_API_INCLUDE_DIR})
 target_link_libraries(RialtoRefPlayer PRIVATE Threads::Threads ${RIALTO_CLIENT_LIB})
 
 # CLI: a debugging aid that runs outside a browser. It is not the acceptance gate.
 add_executable(rialto_reference_player
     src/frontend/cli/main.cpp
+    src/frontend/cli/CliTestSupport.cpp
     src/frontend/cli/ContractValidator.cpp
     src/frontend/cli/NegativeChecks.cpp
 )
@@ -120,6 +121,12 @@ if(REFERENCE_PLAYER_BUILD_TESTS)
         ${CMAKE_CURRENT_SOURCE_DIR}/src/core ${CMAKE_CURRENT_SOURCE_DIR}/src/demux ${RIALTO_API_INCLUDE_DIR})
     target_link_libraries(refplayer_host_test PRIVATE RefPlayerCore Threads::Threads)
     add_test(NAME refplayer_host_test COMMAND refplayer_host_test)
+
+    add_executable(refplayer_cli_test test/unit/CliTest.cpp src/frontend/cli/CliTestSupport.cpp)
+    target_include_directories(refplayer_cli_test PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src/frontend/cli ${RIALTO_API_INCLUDE_DIR})
+    target_link_libraries(refplayer_cli_test PRIVATE Threads::Threads)
+    add_test(NAME refplayer_cli_test COMMAND refplayer_cli_test)
 endif()
 
 install(TARGETS rialto_reference_player RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

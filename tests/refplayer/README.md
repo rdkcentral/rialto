@@ -88,8 +88,11 @@ Its format is a consumed interface for the test app's tune-time panel. Change it
 
 `rialto_reference_player` drives the library through the public API, with bounded waits, and runs the probe checks and the negative suite. It is a debugging aid, not the acceptance gate.
 
+For per-scenario stimulus details and expected metric behavior, see the [fault-injection guide](guide_to_faultinjection.md).
+
 ```bash
 rialto_reference_player --url file:///media/clip.mp4 --set-volume 0.5 --seek 2000000000
+rialto_reference_player --url file:///media/clip.mp4 --inject-fault VIDEO_FRAME_REPEAT --expect-metric VIDEO_FRAME_REPEAT
 rialto_reference_player --negative-runs            # contract checks only, no player
 ```
 
@@ -102,6 +105,8 @@ rialto_reference_player --negative-runs            # contract checks only, no pl
 | `--negative-runs` | off | Run the negative API suite after the contract checks. Real client only; logs a skip in mock mode |
 | `--set-volume <v>` | unset | Volume in `[0.0, 1.0]`. Set and read back on a probe pipeline; the player's own `setVolume` is NotSupported in phase 1. Without it, 0.7 is used on the probe |
 | `--seek <ns>` | unset | Seek to a position in nanoseconds. Needs `--url`; cannot be combined with `--no-playback` |
+| `--expect-metric <type>` | unset | Require a matching metric callback during playback. Used with `--url` |
+| `--inject-fault <type>` | unset | Apply a bounded feeder stimulus during active playback. Requires `--url`, `--expect-metric`, and playback enabled. Supported types: `VIDEO_FRAME_DROP`, `VIDEO_DECODE_ERROR`, `VIDEO_FRAME_REPEAT`, `BUFFER_UNDERFLOW` |
 | `--priority <n>` | `1` | Audio player priority, used with `--web-audio` |
 | `--no-playback` | off | Stop at PREPARED instead of PLAYING; no play() |
 | `--no-validate-capabilities` | off | Skip the capability probe |
@@ -109,6 +114,18 @@ rialto_reference_player --negative-runs            # contract checks only, no pl
 | `--help` | | Print usage |
 
 Exit status is 0 when every step passes and 1 otherwise, including bad arguments and timeouts. A library call that does not return within its ceiling prints a line and exits with status 1 without unwinding, because the stalled call still holds library state.
+
+Fault stimuli alter media delivery but do not fabricate metric events. They do not guarantee that the target decoder/renderer or Rialto server supports or reports the requested metric; the CLI succeeds only when the requested `--expect-metric` callback is actually received. A deliberately mismatched expected type is accepted as a negative test and fails if that type is not emitted.
+
+### Real-target metric runs
+
+After starting the Rialto server and activating the `RefPlayer` application as described above, set `RIALTO_SOCKET_PATH` and run the integration helper with a target-qualified H.264 MP4 containing at least 16 video samples:
+
+```bash
+sh ./tests/refplayer/run_fault_metric_tests.sh file:///media/metric-test.mp4
+```
+
+The helper runs the four matching `--inject-fault` / `--expect-metric` pairs against the real client and server, prints each CLI callback payload, continues after individual failures, and exits nonzero if any expected callback is absent. Set `RIALTO_REFERENCE_PLAYER` to use a non-default binary path and `REFPLAYER_METRIC_TIMEOUT_MS` to override the per-run metric wait. Target support remains platform-dependent; a stimulus alone does not establish that the metric was emitted.
 
 ## Negative checks
 

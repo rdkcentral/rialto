@@ -1,6 +1,6 @@
 ## ADDED Requirements
 ### Requirement: Reference player creates controlled pipeline fault stimuli
-The reference-player CLI SHALL accept `--inject-fault <type>` for `VIDEO_FRAME_DROP`, `VIDEO_DECODE_ERROR`, `VIDEO_FRAME_REPEAT`, or `BUFFER_UNDERFLOW` during active playback. It SHALL create the stimulus by modifying media-feed timing or one encoded access unit, not by fabricating a `MetricEvent` or directly invoking `notifyMetric`. The run SHALL use `--expect-metric <type>` to determine whether the real pipeline emitted the corresponding metric.
+The reference-player CLI SHALL accept `--inject-fault <type>` for `VIDEO_FRAME_DROP`, `VIDEO_DECODE_ERROR`, `VIDEO_FRAME_REPEAT`, or `BUFFER_UNDERFLOW` during active playback. It SHALL require a media URL, playback enabled, and `--expect-metric <type>`. It SHALL create the stimulus by modifying media-feed timing or one encoded access unit, not by fabricating a `MetricEvent` or directly invoking `notifyMetric`. The run SHALL use `--expect-metric <type>` to determine whether the real pipeline emitted the corresponding metric; a mismatched expected type is permitted and SHALL fail unless that expected event is received.
 
 #### Scenario: Stimulate a presentation-deadline drop
 - **WHEN** the player injects `VIDEO_FRAME_DROP`
@@ -12,7 +12,7 @@ The reference-player CLI SHALL accept `--inject-fault <type>` for `VIDEO_FRAME_D
 
 #### Scenario: Stimulate a renderer repeat
 - **WHEN** the player injects `VIDEO_FRAME_REPEAT`
-- **THEN** it stalls delivery of the next video sample while the preceding frame is available, without treating structured cadence such as 3:2 or 2:2 as a fault
+- **THEN** it stalls delivery of the next video sample while the preceding frame is available, without treating structured cadence such as 3:2 or 2:2 as a fault; validation requires at least one `VIDEO_FRAME_REPEAT` metric and does not assume callback count, phase, or `count` value
 
 #### Scenario: Stimulate decoder input starvation
 - **WHEN** the player injects `BUFFER_UNDERFLOW` during active playback
@@ -31,7 +31,7 @@ The server-side producer SHALL decide whether a real pipeline condition qualifie
 
 #### Scenario: Pipeline reports a qualifying fault
 - **WHEN** the decoder or renderer detects and reports a qualifying fault after a player stimulus
-- **THEN** Rialto validates and forwards the event through the existing IPC path to `IMediaPipelineClient::notifyMetric`
+- **THEN** Rialto validates and forwards the event through the existing IPC path to `IMediaPipelineClient::notifyMetric`, and the reference player prints the complete received metric payload
 
 #### Scenario: Stimulus resembles an excluded frame removal
 - **WHEN** a video sample is removed by seek, source flush, EOS cleanup, or source reconfiguration

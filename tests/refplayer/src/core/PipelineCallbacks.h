@@ -1,5 +1,6 @@
 #pragma once
 
+#include "EventBus.h"
 #include "Logger.h"
 #include "MediaFeeder.h"
 #include "PlayerStateMachine.h"
@@ -21,8 +22,9 @@ namespace rialto_refplayer
 class PipelineCallbacks final : public firebolt::rialto::IMediaPipelineClient
 {
 public:
-    PipelineCallbacks(std::shared_ptr<PlayerStateMachine> state, std::shared_ptr<PositionTracker> position,
-                      std::shared_ptr<MediaFeeder> feeder, std::shared_ptr<Logger> logger);
+    PipelineCallbacks(std::shared_ptr<EventBus> bus, std::shared_ptr<PlayerStateMachine> state,
+                      std::shared_ptr<PositionTracker> position, std::shared_ptr<MediaFeeder> feeder,
+                      std::shared_ptr<Logger> logger);
 
     // Stops forwarding. Safe from any thread.
     void deactivate();
@@ -41,6 +43,7 @@ public:
                              const std::shared_ptr<firebolt::rialto::MediaPlayerShmInfo> &shmInfo) override;
     void notifyCancelNeedMediaData(int32_t sourceId) override;
     void notifyQos(int32_t sourceId, const firebolt::rialto::QosInfo &qosInfo) override;
+    void notifyMetric(const firebolt::rialto::MetricEvent &metric) override;
     void notifyBufferUnderflow(int32_t sourceId) override;
     void notifyFirstFrameReceived(int32_t sourceId) override;
     void notifyPlaybackError(int32_t sourceId, firebolt::rialto::PlaybackError error) override;
@@ -48,6 +51,7 @@ public:
     void notifyPlaybackInfo(const firebolt::rialto::PlaybackInfo &playbackInfo) override;
 
 private:
+    std::shared_ptr<EventBus> m_bus;
     std::shared_ptr<PlayerStateMachine> m_state;
     std::shared_ptr<PositionTracker> m_position;
     std::shared_ptr<MediaFeeder> m_feeder;

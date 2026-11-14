@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <string>
 
 namespace rialto_refplayer
@@ -38,6 +39,20 @@ enum class Result
     ApplicationNotRunning
 };
 
+enum class FeederFaultStimulus : uint8_t
+{
+    VideoFrameDrop,
+    VideoDecodeError,
+    VideoFrameRepeat,
+    BufferUnderflow
+};
+
+struct FeederFaultControl
+{
+    FeederFaultStimulus stimulus;
+    uint32_t targetVideoSampleIndex{0};
+};
+
 struct Options
 {
     // Progress throttle. The glue converts AAMP's progressReportingInterval (seconds).
@@ -55,6 +70,9 @@ struct Options
 
     // Debug-level library logs (per-sample and per-callback detail).
     bool verboseLogging{false};
+
+    // One opt-in feeder fault control. The default leaves sample delivery unchanged.
+    std::optional<FeederFaultControl> feederFaultControl;
 };
 
 inline const char *toString(PlayerState state)

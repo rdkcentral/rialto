@@ -17,11 +17,11 @@ int64_t steadyNowNs()
 
 } // namespace
 
-PipelineCallbacks::PipelineCallbacks(std::shared_ptr<PlayerStateMachine> state,
-                                     std::shared_ptr<PositionTracker> position, std::shared_ptr<MediaFeeder> feeder,
-                                     std::shared_ptr<Logger> logger)
-    : m_state(std::move(state)), m_position(std::move(position)), m_feeder(std::move(feeder)),
-      m_logger(std::move(logger))
+PipelineCallbacks::PipelineCallbacks(std::shared_ptr<EventBus> bus, std::shared_ptr<PlayerStateMachine> state,
+                                                                         std::shared_ptr<PositionTracker> position, std::shared_ptr<MediaFeeder> feeder,
+                                                                         std::shared_ptr<Logger> logger)
+        : m_bus(std::move(bus)), m_state(std::move(state)), m_position(std::move(position)), m_feeder(std::move(feeder)),
+            m_logger(std::move(logger))
 {
 }
 
@@ -53,6 +53,7 @@ void PipelineCallbacks::notifyPosition(int64_t position)
         return;
     }
     m_position->onPosition(position);
+    m_feeder->updatePlaybackPositionNs(position);
 }
 
 void PipelineCallbacks::notifyNativeSize(uint32_t width, uint32_t height, double aspect)
@@ -78,6 +79,7 @@ void PipelineCallbacks::notifyPlaybackState(firebolt::rialto::PlaybackState stat
         return;
     }
     m_logger->debug("notifyPlaybackState: " + toString(state));
+    m_feeder->updatePlaybackActive(state == firebolt::rialto::PlaybackState::PLAYING);
     m_state->onPlaybackState(state);
 }
 
@@ -115,6 +117,18 @@ void PipelineCallbacks::notifyQos(int32_t sourceId, const firebolt::rialto::QosI
 {
     m_logger->debug("notifyQos: sourceId=" + std::to_string(sourceId) + ", processed=" +
                     std::to_string(qosInfo.processed) + ", dropped=" + std::to_string(qosInfo.dropped));
+}
+
+void PipelineCallbacks::notifyMetric(const firebolt::rialto::MetricEvent &metric)
+{
+    if (!m_active)
+    {
+        return;
+    }
+    Event event;
+    event.type = EventType::MetricReceived;
+    event.metric = metric;
+    m_bus->publish(event);
 }
 
 void PipelineCallbacks::notifyBufferUnderflow(int32_t sourceId)

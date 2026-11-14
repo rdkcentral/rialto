@@ -56,6 +56,7 @@ public:
                              const std::shared_ptr<firebolt::rialto::MediaPlayerShmInfo> &shmInfo) override;
     void notifyCancelNeedMediaData(int32_t sourceId) override;
     void notifyQos(int32_t sourceId, const firebolt::rialto::QosInfo &qosInfo) override;
+    void notifyMetric(const firebolt::rialto::MetricEvent &metric) override;
     void notifyBufferUnderflow(int32_t sourceId) override;
     void notifyFirstFrameReceived(int32_t sourceId) override;
     void notifyPlaybackError(int32_t sourceId, firebolt::rialto::PlaybackError error) override;

@@ -26,6 +26,9 @@ set_property(
 target_link_libraries(
         RialtoMetrics
 
+        PUBLIC
+        RialtoPlayerPublic
+
         PRIVATE
         PkgConfig::RialtoMetricsGStreamer
         protobuf::libprotobuf
