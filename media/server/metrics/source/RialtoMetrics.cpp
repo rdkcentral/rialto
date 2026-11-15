@@ -108,6 +108,50 @@ std::int64_t getUnixTimestampNs()
 }
 } // namespace
 
+MetricType firebolt::rialto::server::convertMetricType(std::uint32_t metric)
+{
+	switch (metric)
+	{
+		case 1U:
+			return MetricType::VIDEO_FRAME_DROP;
+		case 2U:
+			return MetricType::AUDIO_FRAME_DROP;
+		case 3U:
+			return MetricType::VIDEO_DECODE_ERROR;
+		case 4U:
+			return MetricType::AUDIO_DECODE_ERROR;
+		case 5U:
+			return MetricType::VIDEO_FRAME_REPEAT;
+		case 6U:
+			return MetricType::AUDIO_GAP;
+		case 7U:
+			return MetricType::BUFFER_UNDERFLOW;
+		default:
+			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER,
+					"convertMetricType: unhandled southbound metric value %u, defaulting to VIDEO_FRAME_DROP",
+					metric);
+			return MetricType::VIDEO_FRAME_DROP;
+	}
+}
+
+MetricPhase firebolt::rialto::server::convertObservationKind(std::uint32_t observationKind)
+{
+	switch (observationKind)
+	{
+		case 1U:
+			return MetricPhase::OCCURRENCE;
+		case 2U:
+			return MetricPhase::EPISODE_STARTED;
+		case 3U:
+			return MetricPhase::EPISODE_RESOLVED;
+		default:
+			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER,
+					"convertObservationKind: unhandled southbound observation-kind value %u, defaulting to OCCURRENCE",
+					observationKind);
+			return MetricPhase::OCCURRENCE;
+	}
+}
+
 RialtoMetrics::RialtoMetrics() : m_elementToSourceMapper(std::make_unique<ElementToSourceMapperImpl>())
 {
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics created");
@@ -317,8 +361,10 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, MetricEvent& 
 		return GST_FLOW_ERROR;
 	}
 
-	out.type = static_cast<MetricType>(metricVal);
-	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: metric field validation passed with value %u", metricVal);
+	out.type = convertMetricType(metricVal);
+	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
+					"ValidateMediaPipelineMetric: southbound metric %u translated to MetricType=%u",
+					metricVal, static_cast<unsigned int>(out.type));
 
 	// Validate 'observation-kind' field - required, must be G_TYPE_UINT, value in {1, 2, 3}
 	if (!gst_structure_has_field(msg, "observation-kind"))
@@ -348,8 +394,10 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, MetricEvent& 
 		return GST_FLOW_ERROR;
 	}
 
-	out.phase = static_cast<MetricPhase>(observationKindVal);
-	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: observation-kind field validation passed with value %u", observationKindVal);
+	out.phase = convertObservationKind(observationKindVal);
+	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
+					"ValidateMediaPipelineMetric: southbound observation-kind %u translated to MetricPhase=%u",
+					observationKindVal, static_cast<unsigned int>(out.phase));
 
 	// Validate 'pts-ns' field - optional, when present must be G_TYPE_INT64
 	if (gst_structure_has_field(msg, "pts-ns"))
