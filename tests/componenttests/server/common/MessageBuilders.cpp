@@ -49,6 +49,7 @@ namespace firebolt::rialto::server::ct
     request.set_socketpermissions(kDefaultPermissions);
     request.set_socketowner(kOwnerName);
     request.set_socketgroup(kOwnerName);
+    request.set_appname("componenttests");
     *(request.mutable_loglevels()) = logLevels;
 
     return request;
@@ -427,11 +428,13 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
-::firebolt::rialto::CreateKeySessionRequest createCreateKeySessionRequest(int mediaKeysHandle)
+::firebolt::rialto::CreateKeySessionRequest
+createCreateKeySessionRequest(int mediaKeysHandle,
+                              ::firebolt::rialto::CreateKeySessionRequest_KeySessionType keySessionType)
 {
     ::firebolt::rialto::CreateKeySessionRequest request;
     request.set_media_keys_handle(mediaKeysHandle);
-    request.set_session_type(::firebolt::rialto::CreateKeySessionRequest_KeySessionType_TEMPORARY);
+    request.set_session_type(keySessionType);
     request.set_is_ldl(false);
     return request;
 }
@@ -489,11 +492,13 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
-::firebolt::rialto::LoadSessionRequest createLoadSessionRequest(int mediaKeysHandle, int keySessionId)
+::firebolt::rialto::LoadSessionRequest createLoadSessionRequest(int mediaKeysHandle, int keySessionId,
+                                                                const std::string &cdmSessionId)
 {
     ::firebolt::rialto::LoadSessionRequest request;
     request.set_media_keys_handle(mediaKeysHandle);
     request.set_key_session_id(keySessionId);
+    request.set_cdm_key_session_id(cdmSessionId);
     return request;
 }
 

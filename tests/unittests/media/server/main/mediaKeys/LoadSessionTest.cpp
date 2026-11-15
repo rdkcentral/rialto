@@ -19,6 +19,11 @@
 
 #include "MediaKeysTestBase.h"
 
+namespace
+{
+const std::string kCdmSessionId{"session_id_test"};
+} // namespace
+
 class RialtoServerMediaKeysLoadSessionTest : public MediaKeysTestBase
 {
 protected:
@@ -36,9 +41,9 @@ protected:
 TEST_F(RialtoServerMediaKeysLoadSessionTest, Success)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mediaKeySessionMock, loadSession()).WillOnce(Return(MediaKeyErrorStatus::OK));
+    EXPECT_CALL(*m_mediaKeySessionMock, loadSession(kCdmSessionId)).WillOnce(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->loadSession(m_kKeySessionId));
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->loadSession(m_kKeySessionId, kCdmSessionId));
 }
 
 /**
@@ -47,7 +52,7 @@ TEST_F(RialtoServerMediaKeysLoadSessionTest, Success)
 TEST_F(RialtoServerMediaKeysLoadSessionTest, SessionDoesNotExistFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID, m_mediaKeys->loadSession(m_kKeySessionId + 1));
+    EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID, m_mediaKeys->loadSession(m_kKeySessionId + 1, kCdmSessionId));
 }
 
 /**
@@ -56,7 +61,7 @@ TEST_F(RialtoServerMediaKeysLoadSessionTest, SessionDoesNotExistFailure)
 TEST_F(RialtoServerMediaKeysLoadSessionTest, SessionFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mediaKeySessionMock, loadSession()).WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
+    EXPECT_CALL(*m_mediaKeySessionMock, loadSession(kCdmSessionId)).WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
 
-    EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeys->loadSession(m_kKeySessionId));
+    EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeys->loadSession(m_kKeySessionId, kCdmSessionId));
 }
