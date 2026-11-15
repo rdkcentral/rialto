@@ -466,7 +466,7 @@ MediaKeyErrorStatus MediaKeysIpc::generateRequest(int32_t keySessionId, InitData
     return getMediaKeyErrorStatusFromResponse("generateRequest", ipcController, response.error_status());
 }
 
-MediaKeyErrorStatus MediaKeysIpc::loadSession(int32_t keySessionId)
+MediaKeyErrorStatus MediaKeysIpc::loadSession(int32_t keySessionId, const std::string &cdmKeySessionId)
 {
     if (!reattachChannelIfRequired())
     {
@@ -477,6 +477,7 @@ MediaKeyErrorStatus MediaKeysIpc::loadSession(int32_t keySessionId)
     firebolt::rialto::LoadSessionRequest request;
     request.set_media_keys_handle(m_mediaKeysHandle);
     request.set_key_session_id(keySessionId);
+    request.set_cdm_key_session_id(cdmKeySessionId);
 
     firebolt::rialto::LoadSessionResponse response;
     // Default error status to FAIL
