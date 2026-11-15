@@ -69,3 +69,34 @@ TEST_F(RialtoClientMediaPipelineGetStatsTest, GetStatsFailure)
     EXPECT_CALL(*m_mediaPipelineIpcMock, getStats(m_kSourceId, _, _)).WillOnce(Return(false));
     EXPECT_FALSE(m_mediaPipeline->getStats(m_kSourceId, renderedFrames, droppedFrames));
 }
+
+TEST_F(RialtoClientMediaPipelineGetStatsTest, GetFrameCountersSuccess)
+{
+    uint64_t renderedFrames{0}, droppedFrames{0}, corruptedFrames{0}, timestamp{0};
+    EXPECT_CALL(*m_mediaPipelineIpcMock, getFrameCounters(m_kSourceId, _, _, _, _))
+        .WillOnce(Invoke(
+            [](int32_t, uint64_t &rendered, uint64_t &dropped, uint64_t &corrupted, uint64_t &time)
+            {
+                rendered = 1234;
+                dropped = 5;
+                corrupted = 2;
+                time = 9876543210ULL;
+                return true;
+            }));
+    EXPECT_TRUE(m_mediaPipeline->getFrameCounters(m_kSourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp));
+    EXPECT_EQ(renderedFrames, 1234u);
+    EXPECT_EQ(droppedFrames, 5u);
+    EXPECT_EQ(corruptedFrames, 2u);
+    EXPECT_EQ(timestamp, 9876543210ULL);
+}
+
+TEST_F(RialtoClientMediaPipelineGetStatsTest, GetFrameCountersFailure)
+{
+    uint64_t renderedFrames{1234}, droppedFrames{5}, corruptedFrames{2}, timestamp{9876543210ULL};
+    EXPECT_CALL(*m_mediaPipelineIpcMock, getFrameCounters(m_kSourceId, _, _, _, _)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->getFrameCounters(m_kSourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp));
+    EXPECT_EQ(renderedFrames, 1234u);
+    EXPECT_EQ(droppedFrames, 5u);
+    EXPECT_EQ(corruptedFrames, 2u);
+    EXPECT_EQ(timestamp, 9876543210ULL);
+}

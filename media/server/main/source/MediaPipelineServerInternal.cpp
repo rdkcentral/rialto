@@ -559,6 +559,12 @@ bool MediaPipelineServerInternal::getStatsInternal(int32_t sourceId, uint64_t &r
     return m_gstPlayer->getStats(sourceIter->first, renderedFrames, droppedFrames);
 }
 
+bool MediaPipelineServerInternal::getFrameCounters(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
+                                                    uint64_t &corruptedFrames, uint64_t &timestamp)
+{
+    return getFrameCounters(m_sessionId, sourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp);
+}
+
 bool MediaPipelineServerInternal::getFrameCounters(int32_t sessionId, int32_t sourceId, uint64_t &renderedFrames,
                                                     uint64_t &droppedFrames, uint64_t &corruptedFrames,
                                                     uint64_t &timestamp)

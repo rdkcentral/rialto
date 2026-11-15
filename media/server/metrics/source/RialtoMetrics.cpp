@@ -108,7 +108,7 @@ std::int64_t getUnixTimestampNs()
 }
 } // namespace
 
-MetricType firebolt::rialto::server::convertMetricType(std::uint32_t metric)
+MetricType convertMetricType(std::uint32_t metric)
 {
 	switch (metric)
 	{
@@ -134,7 +134,7 @@ MetricType firebolt::rialto::server::convertMetricType(std::uint32_t metric)
 	}
 }
 
-MetricPhase firebolt::rialto::server::convertObservationKind(std::uint32_t observationKind)
+MetricPhase convertObservationKind(std::uint32_t observationKind)
 {
 	switch (observationKind)
 	{
@@ -224,7 +224,8 @@ std::optional<MetricEvent> RialtoMetrics::onMetricMessage(
 	int32_t sessionId = 0;
 	uint32_t mappedSessionId = 0;
 	uint32_t mappedSourceId = 0;
-	GstElement* sourceElement = GST_MESSAGE_SRC(message);
+	GstObject* sourceObject = GST_MESSAGE_SRC(message);
+	GstElement* sourceElement = GST_IS_ELEMENT(sourceObject) ? GST_ELEMENT(sourceObject) : nullptr;
 	if (sourceElement && m_elementToSourceMapper &&
 	    m_elementToSourceMapper->MapElement(sourceElement, mappedSessionId, mappedSourceId))
 	{
@@ -413,7 +414,7 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, MetricEvent& 
 
 		gint64 ptsNsVal = g_value_get_int64(ptsNsValue);
 		out.presentationTimeStampNs = ptsNsVal;
-		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: pts-ns field validation passed with value %ld", ptsNsVal);
+		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: pts-ns field validation passed with value %" G_GINT64_FORMAT, ptsNsVal);
 	}
 
 	// Validate 'duration-ns' field - optional, when present must be G_TYPE_UINT64 and non-negative
@@ -493,7 +494,8 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, MetricEvent& 
 	// Enrichment: Extract source element from GstMessage and map to session_id (log only) and source_id
 	if (gstMessage && mapper)
 	{
-		GstElement* sourceElement = GST_MESSAGE_SRC(gstMessage);
+		GstObject* sourceObject = GST_MESSAGE_SRC(gstMessage);
+		GstElement* sourceElement = GST_IS_ELEMENT(sourceObject) ? GST_ELEMENT(sourceObject) : nullptr;
 		if (sourceElement)
 		{
 			uint32_t enrichedSessionId = 0;
