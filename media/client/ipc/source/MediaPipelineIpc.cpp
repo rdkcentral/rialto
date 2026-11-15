@@ -687,6 +687,8 @@ bool MediaPipelineIpc::setMetricSubscription(const std::vector<MetricType> &type
 
     return response.result();
 }
+
+bool MediaPipelineIpc::getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
 {
     if (!reattachChannelIfRequired())
     {

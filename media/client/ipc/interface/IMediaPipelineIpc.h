@@ -27,6 +27,8 @@
 #include <vector>
 
 #include "MediaCommon.h"
+#include "IMediaPipeline.h"
+#include "IMediaPipelineIpcClient.h"
 
 namespace firebolt::rialto::client
 {

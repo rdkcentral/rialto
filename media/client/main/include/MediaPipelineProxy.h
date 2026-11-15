@@ -90,6 +90,12 @@ public:
         return m_mediaPipeline->getStats(sourceId, renderedFrames, droppedFrames);
     }
 
+    bool getFrameCounters(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
+                          uint64_t &corruptedFrames, uint64_t &timestamp) override
+    {
+        return m_mediaPipeline->getFrameCounters(sourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp);
+    }
+
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override
     {
         return m_mediaPipeline->setVideoWindow(x, y, width, height);

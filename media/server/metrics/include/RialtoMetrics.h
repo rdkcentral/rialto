@@ -14,6 +14,7 @@ MetricPhase convertObservationKind(std::uint32_t observationKind);
 class RialtoMetrics final : public IRialtoMetrics
 {
 public:
+    RialtoMetrics();
     ~RialtoMetrics() override;
     void setSessionId(int32_t sessionId) override;
     std::optional<MetricEvent> onMetricMessage(
