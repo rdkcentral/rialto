@@ -346,6 +346,12 @@ bool MediaPipeline::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_
     return m_mediaPipelineIpc->getStats(sourceId, renderedFrames, droppedFrames);
 }
 
+bool MediaPipeline::getFrameCounters(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
+                                      uint64_t &corruptedFrames, uint64_t &timestamp)
+{
+    return m_mediaPipelineIpc->getFrameCounters(sourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp);
+}
+
 bool MediaPipeline::handleSetPosition(int64_t position)
 {
     // needData requests no longer valid
