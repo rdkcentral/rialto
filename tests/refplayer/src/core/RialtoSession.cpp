@@ -58,7 +58,8 @@ Result RialtoSession::connect()
 
     if (!m_controlClient)
     {
-        m_controlClient = std::make_shared<ControlCallbacks>(m_onAppState);
+        m_controlClient = std::make_shared<ControlCallbacks>(
+            [this](firebolt::rialto::ApplicationState state) { onControlState(state); });
     }
 
     firebolt::rialto::ApplicationState appState = firebolt::rialto::ApplicationState::UNKNOWN;
@@ -68,6 +69,14 @@ Result RialtoSession::connect()
         return Result::RialtoError;
     }
 
+    if (appState == firebolt::rialto::ApplicationState::UNKNOWN)
+    {
+        std::unique_lock<std::mutex> lock(m_stateMutex);
+        m_stateCv.wait_for(lock, kStateTimeout,
+                           [this] { return m_appState != firebolt::rialto::ApplicationState::UNKNOWN; });
+        appState = m_appState;
+    }
+
     m_logger->info("Registered control client; application state = " + toString(appState));
     if (appState != firebolt::rialto::ApplicationState::RUNNING)
     {
@@ -75,6 +84,19 @@ Result RialtoSession::connect()
         return Result::ApplicationNotRunning;
     }
     return Result::Ok;
+}
+
+void RialtoSession::onControlState(firebolt::rialto::ApplicationState state)
+{
+    {
+        std::lock_guard<std::mutex> lock(m_stateMutex);
+        m_appState = state;
+    }
+    m_stateCv.notify_all();
+    if (m_onAppState)
+    {
+        m_onAppState(state);
+    }
 }
 
 Result RialtoSession::createPipeline(std::weak_ptr<firebolt::rialto::IMediaPipelineClient> client,
