@@ -178,6 +178,7 @@ static gboolean gst_rialto_text_track_sink_start(GstBaseSink *sink) // NOLINT(bu
         previousSession = std::move(self->priv->m_textTrackSession);
         self->priv->m_textTrackSession = std::move(session);
     }
+    previousSession.reset();
 
     GST_INFO_OBJECT(sink, "Successfully started TextTrack sink");
     return true;
@@ -191,6 +192,7 @@ static gboolean gst_rialto_text_track_sink_stop(GstBaseSink *sink) // NOLINT(bui
         std::unique_lock lock{self->priv->m_mutex};
         session = std::move(self->priv->m_textTrackSession);
     }
+    session.reset();
 
     GST_INFO_OBJECT(sink, "Successfully stopped TextTrack sink");
     return true;
@@ -219,7 +221,10 @@ static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuf
         {
             displayOffset = static_cast<int64_t>(GST_BUFFER_OFFSET(buffer));
         }
-        session->sendData(data, 0 - displayOffset);
+        {
+            std::unique_lock sessionConfigLock{textTrackSink->priv->m_sessionConfigMutex};
+            session->sendData(data, 0 - displayOffset);
+        }
 
         gst_buffer_unmap(buffer, &info);
     }

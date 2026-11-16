@@ -70,7 +70,7 @@ class GstTextTrackSinkTest : public testing::Test
 protected:
     void SetUp() override
     {
-        auto &mocks = getGstTextTrackSinkMocks();
+        const auto &mocks = getGstTextTrackSinkMocks();
         m_textTrackPluginWrapperFactory = mocks.textTrackPluginWrapperFactory;
         m_textTrackPluginWrapper = mocks.textTrackPluginWrapper;
         m_textTrackWrapper = mocks.textTrackWrapper;
@@ -94,8 +94,6 @@ protected:
                     sessionId = kSessionId;
                     return kNoError;
                 }));
-        EXPECT_CALL(*m_textTrackWrapper, unmuteSession(kSessionId)).Times(2).WillRepeatedly(Return(kNoError));
-
         IFactoryAccessor::instance().textTrackPluginWrapperFactory() = m_textTrackPluginWrapperFactory;
         IFactoryAccessor::instance().thunderWrapperFactory() = m_thunderWrapperFactory;
 
@@ -131,6 +129,7 @@ protected:
 
 TEST_F(GstTextTrackSinkTest, serializesDecoderUpdateWithClosedCaptionConfigurationAndClosesOutsideStateLock)
 {
+    EXPECT_CALL(*m_textTrackWrapper, unmuteSession(kSessionId)).Times(2).WillRepeatedly(Return(kNoError));
     std::uint8_t initialDecoder{};
     std::uint8_t updatedDecoder{};
     const std::string initialDecoderId = std::to_string(reinterpret_cast<std::uintptr_t>(&initialDecoder));
@@ -317,4 +316,78 @@ TEST_F(GstTextTrackSinkTest, serializesDecoderUpdateWithClosedCaptionConfigurati
     EXPECT_TRUE(closeWasDeferred);
     EXPECT_TRUE(closeWasStarted);
     EXPECT_EQ(renderResult, GST_FLOW_OK);
+}
+
+TEST_F(GstTextTrackSinkTest, serializesFlushWithInFlightRender)
+{
+    EXPECT_CALL(*m_textTrackWrapper, unmuteSession(kSessionId)).Times(2).WillRepeatedly(Return(kNoError));
+    GstCaps *webVttCaps = gst_caps_from_string("text/vtt");
+    ASSERT_NE(webVttCaps, nullptr);
+    EXPECT_CALL(*m_textTrackWrapper, setSessionWebVTTSelection(kSessionId)).Times(2).WillRepeatedly(Return(kNoError));
+    ASSERT_TRUE(GST_BASE_SINK_GET_CLASS(m_sink)->set_caps(GST_BASE_SINK(m_sink), webVttCaps));
+    gst_caps_unref(webVttCaps);
+
+    std::promise<void> sendStarted;
+    std::promise<void> continueSend;
+    auto continueSendFuture = continueSend.get_future().share();
+    EXPECT_CALL(*m_textTrackWrapper, sendSessionData(_, _, _, _))
+        .WillOnce(Invoke(
+            [&](std::uint32_t, ITextTrackWrapper::DataType, std::int64_t, const std::string &)
+            {
+                sendStarted.set_value();
+                continueSendFuture.wait();
+                return kNoError;
+            }));
+
+    GstBuffer *buffer = gst_buffer_new_allocate(nullptr, 1, nullptr);
+    ASSERT_NE(buffer, nullptr);
+    GstEvent *flushEvent = gst_event_new_flush_start();
+    ASSERT_NE(flushEvent, nullptr);
+    GstFlowReturn renderResult{GST_FLOW_ERROR};
+    std::thread renderThread{[&]
+                             { renderResult = GST_BASE_SINK_GET_CLASS(m_sink)->render(GST_BASE_SINK(m_sink), buffer); }};
+    auto sendStartedFuture = sendStarted.get_future();
+    const bool sendWasStarted = sendStartedFuture.wait_for(kWaitTimeout) == std::future_status::ready;
+
+    std::promise<void> resetStarted;
+    EXPECT_CALL(*m_textTrackWrapper, resetSession(kSessionId))
+        .WillOnce(Invoke(
+            [&](std::uint32_t)
+            {
+                resetStarted.set_value();
+                return kNoError;
+            }));
+
+    gboolean flushResult{FALSE};
+    std::promise<void> flushStarted;
+    std::promise<void> flushDone;
+    auto flushDoneFuture = flushDone.get_future();
+    std::thread flushThread{[&]
+                            {
+                                flushStarted.set_value();
+                                flushResult = GST_BASE_SINK_GET_CLASS(m_sink)->event(GST_BASE_SINK(m_sink), flushEvent);
+                                flushDone.set_value();
+                            }};
+
+    auto resetStartedFuture = resetStarted.get_future();
+    flushStarted.get_future().wait();
+    const bool resetWasDeferred = resetStartedFuture.wait_for(std::chrono::milliseconds{100}) ==
+                                  std::future_status::timeout;
+
+    continueSend.set_value();
+    const bool resetWasStarted = resetStartedFuture.wait_for(kWaitTimeout) == std::future_status::ready;
+    const bool flushWasCompleted = flushDoneFuture.wait_for(kWaitTimeout) == std::future_status::ready;
+    renderThread.join();
+    flushThread.join();
+    gst_buffer_unref(buffer);
+
+    EXPECT_TRUE(sendWasStarted);
+    EXPECT_TRUE(resetWasDeferred);
+    EXPECT_TRUE(resetWasStarted);
+    EXPECT_TRUE(flushWasCompleted);
+    EXPECT_TRUE(flushResult);
+    EXPECT_EQ(renderResult, GST_FLOW_OK);
+
+    EXPECT_CALL(*m_textTrackWrapper, closeSession(kSessionId)).WillOnce(Return(kNoError));
+    EXPECT_TRUE(GST_BASE_SINK_GET_CLASS(m_sink)->stop(GST_BASE_SINK(m_sink)));
 }
