@@ -71,7 +71,7 @@ protected:
                     sessionId = kSessionId;
                     return kNoError;
                 }));
-        EXPECT_CALL(*m_textTrackWrapper, unmuteSession(kSessionId)).WillOnce(Return(kNoError));
+        EXPECT_CALL(*m_textTrackWrapper, unmuteSession(kSessionId)).Times(2).WillRepeatedly(Return(kNoError));
 
         IFactoryAccessor::instance().textTrackPluginWrapperFactory() = m_textTrackPluginWrapperFactory;
         IFactoryAccessor::instance().thunderWrapperFactory() = m_thunderWrapperFactory;
@@ -85,12 +85,17 @@ protected:
 
     void TearDown() override
     {
-        IFactoryAccessor::instance().textTrackPluginWrapperFactory() = nullptr;
-        IFactoryAccessor::instance().thunderWrapperFactory() = nullptr;
         if (m_sink)
         {
             gst_object_unref(m_sink);
         }
+        EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(m_textTrackWrapper.get()));
+        EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(m_textTrackPluginWrapper.get()));
+        EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(m_thunderWrapper.get()));
+        EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(m_textTrackPluginWrapperFactory.get()));
+        EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(m_thunderWrapperFactory.get()));
+        IFactoryAccessor::instance().textTrackPluginWrapperFactory() = nullptr;
+        IFactoryAccessor::instance().thunderWrapperFactory() = nullptr;
     }
 
     std::shared_ptr<StrictMock<TextTrackPluginWrapperFactoryMock>> m_textTrackPluginWrapperFactory;
@@ -215,6 +220,32 @@ TEST_F(GstTextTrackSinkTest, serializesDecoderUpdateWithClosedCaptionConfigurati
     EXPECT_TRUE(offsetSetterWasBlocked);
     EXPECT_EQ(positionSetterDoneFuture.wait_for(kWaitTimeout), std::future_status::ready);
 
+    GstCaps *webVttCaps = gst_caps_from_string("text/vtt");
+    ASSERT_NE(webVttCaps, nullptr);
+    EXPECT_CALL(*m_textTrackWrapper, setSessionWebVTTSelection(kSessionId)).WillOnce(Return(kNoError));
+    ASSERT_TRUE(GST_BASE_SINK_GET_CLASS(m_sink)->set_caps(GST_BASE_SINK(m_sink), webVttCaps));
+    gst_caps_unref(webVttCaps);
+
+    std::promise<void> sendStarted;
+    std::promise<void> continueSend;
+    auto continueSendFuture = continueSend.get_future().share();
+    EXPECT_CALL(*m_textTrackWrapper, sendSessionData(_, _, _, _))
+        .WillOnce(Invoke(
+            [&](std::uint32_t, ITextTrackWrapper::DataType, std::int64_t, const std::string &)
+            {
+                sendStarted.set_value();
+                continueSendFuture.wait();
+                return kNoError;
+            }));
+
+    GstBuffer *buffer = gst_buffer_new_allocate(nullptr, 1, nullptr);
+    ASSERT_NE(buffer, nullptr);
+    GstFlowReturn renderResult{GST_FLOW_ERROR};
+    std::thread renderThread{[&]
+                             { renderResult = GST_BASE_SINK_GET_CLASS(m_sink)->render(GST_BASE_SINK(m_sink), buffer); }};
+    auto sendStartedFuture = sendStarted.get_future();
+    const bool sendWasStarted = sendStartedFuture.wait_for(kWaitTimeout) == std::future_status::ready;
+
     std::promise<void> closeStarted;
     std::promise<void> continueClose;
     auto continueCloseFuture = continueClose.get_future().share();
@@ -227,8 +258,20 @@ TEST_F(GstTextTrackSinkTest, serializesDecoderUpdateWithClosedCaptionConfigurati
                 return kNoError;
             }));
 
-    std::thread stopThread{[&] { EXPECT_TRUE(GST_BASE_SINK_GET_CLASS(m_sink)->stop(GST_BASE_SINK(m_sink))); }};
+    gboolean stopResult{FALSE};
+    std::promise<void> stopDone;
+    auto stopDoneFuture = stopDone.get_future();
+    std::thread stopThread{[&]
+                           {
+                               stopResult = GST_BASE_SINK_GET_CLASS(m_sink)->stop(GST_BASE_SINK(m_sink));
+                               stopDone.set_value();
+                           }};
+    const bool stopWasCompleted = stopDoneFuture.wait_for(kWaitTimeout) == std::future_status::ready;
     auto closeStartedFuture = closeStarted.get_future();
+    const bool closeWasDeferred = closeStartedFuture.wait_for(std::chrono::milliseconds{100}) ==
+                                  std::future_status::timeout;
+
+    continueSend.set_value();
     const bool closeWasStarted = closeStartedFuture.wait_for(kWaitTimeout) == std::future_status::ready;
 
     std::promise<void> propertySetterDone;
@@ -241,6 +284,14 @@ TEST_F(GstTextTrackSinkTest, serializesDecoderUpdateWithClosedCaptionConfigurati
     EXPECT_EQ(propertySetterDoneFuture.wait_for(kWaitTimeout), std::future_status::ready);
     continueClose.set_value();
     propertySetter.join();
+    renderThread.join();
     stopThread.join();
+    gst_buffer_unref(buffer);
+
+    EXPECT_TRUE(sendWasStarted);
+    EXPECT_TRUE(stopWasCompleted);
+    EXPECT_TRUE(stopResult);
+    EXPECT_TRUE(closeWasDeferred);
     EXPECT_TRUE(closeWasStarted);
+    EXPECT_EQ(renderResult, GST_FLOW_OK);
 }
