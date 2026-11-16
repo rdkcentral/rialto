@@ -3,7 +3,9 @@
 #include "RefPlayerEvent.h"
 #include "RefPlayerTypes.h"
 
+#include <chrono>
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
@@ -16,8 +18,22 @@
 #define RIALTO_REFPLAYER_API
 #endif
 
+namespace firebolt::rialto
+{
+class IMediaPipeline;
+}
+
 namespace rialto_refplayer
 {
+
+// Source ids the library attached to the pipeline. 0 means that source is not present.
+struct PipelineSources
+{
+    int32_t videoSourceId{0};
+    int32_t audioSourceId{0};
+};
+
+using PipelineTask = std::function<void(firebolt::rialto::IMediaPipeline &, const PipelineSources &)>;
 
 // Threading contract:
 //  - initialize() is the only call that may block. It connects to Rialto.
@@ -58,6 +74,14 @@ public:
     virtual std::optional<int> textTrack() const = 0;               // phase 4
 
     virtual void setClient(std::weak_ptr<IRefPlayerClient> client) = 0;
+
+    // Contract validation. Runs the task against the pipeline the player is using and blocks
+    // until it returns. The task runs on the command worker, so it cannot overlap load, stop or
+    // teardown. The pipeline reference is valid only inside the task.
+    //  - InvalidState: not ready, or no pipeline is loaded.
+    //  - RialtoError: the worker did not start the task within the timeout; the task is dropped.
+    // Must not be called from onEvent() or from inside the task.
+    virtual Result runOnPipeline(const PipelineTask &task, std::chrono::milliseconds timeout) = 0;
 };
 
 RIALTO_REFPLAYER_API std::shared_ptr<IRefPlayer> createRefPlayer();

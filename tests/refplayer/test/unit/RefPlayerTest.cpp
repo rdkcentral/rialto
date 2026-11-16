@@ -401,6 +401,45 @@ void testRapidLoadStop()
     player.destroy();
 }
 
+// runOnPipeline() runs the task on the worker against the loaded pipeline, with the attached
+// source ids, and refuses when nothing is loaded.
+void testRunOnPipelineUsesLivePipeline()
+{
+    resetMock();
+    rr::RefPlayer player(fakeDependencies(true));
+    auto recorder = std::make_shared<Recorder>();
+    player.setClient(recorder);
+    const auto timeout = std::chrono::milliseconds(5000);
+
+    int ran = 0;
+    const rr::PipelineTask task = [&](firebolt::rialto::IMediaPipeline &pipeline, const rr::PipelineSources &sources) {
+        ++ran;
+        bool sync = false;
+        CHECK(pipeline.setSync(true)); // the real, live pipeline object answers
+        CHECK(pipeline.getSync(sync));
+        CHECK(sources.videoSourceId != 0);
+        CHECK(sources.audioSourceId == 0); // the fake media has no audio
+    };
+
+    CHECK(player.runOnPipeline(task, timeout) == Result::InvalidState); // not initialized
+    CHECK(player.initialize(options()) == Result::Ok);
+    CHECK(player.runOnPipeline(task, timeout) == Result::InvalidState); // nothing loaded yet
+    CHECK(ran == 0);
+
+    firebolt::rialto::g_mockPipelineCounters.requestBudget = 3;
+    CHECK(player.load("file:///fake/r.mp4", true) == Result::Ok);
+    CHECK(waitFor([&] { return player.state() == PlayerState::Playing; }));
+    CHECK(player.runOnPipeline(task, timeout) == Result::Ok);
+    CHECK(ran == 1);
+
+    CHECK(player.stop() == Result::Ok);
+    CHECK(waitFor([&] { return player.state() == PlayerState::Idle; }));
+    CHECK(player.runOnPipeline(task, timeout) == Result::InvalidState); // released by stop
+    CHECK(ran == 1);
+    CHECK(recorder->failures().empty());
+    player.destroy();
+}
+
 } // namespace
 
 int main()
@@ -414,6 +453,7 @@ int main()
     testDestroyWhilePlaying();
     testRapidLoadStop();
     testStopThenLoadDoesNotWaitForTimeout();
+    testRunOnPipelineUsesLivePipeline();
 
     std::printf("refplayer host test: %d checks, %d failures\n", g_checks, g_failures);
     return g_failures == 0 ? EXIT_SUCCESS : EXIT_FAILURE;

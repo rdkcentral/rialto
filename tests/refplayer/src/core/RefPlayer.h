@@ -67,6 +67,7 @@ public:
     std::optional<int> textTrack() const override;
 
     void setClient(std::weak_ptr<IRefPlayerClient> client) override;
+    Result runOnPipeline(const PipelineTask &task, std::chrono::milliseconds timeout) override;
 
 private:
     bool ready() const;

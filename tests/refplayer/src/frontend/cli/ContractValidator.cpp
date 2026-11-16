@@ -8,11 +8,13 @@
 #include "IMediaKeysCapabilities.h"
 #include "IMediaPipelineCapabilities.h"
 
+#include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace rialto_refplayer_cli
@@ -26,104 +28,157 @@ constexpr double kVolumeTolerance = 0.001;
 constexpr uint32_t kBufferingLimitMs = 1500U;
 constexpr int32_t kStreamSyncMode = 1;
 
+constexpr int32_t kDefaultStreamSyncMode = 0;
+constexpr std::chrono::milliseconds kPositionAdvanceWait{1000};
+
 const char *boolText(bool value)
 {
     return value ? "true" : "false";
 }
 
+// Logs each call made on the player's own pipeline and keeps the verdict for the group.
+class PipelineChecks
+{
+public:
+    // A call that returns false fails the group.
+    bool call(const std::string &name, bool returned)
+    {
+        cliLog("[pipeline] " + name + " returned " + boolText(returned) + (returned ? "" : " (FAILED)"));
+        m_passed = m_passed && returned;
+        return returned;
+    }
+
+    // A read-back that differs from what was set fails the group.
+    void expect(const std::string &name, const std::string &actual, const std::string &expected, bool matches)
+    {
+        cliLog("[pipeline] " + name + " read back " + actual + ", expected " + expected +
+               (matches ? "" : " (MISMATCH)"));
+        m_passed = m_passed && matches;
+    }
+
+    // The media does not offer what the call needs, so the call is not made and does not fail the group.
+    void skip(const std::string &name, const std::string &reason)
+    {
+        cliLog("[pipeline] " + name + " skipped: " + reason);
+    }
+
+    bool passed() const { return m_passed; }
+
+private:
+    bool m_passed{true};
+};
+
 } // namespace
 
-bool validateAdvancedMediaPipelineFeatures(const ContractOptions &options)
+bool validatePipelineBeforePlay(firebolt::rialto::IMediaPipeline &pipeline,
+                                const rialto_refplayer::PipelineSources &sources)
 {
-    auto probe = createAttachedPipelineProbe(options.mimeType, true);
-    if (!probe)
-    {
-        cliLog("Advanced pipeline probe could not be created");
-        return false;
-    }
+    PipelineChecks checks;
+    // Sync off is documented as "must be set before the pipeline is PLAYING".
+    checks.call("setSyncOff(false)", pipeline.setSyncOff(false));
+    // Position 0 is the start the stream has anyway, so it does not move the media.
+    checks.call("setSourcePosition()", pipeline.setSourcePosition(sources.videoSourceId, 0, false, 1.0, 0ULL));
+    return checks.passed();
+}
 
-    const auto &pipeline = probe->mediaPipeline;
-    // Mute is an audio control, so it targets the probe's audio source; the stream calls
-    // target the video source.
-    const int32_t audioSourceId = probe->audioSourceId;
-    const int32_t sourceId = probe->currentSourceId;
+bool validatePipelineWhilePlaying(firebolt::rialto::IMediaPipeline &pipeline,
+                                  const rialto_refplayer::PipelineSources &sources, const ContractOptions &options)
+{
+    PipelineChecks checks;
     const double targetVolume = options.volume.value_or(kDefaultVolume);
-    bool passed = true;
+    const bool hasAudio = sources.audioSourceId != 0;
 
-    // Logs a call's return value, and fails the run when it is false.
-    const auto check = [&passed](const std::string &call, bool returned)
-    {
-        cliLog(call + " returned " + boolText(returned));
-        passed = passed && returned;
-        return returned;
-    };
-    // Logs a read-back against the value that was set, and fails the run on a mismatch.
-    const auto expectValue = [&passed](const std::string &name, const std::string &actual,
-                                       const std::string &expected, bool matches)
-    {
-        cliLog(name + " read back " + actual + ", expected " + expected + (matches ? "" : " (MISMATCH)"));
-        passed = passed && matches;
-    };
+    checks.call("setLowLatency(true)", pipeline.setLowLatency(true));
+    // Low latency turns off audio decoding and a/v sync, so it is put back for the rest of playback.
+    checks.call("setLowLatency(false)", pipeline.setLowLatency(false));
 
-    check("setLowLatency(true)", pipeline->setLowLatency(true));
-    check("setSync(true)", pipeline->setSync(true));
+    checks.call("setSync(true)", pipeline.setSync(true));
     bool sync = false;
-    if (check("getSync()", pipeline->getSync(sync)))
+    if (checks.call("getSync()", pipeline.getSync(sync)))
     {
-        expectValue("sync", boolText(sync), "true", sync);
+        checks.expect("sync", boolText(sync), "true", sync);
     }
-    check("setSyncOff(false)", pipeline->setSyncOff(false));
-    check("setMute()", pipeline->setMute(audioSourceId, true));
-    bool muted = false;
-    if (check("getMute()", pipeline->getMute(audioSourceId, muted)))
-    {
-        expectValue("mute", boolText(muted), "true", muted);
-    }
-    check("setVolume()", pipeline->setVolume(targetVolume));
-    double volume = 0.0;
-    if (check("getVolume()", pipeline->getVolume(volume)))
-    {
-        expectValue("volume", std::to_string(volume), std::to_string(targetVolume),
-                    std::fabs(volume - targetVolume) <= kVolumeTolerance);
-    }
-    check("setTextTrackIdentifier()", pipeline->setTextTrackIdentifier("eng"));
-    std::string textTrackId;
-    if (check("getTextTrackIdentifier()", pipeline->getTextTrackIdentifier(textTrackId)))
-    {
-        expectValue("text track", textTrackId, "eng", textTrackId == "eng");
-    }
-    check("setBufferingLimit()", pipeline->setBufferingLimit(kBufferingLimitMs));
-    uint32_t bufferingMs = 0U;
-    if (check("getBufferingLimit()", pipeline->getBufferingLimit(bufferingMs)))
-    {
-        expectValue("buffering limit", std::to_string(bufferingMs), std::to_string(kBufferingLimitMs),
-                    bufferingMs == kBufferingLimitMs);
-    }
-    check("setUseBuffering()", pipeline->setUseBuffering(true));
-    bool useBuffering = false;
-    if (check("getUseBuffering()", pipeline->getUseBuffering(useBuffering)))
-    {
-        expectValue("use buffering", boolText(useBuffering), "true", useBuffering);
-    }
-    check("setStreamSyncMode()", pipeline->setStreamSyncMode(sourceId, kStreamSyncMode));
-    int32_t streamSyncMode = 0;
-    if (check("getStreamSyncMode()", pipeline->getStreamSyncMode(streamSyncMode)))
-    {
-        expectValue("stream sync mode", std::to_string(streamSyncMode), std::to_string(kStreamSyncMode),
-                    streamSyncMode == kStreamSyncMode);
-    }
-    check("setSourcePosition()", pipeline->setSourcePosition(sourceId, 0, false, 1.0, 0ULL));
-    check("setSubtitleOffset()", pipeline->setSubtitleOffset(sourceId, 0));
-    int64_t duration = 0;
-    check("getDuration()", pipeline->getDuration(duration));
-    int64_t position = 0;
-    check("getPosition()", pipeline->getPosition(position));
 
-    cliLog("Advanced pipeline checks complete. final state: sync=" + std::string(boolText(sync)) +
-           ", muted=" + boolText(muted) + ", volume=" + std::to_string(volume) +
-           ", bufferingMs=" + std::to_string(bufferingMs) + ", streamSyncMode=" + std::to_string(streamSyncMode));
-    destroyPipelineProbe(probe);
-    return passed;
+    if (hasAudio)
+    {
+        // Mute is set, read back, and put back so the audio stays audible.
+        checks.call("setMute(true)", pipeline.setMute(sources.audioSourceId, true));
+        bool muted = false;
+        if (checks.call("getMute()", pipeline.getMute(sources.audioSourceId, muted)))
+        {
+            checks.expect("mute", boolText(muted), "true", muted);
+        }
+        checks.call("setMute(false)", pipeline.setMute(sources.audioSourceId, false));
+        if (checks.call("getMute()", pipeline.getMute(sources.audioSourceId, muted)))
+        {
+            checks.expect("mute", boolText(muted), "false", !muted);
+        }
+
+        // The getter reads the audio decoder, so the value is set on the audio source.
+        checks.call("setStreamSyncMode(audio)", pipeline.setStreamSyncMode(sources.audioSourceId, kStreamSyncMode));
+        int32_t streamSyncMode = -1;
+        if (checks.call("getStreamSyncMode()", pipeline.getStreamSyncMode(streamSyncMode)))
+        {
+            checks.expect("stream sync mode", std::to_string(streamSyncMode), std::to_string(kStreamSyncMode),
+                          streamSyncMode == kStreamSyncMode);
+        }
+        checks.call("setStreamSyncMode(audio, default)",
+                    pipeline.setStreamSyncMode(sources.audioSourceId, kDefaultStreamSyncMode));
+        if (checks.call("getStreamSyncMode()", pipeline.getStreamSyncMode(streamSyncMode)))
+        {
+            checks.expect("stream sync mode", std::to_string(streamSyncMode),
+                          std::to_string(kDefaultStreamSyncMode), streamSyncMode == kDefaultStreamSyncMode);
+        }
+    }
+    else
+    {
+        checks.skip("mute and stream sync mode", "the media has no audio source");
+    }
+
+    checks.call("setVolume()", pipeline.setVolume(targetVolume));
+    double volume = 0.0;
+    if (checks.call("getVolume()", pipeline.getVolume(volume)))
+    {
+        checks.expect("volume", std::to_string(volume), std::to_string(targetVolume),
+                      std::fabs(volume - targetVolume) <= kVolumeTolerance);
+    }
+
+    checks.skip("text track identifier and subtitle offset", "the media has no subtitle source");
+
+    checks.call("setBufferingLimit()", pipeline.setBufferingLimit(kBufferingLimitMs));
+    uint32_t bufferingMs = 0U;
+    if (checks.call("getBufferingLimit()", pipeline.getBufferingLimit(bufferingMs)))
+    {
+        checks.expect("buffering limit", std::to_string(bufferingMs), std::to_string(kBufferingLimitMs),
+                      bufferingMs == kBufferingLimitMs);
+    }
+    checks.call("setUseBuffering()", pipeline.setUseBuffering(true));
+    bool useBuffering = false;
+    if (checks.call("getUseBuffering()", pipeline.getUseBuffering(useBuffering)))
+    {
+        checks.expect("use buffering", boolText(useBuffering), "true", useBuffering);
+    }
+
+    int64_t durationNs = 0;
+    if (checks.call("getDuration()", pipeline.getDuration(durationNs)))
+    {
+        checks.expect("duration", std::to_string(durationNs) + " ns", "> 0", durationNs > 0);
+    }
+    int64_t firstPositionNs = 0;
+    if (checks.call("getPosition()", pipeline.getPosition(firstPositionNs)))
+    {
+        // Playing media moves, so the second reading has to be later than the first.
+        std::this_thread::sleep_for(kPositionAdvanceWait);
+        int64_t secondPositionNs = 0;
+        if (checks.call("getPosition()", pipeline.getPosition(secondPositionNs)))
+        {
+            checks.expect("position", std::to_string(firstPositionNs) + " ns, then " +
+                                          std::to_string(secondPositionNs) + " ns",
+                          "advancing", secondPositionNs > firstPositionNs);
+        }
+    }
+
+    return checks.passed();
 }
 
 bool validateCapabilities(const ContractOptions &options)

@@ -9,7 +9,7 @@ namespace rialto_refplayer
 namespace
 {
 
-constexpr const char *kVideoMime = "video/mp4";
+constexpr const char *kVideoMime = "video/h264";
 constexpr const char *kAudioMime = "audio/mp4";
 
 } // namespace
@@ -113,9 +113,20 @@ bool SourceManager::attach(firebolt::rialto::IMediaPipeline &pipeline)
         audioConfig.sampleRate = static_cast<uint32_t>(m_tracks.audio.sampleRate);
         audioConfig.codecSpecificConfig = m_tracks.audio.codecData;
 
+        // The Rialto server only puts codec_data and stream-format on the audio caps from these
+        // arguments, not from audioConfig. Raw MP4 AAC frames have no ADTS headers, so without
+        // the AudioSpecificConfig and stream-format=raw the decoder cannot start.
+        std::shared_ptr<rialto::CodecData> audioCodecData;
+        if (!m_tracks.audio.codecData.empty())
+        {
+            audioCodecData = std::make_shared<rialto::CodecData>();
+            audioCodecData->data = m_tracks.audio.codecData;
+            audioCodecData->type = rialto::CodecDataType::BUFFER;
+        }
         std::unique_ptr<rialto::IMediaPipeline::MediaSource> audio =
             std::make_unique<rialto::IMediaPipeline::MediaSourceAudio>(kAudioMime, false, audioConfig,
-                                                                       rialto::SegmentAlignment::AU);
+                                                                       rialto::SegmentAlignment::AU,
+                                                                       rialto::StreamFormat::RAW, audioCodecData);
         if (!pipeline.attachSource(audio))
         {
             m_logger->error("IMediaPipeline::attachSource(audio) returned false");

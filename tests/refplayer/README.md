@@ -11,7 +11,7 @@ It was built to the phase-1 component design, `REFERENCE_PLAYER_COMPONENT_DESIGN
 | `include/rialto_refplayer/` | Public library API: `IRefPlayer`, `RefPlayerTypes.h` (`PlayerState`, `Result`, `Options`), `RefPlayerEvent.h` (`Event`, `IRefPlayerClient`) |
 | `src/core/` | `libRialtoRefPlayer` internals: `RefPlayer` (command validation), `CommandWorker`, `PlayerStateMachine`, `EventBus`, `PositionTracker`, `RialtoSession`, `SourceManager`, `MediaFeeder`, `PipelineCallbacks`, `Logger` |
 | `src/demux/` | `IDemuxer` seam, `TrackModel`, `DemuxerRegistry.cpp` (MP4 adapter), `Mp4Demuxer.{h,cpp}` (parser, unchanged) |
-| `src/frontend/cli/` | `rialto_reference_player`: option parsing and driver (`main.cpp`), probe checks (`ContractValidator`), negative API suite (`NegativeChecks`), and the log helper (`CliLog.h`) |
+| `src/frontend/cli/` | `rialto_reference_player`: option parsing and driver (`main.cpp`), contract checks (`ContractValidator`), negative API suite (`NegativeChecks`), and the log helper (`CliLog.h`) |
 | `src/frontend/jsbinding/` | `libRialtoPlayerJSBindings.so`: JavaScriptCore class `RialtoMediaPlayer`, exports `RialtoPlayer_LoadJS` and `RialtoPlayer_UnloadJS` only |
 | `test/mocks/rialto/` | Mock Rialto headers for building without the client (mock mode) |
 | `test/mocks/JavaScriptCore/`, `test/mocks/glib/`, `test/mocks/stubs/` | Compile-time JavaScriptCore and GLib declarations and empty stub definitions, for checking the binding without the WebKit SDK. Not part of the recipe |
@@ -86,7 +86,14 @@ Its format is a consumed interface for the test app's tune-time panel. Change it
 
 ## Command-line front-end
 
-`rialto_reference_player` drives the library through the public API, with bounded waits, and runs the probe checks and the negative suite. It is a debugging aid, not the acceptance gate.
+`rialto_reference_player` drives the library through the public API, with bounded waits, and runs the contract checks and the negative suite. It is a debugging aid, not the acceptance gate.
+
+The pipeline contract checks run on the pipeline that is playing the media, not on a separate one. The library exposes it through `IRefPlayer::runOnPipeline()`, which runs the task on the command worker, so it cannot overlap load, stop or teardown. The CLI loads without autoplay and runs two groups:
+
+- **Before play (at PREPARED):** `setSyncOff` (documented as valid only before PLAYING) and `setSourcePosition`.
+- **While PLAYING:** low latency, sync, mute and stream sync mode (on the audio source, and put back afterwards), volume, buffering limit, use-buffering, duration, and a position that has to advance. Text track and subtitle offset are skipped because the media has no subtitle source; mute and stream sync mode are skipped for media without audio.
+
+Capability, web audio and logging checks do not involve the player's pipeline and run after them. Every group runs even when an earlier one fails.
 
 ```bash
 rialto_reference_player --url file:///media/clip.mp4 --set-volume 0.5 --seek 2000000000
@@ -95,15 +102,15 @@ rialto_reference_player --negative-runs            # contract checks only, no pl
 
 | Option | Default | Meaning |
 |--------|---------|---------|
-| `--url <url>` | none | Media URL. A local `file://` `.mp4` (H.264, optional AAC) is demuxed and fed over MSE. Without it, only the contract checks run |
+| `--url <url>` | none | Media URL. A local `file://` `.mp4` (H.264, optional AAC) is demuxed and fed over MSE. Without it, only the checks that do not need a player run; the pipeline checks are skipped |
 | `--mime <mime>` | `video/mp4` | MIME type for the capability probes. Phase 1 plays only `video/mp4`, so playback ignores this value |
 | `--live` | off | CLI only: do not wait for end of stream after PLAYING. The library loads as non-live in phase 1 |
 | `--web-audio` | off | Create an `IWebAudioPlayer` and validate the PCM API |
 | `--negative-runs` | off | Run the negative API suite after the contract checks. Real client only; logs a skip in mock mode |
-| `--set-volume <v>` | unset | Volume in `[0.0, 1.0]`. Set and read back on a probe pipeline; the player's own `setVolume` is NotSupported in phase 1. Without it, 0.7 is used on the probe |
+| `--set-volume <v>` | unset | Volume in `[0.0, 1.0]`. Set and read back on the playing pipeline; the player's own `setVolume` is NotSupported in phase 1. Without it, 0.7 is used |
 | `--seek <ns>` | unset | Seek to a position in nanoseconds. Needs `--url`; cannot be combined with `--no-playback` |
 | `--priority <n>` | `1` | Audio player priority, used with `--web-audio` |
-| `--no-playback` | off | Stop at PREPARED instead of PLAYING; no play() |
+| `--no-playback` | off | Stop at PREPARED instead of PLAYING; no play(). Only the before-play pipeline group runs |
 | `--no-validate-capabilities` | off | Skip the capability probe |
 | `--timeout-ms <ms>` | `30000` | Ceiling for each wait on a player state, and for each library call that could block. Playback completion adds the media's own duration |
 | `--help` | | Print usage |
