@@ -7,8 +7,11 @@
 #include "IControl.h"
 #include "IMediaPipeline.h"
 
+#include <chrono>
+#include <condition_variable>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <string>
 
 namespace rialto_refplayer
@@ -28,7 +31,9 @@ public:
     RialtoSession(const RialtoSession &) = delete;
     RialtoSession &operator=(const RialtoSession &) = delete;
 
-    // Creates the control and registers. Fails unless the application is RUNNING.
+    // Creates the control and registers. Rialto reports the application state
+    // asynchronously after registration, so this waits up to kStateTimeout for it.
+    // Fails unless the application is RUNNING.
     // Tolerates an existing control, so a re-connect does not register twice.
     Result connect();
 
@@ -47,6 +52,14 @@ public:
     firebolt::rialto::IMediaPipeline *pipeline() const { return m_pipeline.get(); }
 
 private:
+    static constexpr std::chrono::seconds kStateTimeout{5};
+
+    void onControlState(firebolt::rialto::ApplicationState state);
+
+    std::mutex m_stateMutex;
+    std::condition_variable m_stateCv;
+    firebolt::rialto::ApplicationState m_appState{firebolt::rialto::ApplicationState::UNKNOWN};
+
     std::shared_ptr<Logger> m_logger;
     AppStateHandler m_onAppState;
     std::shared_ptr<firebolt::rialto::IControl> m_control;

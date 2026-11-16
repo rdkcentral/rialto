@@ -5,6 +5,8 @@
 #include "IDemuxer.h"
 
 #include <chrono>
+#include <condition_variable>
+#include <mutex>
 
 namespace rialto_refplayer
 {
@@ -61,6 +63,24 @@ bool canSeek(PlayerState state)
         return false;
     }
 }
+
+// Hand-over between a runOnPipeline() caller and the worker. Shared, so a caller that gave
+// up on a task that never started leaves nothing dangling for the worker.
+struct PipelineJob
+{
+    enum class Phase
+    {
+        Pending,
+        Running,
+        Done,
+        Cancelled
+    };
+
+    std::mutex mutex;
+    std::condition_variable cv;
+    Phase phase{Phase::Pending};
+    Result result{Result::InvalidState};
+};
 
 } // namespace
 
@@ -287,6 +307,64 @@ std::optional<int> RefPlayer::textTrack() const
 void RefPlayer::setClient(std::weak_ptr<IRefPlayerClient> client)
 {
     m_bus->setClient(std::move(client));
+}
+
+Result RefPlayer::runOnPipeline(const PipelineTask &task, std::chrono::milliseconds timeout)
+{
+    if (!ready() || !task)
+    {
+        return rejectCall("runOnPipeline");
+    }
+
+    const auto job = std::make_shared<PipelineJob>();
+    const bool posted = m_worker.post([this, job, task] {
+        {
+            std::lock_guard<std::mutex> lock(job->mutex);
+            if (job->phase == PipelineJob::Phase::Cancelled)
+            {
+                return;
+            }
+            job->phase = PipelineJob::Phase::Running;
+        }
+
+        Result result = Result::InvalidState;
+        if (m_sessionLoaded && m_session->hasPipeline())
+        {
+            const PipelineSources sources{m_sources->videoSourceId(), m_sources->audioSourceId()};
+            task(*m_session->pipeline(), sources);
+            result = Result::Ok;
+        }
+        else
+        {
+            m_logger->info("runOnPipeline() rejected: no pipeline is loaded");
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(job->mutex);
+            job->result = result;
+            job->phase = PipelineJob::Phase::Done;
+        }
+        job->cv.notify_all();
+    });
+    if (!posted)
+    {
+        return rejectCall("runOnPipeline");
+    }
+
+    std::unique_lock<std::mutex> lock(job->mutex);
+    const auto done = [&job] { return job->phase == PipelineJob::Phase::Done; };
+    if (!job->cv.wait_for(lock, timeout, done))
+    {
+        if (job->phase == PipelineJob::Phase::Pending)
+        {
+            job->phase = PipelineJob::Phase::Cancelled;
+            m_logger->warning("runOnPipeline() did not start within the timeout; dropped");
+            return Result::RialtoError;
+        }
+        // Already running: the task refers to the caller's objects, so it cannot be abandoned.
+        job->cv.wait(lock, done);
+    }
+    return job->result;
 }
 
 bool RefPlayer::ready() const

@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <functional>
 #include <future>
 #include <iostream>
 #include <limits>
@@ -72,7 +73,7 @@ void printUsage(std::ostream &out)
            "  --live                      CLI only: do not wait for end of stream after PLAYING\n"
            "  --web-audio                 Also create an IWebAudioPlayer and validate the PCM API\n"
            "  --negative-runs             Run negative API checks after contract validation\n"
-           "  --set-volume <v>            Volume in [0.0, 1.0]; set and read back on a probe pipeline\n"
+           "  --set-volume <v>            Volume in [0.0, 1.0]; set and read back on the playing pipeline\n"
            "  --seek <ns>                 Seek to a position in nanoseconds; needs --url, not --no-playback\n"
            "  --priority <n>              Audio player priority (default: 1)\n"
            "  --no-playback               Validate contract without calling play()\n"
@@ -307,6 +308,17 @@ void logResult(const std::string &call, Result result)
     cliLog(call + " returned " + rialto_refplayer::toString(result));
 }
 
+ContractOptions makeContractOptions(const CliOptions &options)
+{
+    ContractOptions contract;
+    contract.mimeType = options.mimeType;
+    contract.validateCapabilities = options.validateCapabilities;
+    contract.useWebAudio = options.useWebAudio;
+    contract.priority = options.priority;
+    contract.volume = options.desiredVolume;
+    return contract;
+}
+
 bool awaitState(RecordingClient &client, PlayerState target, std::chrono::milliseconds ceiling)
 {
     const std::string name = rialto_refplayer::toString(target);
@@ -325,43 +337,59 @@ bool awaitState(RecordingClient &client, PlayerState target, std::chrono::millis
     return false;
 }
 
-// The probe checks, each on its own Rialto probe, under one ceiling.
+// The groups that do not use the player's pipeline, under one ceiling. Every group runs, so a
+// failure in one does not hide the rest.
 bool runContractChecks(const CliOptions &options)
 {
-    ContractOptions contract;
-    contract.mimeType = options.mimeType;
-    contract.validateCapabilities = options.validateCapabilities;
-    contract.useWebAudio = options.useWebAudio;
-    contract.priority = options.priority;
-    contract.volume = options.desiredVolume;
+    ContractOptions contract = makeContractOptions(options);
 
     return runWithCeiling("contract checks", std::chrono::milliseconds(options.timeoutMs), [contract] {
-        if (!validateAdvancedMediaPipelineFeatures(contract))
-        {
-            cliLog("validateAdvancedMediaPipelineFeatures() failed");
-            return false;
-        }
+        bool passed = true;
         if (contract.validateCapabilities && !validateCapabilities(contract))
         {
             cliLog("validateCapabilities() failed");
-            return false;
+            passed = false;
         }
         if (contract.useWebAudio && !validateWebAudio(contract))
         {
             cliLog("validateWebAudio() failed");
-            return false;
+            passed = false;
         }
         if (!validateLogging())
         {
             cliLog("validateLogging() failed");
-            return false;
+            passed = false;
         }
-        return true;
+        return passed;
     });
 }
 
-// Tunes one URL through the public API. The probe checks run while the media is playing,
-// as they did when they shared the player.
+using PipelineGroup = std::function<bool(firebolt::rialto::IMediaPipeline &, const rialto_refplayer::PipelineSources &)>;
+
+// Runs one group of calls on the pipeline that the player is using, under a ceiling.
+bool runPipelineGroup(const std::shared_ptr<rialto_refplayer::IRefPlayer> &player, const std::string &name,
+                      std::chrono::milliseconds timeout, const PipelineGroup &group)
+{
+    bool groupPassed = false;
+    const Result result = runWithCeiling("pipeline checks " + name, timeout, [&] {
+        return player->runOnPipeline(
+            [&](firebolt::rialto::IMediaPipeline &pipeline, const rialto_refplayer::PipelineSources &sources) {
+                groupPassed = group(pipeline, sources);
+            },
+            timeout);
+    });
+    if (result != Result::Ok)
+    {
+        logResult("pipeline checks " + name, result);
+        return false;
+    }
+    cliLog(std::string("Pipeline checks ") + name + (groupPassed ? " passed" : " failed"));
+    return groupPassed;
+}
+
+// Tunes one URL through the public API and runs the pipeline checks on the pipeline that is
+// playing it. The load does not autoplay: the calls that are only valid before PLAYING run at
+// PREPARED, then play() follows. TUNE_TIME_MS therefore includes that short group.
 RunSummary runPlayback(const CliOptions &options)
 {
     RunSummary summary;
@@ -383,20 +411,35 @@ RunSummary runPlayback(const CliOptions &options)
         "initialize()", timeout, [player, libraryOptions] { return player->initialize(libraryOptions); });
     logResult("initialize()", initResult);
     bool ok = initResult == Result::Ok;
+    // A failed check group is reported, but playback carries on so that the other groups still run.
+    bool checksPassed = true;
+    const ContractOptions contract = makeContractOptions(options);
 
     bool loaded = false;
     if (ok)
     {
-        // The library autoplays by default. Without playback the tune stops at PREPARED.
-        const Result loadResult = player->load(options.url, options.enablePlayback);
+        const Result loadResult = player->load(options.url, false);
         logResult("load()", loadResult);
         loaded = loadResult == Result::Ok;
         ok = loaded;
     }
     if (ok)
     {
-        const PlayerState tuned = options.enablePlayback ? PlayerState::Playing : PlayerState::Prepared;
-        ok = awaitState(*client, tuned, timeout);
+        ok = awaitState(*client, PlayerState::Prepared, timeout);
+    }
+    if (ok)
+    {
+        checksPassed = runPipelineGroup(player, "before play", timeout,
+                                        [](firebolt::rialto::IMediaPipeline &pipeline,
+                                           const rialto_refplayer::PipelineSources &sources) {
+                                            return validatePipelineBeforePlay(pipeline, sources);
+                                        });
+    }
+    if (ok && options.enablePlayback)
+    {
+        const Result playResult = player->play();
+        logResult("play()", playResult);
+        ok = playResult == Result::Ok && awaitState(*client, PlayerState::Playing, timeout);
     }
     if (ok && options.seekNs)
     {
@@ -411,7 +454,7 @@ RunSummary runPlayback(const CliOptions &options)
         const Result volumeResult = player->setVolume(*options.desiredVolume);
         if (volumeResult == Result::NotSupported)
         {
-            cliLog("setVolume() is not supported by this library build; the value is validated on a probe pipeline");
+            cliLog("setVolume() is not supported by this library build; the value is validated on the player's pipeline");
         }
         else
         {
@@ -421,7 +464,20 @@ RunSummary runPlayback(const CliOptions &options)
     }
     if (ok)
     {
-        ok = runContractChecks(options);
+        if (options.enablePlayback)
+        {
+            checksPassed = runPipelineGroup(player, "while playing", timeout,
+                                            [contract](firebolt::rialto::IMediaPipeline &pipeline,
+                                                       const rialto_refplayer::PipelineSources &sources) {
+                                                return validatePipelineWhilePlaying(pipeline, sources, contract);
+                                            }) &&
+                           checksPassed;
+        }
+        else
+        {
+            cliLog("Pipeline checks while playing skipped: --no-playback");
+        }
+        checksPassed = runContractChecks(options) && checksPassed;
     }
     if (ok && options.enablePlayback && !options.isLive)
     {
@@ -444,6 +500,7 @@ RunSummary runPlayback(const CliOptions &options)
     }
     runWithCeiling("destroy()", timeout, [player] { player->destroy(); });
 
+    ok = ok && checksPassed;
     summary.events = client->eventCount();
     summary.passed = ok;
     cliLog(ok ? "Contract validation passed" : "Contract validation failed");
@@ -468,7 +525,8 @@ int runCli(int argc, char **argv)
     RunSummary summary;
     if (options.url.empty())
     {
-        cliLog("No URL provided; using a synthetic contract-only validation flow.");
+        cliLog("No URL provided; running the contract checks that do not need a player.");
+        cliLog("Pipeline checks need --url: they run on the pipeline that is playing the media. Skipped.");
         summary.passed = runContractChecks(options);
         cliLog(summary.passed ? "Contract validation passed" : "Contract validation failed");
     }
