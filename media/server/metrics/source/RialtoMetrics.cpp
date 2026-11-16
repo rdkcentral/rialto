@@ -108,8 +108,6 @@ std::int64_t getUnixTimestampNs()
 }
 } // namespace
 
-<<<<<<< HEAD
-=======
 MetricType convertMetricType(std::uint32_t metric)
 {
 	switch (metric)
@@ -154,7 +152,6 @@ MetricPhase convertObservationKind(std::uint32_t observationKind)
 	}
 }
 
->>>>>>> feature/RDKEMW-28580
 RialtoMetrics::RialtoMetrics() : m_elementToSourceMapper(std::make_unique<ElementToSourceMapperImpl>())
 {
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics created");
@@ -227,12 +224,8 @@ std::optional<MetricEvent> RialtoMetrics::onMetricMessage(
 	int32_t sessionId = 0;
 	uint32_t mappedSessionId = 0;
 	uint32_t mappedSourceId = 0;
-<<<<<<< HEAD
-	GstElement* sourceElement = GST_ELEMENT(GST_MESSAGE_SRC(message));
-=======
 	GstObject* sourceObject = GST_MESSAGE_SRC(message);
 	GstElement* sourceElement = GST_IS_ELEMENT(sourceObject) ? GST_ELEMENT(sourceObject) : nullptr;
->>>>>>> feature/RDKEMW-28580
 	if (sourceElement && m_elementToSourceMapper &&
 	    m_elementToSourceMapper->MapElement(sourceElement, mappedSessionId, mappedSourceId))
 	{
@@ -369,15 +362,10 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, MetricEvent& 
 		return GST_FLOW_ERROR;
 	}
 
-<<<<<<< HEAD
-	out.type = static_cast<MetricType>(metricVal);
-	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: metric field validation passed with value %u", metricVal);
-=======
 	out.type = convertMetricType(metricVal);
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
 					"ValidateMediaPipelineMetric: southbound metric %u translated to MetricType=%u",
 					metricVal, static_cast<unsigned int>(out.type));
->>>>>>> feature/RDKEMW-28580
 
 	// Validate 'observation-kind' field - required, must be G_TYPE_UINT, value in {1, 2, 3}
 	if (!gst_structure_has_field(msg, "observation-kind"))
@@ -407,15 +395,10 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, MetricEvent& 
 		return GST_FLOW_ERROR;
 	}
 
-<<<<<<< HEAD
-	out.phase = static_cast<MetricPhase>(observationKindVal);
-	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: observation-kind field validation passed with value %u", observationKindVal);
-=======
 	out.phase = convertObservationKind(observationKindVal);
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
 					"ValidateMediaPipelineMetric: southbound observation-kind %u translated to MetricPhase=%u",
 					observationKindVal, static_cast<unsigned int>(out.phase));
->>>>>>> feature/RDKEMW-28580
 
 	// Validate 'pts-ns' field - optional, when present must be G_TYPE_INT64
 	if (gst_structure_has_field(msg, "pts-ns"))
@@ -431,13 +414,7 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, MetricEvent& 
 
 		gint64 ptsNsVal = g_value_get_int64(ptsNsValue);
 		out.presentationTimeStampNs = ptsNsVal;
-<<<<<<< HEAD
-		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
-						 "ValidateMediaPipelineMetric: pts-ns field validation passed with value %" G_GINT64_FORMAT,
-						 ptsNsVal);
-=======
 		RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: pts-ns field validation passed with value %" G_GINT64_FORMAT, ptsNsVal);
->>>>>>> feature/RDKEMW-28580
 	}
 
 	// Validate 'duration-ns' field - optional, when present must be G_TYPE_UINT64 and non-negative
@@ -517,12 +494,8 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, MetricEvent& 
 	// Enrichment: Extract source element from GstMessage and map to session_id (log only) and source_id
 	if (gstMessage && mapper)
 	{
-<<<<<<< HEAD
-		GstElement* sourceElement = GST_ELEMENT(GST_MESSAGE_SRC(gstMessage));
-=======
 		GstObject* sourceObject = GST_MESSAGE_SRC(gstMessage);
 		GstElement* sourceElement = GST_IS_ELEMENT(sourceObject) ? GST_ELEMENT(sourceObject) : nullptr;
->>>>>>> feature/RDKEMW-28580
 		if (sourceElement)
 		{
 			uint32_t enrichedSessionId = 0;

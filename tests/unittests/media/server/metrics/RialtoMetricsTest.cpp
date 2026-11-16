@@ -14,8 +14,6 @@ using firebolt::rialto::MetricPhase;
 using firebolt::rialto::MetricType;
 using firebolt::rialto::VideoFrameCounters;
 
-<<<<<<< HEAD
-=======
 TEST(RialtoMetricsTest, ConvertsSouthboundMetricValuesToPublicMetricTypes)
 {
     EXPECT_EQ(MetricType::VIDEO_FRAME_DROP, firebolt::rialto::server::convertMetricType(1U));
@@ -31,7 +29,6 @@ TEST(RialtoMetricsTest, ConvertsSouthboundMetricValuesToPublicMetricTypes)
     EXPECT_EQ(MetricPhase::EPISODE_RESOLVED, firebolt::rialto::server::convertObservationKind(3U));
 }
 
->>>>>>> feature/RDKEMW-28580
 TEST(RialtoMetricsTest, ParsesElementMetricMessageWithMappedSessionAndSource)
 {
     gst_init(nullptr, nullptr);

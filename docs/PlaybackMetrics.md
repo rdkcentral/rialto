@@ -120,8 +120,6 @@ Applications receive the same call from `IMediaPipelineClient`:
 virtual void notifyMetric(const MetricEvent &metric) = 0;
 ```
 
-<<<<<<< HEAD
-=======
 ## Subscription
 
 By default, all metric types are subscribed, so every `MetricType` produces `notifyMetric` calls. Applications narrow the set with `IMediaPipeline::setMetricSubscription`:
@@ -134,7 +132,6 @@ The call replaces the whole subscription with the given set. An empty vector dis
 
 To make the default empty instead, set `kSubscribeAllMetricsByDefault` to `false` in `media/server/main/source/MediaPipelineServerInternal.cpp`. Clients then opt in with `setMetricSubscription`.
 
->>>>>>> feature/RDKEMW-28580
 ## Bus Message Fields
 
 The `media-pipeline-metric` structure must be named exactly `media-pipeline-metric`. Field types are checked by

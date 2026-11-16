@@ -309,8 +309,6 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricMapsEveryOptionalField
     }
 }
 
-<<<<<<< HEAD
-=======
 /**
  * Test a metric is delivered to the client when no subscription has been set (all types subscribed by default).
  */
@@ -352,7 +350,6 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricFilteredBySubscription
     m_gstPlayerCallback->notifyMetric(subscribedMetric);
 }
 
->>>>>>> feature/RDKEMW-28580
 /**
  * Test a notification of playback error is forwarded to the registered client.
  */
