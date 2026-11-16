@@ -44,6 +44,25 @@ namespace
 constexpr std::uint32_t kSessionId{1};
 constexpr std::uint32_t kNoError{0};
 constexpr std::chrono::milliseconds kWaitTimeout{1000};
+
+struct GstTextTrackSinkMocks
+{
+    std::shared_ptr<StrictMock<TextTrackPluginWrapperFactoryMock>> textTrackPluginWrapperFactory{
+        std::make_shared<StrictMock<TextTrackPluginWrapperFactoryMock>>()};
+    std::shared_ptr<StrictMock<TextTrackPluginWrapperMock>> textTrackPluginWrapper{
+        std::make_shared<StrictMock<TextTrackPluginWrapperMock>>()};
+    std::shared_ptr<StrictMock<TextTrackWrapperMock>> textTrackWrapper{
+        std::make_shared<StrictMock<TextTrackWrapperMock>>()};
+    std::shared_ptr<StrictMock<ThunderWrapperFactoryMock>> thunderWrapperFactory{
+        std::make_shared<StrictMock<ThunderWrapperFactoryMock>>()};
+    std::shared_ptr<StrictMock<ThunderWrapperMock>> thunderWrapper{std::make_shared<StrictMock<ThunderWrapperMock>>()};
+};
+
+GstTextTrackSinkMocks &getGstTextTrackSinkMocks()
+{
+    static GstTextTrackSinkMocks mocks;
+    return mocks;
+}
 } // namespace
 
 class GstTextTrackSinkTest : public testing::Test
@@ -51,18 +70,22 @@ class GstTextTrackSinkTest : public testing::Test
 protected:
     void SetUp() override
     {
-        m_textTrackPluginWrapperFactory = std::make_shared<StrictMock<TextTrackPluginWrapperFactoryMock>>();
-        m_textTrackPluginWrapper = std::make_shared<StrictMock<TextTrackPluginWrapperMock>>();
-        m_textTrackWrapper = std::make_shared<StrictMock<TextTrackWrapperMock>>();
-        m_thunderWrapperFactory = std::make_shared<StrictMock<ThunderWrapperFactoryMock>>();
-        m_thunderWrapper = std::make_shared<StrictMock<ThunderWrapperMock>>();
+        auto &mocks = getGstTextTrackSinkMocks();
+        m_textTrackPluginWrapperFactory = mocks.textTrackPluginWrapperFactory;
+        m_textTrackPluginWrapper = mocks.textTrackPluginWrapper;
+        m_textTrackWrapper = mocks.textTrackWrapper;
+        m_thunderWrapperFactory = mocks.thunderWrapperFactory;
+        m_thunderWrapper = mocks.thunderWrapper;
 
         EXPECT_CALL(*m_textTrackPluginWrapperFactory, getTextTrackPluginWrapper())
+            .Times(testing::AtMost(1))
             .WillRepeatedly(Return(m_textTrackPluginWrapper));
         EXPECT_CALL(*m_textTrackPluginWrapper, open()).WillRepeatedly(Return(kNoError));
         EXPECT_CALL(*m_textTrackPluginWrapper, isOperational()).WillRepeatedly(Return(true));
         EXPECT_CALL(*m_textTrackPluginWrapper, interface()).WillRepeatedly(Return(m_textTrackWrapper));
-        EXPECT_CALL(*m_thunderWrapperFactory, getThunderWrapper()).WillRepeatedly(Return(m_thunderWrapper));
+        EXPECT_CALL(*m_thunderWrapperFactory, getThunderWrapper())
+            .Times(testing::AtMost(1))
+            .WillRepeatedly(Return(m_thunderWrapper));
         EXPECT_CALL(*m_thunderWrapper, isSuccessful(kNoError)).WillRepeatedly(Return(true));
         EXPECT_CALL(*m_textTrackWrapper, openSession(_, _))
             .WillOnce(Invoke(

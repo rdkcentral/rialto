@@ -232,10 +232,8 @@ static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuf
     return GST_FLOW_OK;
 }
 
-static gboolean
-gst_rialto_text_track_sink_set_position(const std::shared_ptr<firebolt::rialto::server::ITextTrackSession> &session,
-                                        uint64_t position, uint64_t offset)
-// NOLINT(build/function_format)
+static gboolean gst_rialto_text_track_sink_set_position( // NOLINT(build/function_format)
+    const std::shared_ptr<firebolt::rialto::server::ITextTrackSession> &session, uint64_t position, uint64_t offset)
 {
     if (!session)
     {
