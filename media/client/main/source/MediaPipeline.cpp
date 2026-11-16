@@ -326,6 +326,11 @@ bool MediaPipeline::setReportDecodeErrors(int32_t sourceId, bool reportDecodeErr
     return m_mediaPipelineIpc->setReportDecodeErrors(sourceId, reportDecodeErrors);
 }
 
+bool MediaPipeline::setMetricSubscription(const std::vector<MetricType> &types)
+{
+    return m_mediaPipelineIpc->setMetricSubscription(types);
+}
+
 bool MediaPipeline::getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
 {
     return m_mediaPipelineIpc->getQueuedFrames(sourceId, queuedFrames);
@@ -339,6 +344,12 @@ bool MediaPipeline::getImmediateOutput(int32_t sourceId, bool &immediateOutput)
 bool MediaPipeline::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
 {
     return m_mediaPipelineIpc->getStats(sourceId, renderedFrames, droppedFrames);
+}
+
+bool MediaPipeline::getFrameCounters(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
+                                      uint64_t &corruptedFrames, uint64_t &timestamp)
+{
+    return m_mediaPipelineIpc->getFrameCounters(sourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp);
 }
 
 bool MediaPipeline::handleSetPosition(int64_t position)

@@ -35,4 +35,8 @@ target_link_libraries(
 install(
         TARGETS RialtoMetrics
         DESTINATION lib
+<<<<<<< HEAD
 )
+=======
+)
+>>>>>>> feature/RDKEMW-28580
