@@ -89,6 +89,10 @@ public:
                     gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
             .WillRepeatedly(Return(FALSE));
         EXPECT_CALL(*m_gstWrapperMock,
+                    gstElementFactoryListIsType(m_elementFactory,
+                                                GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+            .WillRepeatedly(Return(FALSE));
+        EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER |
                                                                       GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
             .WillRepeatedly(Return(TRUE));
@@ -131,6 +135,10 @@ public:
             .WillRepeatedly(Return(FALSE));
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+            .WillRepeatedly(Return(TRUE));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstElementFactoryListIsType(m_elementFactory,
+                                                GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
             .WillRepeatedly(Return(TRUE));
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER |

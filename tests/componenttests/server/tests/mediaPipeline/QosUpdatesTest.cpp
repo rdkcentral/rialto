@@ -37,7 +37,8 @@ using testing::StrEq;
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr guint kVideoDecodeErrorMetric{3};
+// Southbound metric 5 is translated to the public VIDEO_DECODE_ERROR metric.
+constexpr guint kVideoDecodeErrorMetric{5};
 constexpr guint kMetricPhaseOccurrence{1};
 constexpr gint64 kMetricPtsNs{1234567890};
 constexpr guint64 kEpisodeCount{4};
@@ -45,6 +46,23 @@ constexpr guint64 kEpisodeDurationNs{1000};
 const std::string kAudioSourceName{"Audio"};
 const std::string kVideoSourceName{"Video"};
 const std::string kElementTypeName{"GenericSink"};
+
+firebolt::rialto::MediaPipelineMetricEvent::MetricType expectedMetricType(guint metric)
+{
+    switch (metric)
+    {
+    case 3:
+        return firebolt::rialto::MediaPipelineMetricEvent::VIDEO_FRAME_REPEAT;
+    case 4:
+        return firebolt::rialto::MediaPipelineMetricEvent::AUDIO_GAP;
+    case 5:
+        return firebolt::rialto::MediaPipelineMetricEvent::VIDEO_DECODE_ERROR;
+    case 6:
+        return firebolt::rialto::MediaPipelineMetricEvent::AUDIO_DECODE_ERROR;
+    default:
+        return static_cast<firebolt::rialto::MediaPipelineMetricEvent::MetricType>(metric);
+    }
+}
 } // namespace
 
 namespace firebolt::rialto::server::ct
@@ -87,6 +105,12 @@ public:
     void sendVideoDecodeErrorMetric()
     {
         m_gstreamerStub.sendMetric(&m_src, kVideoDecodeErrorMetric, kMetricPhaseOccurrence, kMetricPtsNs);
+    }
+
+    void sendMetric(guint metric, guint observationKind, const std::optional<guint64> &count,
+                    const std::optional<guint64> &durationNs)
+    {
+        m_gstreamerStub.sendMetric(&m_src, metric, observationKind, kMetricPtsNs, count, durationNs);
     }
 
     void expectVideoSinkMetricsLookups()
@@ -371,10 +395,11 @@ TEST_F(QosUpdatesTest, QosUpdates)
     ExpectMessage<firebolt::rialto::MediaPipelineMetricEvent> expectedMetricEvent{m_clientStub};
     sendVideoDecodeErrorMetric();
 
-    // The source element is not registered with the ElementToSourceMapper in this test, so ids default to 0.
+    // Only the source id defaults to 0 because the element is not registered with the ElementToSourceMapper.
+    // The IPC event carries the actual session id, which depends on earlier sessions in this process.
     const auto receivedMetricEvent{expectedMetricEvent.getMessage()};
     ASSERT_TRUE(receivedMetricEvent);
-    EXPECT_EQ(receivedMetricEvent->session_id(), 0u);
+    EXPECT_EQ(receivedMetricEvent->session_id(), m_sessionId);
     EXPECT_EQ(receivedMetricEvent->source_id(), 0u);
     EXPECT_EQ(receivedMetricEvent->type(), firebolt::rialto::MediaPipelineMetricEvent::VIDEO_DECODE_ERROR);
     EXPECT_EQ(receivedMetricEvent->pts_ns(), kMetricPtsNs);
@@ -630,12 +655,11 @@ TEST_F(QosUpdatesTest, PlaybackMetricMatrixIsParsedAndForwardedThroughIpc)
 
             willGetStats();
             ExpectMessage<firebolt::rialto::MediaPipelineMetricEvent> expectedMetricEvent{m_clientStub};
-            m_gstreamerStub.sendMetric(&m_src, metric, observationKind, kMetricPtsNs, count, durationNs);
+            sendMetric(metric, observationKind, count, durationNs);
 
             const auto receivedMetricEvent{expectedMetricEvent.getMessage()};
             ASSERT_TRUE(receivedMetricEvent) << "metric " << metric << " observation-kind " << observationKind;
-            EXPECT_EQ(receivedMetricEvent->type(),
-                      static_cast<firebolt::rialto::MediaPipelineMetricEvent::MetricType>(metric));
+            EXPECT_EQ(receivedMetricEvent->type(), expectedMetricType(metric));
             EXPECT_EQ(receivedMetricEvent->phase(),
                       static_cast<firebolt::rialto::MediaPipelineMetricEvent::MetricPhase>(observationKind));
             EXPECT_EQ(receivedMetricEvent->pts_ns(), kMetricPtsNs);
