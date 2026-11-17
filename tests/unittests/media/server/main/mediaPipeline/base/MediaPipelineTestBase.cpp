@@ -134,6 +134,7 @@ void MediaPipelineTestBase::expectNotifyNeedData(MediaSourceType sourceType, int
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_sharedMemoryBufferMock);
     ASSERT_TRUE(m_activeRequestsMock);
+    EXPECT_CALL(*m_activeRequestsMock, hasRequest(sourceType)).WillOnce(Return(false));
     EXPECT_CALL(*m_sharedMemoryBufferMock,
                 clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, sourceType))
         .WillOnce(Return(true));
@@ -153,6 +154,7 @@ void MediaPipelineTestBase::expectNotifyNeedDataEos(MediaSourceType sourceType)
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_sharedMemoryBufferMock);
     ASSERT_TRUE(m_activeRequestsMock);
+    EXPECT_CALL(*m_activeRequestsMock, hasRequest(sourceType)).WillOnce(Return(false));
     EXPECT_CALL(*m_sharedMemoryBufferMock,
                 clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, sourceType))
         .WillOnce(Return(true));
