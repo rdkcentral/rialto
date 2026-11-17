@@ -1477,6 +1477,13 @@ void MediaPipelineServerInternal::notifyPlaybackState(PlaybackState state)
     auto task = [&, state]()
     {
         m_currentPlaybackState = state;
+        if (PlaybackState::SEEK_DONE == state)
+        {
+            // The client ignores NeedMediaData requests received while seeking and never answers them. Drop any
+            // request sent during the seek here, in the same task as the SEEK_DONE notification, so that no such
+            // request stays outstanding and blocks the requests sent after the seek.
+            m_activeRequests->clear();
+        }
         if (m_mediaPipelineClient)
         {
             m_mediaPipelineClient->notifyPlaybackState(state);
@@ -1511,6 +1518,12 @@ bool MediaPipelineServerInternal::notifyNeedMediaData(MediaSourceType mediaSourc
 
 bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType mediaSourceType)
 {
+    if (m_activeRequests->hasRequest(mediaSourceType))
+    {
+        RIALTO_SERVER_LOG_INFO("NeedMediaData not sent for %s - request already pending",
+                               common::convertMediaSourceType(mediaSourceType));
+        return true;
+    }
     m_needMediaDataTimers.erase(mediaSourceType);
     m_shmBuffer->clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
     const auto kSourceIter = m_attachedSources.find(mediaSourceType);
@@ -1559,6 +1572,12 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataWithDelay(MediaSourceType m
 
 bool MediaPipelineServerInternal::notifyNeedMediaDataWithDelayInternal(MediaSourceType mediaSourceType)
 {
+    if (m_activeRequests->hasRequest(mediaSourceType))
+    {
+        RIALTO_SERVER_LOG_INFO("NeedMediaData not scheduled for %s - request already pending",
+                               common::convertMediaSourceType(mediaSourceType));
+        return true;
+    }
     m_needMediaDataTimers.erase(mediaSourceType);
     m_shmBuffer->clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
     const auto kSourceIter = m_attachedSources.find(mediaSourceType);
