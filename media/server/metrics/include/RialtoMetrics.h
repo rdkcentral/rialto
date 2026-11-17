@@ -8,7 +8,6 @@
 
 namespace firebolt::rialto::server
 {
-MetricType convertMetricType(std::uint32_t metric);
 MetricPhase convertObservationKind(std::uint32_t observationKind);
 
 class RialtoMetrics final : public IRialtoMetrics
