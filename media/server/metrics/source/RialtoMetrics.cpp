@@ -108,32 +108,6 @@ std::int64_t getUnixTimestampNs()
 }
 } // namespace
 
-MetricType convertMetricType(std::uint32_t metric)
-{
-	switch (metric)
-	{
-		case 1U:
-			return MetricType::VIDEO_FRAME_DROP;
-		case 2U:
-			return MetricType::AUDIO_FRAME_DROP;
-		case 3U:
-			return MetricType::VIDEO_DECODE_ERROR;
-		case 4U:
-			return MetricType::AUDIO_DECODE_ERROR;
-		case 5U:
-			return MetricType::VIDEO_FRAME_REPEAT;
-		case 6U:
-			return MetricType::AUDIO_GAP;
-		case 7U:
-			return MetricType::BUFFER_UNDERFLOW;
-		default:
-			RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER,
-					"convertMetricType: unhandled southbound metric value %u, defaulting to VIDEO_FRAME_DROP",
-					metric);
-			return MetricType::VIDEO_FRAME_DROP;
-	}
-}
-
 MetricPhase convertObservationKind(std::uint32_t observationKind)
 {
 	switch (observationKind)
@@ -362,7 +336,7 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, MetricEvent& 
 		return GST_FLOW_ERROR;
 	}
 
-	out.type = convertMetricType(metricVal);
+	out.type = static_cast<MetricType>(metricVal);
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
 					"ValidateMediaPipelineMetric: southbound metric %u translated to MetricType=%u",
 					metricVal, static_cast<unsigned int>(out.type));

@@ -494,10 +494,10 @@ enum class MetricType : uint32_t
 {
     VIDEO_FRAME_DROP = 1,   /**< Video frames dropped by the sink */
     AUDIO_FRAME_DROP = 2,   /**< Audio frames dropped by the sink */
-    VIDEO_FRAME_REPEAT = 3, /**< Video frame repeated */
-    AUDIO_GAP = 4,          /**< Gap in audio samples */
-    VIDEO_DECODE_ERROR = 5, /**< Video decode error */
-    AUDIO_DECODE_ERROR = 6, /**< Audio decode error */
+    VIDEO_DECODE_ERROR = 3, /**< Video decode error */
+    AUDIO_DECODE_ERROR = 4, /**< Audio decode error */
+    VIDEO_FRAME_REPEAT = 5, /**< Video frame repeated */
+    AUDIO_GAP = 6,          /**< Gap in audio samples */
     BUFFER_UNDERFLOW = 7    /**< Buffer underflow */
 };
 

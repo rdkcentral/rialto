@@ -14,16 +14,8 @@ using firebolt::rialto::MetricPhase;
 using firebolt::rialto::MetricType;
 using firebolt::rialto::VideoFrameCounters;
 
-TEST(RialtoMetricsTest, ConvertsSouthboundMetricValuesToPublicMetricTypes)
+TEST(RialtoMetricsTest, ConvertsObservationKindValues)
 {
-    EXPECT_EQ(MetricType::VIDEO_FRAME_DROP, firebolt::rialto::server::convertMetricType(1U));
-    EXPECT_EQ(MetricType::AUDIO_FRAME_DROP, firebolt::rialto::server::convertMetricType(2U));
-    EXPECT_EQ(MetricType::VIDEO_DECODE_ERROR, firebolt::rialto::server::convertMetricType(3U));
-    EXPECT_EQ(MetricType::AUDIO_DECODE_ERROR, firebolt::rialto::server::convertMetricType(4U));
-    EXPECT_EQ(MetricType::VIDEO_FRAME_REPEAT, firebolt::rialto::server::convertMetricType(5U));
-    EXPECT_EQ(MetricType::AUDIO_GAP, firebolt::rialto::server::convertMetricType(6U));
-    EXPECT_EQ(MetricType::BUFFER_UNDERFLOW, firebolt::rialto::server::convertMetricType(7U));
-
     EXPECT_EQ(MetricPhase::OCCURRENCE, firebolt::rialto::server::convertObservationKind(1U));
     EXPECT_EQ(MetricPhase::EPISODE_STARTED, firebolt::rialto::server::convertObservationKind(2U));
     EXPECT_EQ(MetricPhase::EPISODE_RESOLVED, firebolt::rialto::server::convertObservationKind(3U));
