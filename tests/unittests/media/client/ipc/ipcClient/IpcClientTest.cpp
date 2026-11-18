@@ -84,7 +84,8 @@ TEST_F(IpcClientTest, reconnectSuccess)
     const std::weak_ptr<StrictMock<ChannelMock>> kOldChannel{oldChannelMock};
 
     EXPECT_CALL(*oldChannelMock, process()).Times(2).WillOnce(Return(true)).WillOnce(Return(false));
-    EXPECT_CALL(*oldChannelMock, wait(_)).WillOnce(Invoke(this, &IpcClientTestBase::waitForDisconnect));
+    EXPECT_CALL(*oldChannelMock, wait(_))
+        .WillOnce(Invoke([this](int timeoutMSecs) { return waitForDisconnect(timeoutMSecs); }));
     // The broken channel is checked twice: once by reconnect() and once by disconnect()
     EXPECT_CALL(*oldChannelMock, isConnected()).Times(2).WillRepeatedly(Return(false));
     EXPECT_CALL(*oldChannelMock, disconnect())
