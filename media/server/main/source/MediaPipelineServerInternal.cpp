@@ -555,7 +555,14 @@ bool MediaPipelineServerInternal::setImmediateOutputInternal(int32_t sourceId, b
         return false;
     }
 
-    m_IsLowLatencyVideoPlayer = immediateOutput;
+    if (sourceIter->first == MediaSourceType::VIDEO)
+    {
+        m_IsLowLatencyVideoPlayer = immediateOutput;
+    }
+    else if (sourceIter->first == MediaSourceType::AUDIO)
+    {
+        m_IsLowLatencyAudioPlayer = immediateOutput;
+    }
     return m_gstPlayer->setImmediateOutput(sourceIter->first, immediateOutput);
 }
 

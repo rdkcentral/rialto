@@ -147,7 +147,7 @@ bool IpcClient::disconnect()
     }
 
     RIALTO_CLIENT_LOG_INFO("closing IPC channel");
-    m_disconnecting = true;
+    m_disconnecting = ipcChannel->isConnected();
 
     // disconnect from the server, this should terminate the thread so join that too
     ipcChannel->disconnect();

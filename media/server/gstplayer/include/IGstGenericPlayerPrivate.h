@@ -110,6 +110,20 @@ public:
     virtual bool setImmediateOutput() = 0;
 
     /**
+     * @brief Sets properties for low latency on audio decoder. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setLowLatencyAudioDecoder() = 0;
+
+    /**
+     * @brief Sets properties for low latency on audio decoder. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setLowLatencyAudioSink() = 0;
+
+    /**
      * @brief Sets report decode error. Called by the worker thread.
      *
      * @retval true on success.

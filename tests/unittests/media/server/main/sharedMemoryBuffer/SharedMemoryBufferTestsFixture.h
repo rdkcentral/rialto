@@ -67,6 +67,9 @@ public:
     void shouldClearSubtitleData(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id);
     void shouldFailToClearSubtitleData(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType,
                                        int id);
+    void shouldZeroOnlyLeadingBytesOnClear(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType,
+                                           int id, const firebolt::rialto::MediaSourceType &mediaSourceType,
+                                           std::uint32_t expectedClearedLen);
     uint8_t *shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id,
                               const firebolt::rialto::MediaSourceType &mediaSourceType);
     void shouldFailToGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id,

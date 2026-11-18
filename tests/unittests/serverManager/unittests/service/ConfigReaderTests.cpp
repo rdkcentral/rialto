@@ -406,7 +406,7 @@ TEST_F(ConfigReaderTests, defaultConfigValuesAreSet)
               std::find(config.sessionServerEnvVars.begin(), config.sessionServerEnvVars.end(), "XDG_RUNTIME_DIR=/tmp"));
     EXPECT_NE(config.sessionServerEnvVars.end(),
               std::find(config.sessionServerEnvVars.begin(), config.sessionServerEnvVars.end(),
-                        "GST_REGISTRY=/tmp/rialto-server-gstreamer-cache.bin"));
+                        "GST_REGISTRY=/opt/.gstreamer/registry.bin"));
     EXPECT_NE(config.sessionServerEnvVars.end(),
               std::find(config.sessionServerEnvVars.begin(), config.sessionServerEnvVars.end(),
                         "WESTEROS_SINK_USE_ESSRMGR=1"));

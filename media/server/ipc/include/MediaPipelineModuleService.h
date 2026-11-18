@@ -173,6 +173,8 @@ public:
 private:
     service::IMediaPipelineService &m_mediaPipelineService;
     std::map<std::shared_ptr<::firebolt::rialto::ipc::IClient>, std::set<int>> m_clientSessions;
+    std::map<int, std::map<int32_t, MediaSourceType>> m_sessionSources;
+    std::map<int, bool> m_sessionImmediateOutput;
 };
 } // namespace firebolt::rialto::server::ipc
 

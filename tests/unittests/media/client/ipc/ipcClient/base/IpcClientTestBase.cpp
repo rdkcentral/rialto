@@ -101,6 +101,7 @@ void IpcClientTestBase::createRpcController()
 
 void IpcClientTestBase::disconnectIpcClient()
 {
+    EXPECT_CALL(*m_channelMock, isConnected()).WillOnce(Return(true)).RetiresOnSaturation();
     expectDisconnectChannel();
     m_sut.reset();
 }

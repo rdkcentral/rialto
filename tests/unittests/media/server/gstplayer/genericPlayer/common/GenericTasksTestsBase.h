@@ -94,6 +94,8 @@ protected:
     void checkPendingGeometry(const firebolt::rialto::server::Rectangle &geometry);
     void shouldSetupVideoElementWithPendingImmediateOutput();
     void shouldSetupAudioSinkElementWithPendingLowLatency();
+    void shouldSetupAudioSinkElementWithPendingLowLatencyAudioSink();
+    void shouldSetupAudioDecoderElementWithPendingLowLatency();
     void shouldSetupAudioSinkElementWithPendingSync();
     void shouldSetupAudioDecoderElementWithPendingSyncOff();
     void shouldSetupAudioDecoderElementWithPendingStreamSyncMode();
@@ -310,6 +312,8 @@ protected:
     // immediate-output sink property test methods
     void shouldSetImmediateOutput();
     void triggerSetImmediateOutput();
+    void shouldSetAudioImmediateOutput();
+    void triggerAudioSetImmediateOutput();
 
     // low-latency sink property test methods
     void shouldSetLowLatency();

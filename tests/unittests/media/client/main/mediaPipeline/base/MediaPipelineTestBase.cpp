@@ -28,6 +28,12 @@ void MediaPipelineTestBase::SetUp() // NOLINT(build/function_format)
     m_mediaPipelineIpcFactoryMock = std::make_shared<StrictMock<MediaPipelineIpcFactoryMock>>();
     m_mediaFrameWriterFactoryMock = std::make_shared<StrictMock<MediaFrameWriterFactoryMock>>();
     m_clientControllerMock = std::make_shared<StrictMock<ClientControllerMock>>();
+
+    // Any test that constructs a MediaPipeline directly (not via createMediaPipeline()) still needs
+    // these to be satisfied, since subscribe/unsubscribe now happen unconditionally in ctor/dtor.
+    ON_CALL(*m_clientControllerMock, subscribeSharedMemoryHandle(_)).WillByDefault(Return(0));
+    EXPECT_CALL(*m_clientControllerMock, subscribeSharedMemoryHandle(_)).Times(AnyNumber());
+    EXPECT_CALL(*m_clientControllerMock, unsubscribeSharedMemoryHandle(_)).Times(AnyNumber());
 }
 
 void MediaPipelineTestBase::TearDown() // NOLINT(build/function_format)
@@ -50,6 +56,9 @@ void MediaPipelineTestBase::createMediaPipeline()
 
     EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, _, _))
         .WillOnce(DoAll(SaveArg<0>(&m_mediaPipelineCallback), Return(ByMove(std::move(mediaPipelineIpcMock)))));
+
+    EXPECT_CALL(*m_clientControllerMock, subscribeSharedMemoryHandle(_))
+        .WillOnce(DoAll(SaveArg<0>(&m_shmObserver), Return(1)));
 
     EXPECT_NO_THROW(m_mediaPipeline = std::make_unique<MediaPipeline>(m_mediaPipelineClientMock, videoReq,
                                                                       m_mediaPipelineIpcFactoryMock,
@@ -84,4 +93,9 @@ void MediaPipelineTestBase::needData(int32_t sourceId, size_t frameCount, uint32
         .RetiresOnSaturation();
 
     m_mediaPipelineCallback->notifyNeedMediaData(sourceId, frameCount, requestId, shmInfo);
+}
+
+void MediaPipelineTestBase::updateSharedMemoryHandle(const std::shared_ptr<ISharedMemoryHandle> &handle)
+{
+    m_shmObserver(handle);
 }

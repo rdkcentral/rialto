@@ -168,8 +168,8 @@ static gboolean gst_rialto_text_track_sink_start(GstBaseSink *sink) // NOLINT(bu
     }
     catch (const std::exception &e)
     {
-        GST_ERROR_OBJECT(sink, "Failed to create TextTrackSession. Reason '%s'", e.what());
-        return false;
+        RIALTO_SERVER_LOG_WARN("Failed to create TextTrack session, reason: '%s'", e.what());
+        return true;
     }
 
     GST_INFO_OBJECT(sink, "Successfully started TextTrack sink");
@@ -188,6 +188,11 @@ static gboolean gst_rialto_text_track_sink_stop(GstBaseSink *sink) // NOLINT(bui
 static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuffer *buffer) // NOLINT(build/function_format)
 {
     GstRialtoTextTrackSink *textTrackSink = GST_RIALTO_TEXT_TRACK_SINK(sink);
+    if (!textTrackSink->priv->m_textTrackSession)
+    {
+        GST_LOG_OBJECT(textTrackSink, "No TextTrack session, dropping buffer");
+        return GST_FLOW_OK;
+    }
 
     GstMapInfo info;
     if (gst_buffer_map(buffer, &info, GST_MAP_READ))
@@ -215,7 +220,7 @@ static gboolean gst_rialto_text_track_sink_set_position(GstRialtoTextTrackSink *
 {
     if (!textTrackSink->priv->m_textTrackSession)
     {
-        GST_ERROR_OBJECT(textTrackSink, "Session is NULL");
+        GST_DEBUG_OBJECT(textTrackSink, "No TextTrack session, position not set");
         return FALSE;
     }
 
@@ -237,6 +242,12 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
 
     GstStructure *structure = gst_caps_get_structure(caps, 0);
     const gchar *mimeName = gst_structure_get_name(structure);
+
+    if (!textTrackSink->priv->m_textTrackSession)
+    {
+        GST_WARNING_OBJECT(sink, "No TextTrack session, subtitles of type '%s' will not be displayed", mimeName);
+        return TRUE;
+    }
 
     if (g_str_has_prefix(mimeName, "text/vtt") || g_str_has_prefix(mimeName, "application/x-subtitle-vtt"))
     {
@@ -306,7 +317,8 @@ static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *ev
     {
     case GST_EVENT_FLUSH_START:
     {
-        if (!textTrackSink->priv->m_textTrackSession->resetSession(textTrackSink->priv->m_isMuted))
+        if (textTrackSink->priv->m_textTrackSession &&
+            !textTrackSink->priv->m_textTrackSession->resetSession(textTrackSink->priv->m_isMuted))
         {
             GST_ERROR_OBJECT(textTrackSink, "Failed to reset TextTrack session");
         }
@@ -375,19 +387,17 @@ gst_rialto_text_track_sink_change_state(GstElement *element, GstStateChange tran
     {
     case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
     {
-        if (!textTrackSink->priv->m_textTrackSession->play())
+        if (textTrackSink->priv->m_textTrackSession && !textTrackSink->priv->m_textTrackSession->play())
         {
             GST_ERROR_OBJECT(textTrackSink, "Failed to play textTrack session");
-            return GST_STATE_CHANGE_FAILURE;
         }
         break;
     }
     case GST_STATE_CHANGE_PLAYING_TO_PAUSED:
     {
-        if (!textTrackSink->priv->m_textTrackSession->pause())
+        if (textTrackSink->priv->m_textTrackSession && !textTrackSink->priv->m_textTrackSession->pause())
         {
             GST_ERROR_OBJECT(textTrackSink, "Failed to pause textTrack session");
-            return GST_STATE_CHANGE_FAILURE;
         }
 
         break;

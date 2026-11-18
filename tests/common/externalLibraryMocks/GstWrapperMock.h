@@ -37,6 +37,8 @@ public:
     MOCK_METHOD(GstPlugin *, gstRegistryFindPlugin, (GstRegistry * registry, const gchar *name), (override));
     MOCK_METHOD(void, gstRegistryRemovePlugin, (GstRegistry * registry, GstPlugin *plugin), (override));
     MOCK_METHOD(void, gstObjectUnref, (gpointer object), (override));
+    MOCK_METHOD(GSource *, gstBusCreateWatch, (GstBus * bus), (override));
+    MOCK_METHOD(GstMessage *, gstMessageRef, (GstMessage * msg), (override));
     MOCK_METHOD(GstRegistry *, gstRegistryGet, (), (override));
     MOCK_METHOD(GstElementFactory *, gstElementFactoryFind, (const gchar *name), (override));
     MOCK_METHOD(gboolean, gstElementRegister, (GstPlugin * plugin, const gchar *name, guint rank, GType type),
@@ -102,6 +104,7 @@ public:
     MOCK_METHOD(void, gstDebugBinToDotFileWithTs, (GstBin * bin, GstDebugGraphDetails details, const gchar *file_name),
                 (override));
     MOCK_METHOD(GstElementFactory *, gstElementGetFactory, (GstElement * element), (const, override));
+    MOCK_METHOD(const gchar *, gstPluginFeatureGetName, (GstElementFactory * factory), (const, override));
     MOCK_METHOD(gboolean, gstElementFactoryListIsType, (GstElementFactory * factory, GstElementFactoryListType type),
                 (const, override));
     MOCK_METHOD(GstCaps *, gstCapsCopy, (const GstCaps *caps), (const, override));

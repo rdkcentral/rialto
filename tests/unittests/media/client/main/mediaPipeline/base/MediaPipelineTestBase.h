@@ -66,6 +66,9 @@ protected:
     // MediaPipeline object
     std::shared_ptr<MediaPipeline> m_mediaPipeline;
 
+    // Shared memory handle observer, captured from subscribeSharedMemoryHandle()
+    IClientController::SharedMemoryHandleObserver m_shmObserver;
+
     void SetUp();
     void TearDown();
     void createMediaPipeline();
@@ -74,6 +77,7 @@ protected:
     void setNetworkState(NetworkState state);
     void needData(int32_t sourceId, size_t frameCount, uint32_t requestId,
                   const std::shared_ptr<MediaPlayerShmInfo> &shmInfo);
+    void updateSharedMemoryHandle(const std::shared_ptr<ISharedMemoryHandle> &handle);
 };
 
 #endif // MEDIA_PIPELINE_TEST_BASE_H_

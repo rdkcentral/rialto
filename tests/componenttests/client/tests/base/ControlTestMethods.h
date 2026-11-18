@@ -64,6 +64,10 @@ protected:
     void shouldNotifyApplicationStateRunning();
     void sendNotifyApplicationStateRunning();
 
+    // Verifies shared memory handle delivery via subscribeSharedMemoryHandle().
+    void checkSharedMemoryHandleIsValid();
+    void checkSharedMemoryHandleIsNull();
+
     // Component test helpers
     virtual void notifyEvent() = 0;
     virtual void waitEvent() = 0;

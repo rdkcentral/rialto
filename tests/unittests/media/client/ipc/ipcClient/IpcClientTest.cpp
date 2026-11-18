@@ -83,7 +83,8 @@ TEST_F(IpcClientTest, reconnectSuccess)
     EXPECT_NO_THROW(m_sut = std::make_unique<IpcClient>(m_channelFactoryMock, m_controllerFactoryMock,
                                                         m_blockingClosureFactoryMock));
 
-    EXPECT_CALL(*m_channelMock, isConnected()).WillOnce(Return(false)).RetiresOnSaturation();
+    // The broken channel is checked twice: once by reconnect() and once by disconnect()
+    EXPECT_CALL(*m_channelMock, isConnected()).Times(2).WillRepeatedly(Return(false)).RetiresOnSaturation();
     expectDisconnectChannel();
 
     EXPECT_TRUE(m_sut->reconnect());
@@ -128,6 +129,7 @@ TEST_F(IpcClientTest, reconnectFromIpcThreadFailure)
 
     // The ipc thread destroys the channel on the unexpected disconnect, so it is a race whether the
     // client still has one to disconnect when it is destructed
+    EXPECT_CALL(*m_channelMock, isConnected()).Times(AtMost(1)).WillRepeatedly(Return(false));
     EXPECT_CALL(*m_channelMock, disconnect()).Times(AtMost(1));
 
     EXPECT_NO_THROW(m_sut = std::make_unique<IpcClient>(m_channelFactoryMock, m_controllerFactoryMock,

@@ -661,6 +661,24 @@ public:
     virtual GstMessage *gstBusTimedPopFiltered(GstBus *bus, GstClockTime timeout, GstMessageType types) = 0;
 
     /**
+     * @brief Creates a GSource that watches the bus, dispatching a callback for every message received.
+     *
+     * @param[in] bus : bus to watch
+     *
+     * @retval a newly allocated GSource, transfer-full (caller owns the returned reference).
+     */
+    virtual GSource *gstBusCreateWatch(GstBus *bus) = 0;
+
+    /**
+     * @brief Increases the refcount of the message.
+     *
+     * @param[in] msg : a GstMessage.
+     *
+     * @retval the same message, for convenience.
+     */
+    virtual GstMessage *gstMessageRef(GstMessage *msg) = 0;
+
+    /**
      * @brief Gets a message fromt the bus
      *
      * @param[in] bin       : top-level pipeline
@@ -678,6 +696,15 @@ public:
      *         (static element). no refcounting is needed.
      */
     virtual GstElementFactory *gstElementGetFactory(GstElement *element) const = 0;
+
+    /**
+     * @brief Return the unique name of a plugin feature.
+     *
+     * @param[in] factory : a GstElementFactory
+     *
+     * @retval TRUE if factory is of type.
+     */
+    virtual const gchar *gstPluginFeatureGetName(GstElementFactory *factory) const = 0;
 
     /**
      * @brief Check if factory is of the given types.

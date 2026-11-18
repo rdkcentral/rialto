@@ -17,7 +17,10 @@
  * limitations under the License.
  */
 
+#include <chrono>
+#include <condition_variable>
 #include <memory>
+#include <mutex>
 
 #include "ControlTestMethods.h"
 #include "IClientController.h"
@@ -90,5 +93,44 @@ void ControlTestMethods::sendNotifyApplicationStateRunning()
 {
     getServerStub()->notifyApplicationStateEvent(kControlId, ApplicationState::RUNNING);
     waitEvent();
+}
+
+void ControlTestMethods::checkSharedMemoryHandleIsValid()
+{
+    IClientController &clientController = IClientControllerAccessor::instance().getClientController();
+    std::shared_ptr<ISharedMemoryHandle> handle;
+    const int token = clientController.subscribeSharedMemoryHandle(
+        [&](const std::shared_ptr<ISharedMemoryHandle> &currentHandle) { handle = currentHandle; });
+    clientController.unsubscribeSharedMemoryHandle(token);
+
+    ASSERT_NE(nullptr, handle);
+    EXPECT_NE(nullptr, handle->getShm());
+}
+
+void ControlTestMethods::checkSharedMemoryHandleIsNull()
+{
+    std::mutex handleMutex;
+    std::condition_variable handleCond;
+    bool handleIsNull{false};
+
+    IClientController &clientController = IClientControllerAccessor::instance().getClientController();
+    const int token = clientController.subscribeSharedMemoryHandle(
+        [&](const std::shared_ptr<ISharedMemoryHandle> &handle)
+        {
+            if (!handle)
+            {
+                std::lock_guard<std::mutex> lock{handleMutex};
+                handleIsNull = true;
+                handleCond.notify_all();
+            }
+        });
+
+    {
+        std::unique_lock<std::mutex> lock{handleMutex};
+        handleCond.wait_for(lock, std::chrono::seconds(1), [&] { return handleIsNull; });
+    }
+    clientController.unsubscribeSharedMemoryHandle(token);
+
+    EXPECT_TRUE(handleIsNull);
 }
 } // namespace firebolt::rialto::client::ct

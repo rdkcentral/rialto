@@ -96,11 +96,11 @@ void MainThread::mainThreadLoop()
             RIALTO_SERVER_LOG_WARN("Task ignored, client '%d' not registered", kTaskInfo->clientId);
         }
 
-        if (nullptr != kTaskInfo->cv)
+        if (kTaskInfo->state)
         {
-            std::unique_lock<std::mutex> lockTask(*(kTaskInfo->mutex));
-            kTaskInfo->done = true;
-            kTaskInfo->cv->notify_one();
+            std::unique_lock<std::mutex> lockTask(kTaskInfo->state->mutex);
+            kTaskInfo->state->done = true;
+            kTaskInfo->state->cv.notify_one();
         }
     }
 }
@@ -141,7 +141,7 @@ void MainThread::enqueueTask(uint32_t clientId, const Task &task)
 {
     std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
     newTask->clientId = clientId;
-    newTask->task = task;
+    newTask->task = std::move(task);
     {
         std::unique_lock<std::mutex> lock(m_taskQueueMutex);
         m_taskQueue.push_back(std::move(newTask));
@@ -151,41 +151,43 @@ void MainThread::enqueueTask(uint32_t clientId, const Task &task)
 
 void MainThread::enqueueTaskAndWait(uint32_t clientId, const Task &task)
 {
+    thread_local TaskState taskState;
+    taskState.done = false;
     std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
     newTask->clientId = clientId;
-    newTask->task = task;
-    newTask->mutex = std::make_unique<std::mutex>();
-    newTask->cv = std::make_unique<std::condition_variable>();
+    newTask->task = std::move(task);
+    newTask->state = &taskState;
 
     {
-        std::unique_lock<std::mutex> lockTask(*(newTask->mutex));
+        std::unique_lock<std::mutex> lockTask(taskState.mutex);
         {
             std::unique_lock<std::mutex> lockQueue(m_taskQueueMutex);
             m_taskQueue.push_back(newTask);
         }
         m_taskQueueCv.notify_one();
 
-        newTask->cv->wait(lockTask, [&] { return newTask->done; });
+        newTask->state->cv.wait(lockTask, [&] { return taskState.done; });
     }
 }
 
 void MainThread::enqueuePriorityTaskAndWait(uint32_t clientId, const Task &task)
 {
+    thread_local TaskState taskState;
+    taskState.done = false;
     std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
     newTask->clientId = clientId;
-    newTask->task = task;
-    newTask->mutex = std::make_unique<std::mutex>();
-    newTask->cv = std::make_unique<std::condition_variable>();
+    newTask->task = std::move(task);
+    newTask->state = &taskState;
 
     {
-        std::unique_lock<std::mutex> lockTask(*(newTask->mutex));
+        std::unique_lock<std::mutex> lockTask(taskState.mutex);
         {
             std::unique_lock<std::mutex> lockQueue(m_taskQueueMutex);
             m_taskQueue.push_front(newTask);
         }
         m_taskQueueCv.notify_one();
 
-        newTask->cv->wait(lockTask, [&] { return newTask->done; });
+        newTask->state->cv.wait(lockTask, [&] { return taskState.done; });
     }
 }
 } // namespace firebolt::rialto::server

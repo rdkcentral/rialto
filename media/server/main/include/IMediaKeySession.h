@@ -92,9 +92,11 @@ public:
     /**
      * @brief Loads the existing key session.
      *
+     * @param[in] cdmKeySessionId : The internal CDM key session ID.
+     *
      * @retval an error status.
      */
-    virtual MediaKeyErrorStatus loadSession() = 0;
+    virtual MediaKeyErrorStatus loadSession(const std::string &cdmKeySessionId) = 0;
 
     /**
      * @brief Updates the key session's state.

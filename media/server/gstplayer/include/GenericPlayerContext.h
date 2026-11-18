@@ -169,6 +169,16 @@ struct GenericPlayerContext
     std::optional<bool> pendingImmediateOutputForVideo{};
 
     /**
+     * @brief Pending low latency properties for audio decoder
+     */
+    std::optional<bool> pendingLowLatencyForAudioDecoder{};
+
+    /**
+     * @brief Pending low latency properties for audio sink
+     */
+    std::optional<bool> pendingLowLatencyForAudioSink{};
+
+    /**
      * @brief Pending report decode errors for MediaSourceType::VIDEO
      */
     std::optional<bool> pendingReportDecodeErrorsForVideo{};
