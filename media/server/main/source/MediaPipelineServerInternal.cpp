@@ -1517,8 +1517,8 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType me
 {
     if (m_activeRequests->hasRequest(mediaSourceType))
     {
-        RIALTO_SERVER_LOG_INFO("NeedMediaData not sent for %s - request already pending",
-                               common::convertMediaSourceType(mediaSourceType));
+        RIALTO_SERVER_LOG_MIL("NeedMediaData not sent for %s - request already pending",
+                              common::convertMediaSourceType(mediaSourceType));
         return true;
     }
     m_needMediaDataTimers.erase(mediaSourceType);
@@ -1571,8 +1571,8 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataWithDelayInternal(MediaSour
 {
     if (m_activeRequests->hasRequest(mediaSourceType))
     {
-        RIALTO_SERVER_LOG_INFO("NeedMediaData not scheduled for %s - request already pending",
-                               common::convertMediaSourceType(mediaSourceType));
+        RIALTO_SERVER_LOG_MIL("NeedMediaData not scheduled for %s - request already pending",
+                              common::convertMediaSourceType(mediaSourceType));
         return true;
     }
     m_needMediaDataTimers.erase(mediaSourceType);
