@@ -59,19 +59,6 @@ void IpcClientTestBase::expectIpcLoop()
     EXPECT_CALL(*m_channelMock, wait(_)).WillOnce(Invoke(this, &IpcClientTestBase::waitForDisconnect));
 }
 
-void IpcClientTestBase::expectIpcLoopTwice()
-{
-    // The ipc thread of the first connection is joined before the second one is started, so both
-    // loops run their process()/wait()/process() cycle in a fixed order
-    EXPECT_CALL(*m_channelMock, process())
-        .Times(4)
-        .WillOnce(Return(true))
-        .WillOnce(Return(false))
-        .WillOnce(Return(true))
-        .WillOnce(Return(false));
-    EXPECT_CALL(*m_channelMock, wait(_)).Times(2).WillRepeatedly(Invoke(this, &IpcClientTestBase::waitForDisconnect));
-}
-
 bool IpcClientTestBase::waitForDisconnect(int timeoutMSecs)
 {
     std::unique_lock<std::mutex> locker(m_eventsLock);

@@ -74,7 +74,6 @@ protected:
     void expectCreateChannel();
     void expectDisconnectChannel();
     void expectIpcLoop();
-    void expectIpcLoopTwice();
     bool waitForDisconnect(int timeoutMSecs);
 };
 

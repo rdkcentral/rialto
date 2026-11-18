@@ -72,25 +72,64 @@ TEST_F(IpcClientTest, reconnectWhenChannelStillConnected)
 }
 
 /**
- * Test that reconnect closes the broken connection and establishes a new one. The ipc thread of the
- * old connection has to be joined before the new one is started.
+ * Test that reconnect closes the broken connection and establishes a new one on a new channel. The old
+ * channel has to be disconnected and released by the client, and its ipc thread joined, before the
+ * replacement channel is created. Outstanding calls on the old channel are completed with an error by
+ * the channel itself when it is disconnected and destroyed, so they depend on exactly that.
  */
 TEST_F(IpcClientTest, reconnectSuccess)
 {
-    // Two connections are established, the initial one and the one built by reconnect()
-    expectCreateChannel();
-    expectCreateChannel();
-    expectIpcLoopTwice();
+    // The initial connection uses its own channel, the connection built by reconnect() uses the fixture's one
+    auto oldChannelMock{std::make_shared<StrictMock<ChannelMock>>()};
+    const std::weak_ptr<StrictMock<ChannelMock>> kOldChannel{oldChannelMock};
+
+    EXPECT_CALL(*oldChannelMock, process()).Times(2).WillOnce(Return(true)).WillOnce(Return(false));
+    EXPECT_CALL(*oldChannelMock, wait(_)).WillOnce(Invoke(this, &IpcClientTestBase::waitForDisconnect));
+    // The broken channel is checked twice: once by reconnect() and once by disconnect()
+    EXPECT_CALL(*oldChannelMock, isConnected()).Times(2).WillRepeatedly(Return(false));
+    EXPECT_CALL(*oldChannelMock, disconnect())
+        .WillOnce(Invoke(
+            [this]()
+            {
+                std::lock_guard<std::mutex> locker(m_eventsLock);
+                m_disconnected = true;
+                m_eventsCond.notify_all();
+            }));
+
+    Sequence channelSeq;
+    EXPECT_CALL(*m_channelFactoryMock, createChannel(m_kRialtoPath))
+        .InSequence(channelSeq)
+        .WillOnce(Invoke(
+            [this, &oldChannelMock](const std::string &socketPath) -> std::shared_ptr<IChannel>
+            {
+                std::lock_guard<std::mutex> locker(m_eventsLock);
+                m_disconnected = false;
+
+                // Hand over the only strong reference, so that the client is the sole owner of the old channel
+                return std::move(oldChannelMock);
+            }));
+    EXPECT_CALL(*m_channelFactoryMock, createChannel(m_kRialtoPath))
+        .InSequence(channelSeq)
+        .WillOnce(Invoke(
+            [this, &kOldChannel](const std::string &socketPath) -> std::shared_ptr<IChannel>
+            {
+                // The old channel has been destroyed before its replacement is created
+                EXPECT_TRUE(kOldChannel.expired());
+
+                std::lock_guard<std::mutex> locker(m_eventsLock);
+                m_disconnected = false;
+                return m_channelMock;
+            }));
+    expectIpcLoop();
 
     EXPECT_NO_THROW(m_sut = std::make_unique<IpcClient>(m_channelFactoryMock, m_controllerFactoryMock,
                                                         m_blockingClosureFactoryMock));
-
-    // The broken channel is checked twice: once by reconnect() and once by disconnect()
-    EXPECT_CALL(*m_channelMock, isConnected()).Times(2).WillRepeatedly(Return(false)).RetiresOnSaturation();
-    expectDisconnectChannel();
+    ASSERT_FALSE(kOldChannel.expired());
+    EXPECT_EQ(m_sut->getChannel().lock(), kOldChannel.lock());
 
     EXPECT_TRUE(m_sut->reconnect());
 
+    EXPECT_TRUE(kOldChannel.expired());
     EXPECT_EQ(m_sut->getChannel().lock(), m_channelMock);
 
     disconnectIpcClient();
