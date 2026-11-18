@@ -17,10 +17,13 @@
  * limitations under the License.
  */
 
+#include <atomic>
 #include <condition_variable>
 #include <gtest/gtest.h>
 #include <mutex>
+#include <stdexcept>
 #include <thread>
+#include <vector>
 
 #include "ITimer.h"
 
@@ -141,5 +144,64 @@ TEST(TimerTests, ShouldCancelPeriodicTimerInCallback)
         cv.wait_for(lock, kEnoughTimeForTestToComplete);
         std::this_thread::sleep_for(std::chrono::milliseconds{30});
         EXPECT_EQ(callCounter, 3);
+    }
+}
+
+TEST(TimerTests, ShouldNotStartTimerWithEmptyCallback)
+{
+    std::unique_ptr<ITimer> timer{ITimerFactory::getFactory()->createTimer(std::chrono::milliseconds{10}, nullptr)};
+    EXPECT_FALSE(timer->isActive());
+    timer->cancel();
+    EXPECT_FALSE(timer->isActive());
+}
+
+TEST(TimerTests, ShouldKeepPeriodicTimerRunningWhenCallbackThrows)
+{
+    std::mutex mtx;
+    { // This scope is required to suppress a false warning from cppcheck (about the mutex above)
+        std::condition_variable cv;
+        std::unique_lock<std::mutex> lock{mtx};
+        unsigned callCounter{0};
+        std::unique_ptr<ITimer> timer{ITimerFactory::getFactory()->createTimer(
+            std::chrono::milliseconds{30},
+            [&]()
+            {
+                std::unique_lock<std::mutex> lock{mtx};
+                ++callCounter;
+                if (callCounter == 1)
+                {
+                    throw std::runtime_error("timer callback failure");
+                }
+                cv.notify_one();
+            },
+            TimerType::PERIODIC)};
+        cv.wait_for(lock, kEnoughTimeForTestToComplete, [&] { return callCounter >= 2; });
+        EXPECT_GE(callCounter, 2);
+        EXPECT_TRUE(timer->isActive());
+    }
+}
+
+TEST(TimerTests, ShouldFireConcurrentTimersInTimeoutOrder)
+{
+    std::mutex mtx;
+    { // This scope is required to suppress a false warning from cppcheck (about the mutex above)
+        std::condition_variable cv;
+        std::unique_lock<std::mutex> lock{mtx};
+        std::vector<int> firedOrder;
+        auto makeCallback = [&](int id)
+        {
+            return [&, id]()
+            {
+                std::unique_lock<std::mutex> lock{mtx};
+                firedOrder.push_back(id);
+                cv.notify_one();
+            };
+        };
+        std::unique_ptr<ITimer> slowTimer{
+            ITimerFactory::getFactory()->createTimer(std::chrono::milliseconds{60}, makeCallback(2))};
+        std::unique_ptr<ITimer> fastTimer{
+            ITimerFactory::getFactory()->createTimer(std::chrono::milliseconds{20}, makeCallback(1))};
+        cv.wait_for(lock, kEnoughTimeForTestToComplete, [&] { return firedOrder.size() >= 2; });
+        EXPECT_EQ(firedOrder, (std::vector<int>{1, 2}));
     }
 }

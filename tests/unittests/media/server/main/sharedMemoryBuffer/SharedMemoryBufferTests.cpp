@@ -20,6 +20,8 @@
 #include "SharedMemoryBufferTestsFixture.h"
 #include "ShmUtils.h"
 #include <algorithm>
+#include <cstring>
+#include <sys/mman.h>
 
 TEST_F(SharedMemoryBufferTests, shouldMapGenericPlaybackSession)
 {
@@ -103,6 +105,22 @@ TEST_F(SharedMemoryBufferTests, shouldMapNewWebAudioPlayerAfterUnmapingTheOldOne
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, kHandle1);
     unmapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, kHandle1);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, kHandle2);
+}
+
+TEST_F(SharedMemoryBufferTests, shouldUnmapGenericPlaybackSessionWhenMemoryReleaseFails)
+{
+    constexpr int kSession1{0};
+    initialize();
+    mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
+    uint8_t *partition = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
+                                          kSession1, firebolt::rialto::MediaSourceType::VIDEO);
+    ASSERT_NE(nullptr, partition);
+    // Locked pages can't be removed, so the memory release fails
+    ASSERT_EQ(0, mlock(partition, 1));
+
+    unmapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
+    mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
+    munlock(partition, 1);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldFailToUnmapNotExistingGenericPlaybackSession)

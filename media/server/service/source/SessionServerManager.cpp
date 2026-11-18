@@ -133,6 +133,7 @@ bool SessionServerManager::configureServices(const common::SessionServerState &s
                                              const std::string &clientDisplayName, const std::string &appName,
                                              std::chrono::milliseconds playbackInfoTimer)
 {
+    firebolt::rialto::logging::setApplicationName(appName.c_str());
     m_sessionManagementServer->start();
     m_playbackService.setMaxPlaybacks(maxResource.maxPlaybacks);
     m_playbackService.setMaxWebAudioPlayers(maxResource.maxWebAudioPlayers);
