@@ -38,8 +38,6 @@ const char *mediaKeyErrorStatusToString(const MediaKeyErrorStatus &status)
         return "BUFFER_TOO_SMALL";
     case firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED:
         return "NOT_SUPPORTED";
-    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
-        return "OUTPUT_RESTRICTED";
     default:
         return "FAIL";
     }
@@ -575,11 +573,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
-
+    MediaKeyErrorStatus status;
     auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return status;
 }
 
@@ -595,7 +592,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
     MediaKeyErrorStatus status = sessionIter->second->decrypt(encrypted, caps);
     if (MediaKeyErrorStatus::OK != status)
     {
-        RIALTO_SERVER_LOG_DEBUG("Failed to decrypt buffer.");
+        RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer.");
         return status;
     }
     RIALTO_SERVER_LOG_INFO("Successfully decrypted buffer.");

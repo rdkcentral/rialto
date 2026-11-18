@@ -66,10 +66,6 @@ convertMediaKeyErrorStatus(const firebolt::rialto::MediaKeyErrorStatus &errorSta
     {
         return firebolt::rialto::ProtoMediaKeyErrorStatus::FAIL;
     }
-    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
-    {
-        return firebolt::rialto::ProtoMediaKeyErrorStatus::OUTPUT_RESTRICTED;
-    }
     }
     return firebolt::rialto::ProtoMediaKeyErrorStatus::FAIL;
 }

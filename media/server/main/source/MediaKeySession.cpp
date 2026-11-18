@@ -67,7 +67,7 @@ MediaKeySession::MediaKeySession(const std::string &keySystem, int32_t keySessio
                                  const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
     : m_kKeySystem(keySystem), m_kKeySessionId(keySessionId), m_kSessionType(sessionType), m_mediaKeysClient(client),
       m_isSessionConstructed(false), m_isSessionClosed(false), m_licenseRequested(false), m_ongoingOcdmOperation(false),
-      m_ocdmError(false), m_decryptErrorLogged(false)
+      m_ocdmError(false)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -253,35 +253,12 @@ MediaKeyErrorStatus MediaKeySession::updateSession(const std::vector<uint8_t> &r
 
 MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps)
 {
-    constexpr uint32_t kHdcpOutputProtectionFailure{4427};
-
     initOcdmErrorChecking();
 
     MediaKeyErrorStatus status = m_ocdmSession->decryptBuffer(encrypted, caps);
-    if (MediaKeyErrorStatus::OUTPUT_RESTRICTED == status)
+    if (MediaKeyErrorStatus::OK != status)
     {
-        RIALTO_SERVER_LOG_WARN("Decrypt failed due to HDCP output protection");
-    }
-    else if (MediaKeyErrorStatus::OK != status)
-    {
-        uint32_t lastDrmError{0};
-        m_ocdmSession->getLastDrmError(lastDrmError);
-        if (lastDrmError == kHdcpOutputProtectionFailure)
-        {
-            RIALTO_SERVER_LOG_WARN("Decrypt failed due to HDCP output protection (DRM error %u)", lastDrmError);
-            status = MediaKeyErrorStatus::OUTPUT_RESTRICTED;
-        }
-
-        // Log decrypt failures once and re-enable logging only after a successful decrypt.
-        if ((MediaKeyErrorStatus::OUTPUT_RESTRICTED != status) && !m_decryptErrorLogged)
-        {
-            RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer");
-            m_decryptErrorLogged = true;
-        }
-    }
-    else
-    {
-        m_decryptErrorLogged = false;
+        RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer");
     }
 
     if ((checkForOcdmErrors("decrypt")) && (MediaKeyErrorStatus::OK == status))
