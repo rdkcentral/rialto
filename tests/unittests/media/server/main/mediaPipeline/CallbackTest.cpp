@@ -345,14 +345,17 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, clearActiveRequestsCache)
 }
 
 /**
- * Test a notification of source flushed is forwarded to the registered client.
+ * Test that active requests of the source are erased before the notification of source flushed is forwarded to the
+ * registered client.
  */
 TEST_F(RialtoServerMediaPipelineCallbackTest, notifySourceFlushed)
 {
     auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
     int sourceId = attachSource(mediaSourceType, "video/mp4");
 
+    ::testing::InSequence s;
     mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_activeRequestsMock, erase(mediaSourceType));
     EXPECT_CALL(*m_mediaPipelineClientMock, notifySourceFlushed(sourceId));
 
     m_gstPlayerCallback->notifySourceFlushed(mediaSourceType);

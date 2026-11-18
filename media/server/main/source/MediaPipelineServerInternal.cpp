@@ -1479,9 +1479,6 @@ void MediaPipelineServerInternal::notifyPlaybackState(PlaybackState state)
         m_currentPlaybackState = state;
         if (PlaybackState::SEEK_DONE == state)
         {
-            // The client ignores NeedMediaData requests received while seeking and never answers them. Drop any
-            // request sent during the seek here, in the same task as the SEEK_DONE notification, so that no such
-            // request stays outstanding and blocks the requests sent after the seek.
             m_activeRequests->clear();
         }
         if (m_mediaPipelineClient)
@@ -1754,6 +1751,7 @@ void MediaPipelineServerInternal::notifySourceFlushed(MediaSourceType mediaSourc
                                        common::convertMediaSourceType(mediaSourceType));
                 return;
             }
+            m_activeRequests->erase(mediaSourceType);
             m_mediaPipelineClient->notifySourceFlushed(kSourceIter->second);
             RIALTO_SERVER_LOG_DEBUG("%s source flushed", common::convertMediaSourceType(mediaSourceType));
         }
