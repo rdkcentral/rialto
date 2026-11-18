@@ -38,6 +38,7 @@
 #include "IMediaPipeline.h"
 #include "ITimer.h"
 #include "RialtoServerLogging.h"
+#include "SessionServerCommon.h"
 #include "TypeConverters.h"
 #include "Utils.h"
 #include "WorkerThread.h"
@@ -275,7 +276,9 @@ GstGenericPlayer::GstGenericPlayer(
     std::unique_ptr<IGenericPlayerTaskFactory> taskFactory, std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
     std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
     std::shared_ptr<IGstProtectionMetadataHelperFactory> gstProtectionMetadataFactory)
-    : m_playbackInfoTimerInterval{playbackInfoTimer.count() > 0 ? playbackInfoTimer : std::chrono::milliseconds{32}},
+    : m_playbackInfoTimerInterval{playbackInfoTimer.count() > 0
+                                      ? playbackInfoTimer
+                                      : std::chrono::milliseconds{RIALTO_DEFAULT_PLAYBACK_INFO_TIMER_MS}},
       m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
       m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_gstProfilerFactory{gstProfilerFactory},
       m_timerFactory{timerFactory}, m_taskFactory{std::move(taskFactory)}, m_flushWatcher{std::move(flushWatcher)}

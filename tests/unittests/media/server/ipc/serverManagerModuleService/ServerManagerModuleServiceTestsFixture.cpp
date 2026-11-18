@@ -34,7 +34,7 @@ constexpr int kSocketFd{17};
 const std::string kSocketName{"/tmp/rialtotest-0"};
 const std::string kClientDisplayName{"westeros-rialto"};
 constexpr unsigned int kSocketPermissions{0666};
-constexpr std::chrono::milliseconds kPlaybackInfoTimer{32};
+constexpr std::chrono::milliseconds kPlaybackInfoTimer{RIALTO_DEFAULT_PLAYBACK_INFO_TIMER_MS};
 constexpr int kMaxSessions{5};
 constexpr int kMaxWebAudioPlayers{3};
 constexpr int kPingId{29};

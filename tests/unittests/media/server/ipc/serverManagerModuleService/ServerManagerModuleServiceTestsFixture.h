@@ -50,7 +50,7 @@ public:
     void sessionServerManagerWillHandleRequestFailureWithInvalidController();
     void sessionServerManagerWillSetConfiguration(const firebolt::rialto::common::SessionServerState &state,
                                                   std::chrono::milliseconds playbackInfoTimer = std::chrono::milliseconds{
-                                                      32});
+                                                      RIALTO_DEFAULT_PLAYBACK_INFO_TIMER_MS});
     void sessionServerManagerWillSetConfigurationWithFd(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerManagerWillSetConfigurationWithCapabilities(
         const firebolt::rialto::common::SessionServerState &state,

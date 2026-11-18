@@ -2081,7 +2081,7 @@ TEST_F(GstGenericPlayerPrivateInvalidTimerTest, shouldFallbackForInvalidPlayback
     auto playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), isActive()).WillOnce(Return(true));
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), cancel());
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(kPlaybackInfoTimerMs, _, common::TimerType::PERIODIC))
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(std::chrono::milliseconds{250}, _, common::TimerType::PERIODIC))
         .WillOnce(Return(ByMove(std::move(playbackInfoTimerMock))));
 
     m_sut->startNotifyPlaybackInfoTimer();

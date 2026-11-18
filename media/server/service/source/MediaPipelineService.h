@@ -28,6 +28,7 @@
 #include "IPlaybackService.h"
 #include "IPrivateMetricsService.h"
 #include "ISharedMemoryBuffer.h"
+#include "SessionServerCommon.h"
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
@@ -125,7 +126,7 @@ private:
     std::unique_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
     std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternal> m_mediaCapabilities;
     IDecryptionService &m_decryptionService;
-    std::chrono::milliseconds m_playbackInfoTimer{32};
+    std::chrono::milliseconds m_playbackInfoTimer{RIALTO_DEFAULT_PLAYBACK_INFO_TIMER_MS};
     IPrivateMetricsService &m_metricsService;
     std::map<int, std::unique_ptr<IMediaPipelineServerInternal>> m_mediaPipelines;
     std::mutex m_mediaPipelineMutex;

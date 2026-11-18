@@ -60,14 +60,16 @@ public:
                                  const std::string &socketGroup, const std::string &appName,
                                  const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
                                  const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps,
-                                 std::chrono::milliseconds playbackInfoTimer = std::chrono::milliseconds{32}) const;
+                                 std::chrono::milliseconds playbackInfoTimer = std::chrono::milliseconds{
+                                     RIALTO_DEFAULT_PLAYBACK_INFO_TIMER_MS}) const;
     bool performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState, int socketFd,
                                  const std::string &clientDisplayName,
                                  const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                  const std::string &appName,
                                  const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
                                  const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps,
-                                 std::chrono::milliseconds playbackInfoTimer = std::chrono::milliseconds{32}) const;
+                                 std::chrono::milliseconds playbackInfoTimer = std::chrono::milliseconds{
+                                     RIALTO_DEFAULT_PLAYBACK_INFO_TIMER_MS}) const;
     bool performPing(int pingId) const;
     bool setLogLevels(const service::LoggingLevels &logLevels) const;
     void onDisconnected() const;

@@ -125,7 +125,7 @@ public:
     void mediaPipelineWillPing();
 
     void mediaPipelineFactoryWillCreateMediaPipeline(
-        std::chrono::milliseconds playbackInfoTimer = std::chrono::milliseconds{32});
+        std::chrono::milliseconds playbackInfoTimer = std::chrono::milliseconds{RIALTO_DEFAULT_PLAYBACK_INFO_TIMER_MS});
     void mediaPipelineFactoryWillReturnNullptr();
 
     void playbackServiceWillReturnActive();

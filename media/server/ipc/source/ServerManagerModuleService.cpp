@@ -22,6 +22,7 @@
 #include "CapabilityConverters.h"
 #include "ISessionServerManager.h"
 #include "RialtoServerLogging.h"
+#include "SessionServerCommon.h"
 #include <AudioDecoderCapabilities.h>
 #include <IIpcController.h>
 #include <VideoDecoderCapabilities.h>
@@ -131,8 +132,10 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
             "ServerManagerModuleService: no capability fields - session server will use GStreamer query fallback");
     }
 
-    const std::chrono::milliseconds playbackInfoTimer{
-        request->has_playbackinfotimerms() && request->playbackinfotimerms() > 0 ? request->playbackinfotimerms() : 32};
+    const std::chrono::milliseconds playbackInfoTimer{request->has_playbackinfotimerms() &&
+                                                              request->playbackinfotimerms() > 0
+                                                          ? request->playbackinfotimerms()
+                                                          : RIALTO_DEFAULT_PLAYBACK_INFO_TIMER_MS};
 
     bool success{true};
     if (request->has_sessionmanagementsocketfd())

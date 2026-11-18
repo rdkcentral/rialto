@@ -551,7 +551,8 @@ void MediaPipelineServiceTests::mediaPipelineFactoryWillCreateMediaPipeline(std:
 void MediaPipelineServiceTests::mediaPipelineFactoryWillReturnNullptr()
 {
     EXPECT_CALL(*m_mediaPipelineFactoryMock,
-                createMediaPipelineServerInternal(_, kRequirements, _, _, _, std::chrono::milliseconds{32}))
+                createMediaPipelineServerInternal(_, kRequirements, _, _, _,
+                                                  std::chrono::milliseconds{RIALTO_DEFAULT_PLAYBACK_INFO_TIMER_MS}))
         .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::server::IMediaPipelineServerInternal>())));
 }
 

@@ -98,7 +98,7 @@ private:
     firebolt::rialto::common::SessionServerState m_initialState;
     std::string m_sessionManagementSocketName;
     std::string m_clientDisplayName;
-    std::chrono::milliseconds m_playbackInfoTimer{32};
+    std::chrono::milliseconds m_playbackInfoTimer{RIALTO_DEFAULT_PLAYBACK_INFO_TIMER_MS};
     std::array<int, 2> m_socks;
     std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> m_linuxWrapper;
     std::shared_ptr<firebolt::rialto::common::ITimerFactory> m_timerFactory;
