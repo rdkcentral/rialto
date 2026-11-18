@@ -20,7 +20,9 @@
 #include "IpcClient.h"
 #include "ConnectionObserverMock.h"
 #include "base/IpcClientTestBase.h"
+#include <chrono>
 #include <memory>
+#include <thread>
 
 class IpcClientTest : public IpcClientTestBase
 {
@@ -157,37 +159,25 @@ TEST_F(IpcClientTest, UnexpectedDisconnect)
     expectCreateChannel();
 
     // Exit the ipc loop, simulates an unexpected disconnect
-    int32_t ipcChannelCount = 0;
-    bool isProcessed = false;
-    EXPECT_CALL(*m_channelMock, process())
-        .WillOnce(Invoke(
-            [this, &ipcChannelCount, &isProcessed]()
-            {
-                std::unique_lock<std::mutex> locker(m_eventsLock);
-                ipcChannelCount = m_channelMock.use_count();
-                isProcessed = true;
-                m_eventsCond.notify_all();
-                return false;
-            }));
+    EXPECT_CALL(*m_channelMock, process()).WillOnce(Return(false));
 
     EXPECT_NO_THROW(m_sut = std::make_unique<IpcClient>(m_channelFactoryMock, m_controllerFactoryMock,
                                                         m_blockingClosureFactoryMock));
 
-    // Wait for process to set the ipcChannelCount
+    // Wait for the ipc thread to destroy the channel
+    constexpr std::chrono::seconds kMaximumWaitTime{5};
+    const auto kDeadline{std::chrono::steady_clock::now() + kMaximumWaitTime};
+    while (!m_sut->getChannel().expired() && std::chrono::steady_clock::now() < kDeadline)
     {
-        std::unique_lock<std::mutex> locker(m_eventsLock);
-        if (!isProcessed)
-        {
-            m_eventsCond.wait(locker);
-        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
+    ASSERT_TRUE(m_sut->getChannel().expired());
 
-    // Wait for shared_ptr to be reset in ipc thread
-    while (m_channelMock.use_count() == ipcChannelCount)
-    {
-    }
+    // On destruction IpcClient does not disconnect, it only joins the ipc thread
+    m_sut.reset();
 
-    // On destruction IpcClient does not disconnect
+    // The ipc thread has been joined, so no reference to the channel is left in the client
+    EXPECT_EQ(m_channelMock.use_count(), 1);
 }
 
 TEST_F(IpcClientTest, UnexpectedDisconnectWithNotification)
