@@ -211,6 +211,7 @@ private:
     void setSourceFlushed(const MediaSourceType &mediaSourceType) override;
     bool isAsync(const MediaSourceType &mediaSourceType) const;
     void notifyPlaybackInfo() override;
+    void notifyPlaybackInfo(bool force) override;
 
 private:
     /**
@@ -427,8 +428,6 @@ private:
     void pushSampleIfRequired(GstElement *source, const MediaSourceType &mediaSourceType);
 
 private:
-    void notifyPlaybackInfo(bool force);
-
     /**
      * @brief The player context.
      */

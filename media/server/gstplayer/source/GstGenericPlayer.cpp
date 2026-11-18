@@ -705,7 +705,10 @@ void GstGenericPlayer::notifyPlaybackInfo(bool force)
 {
     std::lock_guard lock{m_playbackInfoMutex};
     PlaybackInfo info;
-    getPosition(info.currentPosition);
+    if (!getPosition(info.currentPosition))
+    {
+        return;
+    }
     m_context.streamPosition.store(info.currentPosition);
     if (m_context.audioFadeEnabled)
     {
@@ -2779,9 +2782,6 @@ void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
 
 void GstGenericPlayer::startNotifyPlaybackInfoTimer()
 {
-    // A PAUSED state transition requires a PlaybackInfo event even if its values are unchanged.
-    notifyPlaybackInfo(true);
-
     if (m_playbackInfoTimer && m_playbackInfoTimer->isActive())
     {
         return;

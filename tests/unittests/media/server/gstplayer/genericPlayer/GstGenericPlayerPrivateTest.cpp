@@ -22,6 +22,7 @@
 #include "Matchers.h"
 #include "MediaSourceUtil.h"
 #include "PlayerTaskMock.h"
+#include "SessionServerCommon.h"
 #include "TimerMock.h"
 
 #include <gst/audio/audio.h>
@@ -275,6 +276,12 @@ class GstGenericPlayerPrivateInvalidTimerTest : public GstGenericPlayerPrivateTe
 {
 protected:
     GstGenericPlayerPrivateInvalidTimerTest() : GstGenericPlayerPrivateTest{std::chrono::milliseconds{0}} {}
+};
+
+class GstGenericPlayerPrivateNegativeTimerTest : public GstGenericPlayerPrivateTest
+{
+protected:
+    GstGenericPlayerPrivateNegativeTimerTest() : GstGenericPlayerPrivateTest{std::chrono::milliseconds{-1}} {}
 };
 
 TEST_F(GstGenericPlayerPrivateTest, shouldScheduleNeedData)
@@ -2053,7 +2060,6 @@ TEST_F(GstGenericPlayerPrivateTest, shouldStartPositionReportingTimer)
 
 TEST_F(GstGenericPlayerPrivateTest, shouldStartPlaybackInfoTimer)
 {
-    willNotifyPlaybackInfo();
     std::unique_ptr<common::ITimer> playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), isActive()).WillOnce(Return(true));
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), cancel());
@@ -2065,7 +2071,6 @@ TEST_F(GstGenericPlayerPrivateTest, shouldStartPlaybackInfoTimer)
 
 TEST_F(GstGenericPlayerPrivateConfiguredTimerTest, shouldUseConfiguredPlaybackInfoTimerInterval)
 {
-    willNotifyPlaybackInfo();
     auto playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), isActive()).WillOnce(Return(true));
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), cancel());
@@ -2077,11 +2082,11 @@ TEST_F(GstGenericPlayerPrivateConfiguredTimerTest, shouldUseConfiguredPlaybackIn
 
 TEST_F(GstGenericPlayerPrivateInvalidTimerTest, shouldFallbackForInvalidPlaybackInfoTimerInterval)
 {
-    willNotifyPlaybackInfo();
     auto playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), isActive()).WillOnce(Return(true));
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), cancel());
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(std::chrono::milliseconds{250}, _, common::TimerType::PERIODIC))
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(std::chrono::milliseconds{RIALTO_DEFAULT_PLAYBACK_INFO_TIMER_MS}, _,
+                                                 common::TimerType::PERIODIC))
         .WillOnce(Return(ByMove(std::move(playbackInfoTimerMock))));
 
     m_sut->startNotifyPlaybackInfoTimer();
@@ -2090,16 +2095,22 @@ TEST_F(GstGenericPlayerPrivateInvalidTimerTest, shouldFallbackForInvalidPlayback
 TEST_F(GstGenericPlayerPrivateTest, shouldNotifyPlaybackInfoWithAudioFade)
 {
     willNotifyPlaybackInfoWithAudioFade();
-    std::unique_ptr<common::ITimer> playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
+    m_sut->notifyPlaybackInfo();
+}
+
+TEST_F(GstGenericPlayerPrivateNegativeTimerTest, shouldFallbackForNegativePlaybackInfoTimerInterval)
+{
+    auto playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), isActive()).WillOnce(Return(true));
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), cancel());
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(kPlaybackInfoTimerMs, _, common::TimerType::PERIODIC))
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(std::chrono::milliseconds{RIALTO_DEFAULT_PLAYBACK_INFO_TIMER_MS}, _,
+                                                 common::TimerType::PERIODIC))
         .WillOnce(Return(ByMove(std::move(playbackInfoTimerMock))));
 
     m_sut->startNotifyPlaybackInfoTimer();
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldSkipDuplicatePlaybackInfoNotifications)
+TEST_F(GstGenericPlayerPrivateTest, shouldSkipDuplicatePlaybackInfoUnlessForced)
 {
     EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).WillRepeatedly(Return());
     EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).WillRepeatedly(Return(GST_STATE_PLAYING));
@@ -2112,13 +2123,14 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSkipDuplicatePlaybackInfoNotifications
                 *cur = kPosition;
                 return TRUE;
             }));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kAudioSinkStr), _)).Times(2);
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kAudioSinkStr), _)).Times(3);
     EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR))
         .WillRepeatedly(Return(kVolume));
-    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(kPlaybackInfo)).Times(1);
+    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(kPlaybackInfo)).Times(2);
 
     m_sut->notifyPlaybackInfo();
     m_sut->notifyPlaybackInfo();
+    m_sut->notifyPlaybackInfo(true);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotifyPlaybackInfoWhenValuesChange)
@@ -2150,6 +2162,22 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotifyPlaybackInfoWhenValuesChange)
     m_sut->notifyPlaybackInfo();
 }
 
+TEST_F(GstGenericPlayerPrivateTest, shouldPreserveSeekTargetWhenPlaybackInfoPositionIsUnavailable)
+{
+    modifyContext([](GenericPlayerContext &context) { context.streamPosition.store(kPosition); });
+    EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).WillRepeatedly(Return());
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).WillRepeatedly(Return(GST_STATE_PLAYING));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).WillRepeatedly(Return(GST_STATE_CHANGE_SUCCESS));
+    EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).WillRepeatedly(Return());
+    EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _)).WillRepeatedly(Return(FALSE));
+    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(_)).Times(0);
+
+    m_sut->notifyPlaybackInfo();
+    m_sut->notifyPlaybackInfo(true);
+
+    modifyContext([](GenericPlayerContext &context) { EXPECT_EQ(context.streamPosition.load(), kPosition); });
+}
+
 TEST_F(GstGenericPlayerPrivateTest, shouldNotStartPositionReportingTimerWhenItIsActive)
 {
     std::unique_ptr<common::ITimer> timerMock = std::make_unique<StrictMock<TimerMock>>();
@@ -2168,23 +2196,6 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotStartPlaybackInfoTimerWhenItIsActiv
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*timerMock), cancel());
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kPlaybackInfoTimerMs, _, common::TimerType::PERIODIC))
         .WillOnce(Return(ByMove(std::move(timerMock))));
-    EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).Times(2);
-    EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).Times(2).WillRepeatedly(Return(GST_STATE_PLAYING));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).Times(2).WillRepeatedly(Return(GST_STATE_CHANGE_SUCCESS));
-    EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).Times(2);
-    EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
-        .Times(2)
-        .WillRepeatedly(Invoke(
-            [](GstElement *element, GstFormat format, gint64 *cur)
-            {
-                *cur = kPosition;
-                return TRUE;
-            }));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kAudioSinkStr), _)).Times(2);
-    EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR))
-        .Times(2)
-        .WillRepeatedly(Return(kVolume));
-    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(kPlaybackInfo)).Times(2);
     m_sut->startNotifyPlaybackInfoTimer();
     m_sut->startNotifyPlaybackInfoTimer();
 }
@@ -2211,7 +2222,6 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleReportPositionWhenPositionRepo
 TEST_F(GstGenericPlayerPrivateTest, shouldSchedulePlaybackInfoWhenPlaybackInfoTimerIsFired)
 {
     std::unique_ptr<common::ITimer> timerMock = std::make_unique<StrictMock<TimerMock>>();
-    willNotifyPlaybackInfo();
     std::unique_ptr<common::ITimer> playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), isActive()).WillOnce(Return(true));
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), cancel());
@@ -2240,7 +2250,6 @@ TEST_F(GstGenericPlayerPrivateTest, shouldStopActivePositionReportingTimer)
 
 TEST_F(GstGenericPlayerPrivateTest, shouldStopActivePlaybackInfoTimerTimer)
 {
-    willNotifyPlaybackInfo();
     std::unique_ptr<common::ITimer> playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), isActive())
         .WillOnce(Return(true))
@@ -2266,7 +2275,6 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotStopInactivePositionReportingTimer)
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotStopInactivePlaybackInfoTimer)
 {
-    willNotifyPlaybackInfo();
     std::unique_ptr<common::ITimer> playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), isActive()).WillRepeatedly(Return(false));
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kPlaybackInfoTimerMs, _, common::TimerType::PERIODIC))
