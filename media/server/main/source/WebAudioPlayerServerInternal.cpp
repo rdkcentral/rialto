@@ -68,15 +68,14 @@ WebAudioPlayerServerInternalFactory::createWebAudioPlayer(std::weak_ptr<IWebAudi
 std::unique_ptr<IWebAudioPlayerServerInternal> WebAudioPlayerServerInternalFactory::createWebAudioPlayerServerInternal(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
     std::weak_ptr<const WebAudioConfig> config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
-    const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
-    const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory,
+    const std::shared_ptr<IMainThread> &mainThread, const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory,
     std::weak_ptr<common::ITimerFactory> timerFactory) const
 {
     std::unique_ptr<IWebAudioPlayerServerInternal> webAudioPlayer;
     try
     {
         webAudioPlayer = std::make_unique<server::WebAudioPlayerServerInternal>(client, audioMimeType, priority, config,
-                                                                                shmBuffer, handle, mainThreadFactory,
+                                                                                shmBuffer, handle, mainThread,
                                                                                 gstPlayerFactory, timerFactory);
     }
     catch (const std::exception &e)
@@ -90,11 +89,11 @@ std::unique_ptr<IWebAudioPlayerServerInternal> WebAudioPlayerServerInternalFacto
 WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
     std::weak_ptr<const WebAudioConfig> webAudioConfig, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer,
-    int handle, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+    int handle, const std::shared_ptr<IMainThread> &mainThread,
     const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory, std::weak_ptr<common::ITimerFactory> timerFactory)
-    : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}, m_shmId{handle}, m_shmPtr{nullptr},
-      m_partitionOffset{0}, m_maxDataLength{0}, m_availableBuffer{}, m_expectWriteBuffer{false},
-      m_timerFactory{timerFactory}, m_bytesPerFrame{0}, m_isEosRequested{false}
+    : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_mainThread{mainThread}, m_priority{priority},
+      m_shmId{handle}, m_shmPtr{nullptr}, m_partitionOffset{0}, m_maxDataLength{0}, m_availableBuffer{},
+      m_expectWriteBuffer{false}, m_timerFactory{timerFactory}, m_bytesPerFrame{0}, m_isEosRequested{false}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -116,8 +115,6 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     {
         throw std::runtime_error("Mimetype '" + audioMimeType + "' not supported");
     }
-
-    m_mainThread = mainThreadFactory->getMainThread();
     if (!m_mainThread)
     {
         throw std::runtime_error("Failed to get the main thread");

@@ -75,7 +75,6 @@ protected:
     std::shared_ptr<StrictMock<OcdmSystemMock>> m_ocdmSystemMock;
     std::unique_ptr<StrictMock<OcdmSessionMock>> m_ocdmSession;
     StrictMock<OcdmSessionMock> *m_ocdmSessionMock;
-    std::shared_ptr<StrictMock<MainThreadFactoryMock>> m_mainThreadFactoryMock;
     std::shared_ptr<StrictMock<MainThreadMock>> m_mainThreadMock;
 
     // Common variables

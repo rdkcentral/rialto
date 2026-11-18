@@ -100,8 +100,9 @@ MediaPipelineServerInternalFactory::createMediaPipeline(std::weak_ptr<IMediaPipe
 }
 
 std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInternalFactory::createMediaPipelineServerInternal(
-    std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements, int sessionId,
-    const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService) const
+    std::weak_ptr<IMediaPipelineClient> client, const std::shared_ptr<IMainThread> &mainThread,
+    const VideoRequirements &videoRequirements, int sessionId, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer,
+    IDecryptionService &decryptionService) const
 {
     std::shared_ptr<IMediaPipelineClient> sharedClient = client.lock();
     if (!sharedClient)
@@ -116,8 +117,7 @@ std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInterna
         mediaPipeline =
             std::make_unique<server::MediaPipelineServerInternal>(sharedClient, videoRequirements,
                                                                   server::IGstGenericPlayerFactory::getFactory(),
-                                                                  sessionId, shmBuffer,
-                                                                  server::IMainThreadFactory::createFactory(),
+                                                                  sessionId, shmBuffer, mainThread,
                                                                   common::ITimerFactory::getFactory(),
                                                                   std::make_unique<DataReaderFactory>(),
                                                                   std::make_unique<ActiveRequests>(), decryptionService);
@@ -133,17 +133,17 @@ std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInterna
 MediaPipelineServerInternal::MediaPipelineServerInternal(
     const std::shared_ptr<IMediaPipelineClient> &client, const VideoRequirements &videoRequirements,
     const std::shared_ptr<IGstGenericPlayerFactory> &gstPlayerFactory, int sessionId,
-    const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+    const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, const std::shared_ptr<IMainThread> &mainThread,
     const std::shared_ptr<common::ITimerFactory> &timerFactory, std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
     std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService)
-    : m_mediaPipelineClient(client), m_kGstPlayerFactory(gstPlayerFactory), m_kVideoRequirements(videoRequirements),
-      m_sessionId{sessionId}, m_shmBuffer{shmBuffer}, m_dataReaderFactory{std::move(dataReaderFactory)},
-      m_timerFactory{timerFactory}, m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService},
+    : m_mediaPipelineClient(client), m_mainThread{mainThread}, m_kGstPlayerFactory(gstPlayerFactory),
+      m_kVideoRequirements(videoRequirements), m_sessionId{sessionId}, m_shmBuffer{shmBuffer},
+      m_dataReaderFactory{std::move(dataReaderFactory)}, m_timerFactory{timerFactory},
+      m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService},
       m_currentPlaybackState{PlaybackState::UNKNOWN}, m_wasAllSourcesAttachedCalled{false}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    m_mainThread = mainThreadFactory->getMainThread();
     if (!m_mainThread)
     {
         throw std::runtime_error("Failed to get the main thread");

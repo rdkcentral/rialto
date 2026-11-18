@@ -31,6 +31,7 @@
 #include "IControl.h"
 #include "IControlClientServerInternal.h"
 #include "IHeartbeatHandler.h"
+#include "IMainThread.h"
 #include <memory>
 
 namespace firebolt::rialto::server
@@ -52,13 +53,15 @@ public:
     /**
      * @brief IControlServerInternal factory method, returns a concrete implementation of IControlServerInternal
      *
-     * @param[in]  id       : Control id
-     * @param[in]  client   : Client object for callbacks
+     * @param[in]  mainThread : Main thread instance
+     * @param[in]  id         : Control id
+     * @param[in]  client     : Client object for callbacks
      *
      * @retval the new IControlServerInternal instance or null on error.
      */
     virtual std::shared_ptr<IControlServerInternal>
-    createControlServerInternal(int id, const std::shared_ptr<IControlClientServerInternal> &client) const = 0;
+    createControlServerInternal(const std::shared_ptr<IMainThread> &mainThread, int id,
+                                const std::shared_ptr<IControlClientServerInternal> &client) const = 0;
 };
 
 class IControlServerInternal : public IControl

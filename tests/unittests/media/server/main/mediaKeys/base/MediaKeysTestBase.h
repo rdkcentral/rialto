@@ -20,7 +20,6 @@
 #ifndef MEDIA_KEYS_TEST_BASE_H_
 #define MEDIA_KEYS_TEST_BASE_H_
 
-#include "MainThreadFactoryMock.h"
 #include "MainThreadMock.h"
 #include "MediaKeySessionFactoryMock.h"
 #include "MediaKeySessionMock.h"
@@ -62,7 +61,6 @@ protected:
     std::shared_ptr<StrictMock<OcdmSystemFactoryMock>> m_ocdmSystemFactoryMock;
     std::shared_ptr<StrictMock<OcdmSystemMock>> m_ocdmSystem;
     StrictMock<OcdmSystemMock> *m_ocdmSystemMock;
-    std::shared_ptr<StrictMock<MainThreadFactoryMock>> m_mainThreadFactoryMock;
     std::shared_ptr<StrictMock<MainThreadMock>> m_mainThreadMock;
 
     // Common variables

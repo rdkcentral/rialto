@@ -20,7 +20,6 @@
 #ifndef FIREBOLT_RIALTO_SERVER_MEDIA_KEY_SESSION_H_
 #define FIREBOLT_RIALTO_SERVER_MEDIA_KEY_SESSION_H_
 
-#include "IMainThread.h"
 #include "IMediaKeySession.h"
 #include "IOcdmSessionClient.h"
 #include <atomic>
@@ -43,7 +42,8 @@ public:
     std::unique_ptr<IMediaKeySession> createMediaKeySession(const std::string &keySystem, int32_t keySessionId,
                                                             const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem,
                                                             KeySessionType sessionType,
-                                                            std::weak_ptr<IMediaKeysClient> client) const override;
+                                                            std::weak_ptr<IMediaKeysClient> client,
+                                                            const std::shared_ptr<IMainThread> &mainThread) const override;
 };
 
 /**
@@ -64,7 +64,7 @@ public:
      */
     MediaKeySession(const std::string &keySystem, int32_t keySessionId,
                     const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem, KeySessionType sessionType,
-                    std::weak_ptr<IMediaKeysClient> client, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory);
+                    std::weak_ptr<IMediaKeysClient> client, const std::shared_ptr<IMainThread> &mainThread);
 
     /**
      * @brief Virtual destructor.

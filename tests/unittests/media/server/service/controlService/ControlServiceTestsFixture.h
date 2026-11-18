@@ -26,6 +26,8 @@
 #include "ControlServerInternalMock.h"
 #include "ControlService.h"
 #include "HeartbeatProcedureMock.h"
+#include "MainThreadFactoryMock.h"
+#include "MainThreadMock.h"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -35,6 +37,8 @@ using firebolt::rialto::server::ControlClientServerInternalMock;
 using firebolt::rialto::server::ControlServerInternalFactoryMock;
 using firebolt::rialto::server::ControlServerInternalMock;
 using firebolt::rialto::server::HeartbeatProcedureMock;
+using firebolt::rialto::server::mock::MainThreadFactoryMock;
+using firebolt::rialto::server::mock::MainThreadMock;
 using firebolt::rialto::server::service::ControlService;
 using testing::StrictMock;
 
@@ -62,6 +66,8 @@ private:
     std::shared_ptr<StrictMock<ControlServerInternalMock>> m_controlServerInternalMock;
     std::shared_ptr<StrictMock<ControlClientServerInternalMock>> m_controlClientMock;
     std::shared_ptr<StrictMock<AckSenderMock>> m_ackSenderMock;
+    std::shared_ptr<StrictMock<MainThreadFactoryMock>> m_mainThreadFactoryMock;
+    std::shared_ptr<StrictMock<MainThreadMock>> m_mainThreadMock;
     ControlService m_sut;
 };
 

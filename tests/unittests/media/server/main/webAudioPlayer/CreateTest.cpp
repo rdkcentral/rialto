@@ -37,7 +37,7 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, Create)
     EXPECT_NO_THROW(m_webAudioPlayer =
                         std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                        m_priority, m_config, m_sharedMemoryBufferMock,
-                                                                       m_webAudioPlayerHandle, m_mainThreadFactoryMock,
+                                                                       m_webAudioPlayerHandle, m_mainThreadMock,
                                                                        m_gstPlayerFactoryMock, m_timerFactoryMock));
     EXPECT_NE(m_webAudioPlayer, nullptr);
 
@@ -72,7 +72,7 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, InternalFactoryCreatesObject)
     EXPECT_NO_THROW(webAudioPlayerServer =
                         factory->createWebAudioPlayerServerInternal(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                     m_priority, m_config, m_sharedMemoryBufferMock,
-                                                                    m_webAudioPlayerHandle, m_mainThreadFactoryMock,
+                                                                    m_webAudioPlayerHandle, m_mainThreadMock,
                                                                     m_gstPlayerFactoryMock, m_timerFactoryMock));
     EXPECT_NE(webAudioPlayerServer, nullptr);
 
@@ -91,7 +91,7 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, InvalidPcmConfig)
     EXPECT_THROW(m_webAudioPlayer =
                      std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                     m_priority, config, m_sharedMemoryBufferMock,
-                                                                    m_webAudioPlayerHandle, m_mainThreadFactoryMock,
+                                                                    m_webAudioPlayerHandle, m_mainThreadMock,
                                                                     m_gstPlayerFactoryMock, m_timerFactoryMock),
                  std::runtime_error);
 }
@@ -105,7 +105,7 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, InvalidBytesPerFrame)
     EXPECT_THROW(m_webAudioPlayer =
                      std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                     m_priority, m_config, m_sharedMemoryBufferMock,
-                                                                    m_webAudioPlayerHandle, m_mainThreadFactoryMock,
+                                                                    m_webAudioPlayerHandle, m_mainThreadMock,
                                                                     m_gstPlayerFactoryMock, m_timerFactoryMock),
                  std::runtime_error);
 }
@@ -120,7 +120,7 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, InvalidMimeType)
     EXPECT_THROW(m_webAudioPlayer =
                      std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, kInvalidMimeType,
                                                                     m_priority, m_config, m_sharedMemoryBufferMock,
-                                                                    m_webAudioPlayerHandle, m_mainThreadFactoryMock,
+                                                                    m_webAudioPlayerHandle, m_mainThreadMock,
                                                                     m_gstPlayerFactoryMock, m_timerFactoryMock),
                  std::runtime_error);
 }
@@ -130,11 +130,10 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, InvalidMimeType)
  */
 TEST_F(RialtoServerCreateWebAudioPlayerTest, MainThreadFailure)
 {
-    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(nullptr));
     EXPECT_THROW(m_webAudioPlayer =
                      std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                     m_priority, m_config, m_sharedMemoryBufferMock,
-                                                                    m_webAudioPlayerHandle, m_mainThreadFactoryMock,
+                                                                    m_webAudioPlayerHandle, nullptr,
                                                                     m_gstPlayerFactoryMock, m_timerFactoryMock),
                  std::runtime_error);
 }
@@ -145,7 +144,6 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, MainThreadFailure)
 TEST_F(RialtoServerCreateWebAudioPlayerTest, MapPartitionFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
     EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
     EXPECT_CALL(*m_sharedMemoryBufferMock,
                 mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_webAudioPlayerHandle))
@@ -153,7 +151,7 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, MapPartitionFailure)
     EXPECT_THROW(m_webAudioPlayer =
                      std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                     m_priority, m_config, m_sharedMemoryBufferMock,
-                                                                    m_webAudioPlayerHandle, m_mainThreadFactoryMock,
+                                                                    m_webAudioPlayerHandle, m_mainThreadMock,
                                                                     m_gstPlayerFactoryMock, m_timerFactoryMock),
                  std::runtime_error);
 }
@@ -164,7 +162,6 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, MapPartitionFailure)
 TEST_F(RialtoServerCreateWebAudioPlayerTest, GetBufferFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
     EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
     EXPECT_CALL(*m_sharedMemoryBufferMock,
                 mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_webAudioPlayerHandle))
@@ -174,7 +171,7 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, GetBufferFailure)
     EXPECT_THROW(m_webAudioPlayer =
                      std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                     m_priority, m_config, m_sharedMemoryBufferMock,
-                                                                    m_webAudioPlayerHandle, m_mainThreadFactoryMock,
+                                                                    m_webAudioPlayerHandle, m_mainThreadMock,
                                                                     m_gstPlayerFactoryMock, m_timerFactoryMock),
                  std::runtime_error);
 }
@@ -185,7 +182,6 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, GetBufferFailure)
 TEST_F(RialtoServerCreateWebAudioPlayerTest, GetDataOffsetFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
     EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
     EXPECT_CALL(*m_sharedMemoryBufferMock,
                 mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_webAudioPlayerHandle))
@@ -198,7 +194,7 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, GetDataOffsetFailure)
     EXPECT_THROW(m_webAudioPlayer =
                      std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                     m_priority, m_config, m_sharedMemoryBufferMock,
-                                                                    m_webAudioPlayerHandle, m_mainThreadFactoryMock,
+                                                                    m_webAudioPlayerHandle, m_mainThreadMock,
                                                                     m_gstPlayerFactoryMock, m_timerFactoryMock),
                  std::runtime_error);
 }
@@ -209,7 +205,6 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, GetDataOffsetFailure)
 TEST_F(RialtoServerCreateWebAudioPlayerTest, GetMaxDataLenFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
     EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
     EXPECT_CALL(*m_sharedMemoryBufferMock,
                 mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_webAudioPlayerHandle))
@@ -225,7 +220,7 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, GetMaxDataLenFailure)
     EXPECT_THROW(m_webAudioPlayer =
                      std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                     m_priority, m_config, m_sharedMemoryBufferMock,
-                                                                    m_webAudioPlayerHandle, m_mainThreadFactoryMock,
+                                                                    m_webAudioPlayerHandle, m_mainThreadMock,
                                                                     m_gstPlayerFactoryMock, m_timerFactoryMock),
                  std::runtime_error);
 }
@@ -236,7 +231,6 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, GetMaxDataLenFailure)
 TEST_F(RialtoServerCreateWebAudioPlayerTest, GstPlayerFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
     EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
     EXPECT_CALL(*m_sharedMemoryBufferMock,
                 mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_webAudioPlayerHandle))
@@ -252,7 +246,7 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, GstPlayerFailure)
     EXPECT_THROW(m_webAudioPlayer =
                      std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                     m_priority, m_config, m_sharedMemoryBufferMock,
-                                                                    m_webAudioPlayerHandle, m_mainThreadFactoryMock,
+                                                                    m_webAudioPlayerHandle, m_mainThreadMock,
                                                                     m_gstPlayerFactoryMock, m_timerFactoryMock),
                  std::runtime_error);
 }

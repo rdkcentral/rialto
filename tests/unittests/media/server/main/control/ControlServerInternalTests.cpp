@@ -50,9 +50,8 @@ public:
           m_mainThreadFactoryMock{std::make_shared<StrictMock<MainThreadFactoryMock>>()},
           m_mainThreadMock{std::make_shared<StrictMock<MainThreadMock>>()}
     {
-        EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
         EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(kMainThreadClientId));
-        m_sut = std::make_unique<firebolt::rialto::server::ControlServerInternal>(m_mainThreadFactoryMock, kControlId,
+        m_sut = std::make_unique<firebolt::rialto::server::ControlServerInternal>(m_mainThreadMock, kControlId,
                                                                                   m_controlClientMock);
     }
 

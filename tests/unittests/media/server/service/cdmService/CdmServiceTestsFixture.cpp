@@ -60,7 +60,9 @@ CdmServiceTests::CdmServiceTests()
           dynamic_cast<StrictMock<firebolt::rialto::MediaKeysCapabilitiesMock> &>(*m_mediaKeysCapabilities)},
       m_mediaKeysClientMock{std::make_shared<StrictMock<firebolt::rialto::MediaKeysClientMock>>()},
       m_heartbeatProcedureMock{std::make_shared<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>>()},
-      m_sut{m_mediaKeysFactoryMock, m_mediaKeysCapabilitiesFactoryMock}
+      m_mainThreadFactoryMock{std::make_shared<StrictMock<firebolt::rialto::server::mock::MainThreadFactoryMock>>()},
+      m_mainThreadMock{std::make_shared<StrictMock<firebolt::rialto::server::mock::MainThreadMock>>()},
+      m_sut{m_mediaKeysFactoryMock, m_mediaKeysCapabilitiesFactoryMock, m_mainThreadFactoryMock}
 {
 }
 
@@ -129,12 +131,15 @@ void CdmServiceTests::triggerPing()
 
 void CdmServiceTests::mediaKeysFactoryWillCreateMediaKeys()
 {
-    EXPECT_CALL(*m_mediaKeysFactoryMock, createMediaKeysServerInternal(_)).WillOnce(Return(ByMove(std::move(m_mediaKeys))));
+    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_mediaKeysFactoryMock, createMediaKeysServerInternal(_, _))
+        .WillOnce(Return(ByMove(std::move(m_mediaKeys))));
 }
 
 void CdmServiceTests::mediaKeysFactoryWillReturnNullptr()
 {
-    EXPECT_CALL(*m_mediaKeysFactoryMock, createMediaKeysServerInternal(_))
+    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_mediaKeysFactoryMock, createMediaKeysServerInternal(_, _))
         .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::server::IMediaKeysServerInternal>())));
 }
 

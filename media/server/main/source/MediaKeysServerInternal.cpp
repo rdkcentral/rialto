@@ -82,13 +82,13 @@ std::unique_ptr<IMediaKeys> MediaKeysServerInternalFactory::createMediaKeys(cons
 }
 
 std::unique_ptr<IMediaKeysServerInternal>
-MediaKeysServerInternalFactory::createMediaKeysServerInternal(const std::string &keySystem) const
+MediaKeysServerInternalFactory::createMediaKeysServerInternal(const std::string &keySystem,
+                                                              const std::shared_ptr<IMainThread> &mainThread) const
 {
     std::unique_ptr<IMediaKeysServerInternal> mediaKeys;
     try
     {
-        mediaKeys = std::make_unique<server::MediaKeysServerInternal>(keySystem,
-                                                                      server::IMainThreadFactory::createFactory(),
+        mediaKeys = std::make_unique<server::MediaKeysServerInternal>(keySystem, mainThread,
                                                                       wrappers::IOcdmSystemFactory::createFactory(),
                                                                       server::IMediaKeySessionFactory::createFactory());
     }
@@ -104,14 +104,12 @@ MediaKeysServerInternalFactory::createMediaKeysServerInternal(const std::string 
 namespace firebolt::rialto::server
 {
 MediaKeysServerInternal::MediaKeysServerInternal(
-    const std::string &keySystem, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+    const std::string &keySystem, const std::shared_ptr<IMainThread> &mainThread,
     const std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> &ocdmSystemFactory,
     const std::shared_ptr<IMediaKeySessionFactory> &mediaKeySessionFactory)
-    : m_mediaKeySessionFactory(mediaKeySessionFactory), m_kKeySystem(keySystem)
+    : m_mainThread{mainThread}, m_mediaKeySessionFactory(mediaKeySessionFactory), m_kKeySystem(keySystem)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    m_mainThread = mainThreadFactory->getMainThread();
     if (!m_mainThread)
     {
         throw std::runtime_error("Failed to get the main thread");
@@ -231,7 +229,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::createKeySessionInternal(KeySession
     int32_t keySessionIdTemp = generateSessionId();
     std::unique_ptr<IMediaKeySession> mediaKeySession =
         m_mediaKeySessionFactory->createMediaKeySession(m_kKeySystem, keySessionIdTemp, *m_ocdmSystem, sessionType,
-                                                        client);
+                                                        client, m_mainThread);
     if (!mediaKeySession)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create a new media key session");

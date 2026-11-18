@@ -48,7 +48,7 @@ public:
     std::unique_ptr<IWebAudioPlayerServerInternal> createWebAudioPlayerServerInternal(
         std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
         std::weak_ptr<const WebAudioConfig> config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
-        const std::shared_ptr<firebolt::rialto::server::IMainThreadFactory> &mainThreadFactory,
+        const std::shared_ptr<firebolt::rialto::server::IMainThread> &mainThread,
         const std::shared_ptr<firebolt::rialto::server::IGstWebAudioPlayerFactory> &gstPlayerFactory,
         std::weak_ptr<firebolt::rialto::common::ITimerFactory> timerFactory) const override;
 };
@@ -68,14 +68,14 @@ public:
      * @param[in] config            : Additional type dependent configuration data or nullptr.
      * @param[in] shmBuffer         : The shared memory buffer.
      * @param[in] handle            : The handle for this WebAudioPlayer.
-     * @param[in] mainThreadFactory : The main thread factory.
+     * @param[in] mainThread        : The main thread.
      * @param[in] gstPlayerFactory  : The gstreamer player factory.
      * @param[in] timerFactory      : The timer factory.
      */
     WebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                                  const uint32_t priority, std::weak_ptr<const WebAudioConfig> config,
                                  const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
-                                 const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+                                 const std::shared_ptr<IMainThread> &mainThread,
                                  const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory,
                                  std::weak_ptr<common::ITimerFactory> timerFactory);
 

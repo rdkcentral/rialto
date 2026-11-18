@@ -28,6 +28,7 @@
 using testing::_;
 using testing::ByMove;
 using testing::DoAll;
+using testing::Eq;
 using testing::Invoke;
 using testing::Return;
 using testing::SetArgReferee;
@@ -94,7 +95,8 @@ MediaPipelineServiceTests::MediaPipelineServiceTests()
       m_mediaPipeline{std::make_unique<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalMock>>()},
       m_mediaPipelineMock{
           dynamic_cast<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalMock> &>(*m_mediaPipeline)},
-      m_heartbeatProcedureMock{std::make_shared<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>>()}
+      m_heartbeatProcedureMock{std::make_shared<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>>()},
+      m_playbackThreadMock{std::make_shared<StrictMock<firebolt::rialto::server::mock::MainThreadMock>>()}
 {
 }
 
@@ -543,13 +545,15 @@ void MediaPipelineServiceTests::mediaPipelineWillPing()
 
 void MediaPipelineServiceTests::mediaPipelineFactoryWillCreateMediaPipeline()
 {
-    EXPECT_CALL(*m_mediaPipelineFactoryMock, createMediaPipelineServerInternal(_, kRequirements, _, _, _))
+    EXPECT_CALL(*m_mediaPipelineFactoryMock,
+                createMediaPipelineServerInternal(_, Eq(m_playbackThreadMock), kRequirements, _, _, _))
         .WillOnce(Return(ByMove(std::move(m_mediaPipeline))));
 }
 
 void MediaPipelineServiceTests::mediaPipelineFactoryWillReturnNullptr()
 {
-    EXPECT_CALL(*m_mediaPipelineFactoryMock, createMediaPipelineServerInternal(_, kRequirements, _, _, _))
+    EXPECT_CALL(*m_mediaPipelineFactoryMock,
+                createMediaPipelineServerInternal(_, Eq(m_playbackThreadMock), kRequirements, _, _, _))
         .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::server::IMediaPipelineServerInternal>())));
 }
 
@@ -582,19 +586,20 @@ void MediaPipelineServiceTests::createMediaPipelineShouldSuccess()
                                                                                   m_mediaPipelineFactoryMock,
                                                                                   m_mediaPipelineCapabilitiesFactoryMock,
                                                                                   m_decryptionServiceMock,
-                                                                                  m_metricsServiceMock);
+                                                                                  m_metricsServiceMock,
+                                                                                  m_playbackThreadMock);
 }
 
 void MediaPipelineServiceTests::createMediaPipelineShouldFailWhenMediaPipelineCapabilitiesFactoryReturnsNullptr()
 {
     EXPECT_CALL(*m_mediaPipelineCapabilitiesFactoryMock, createMediaPipelineCapabilities())
         .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::IMediaPipelineCapabilities>())));
-    EXPECT_THROW(m_sut =
-                     std::make_unique<firebolt::rialto::server::service::MediaPipelineService>(m_playbackServiceMock,
-                                                                                               m_mediaPipelineFactoryMock,
-                                                                                               m_mediaPipelineCapabilitiesFactoryMock,
-                                                                                               m_decryptionServiceMock,
-                                                                                               m_metricsServiceMock),
+    EXPECT_THROW(m_sut = std::make_unique<
+                     firebolt::rialto::server::service::MediaPipelineService>(m_playbackServiceMock,
+                                                                              m_mediaPipelineFactoryMock,
+                                                                              m_mediaPipelineCapabilitiesFactoryMock,
+                                                                              m_decryptionServiceMock,
+                                                                              m_metricsServiceMock, m_playbackThreadMock),
                  std::runtime_error);
 }
 

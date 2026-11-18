@@ -21,6 +21,7 @@
 #include <utility>
 
 using testing::_;
+using testing::Eq;
 using testing::Return;
 
 namespace
@@ -34,20 +35,25 @@ ControlServiceTests::ControlServiceTests()
       m_heartbeatProcedureMock{std::make_shared<StrictMock<HeartbeatProcedureMock>>()},
       m_controlServerInternalMock{std::make_shared<StrictMock<ControlServerInternalMock>>()},
       m_controlClientMock{std::make_shared<StrictMock<ControlClientServerInternalMock>>()},
-      m_ackSenderMock{std::make_shared<StrictMock<AckSenderMock>>()}, m_sut{m_controlServerInternalFactoryMock}
+      m_ackSenderMock{std::make_shared<StrictMock<AckSenderMock>>()},
+      m_mainThreadFactoryMock{std::make_shared<StrictMock<MainThreadFactoryMock>>()},
+      m_mainThreadMock{std::make_shared<StrictMock<MainThreadMock>>()},
+      m_sut{m_controlServerInternalFactoryMock, m_mainThreadFactoryMock}
 {
 }
 
 void ControlServiceTests::controlServerInternalFactoryWillCreateControlServerInternal(int id)
 {
-    EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(id, _))
+    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(Eq(m_mainThreadMock), id, _))
         .WillOnce(Return(m_controlServerInternalMock));
     EXPECT_CALL(*m_controlServerInternalMock, setApplicationState(_));
 }
 
 void ControlServiceTests::controlServerInternalFactoryWillCreateControlServerInternalWithSetState(int id)
 {
-    EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(id, _))
+    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(Eq(m_mainThreadMock), id, _))
         .WillOnce(Return(m_controlServerInternalMock));
     EXPECT_CALL(*m_controlServerInternalMock, setApplicationState(_));
 }

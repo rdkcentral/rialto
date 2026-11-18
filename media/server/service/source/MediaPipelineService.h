@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_SERVICE_MEDIA_PIPELINE_SERVICE_H_
 
 #include "IDecryptionService.h"
+#include "IMainThread.h"
 #include "IMediaCapabilitiesServerInternal.h"
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
@@ -49,6 +50,7 @@ public:
                          std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
                          std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
                          IDecryptionService &decryptionService, IPrivateMetricsService &metricsService,
+                         const std::shared_ptr<IMainThread> &playbackThread,
                          std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory>
                              &&mediaCapabilitiesFactory = nullptr);
     ~MediaPipelineService() override;
@@ -119,6 +121,7 @@ public:
 
 private:
     IPlaybackService &m_playbackService;
+    std::shared_ptr<IMainThread> m_playbackThread;
     std::shared_ptr<IMediaPipelineServerInternalFactory> m_mediaPipelineFactory;
     std::unique_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
     std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternal> m_mediaCapabilities;

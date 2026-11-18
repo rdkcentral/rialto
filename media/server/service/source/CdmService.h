@@ -22,6 +22,7 @@
 
 #include "ICdmService.h"
 #include "IDecryptionService.h"
+#include "IMainThread.h"
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -45,7 +46,8 @@ class CdmService : public ICdmService, public IDecryptionService
 
 public:
     CdmService(std::shared_ptr<IMediaKeysServerInternalFactory> &&mediaKeysFactory,
-               std::shared_ptr<IMediaKeysCapabilitiesFactory> &&mediaKeysCapabilitiesFactory);
+               std::shared_ptr<IMediaKeysCapabilitiesFactory> &&mediaKeysCapabilitiesFactory,
+               const std::shared_ptr<IMainThreadFactory> &mainThreadFactory);
     virtual ~CdmService();
 
     bool switchToActive() override;
@@ -94,6 +96,7 @@ public:
 private:
     std::shared_ptr<IMediaKeysServerInternalFactory> m_mediaKeysFactory;
     std::shared_ptr<IMediaKeysCapabilitiesFactory> m_mediaKeysCapabilitiesFactory;
+    std::shared_ptr<IMainThreadFactory> m_mainThreadFactory;
     std::atomic<bool> m_isActive;
     std::map<int, std::unique_ptr<IMediaKeysServerInternal>> m_mediaKeys;
     std::map<int, std::shared_ptr<IMediaKeysClient>> m_mediaKeysClients;

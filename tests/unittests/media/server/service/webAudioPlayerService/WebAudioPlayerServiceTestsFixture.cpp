@@ -27,6 +27,7 @@
 using testing::_;
 using testing::ByMove;
 using testing::DoAll;
+using testing::Eq;
 using testing::Invoke;
 using testing::Return;
 using testing::SetArgReferee;
@@ -52,6 +53,7 @@ WebAudioPlayerServiceTests::WebAudioPlayerServiceTests()
     : m_webAudioPlayerFactoryMock{std::make_shared<
           StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalFactoryMock>>()},
       m_shmBuffer{std::make_shared<StrictMock<firebolt::rialto::server::SharedMemoryBufferMock>>()},
+      m_playbackThreadMock{std::make_shared<StrictMock<firebolt::rialto::server::mock::MainThreadMock>>()},
       m_shmBufferMock{dynamic_cast<StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> &>(*m_shmBuffer)},
       m_webAudioPlayer{std::make_unique<StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalMock>>()},
       m_webAudioPlayerMock{
@@ -164,14 +166,16 @@ void WebAudioPlayerServiceTests::webAudioPlayerWillPing()
 void WebAudioPlayerServiceTests::webAudioPlayerFactoryWillCreateWebAudioPlayer()
 {
     EXPECT_CALL(*m_webAudioPlayerFactoryMock,
-                createWebAudioPlayerServerInternal(_, kAudioMimeType, kPriority, _, _, kWebAudioPlayerHandle, _, _, _))
+                createWebAudioPlayerServerInternal(_, kAudioMimeType, kPriority, _, _, kWebAudioPlayerHandle,
+                                                   Eq(m_playbackThreadMock), _, _))
         .WillOnce(Return(ByMove(std::move(m_webAudioPlayer))));
 }
 
 void WebAudioPlayerServiceTests::webAudioPlayerFactoryWillReturnNullptr()
 {
     EXPECT_CALL(*m_webAudioPlayerFactoryMock,
-                createWebAudioPlayerServerInternal(_, kAudioMimeType, kPriority, _, _, kWebAudioPlayerHandle, _, _, _))
+                createWebAudioPlayerServerInternal(_, kAudioMimeType, kPriority, _, _, kWebAudioPlayerHandle,
+                                                   Eq(m_playbackThreadMock), _, _))
         .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::server::IWebAudioPlayerServerInternal>())));
 }
 
@@ -199,7 +203,8 @@ void WebAudioPlayerServiceTests::createWebAudioPlayerService()
 {
     m_sut = std::make_unique<firebolt::rialto::server::service::WebAudioPlayerService>(m_playbackServiceMock,
                                                                                        m_webAudioPlayerFactoryMock,
-                                                                                       m_metricsServiceMock);
+                                                                                       m_metricsServiceMock,
+                                                                                       m_playbackThreadMock);
 }
 
 void WebAudioPlayerServiceTests::createWebAudioPlayerShouldSucceed()

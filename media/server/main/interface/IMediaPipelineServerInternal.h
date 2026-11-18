@@ -36,6 +36,7 @@
 
 #include "IDecryptionService.h"
 #include "IHeartbeatHandler.h"
+#include "IMainThread.h"
 #include "IMediaPipeline.h"
 #include "ISharedMemoryBuffer.h"
 #include <MediaCommon.h>
@@ -63,6 +64,7 @@ public:
      * @brief IMediaPipelineServerInternal factory method, returns a concrete implementation of IMediaPipeline
      *
      * @param[in] client            : The Rialto media player client.
+     * @param[in] mainThread        : The main thread instance.
      * @param[in] videoRequirements : The video decoder requirements for the MediaPipeline session
      * @param[in] sessionId         : The session id for this MediaPipeline.
      * @param[in] shmBuffer         : The shared buffer object.
@@ -71,7 +73,8 @@ public:
      * @retval the new backend instance or null on error.
      */
     virtual std::unique_ptr<IMediaPipelineServerInternal> createMediaPipelineServerInternal(
-        std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements, int sessionId,
+        std::weak_ptr<IMediaPipelineClient> client, const std::shared_ptr<IMainThread> &mainThread,
+        const VideoRequirements &videoRequirements, int sessionId,
         const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService) const = 0;
 };
 

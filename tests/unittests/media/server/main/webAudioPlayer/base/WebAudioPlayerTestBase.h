@@ -23,7 +23,6 @@
 #include "GstWebAudioPlayerFactoryMock.h"
 #include "GstWebAudioPlayerMock.h"
 #include "IGstWebAudioPlayerClient.h"
-#include "MainThreadFactoryMock.h"
 #include "MainThreadMock.h"
 #include "SharedMemoryBufferMock.h"
 #include "TimerFactoryMock.h"
@@ -59,7 +58,6 @@ protected:
     // Strict Mocks
     std::shared_ptr<StrictMock<WebAudioPlayerClientMock>> m_webAudioPlayerClientMock;
     std::shared_ptr<StrictMock<SharedMemoryBufferMock>> m_sharedMemoryBufferMock;
-    std::shared_ptr<StrictMock<MainThreadFactoryMock>> m_mainThreadFactoryMock;
     std::shared_ptr<StrictMock<MainThreadMock>> m_mainThreadMock;
     std::shared_ptr<StrictMock<GstWebAudioPlayerFactoryMock>> m_gstPlayerFactoryMock;
     std::unique_ptr<StrictMock<GstWebAudioPlayerMock>> m_gstPlayer;

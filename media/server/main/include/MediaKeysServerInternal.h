@@ -20,7 +20,6 @@
 #ifndef FIREBOLT_RIALTO_SERVER_MEDIA_KEYS_SERVER_INTERNAL_H_
 #define FIREBOLT_RIALTO_SERVER_MEDIA_KEYS_SERVER_INTERNAL_H_
 
-#include "IMainThread.h"
 #include "IMediaKeySession.h"
 #include "IMediaKeysServerInternal.h"
 #include "IOcdmSystem.h"
@@ -41,7 +40,9 @@ public:
     ~MediaKeysServerInternalFactory() override = default;
 
     std::unique_ptr<IMediaKeys> createMediaKeys(const std::string &keySystem) const override;
-    std::unique_ptr<IMediaKeysServerInternal> createMediaKeysServerInternal(const std::string &keySystem) const override;
+    std::unique_ptr<IMediaKeysServerInternal>
+    createMediaKeysServerInternal(const std::string &keySystem,
+                                  const std::shared_ptr<IMainThread> &mainThread) const override;
 };
 
 }; // namespace firebolt::rialto::server
@@ -58,12 +59,12 @@ public:
      * @brief The constructor.
      *
      * @param[in] keySystem                 : The key system for which to create a Media Keys instance.
-     * @param[in] mainThreadFactory         : The main thread factory.
+     * @param[in] mainThread                : The main thread instance.
      * @param[in] ocdmSystemFactory         : The ocdm system factory.
      * @param[in] mediaKeySessionFactory    : The media key session factory.
      *
      */
-    MediaKeysServerInternal(const std::string &keySystem, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+    MediaKeysServerInternal(const std::string &keySystem, const std::shared_ptr<IMainThread> &mainThread,
                             const std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> &ocdmSystemFactory,
                             const std::shared_ptr<IMediaKeySessionFactory> &mediaKeySessionFactory);
 

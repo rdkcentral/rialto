@@ -45,13 +45,14 @@ std::shared_ptr<IMediaKeySessionFactory> IMediaKeySessionFactory::createFactory(
 std::unique_ptr<IMediaKeySession>
 MediaKeySessionFactory::createMediaKeySession(const std::string &keySystem, int32_t keySessionId,
                                               const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem,
-                                              KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client) const
+                                              KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
+                                              const std::shared_ptr<IMainThread> &mainThread) const
 {
     std::unique_ptr<IMediaKeySession> mediaKeys;
     try
     {
         mediaKeys = std::make_unique<server::MediaKeySession>(keySystem, keySessionId, ocdmSystem, sessionType, client,
-                                                              server::IMainThreadFactory::createFactory());
+                                                              mainThread);
     }
     catch (const std::exception &e)
     {
@@ -63,15 +64,13 @@ MediaKeySessionFactory::createMediaKeySession(const std::string &keySystem, int3
 
 MediaKeySession::MediaKeySession(const std::string &keySystem, int32_t keySessionId,
                                  const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem, KeySessionType sessionType,
-                                 std::weak_ptr<IMediaKeysClient> client,
-                                 const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
+                                 std::weak_ptr<IMediaKeysClient> client, const std::shared_ptr<IMainThread> &mainThread)
     : m_kKeySystem(keySystem), m_kKeySessionId(keySessionId), m_kSessionType(sessionType), m_mediaKeysClient(client),
-      m_isSessionConstructed(false), m_isSessionClosed(false), m_licenseRequested(false), m_ongoingOcdmOperation(false),
-      m_ocdmError(false), m_decryptErrorLogged(false)
+      m_mainThread(mainThread), m_isSessionConstructed(false), m_isSessionClosed(false), m_licenseRequested(false),
+      m_ongoingOcdmOperation(false), m_ocdmError(false), m_decryptErrorLogged(false)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    m_mainThread = mainThreadFactory->getMainThread();
     if (!m_mainThread)
     {
         throw std::runtime_error("Failed to get the main thread");

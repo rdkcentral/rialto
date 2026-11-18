@@ -30,9 +30,11 @@
 namespace firebolt::rialto::server::service
 {
 CdmService::CdmService(std::shared_ptr<IMediaKeysServerInternalFactory> &&mediaKeysFactory,
-                       std::shared_ptr<IMediaKeysCapabilitiesFactory> &&mediaKeysCapabilitiesFactory)
+                       std::shared_ptr<IMediaKeysCapabilitiesFactory> &&mediaKeysCapabilitiesFactory,
+                       const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
     : m_mediaKeysFactory{std::move(mediaKeysFactory)},
-      m_mediaKeysCapabilitiesFactory{std::move(mediaKeysCapabilitiesFactory)}, m_isActive{false}
+      m_mediaKeysCapabilitiesFactory{std::move(mediaKeysCapabilitiesFactory)}, m_mainThreadFactory{mainThreadFactory},
+      m_isActive{false}
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService is constructed");
 }
@@ -79,7 +81,10 @@ bool CdmService::createMediaKeys(int mediaKeysHandle, std::string keySystem)
             RIALTO_SERVER_LOG_ERROR("Media keys handle: %d already exists", mediaKeysHandle);
             return false;
         }
-        m_mediaKeys.emplace(std::make_pair(mediaKeysHandle, m_mediaKeysFactory->createMediaKeysServerInternal(keySystem)));
+        m_mediaKeys.emplace(
+            std::make_pair(mediaKeysHandle,
+                           m_mediaKeysFactory->createMediaKeysServerInternal(keySystem,
+                                                                             m_mainThreadFactory->getMainThread())));
         if (!m_mediaKeys.at(mediaKeysHandle))
         {
             RIALTO_SERVER_LOG_ERROR("Could not create MediaKeys for media keys handle: %d", mediaKeysHandle);

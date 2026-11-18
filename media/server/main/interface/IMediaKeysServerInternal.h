@@ -29,6 +29,7 @@
  */
 
 #include "IHeartbeatHandler.h"
+#include "IMainThread.h"
 #include "IMediaKeys.h"
 #include "MediaCommon.h"
 #include <cstdint>
@@ -60,10 +61,12 @@ public:
      * @brief IMediaKeysServerInternal factory method, returns a concrete implementation of IMediaKeysServerInternal
      *
      * @param[in] keySystem : The key system for which to create a Media Keys instance
+     * @param[in] mainThread : The main thread instance to be used by the media keys
      *
      * @retval the new media keys instance or null on error.
      */
-    virtual std::unique_ptr<IMediaKeysServerInternal> createMediaKeysServerInternal(const std::string &keySystem) const = 0;
+    virtual std::unique_ptr<IMediaKeysServerInternal>
+    createMediaKeysServerInternal(const std::string &keySystem, const std::shared_ptr<IMainThread> &mainThread) const = 0;
 };
 
 /**

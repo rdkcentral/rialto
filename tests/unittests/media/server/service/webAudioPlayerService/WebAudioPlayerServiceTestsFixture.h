@@ -21,6 +21,7 @@
 #define WEB_AUDIO_PLAYER_SERVICE_TESTS_FIXTURE_H_
 
 #include "HeartbeatProcedureMock.h"
+#include "MainThreadMock.h"
 #include "PlaybackServiceMock.h"
 #include "PrivateMetricsServiceMock.h"
 #include "SharedMemoryBufferMock.h"
@@ -97,6 +98,7 @@ public:
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalFactoryMock>> m_webAudioPlayerFactoryMock;
     std::shared_ptr<firebolt::rialto::server::ISharedMemoryBuffer> m_shmBuffer;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::mock::MainThreadMock>> m_playbackThreadMock;
     StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> &m_shmBufferMock;
     std::unique_ptr<firebolt::rialto::server::IWebAudioPlayerServerInternal> m_webAudioPlayer;
     StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalMock> &m_webAudioPlayerMock;

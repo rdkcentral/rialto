@@ -65,11 +65,12 @@ std::shared_ptr<IControl> ControlServerInternalFactory::createControl() const
     return nullptr;
 }
 
-std::shared_ptr<IControlServerInternal> ControlServerInternalFactory::createControlServerInternal(
-    int id, const std::shared_ptr<IControlClientServerInternal> &client) const
+std::shared_ptr<IControlServerInternal>
+ControlServerInternalFactory::createControlServerInternal(const std::shared_ptr<IMainThread> &mainThread, int id,
+                                                          const std::shared_ptr<IControlClientServerInternal> &client) const
 try
 {
-    return std::make_shared<ControlServerInternal>(server::IMainThreadFactory::createFactory(), id, client);
+    return std::make_shared<ControlServerInternal>(mainThread, id, client);
 }
 catch (const std::exception &e)
 {
@@ -77,12 +78,11 @@ catch (const std::exception &e)
     return nullptr;
 }
 
-ControlServerInternal::ControlServerInternal(const std::shared_ptr<IMainThreadFactory> &mainThreadFactory, int id,
+ControlServerInternal::ControlServerInternal(const std::shared_ptr<IMainThread> &mainThread, int id,
                                              const std::shared_ptr<IControlClientServerInternal> &client)
-    : m_controlId{id}, m_client{client}, m_currentState{ApplicationState::UNKNOWN}
+    : m_controlId{id}, m_client{client}, m_currentState{ApplicationState::UNKNOWN}, m_mainThread{mainThread}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    m_mainThread = mainThreadFactory->getMainThread();
     if (!m_mainThread)
     {
         throw std::runtime_error("Failed to get the main thread");

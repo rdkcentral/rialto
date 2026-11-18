@@ -52,7 +52,8 @@ public:
         std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
         std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
         std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory, IDecryptionService &decryptionService,
-        std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory);
+        std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory,
+        const std::shared_ptr<IMainThreadFactory> &mainThreadFactory);
     ~PlaybackService() override;
     PlaybackService(const PlaybackService &) = delete;
     PlaybackService(PlaybackService &&) = delete;
@@ -77,6 +78,7 @@ public:
     void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) const override;
 
 private:
+    std::shared_ptr<IMainThread> m_playbackThread;
     std::unique_ptr<ISharedMemoryBufferFactory> m_shmBufferFactory;
     std::atomic<bool> m_isActive;
     std::atomic<int> m_maxPlaybacks;

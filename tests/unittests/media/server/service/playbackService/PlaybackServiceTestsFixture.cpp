@@ -53,7 +53,9 @@ PlaybackServiceTests::PlaybackServiceTests()
           dynamic_cast<StrictMock<firebolt::rialto::server::SharedMemoryBufferFactoryMock> &>(*m_shmBufferFactory)},
       m_shmBuffer{std::make_shared<StrictMock<firebolt::rialto::server::SharedMemoryBufferMock>>()},
       m_shmBufferMock{dynamic_cast<StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> &>(*m_shmBuffer)},
-      m_heartbeatProcedureMock{std::make_shared<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>>()}
+      m_heartbeatProcedureMock{std::make_shared<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>>()},
+      m_mainThreadFactoryMock{std::make_shared<StrictMock<firebolt::rialto::server::mock::MainThreadFactoryMock>>()},
+      m_mainThreadMock{std::make_shared<StrictMock<firebolt::rialto::server::mock::MainThreadMock>>()}
 {
 }
 
@@ -73,11 +75,13 @@ void PlaybackServiceTests::createPlaybackServiceShouldSuccess()
 {
     EXPECT_CALL(*m_mediaPipelineCapabilitiesFactoryMock, createMediaPipelineCapabilities())
         .WillOnce(Return(ByMove(std::move(m_mediaPipelineCapabilities))));
+    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
     m_sut = std::make_unique<firebolt::rialto::server::service::PlaybackService>(m_mediaPipelineFactoryMock,
                                                                                  m_mediaPipelineCapabilitiesFactoryMock,
                                                                                  m_webAudioPlayerFactoryMock,
                                                                                  std::move(m_shmBufferFactory),
-                                                                                 m_decryptionServiceMock, nullptr);
+                                                                                 m_decryptionServiceMock, nullptr,
+                                                                                 m_mainThreadFactoryMock);
 }
 
 void PlaybackServiceTests::triggerSwitchToActive()

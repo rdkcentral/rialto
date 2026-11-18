@@ -27,7 +27,6 @@ MediaKeySessionTestBase::MediaKeySessionTestBase()
     : m_mediaKeysClientMock{std::make_shared<StrictMock<MediaKeysClientMock>>()},
       m_ocdmSystemMock{std::make_shared<StrictMock<OcdmSystemMock>>()},
       m_ocdmSession{std::make_unique<StrictMock<OcdmSessionMock>>()}, m_ocdmSessionMock{m_ocdmSession.get()},
-      m_mainThreadFactoryMock{std::make_shared<StrictMock<MainThreadFactoryMock>>()},
       m_mainThreadMock{std::make_shared<StrictMock<MainThreadMock>>()}
 {
 }
@@ -36,13 +35,12 @@ MediaKeySessionTestBase::~MediaKeySessionTestBase() {}
 
 void MediaKeySessionTestBase::createKeySession(const std::string &keySystem)
 {
-    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
     EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
     EXPECT_CALL(*m_ocdmSystemMock, createSession(_)).WillOnce(Return(ByMove(std::move(m_ocdmSession))));
 
     EXPECT_NO_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(keySystem, m_kKeySessionId, *m_ocdmSystemMock,
                                                                           m_keySessionType, m_mediaKeysClientMock,
-                                                                          m_mainThreadFactoryMock));
+                                                                          m_mainThreadMock));
     EXPECT_NE(m_mediaKeySession, nullptr);
 }
 

@@ -22,6 +22,8 @@
 
 #include "CdmService.h"
 #include "HeartbeatProcedureMock.h"
+#include "MainThreadFactoryMock.h"
+#include "MainThreadMock.h"
 #include "MediaKeysCapabilitiesFactoryMock.h"
 #include "MediaKeysCapabilitiesMock.h"
 #include "MediaKeysClientMock.h"
@@ -130,6 +132,8 @@ private:
     StrictMock<firebolt::rialto::MediaKeysCapabilitiesMock> &m_mediaKeysCapabilitiesMock;
     std::shared_ptr<StrictMock<firebolt::rialto::MediaKeysClientMock>> m_mediaKeysClientMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>> m_heartbeatProcedureMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::mock::MainThreadFactoryMock>> m_mainThreadFactoryMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::mock::MainThreadMock>> m_mainThreadMock;
     firebolt::rialto::server::service::CdmService m_sut;
 };
 

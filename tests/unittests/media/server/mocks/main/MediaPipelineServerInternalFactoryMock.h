@@ -33,7 +33,8 @@ public:
                 (std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IMediaPipelineServerInternal>, createMediaPipelineServerInternal,
-                (std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements, int sessionId,
+                (std::weak_ptr<IMediaPipelineClient> client, const std::shared_ptr<IMainThread> &mainThread,
+                 const VideoRequirements &videoRequirements, int sessionId,
                  const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService),
                 (const, override));
 };

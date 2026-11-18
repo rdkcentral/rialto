@@ -22,6 +22,8 @@
 
 #include "DecryptionServiceMock.h"
 #include "HeartbeatProcedureMock.h"
+#include "MainThreadFactoryMock.h"
+#include "MainThreadMock.h"
 #include "MediaPipelineCapabilitiesFactoryMock.h"
 #include "MediaPipelineCapabilitiesMock.h"
 #include "MediaPipelineServerInternalFactoryMock.h"
@@ -73,6 +75,8 @@ private:
     StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> &m_shmBufferMock;
     StrictMock<firebolt::rialto::server::DecryptionServiceMock> m_decryptionServiceMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>> m_heartbeatProcedureMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::mock::MainThreadFactoryMock>> m_mainThreadFactoryMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::mock::MainThreadMock>> m_mainThreadMock;
     std::unique_ptr<firebolt::rialto::server::service::PlaybackService> m_sut;
 };
 

@@ -49,7 +49,8 @@ public:
                                                         const VideoRequirements &videoRequirements) const override;
 
     std::unique_ptr<server::IMediaPipelineServerInternal> createMediaPipelineServerInternal(
-        std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements, int sessionId,
+        std::weak_ptr<IMediaPipelineClient> client, const std::shared_ptr<IMainThread> &mainThread,
+        const VideoRequirements &videoRequirements, int sessionId,
         const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService) const override;
 
     /**
@@ -83,7 +84,7 @@ public:
                                 const VideoRequirements &videoRequirements,
                                 const std::shared_ptr<IGstGenericPlayerFactory> &gstPlayerFactory, int sessionId,
                                 const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer,
-                                const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+                                const std::shared_ptr<IMainThread> &mainThread,
                                 const std::shared_ptr<common::ITimerFactory> &timerFactory,
                                 std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
                                 std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService);

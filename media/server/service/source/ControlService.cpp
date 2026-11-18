@@ -24,8 +24,10 @@
 
 namespace firebolt::rialto::server::service
 {
-ControlService::ControlService(const std::shared_ptr<IControlServerInternalFactory> &controlServerInternalFactory)
-    : m_currentState{ApplicationState::UNKNOWN}, m_controlServerInternalFactory{controlServerInternalFactory}
+ControlService::ControlService(const std::shared_ptr<IControlServerInternalFactory> &controlServerInternalFactory,
+                               const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
+    : m_currentState{ApplicationState::UNKNOWN}, m_controlServerInternalFactory{controlServerInternalFactory},
+      m_mainThreadFactory{mainThreadFactory}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 }
@@ -33,7 +35,9 @@ ControlService::ControlService(const std::shared_ptr<IControlServerInternalFacto
 void ControlService::addControl(int controlId, const std::shared_ptr<IControlClientServerInternal> &client)
 {
     RIALTO_SERVER_LOG_INFO("Creating new Control with id: %d", controlId);
-    auto controlServerInternal{m_controlServerInternalFactory->createControlServerInternal(controlId, client)};
+    auto controlServerInternal{
+        m_controlServerInternalFactory->createControlServerInternal(m_mainThreadFactory->getMainThread(), controlId,
+                                                                    client)};
     std::unique_lock<std::mutex> lock{m_mutex};
     controlServerInternal->setApplicationState(m_currentState);
     m_controls.emplace(controlId, controlServerInternal);

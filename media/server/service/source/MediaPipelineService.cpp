@@ -19,6 +19,7 @@
 
 #include "MediaPipelineService.h"
 #include "IGstCapabilities.h"
+#include "IMainThread.h"
 #include "IMediaCapabilitiesServerInternal.h"
 #include "IMediaPipelineServerInternal.h"
 #include "MediaPipelineMetricsClient.h"
@@ -35,8 +36,10 @@ MediaPipelineService::MediaPipelineService(
     IPlaybackService &playbackService, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
     IDecryptionService &decryptionService, IPrivateMetricsService &metricsService,
+    const std::shared_ptr<IMainThread> &playbackThread,
     std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory)
-    : m_playbackService{playbackService}, m_mediaPipelineFactory{std::move(mediaPipelineFactory)},
+    : m_playbackService{playbackService}, m_playbackThread{playbackThread},
+      m_mediaPipelineFactory{std::move(mediaPipelineFactory)},
       m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
       m_mediaCapabilities{mediaCapabilitiesFactory ? mediaCapabilitiesFactory->createMediaCapabilitiesServerInternal()
                                                    : nullptr},
@@ -91,6 +94,7 @@ bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IM
                                                                        MediaPipelineMetricsClient>(sessionId,
                                                                                                    mediaPipelineClient,
                                                                                                    m_metricsService),
+                                                                   m_playbackThread,
                                                                    VideoRequirements{maxWidth, maxHeight}, sessionId,
                                                                    shmBuffer, m_decryptionService)));
         if (!m_mediaPipelines.at(sessionId))

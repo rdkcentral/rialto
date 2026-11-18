@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_MEDIA_KEY_SESSION_H_
 #define FIREBOLT_RIALTO_SERVER_I_MEDIA_KEY_SESSION_H_
 
+#include "IMainThread.h"
 #include "IMediaKeysClient.h"
 #include "IOcdmSystem.h"
 #include "MediaCommon.h"
@@ -55,13 +56,15 @@ public:
      * @param[in]  ocdmSystem   : The ocdm system object to create the session on.
      * @param[in]  sessionType  : The session type.
      * @param[in]  client       : Client object for callbacks.
+     * @param[in]  mainThread   : The main thread object.
      *
      * @retval the new media keys instance or null on error.
      */
     virtual std::unique_ptr<IMediaKeySession>
     createMediaKeySession(const std::string &keySystem, int32_t keySessionId,
                           const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem, KeySessionType sessionType,
-                          std::weak_ptr<IMediaKeysClient> client) const = 0;
+                          std::weak_ptr<IMediaKeysClient> client,
+                          const std::shared_ptr<IMainThread> &mainThread) const = 0;
 };
 
 /**
