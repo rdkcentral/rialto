@@ -18,6 +18,7 @@
  */
 
 #include "MainThread.h"
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
@@ -332,19 +333,21 @@ TEST_F(MainThreadPlaybackIntegrationTests, MultipleYouTubeClientsPlayback)
     }
 
     std::vector<std::future<void>> futures;
-    for (auto &client : clients)
-    {
-        futures.push_back(std::async(std::launch::async,
-                                     [&]()
-                                     {
-                                         EXPECT_TRUE(client->start());
-                                         for (int j = 0; j < 10; ++j)
-                                         {
-                                             EXPECT_TRUE(client->feedData(1024));
-                                         }
-                                         EXPECT_TRUE(client->stop());
-                                     }));
-    }
+    std::transform(clients.begin(), clients.end(),
+                   std::back_inserter(futures),
+                   [&](auto &client)
+                   {
+                       return std::async(std::launch::async,
+                                        [&]()
+                                        {
+                                            EXPECT_TRUE(client->start());
+                                            for (int j = 0; j < 10; ++j)
+                                            {
+                                                EXPECT_TRUE(client->feedData(1024));
+                                            }
+                                            EXPECT_TRUE(client->stop());
+                                        });
+                   });
 
     for (auto &f : futures)
     {
@@ -439,22 +442,24 @@ TEST_F(MainThreadPlaybackIntegrationTests, MultipleVIPAClientsConcurrentPlayback
     }
 
     std::vector<std::future<void>> futures;
-    for (auto &client : clients)
-    {
-        futures.push_back(std::async(std::launch::async,
-                                     [&]()
-                                     {
-                                         EXPECT_TRUE(client->initializeDRM());
-                                         EXPECT_TRUE(client->play());
+    std::transform(clients.begin(), clients.end(),
+                   std::back_inserter(futures),
+                   [&](auto &client)
+                   {
+                       return std::async(std::launch::async,
+                                        [&]()
+                                        {
+                                            EXPECT_TRUE(client->initializeDRM());
+                                            EXPECT_TRUE(client->play());
 
-                                         for (int j = 0; j < 5; ++j)
-                                         {
-                                             EXPECT_TRUE(client->processFrame(1024));
-                                         }
+                                            for (int j = 0; j < 5; ++j)
+                                            {
+                                                EXPECT_TRUE(client->processFrame(1024));
+                                            }
 
-                                         EXPECT_TRUE(client->pause());
-                                     }));
-    }
+                                            EXPECT_TRUE(client->pause());
+                                        });
+                   });
 
     for (auto &f : futures)
     {
@@ -578,22 +583,24 @@ TEST_F(MainThreadPlaybackIntegrationTests, MultipleXIPAClientsConcurrentStreamin
     }
 
     std::vector<std::future<void>> futures;
-    for (auto &client : clients)
-    {
-        futures.push_back(std::async(std::launch::async,
-                                     [&]()
-                                     {
-                                         EXPECT_TRUE(client->startStreaming());
+    std::transform(clients.begin(), clients.end(),
+                   std::back_inserter(futures),
+                   [&](auto &client)
+                   {
+                       return std::async(std::launch::async,
+                                        [&]()
+                                        {
+                                            EXPECT_TRUE(client->startStreaming());
 
-                                         for (int j = 0; j < 10; ++j)
-                                         {
-                                             EXPECT_TRUE(client->feedStreamData(256));
-                                         }
+                                            for (int j = 0; j < 10; ++j)
+                                            {
+                                                EXPECT_TRUE(client->feedStreamData(256));
+                                            }
 
-                                         EXPECT_FALSE(client->checkNetworkStall());
-                                         EXPECT_TRUE(client->stop());
-                                     }));
-    }
+                                            EXPECT_FALSE(client->checkNetworkStall());
+                                            EXPECT_TRUE(client->stop());
+                                        });
+                   });
 
     for (auto &f : futures)
     {
