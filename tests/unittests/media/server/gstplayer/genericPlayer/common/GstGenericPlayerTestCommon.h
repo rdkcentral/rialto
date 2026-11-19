@@ -70,6 +70,7 @@ public:
     void triggerSetupSource(GstElement *element);
     void triggerSetupElement(GstElement *element);
     void triggerDeepElementAdded(GstElement *element);
+    void triggerDeepElementRemoved(GstElement *element);
 
     StrictMock<GstGenericPlayerClientMock> m_gstPlayerClient;
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock{std::make_shared<StrictMock<GstWrapperMock>>()};
@@ -154,6 +155,9 @@ protected:
     gpointer m_deepElementAddedUserData;
     GCallback m_deepElementAddedFunc;
     gulong m_deepElementAddedSignalId{2};
+    gpointer m_deepElementRemovedUserData;
+    GCallback m_deepElementRemovedFunc;
+    gulong m_deepElementRemovedSignalId{3};
     GstObject m_sinkFactory{}; // GstElementFactory is an opaque data structure
     GstIterator m_it{};
     char m_dummy{0};

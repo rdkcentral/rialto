@@ -87,9 +87,12 @@ private:
     GCallback m_setupElementFunc{};
     gpointer m_deepElementAddedUserData{nullptr};
     GCallback m_deepElementAddedFunc{};
+    gpointer m_deepElementRemovedUserData{nullptr};
+    GCallback m_deepElementRemovedFunc{};
     gulong m_setupSourceSignalId{0};
     gulong m_setupElementSignalId{1};
     gulong m_deepElementAddedSignalId{2};
+    gulong m_deepElementRemovedSignalId{3};
     std::map<GstAppSrc *, GstAppSrcCallbacks> m_appSrcCallbacks;
     std::map<GstAppSrc *, gpointer> m_appSrcCallbacksUserDatas;
 };
