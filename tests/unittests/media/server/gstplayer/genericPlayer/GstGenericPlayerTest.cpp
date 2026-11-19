@@ -48,18 +48,44 @@ namespace
 {
 constexpr std::chrono::milliseconds kRuntimeTimerInterval{100};
 
+class ObservedTimer : public firebolt::rialto::common::ITimer
+{
+public:
+    ObservedTimer(std::unique_ptr<firebolt::rialto::common::ITimer> timer,
+                  std::shared_ptr<std::atomic<unsigned int>> cancelCount)
+        : m_timer{std::move(timer)}, m_cancelCount{std::move(cancelCount)}
+    {
+    }
+
+    void cancel() override
+    {
+        m_timer->cancel();
+        ++(*m_cancelCount);
+    }
+
+    bool isActive() const override { return m_timer->isActive(); }
+
+private:
+    std::unique_ptr<firebolt::rialto::common::ITimer> m_timer;
+    std::shared_ptr<std::atomic<unsigned int>> m_cancelCount;
+};
+
 class AcceleratedTimerFactory : public firebolt::rialto::common::ITimerFactory
 {
 public:
+    unsigned int cancelCount() const { return m_cancelCount->load(); }
+
     std::unique_ptr<firebolt::rialto::common::ITimer>
     createTimer(const std::chrono::milliseconds &, const std::function<void()> &callback,
                 firebolt::rialto::common::TimerType timerType) const override
     {
-        return m_timerFactory.createTimer(kRuntimeTimerInterval, callback, timerType);
+        return std::make_unique<ObservedTimer>(m_timerFactory.createTimer(kRuntimeTimerInterval, callback, timerType),
+                                               m_cancelCount);
     }
 
 private:
     firebolt::rialto::common::TimerFactory m_timerFactory;
+    std::shared_ptr<std::atomic<unsigned int>> m_cancelCount{std::make_shared<std::atomic<unsigned int>>(0)};
 };
 
 class CallbackPlayerTask : public IPlayerTask
@@ -100,6 +126,7 @@ class GstGenericPlayerTest : public GstGenericPlayerTestCommon
 {
 protected:
     std::unique_ptr<IGstGenericPlayer> m_sut;
+    std::shared_ptr<firebolt::rialto::common::ITimerFactory> m_playerTimerFactory;
     bool m_useRealWorker{false};
     VideoRequirements m_videoReq = {kMinPrimaryVideoWidth, kMinPrimaryVideoHeight};
     bool m_isLive{false};
@@ -115,16 +142,16 @@ protected:
         : m_useRealWorker{useRealWorker}
     {
         gstPlayerWillBeCreated(m_useRealWorker);
-        std::shared_ptr<firebolt::rialto::common::ITimerFactory> playerTimerFactory = timerFactory;
-        if (!playerTimerFactory)
+        m_playerTimerFactory = timerFactory;
+        if (!m_playerTimerFactory)
         {
-            playerTimerFactory = m_timerFactoryMock;
+            m_playerTimerFactory = m_timerFactoryMock;
         }
         m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
                                                    m_videoReq, m_isLive, m_gstWrapperMock, m_glibWrapperMock,
                                                    m_rdkGstreamerUtilsWrapperMock, m_gstInitialiserMock,
                                                    std::move(m_flushWatcher), m_gstSrcFactoryMock,
-                                                   m_gstProfilerFactoryMock, std::move(playerTimerFactory),
+                                                   m_gstProfilerFactoryMock, m_playerTimerFactory,
                                                    std::move(m_taskFactory), std::move(workerThreadFactory),
                                                    std::move(gstDispatcherThreadFactory),
                                                    m_gstProtectionMetadataFactoryMock);
@@ -373,10 +400,14 @@ TEST_F(GstGenericPlayerRealTimerTest, shouldStopRestartAndShutdownRealSubtitleCl
 {
     auto *player = dynamic_cast<IGstGenericPlayerPrivate *>(m_sut.get());
     ASSERT_NE(nullptr, player);
+    const auto *timerFactory = dynamic_cast<const AcceleratedTimerFactory *>(m_playerTimerFactory.get());
+    ASSERT_NE(nullptr, timerFactory);
 
     std::mutex synchroniseMutex;
     std::condition_variable synchroniseCondition;
     unsigned int synchroniseCount{0};
+    std::promise<void> workerBarrier;
+    auto workerBarrierFuture = workerBarrier.get_future();
     PlayerShutdownGuard shutdownGuard{[this]()
                                       {
                                           if (m_sut)
@@ -412,24 +443,27 @@ TEST_F(GstGenericPlayerRealTimerTest, shouldStopRestartAndShutdownRealSubtitleCl
     ASSERT_TRUE(waitForMoreSynchronisations(0, std::chrono::seconds{2}));
 
     player->stopSubtitleClockResyncTimer();
-    std::this_thread::sleep_for(kRuntimeTimerInterval * 3);
+    EXPECT_EQ(1u, timerFactory->cancelCount());
+    EXPECT_CALL(m_taskFactoryMock, createSetVolume(_, _, _, _, _))
+        .WillOnce(
+            Invoke([&workerBarrier](GenericPlayerContext &, IGstGenericPlayerPrivate &, double, uint32_t,
+                                    firebolt::rialto::EaseType) -> std::unique_ptr<IPlayerTask>
+                   { return std::make_unique<CallbackPlayerTask>([&workerBarrier]() { workerBarrier.set_value(); }); }));
+    m_sut->setVolume(0.0, 0, firebolt::rialto::EaseType{});
+    ASSERT_EQ(std::future_status::ready, workerBarrierFuture.wait_for(std::chrono::seconds{2}));
+
     unsigned int stoppedCount;
     {
         std::lock_guard<std::mutex> lock{synchroniseMutex};
         stoppedCount = synchroniseCount;
     }
-    EXPECT_FALSE(waitForMoreSynchronisations(stoppedCount, kRuntimeTimerInterval * 5));
 
     player->startSubtitleClockResyncTimer();
     ASSERT_TRUE(waitForMoreSynchronisations(stoppedCount, std::chrono::seconds{2}));
+    EXPECT_EQ(1u, timerFactory->cancelCount());
 
     shutdownGuard.run();
-    unsigned int shutdownCount;
-    {
-        std::lock_guard<std::mutex> lock{synchroniseMutex};
-        shutdownCount = synchroniseCount;
-    }
-    EXPECT_FALSE(waitForMoreSynchronisations(shutdownCount, kRuntimeTimerInterval * 5));
+    EXPECT_EQ(2u, timerFactory->cancelCount());
 }
 
 TEST_F(GstGenericPlayerTest, shouldAttachSource)
