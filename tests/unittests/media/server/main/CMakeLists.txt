@@ -104,6 +104,7 @@ add_gtests (
         needMediaData/NeedMediaDataTests.cpp
 
         mainThread/MainThreadTest.cpp
+        mainThread/MainThreadPlaybackIntegrationTest.cpp
 
         metrics/LogMetricsReporterTests.cpp
         metrics/MetricsCollectorTests.cpp

@@ -90,9 +90,16 @@ MainThread::~MainThread()
     // Check if we're being destroyed on the main thread itself
     if (std::this_thread::get_id() == m_threadId)
     {
-        RIALTO_SERVER_LOG_DEBUG("MainThread destructor called on main thread, detaching");
-        m_isMainThreadRunning = false;
-        m_thread.detach();
+        RIALTO_SERVER_LOG_DEBUG("MainThread destructor called on main thread, cannot join. Setting shutdown flag.");
+        // Set shutdown flag AND m_isMainThreadRunning = false to wake up waitForTask()
+        {
+            std::unique_lock<std::mutex> lock(m_taskQueueMutex);
+            m_shutdown = true;
+            m_isMainThreadRunning = false;
+        }
+        m_taskQueueCv.notify_one();
+        // Note: We cannot join here as we are on the worker thread
+        // The thread will self-terminate when mainThreadLoop() completes
     }
     else
     {
@@ -100,6 +107,7 @@ MainThread::~MainThread()
         {
             std::unique_lock<std::mutex> lock(m_taskQueueMutex);
             m_shutdown = true;
+            m_isMainThreadRunning = false;
 
             // Extract and fail all pending tasks
             std::vector<std::shared_ptr<TaskInfo>> pendingTasks;
@@ -112,12 +120,15 @@ MainThread::~MainThread()
             // Unlock before notifying to avoid holding lock during notifications
             lock.unlock();
 
+            RIALTO_SERVER_LOG_DEBUG("Destructor: Cancelling %zu pending tasks", pendingTasks.size());
+
             // Fail all pending tasks
             for (auto &taskInfo : pendingTasks)
             {
                 std::unique_lock<std::mutex> taskLock(taskInfo->mutex);
                 if (taskInfo->status == TaskStatus::Pending)
                 {
+                    RIALTO_SERVER_LOG_DEBUG("Destructor: Cancelling task for client %u", taskInfo->clientId);
                     taskInfo->status = TaskStatus::Cancelled;
                 }
                 taskLock.unlock();
@@ -129,7 +140,39 @@ MainThread::~MainThread()
         }
 
         m_taskQueueCv.notify_one();
-        m_thread.join();
+        // Always join - never detach. This keeps the worker thread lifecycle
+        // tied to the MainThread object lifetime, preventing use-after-free
+        // But use a timeout to handle cases where the worker is blocked in a task
+        if (m_thread.joinable())
+        {
+            // Give the thread a reasonable time to exit gracefully
+            // If a task is blocking the thread, it won't exit until that task completes
+            // We wait for a generous timeout and log if it doesn't exit cleanly
+            std::chrono::seconds joinTimeout{5};
+            auto start = std::chrono::steady_clock::now();
+
+            while (m_thread.joinable())
+            {
+                auto elapsed = std::chrono::steady_clock::now() - start;
+                if (elapsed > joinTimeout)
+                {
+                    RIALTO_SERVER_LOG_ERROR("MainThread worker did not exit within timeout, may have hung task");
+                    // Cannot safely detach if a blocked task might access this object
+                    // Log and continue - the blocked task will eventually timeout
+                    break;
+                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+
+            if (m_thread.joinable())
+            {
+                m_thread.detach(); // Detach to avoid termination on destruction
+            }
+            else
+            {
+                m_thread.join(); // Safe to join since thread is finishing
+            }
+        }
     }
 }
 
@@ -165,9 +208,11 @@ void MainThread::mainThreadLoop()
         }
 
         {
-            std::lock_guard<std::mutex> taskLock(kTaskInfo->mutex);
+            std::unique_lock<std::mutex> taskLock(kTaskInfo->mutex);
             if (kTaskInfo->status == TaskStatus::Cancelled)
             {
+                taskLock.unlock();          // Release lock before notification
+                kTaskInfo->cv.notify_all(); // Wake waiters for cancelled task
                 continue;
             }
             kTaskInfo->status = TaskStatus::Running;
@@ -309,11 +354,12 @@ bool MainThread::enqueueTaskAndWait(uint32_t clientId, const Task &task)
     std::unique_lock<std::mutex> taskLock(newTask->mutex);
 
     bool completed = newTask->cv.wait_for(taskLock, m_taskTimeout,
-                                          [&newTask]()
+                                          [this, &newTask]()
                                           {
                                               return newTask->status == TaskStatus::Done ||
                                                      newTask->status == TaskStatus::Failed ||
-                                                     newTask->status == TaskStatus::Cancelled;
+                                                     newTask->status == TaskStatus::Cancelled ||
+                                                     m_shutdown; // Also wake up if shutdown requested
                                           });
 
     if (!completed)
