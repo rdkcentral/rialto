@@ -47,6 +47,9 @@ public:
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
                  const firebolt::rialto::MediaSourceType &type),
                 (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createFirstFrameReceived,
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, MediaSourceType sourceType),
+                (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createFinishSetupSource,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createHandleBusMessage,
