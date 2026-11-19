@@ -19,6 +19,8 @@
 
 #include "MainThread.h"
 #include "RialtoServerLogging.h"
+#include <cinttypes>
+#include <cstdint>
 #include <exception>
 #include <string>
 #include <utility>
@@ -70,8 +72,8 @@ MainThread::MainThread(std::chrono::milliseconds taskTimeout)
     : m_taskTimeout(taskTimeout), m_isMainThreadRunning{true}, m_shutdown{false}, m_mainThreadClientId{0},
       m_nextClientId{1}
 {
-    RIALTO_SERVER_LOG_DEBUG("MainThread is constructed with timeout %lld ms",
-                            static_cast<long long>(taskTimeout.count()));
+    RIALTO_SERVER_LOG_DEBUG("MainThread is constructed with timeout %" PRId64 " ms",
+                            static_cast<int64_t>(taskTimeout.count()));
     m_thread = std::thread(std::bind(&MainThread::mainThreadLoop, this));
 
     // Register itself
@@ -319,8 +321,8 @@ bool MainThread::enqueueTaskAndWait(uint32_t clientId, const Task &task)
         // Timeout: task is still pending, cancel it
         if (newTask->status == TaskStatus::Pending)
         {
-            RIALTO_SERVER_LOG_ERROR("Task timeout after %lld ms, cancelling",
-                                    static_cast<long long>(m_taskTimeout.count()));
+            RIALTO_SERVER_LOG_ERROR("Task timeout after %" PRId64 " ms, cancelling",
+                                    static_cast<int64_t>(m_taskTimeout.count()));
             newTask->status = TaskStatus::Cancelled;
             return false;
         }
