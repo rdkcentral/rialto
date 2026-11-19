@@ -195,7 +195,10 @@ std::optional<MetricEvent> RialtoMetrics::onMetricMessage(
 	}
 
 	// The session id is not part of MetricEvent; it is only needed to key the counter cache and for logging.
+	// Resolve the session/source pair once using the mapper to ensure consistency: if the element is unregistered
+	// between validation and caching, we use the resolved IDs from validation rather than allowing a second lookup to fail.
 	int32_t sessionId = 0;
+	int32_t sourceId = parsedMessage.sourceId;
 	uint32_t mappedSessionId = 0;
 	uint32_t mappedSourceId = 0;
 	GstObject* sourceObject = GST_MESSAGE_SRC(message);
@@ -204,18 +207,19 @@ std::optional<MetricEvent> RialtoMetrics::onMetricMessage(
 	    m_elementToSourceMapper->MapElement(sourceElement, mappedSessionId, mappedSourceId))
 	{
 		sessionId = static_cast<int32_t>(mappedSessionId);
+		sourceId = static_cast<int32_t>(mappedSourceId);
 	}
 
 	// Counted after validation, so rejected messages never reach the counters.
 	if (parsedMessage.type == MetricType::VIDEO_DECODE_ERROR && parsedMessage.phase == MetricPhase::OCCURRENCE)
 	{
 		std::lock_guard<std::mutex> lock{m_counterMutex};
-		++m_counterCache[{sessionId, parsedMessage.sourceId}].counters.corruptedFrames;
+		++m_counterCache[{sessionId, sourceId}].counters.corruptedFrames;
 	}
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
 					 "RialtoMetrics::onMetricMessage validated metric: %u, observation_kind: %u, session_id: %d, source_id: %d",
 					 static_cast<uint32_t>(parsedMessage.type), static_cast<uint32_t>(parsedMessage.phase), sessionId,
-					 parsedMessage.sourceId);
+					 sourceId);
 	
 	return parsedMessage;
 }
