@@ -117,6 +117,11 @@ protected:
         {
             gst_caps_unref(m_caps);
         }
+        testing::Mock::VerifyAndClearExpectations(m_pluginFactory.get());
+        testing::Mock::VerifyAndClearExpectations(m_thunderFactory.get());
+        testing::Mock::VerifyAndClearExpectations(m_plugin.get());
+        testing::Mock::VerifyAndClearExpectations(m_textTrack.get());
+        testing::Mock::VerifyAndClearExpectations(m_thunder.get());
         IFactoryAccessor::instance().textTrackPluginWrapperFactory() = nullptr;
         IFactoryAccessor::instance().thunderWrapperFactory() = nullptr;
     }
