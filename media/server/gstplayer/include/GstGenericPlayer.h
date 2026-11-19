@@ -263,6 +263,17 @@ private:
     static void deepElementAdded(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self);
 
     /**
+     * @brief Callback on deep-element-removed. Called by the Gstreamer thread
+     * Unregisters elements from the metrics mapper to prevent stale address reuse
+     *
+     * @param[in] pipeline  : The pipeline the signal was fired from.
+     * @param[in] bin       : the GstBin the element was removed from
+     * @param[in] element   : an element that was removed from the playbin hierarchy
+     * @param[in] self      : Reference to the calling object.
+     */
+    static void deepElementRemoved(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self);
+
+    /**
      * @brief Creates a Westeros sink and sets the res-usage flag for a secondary video.
      *
      * @retval true on success.

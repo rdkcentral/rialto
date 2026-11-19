@@ -419,6 +419,8 @@ void GstGenericPlayer::initMsePipeline()
     m_glibWrapper->gSignalConnect(m_context.pipeline, "element-setup", G_CALLBACK(&GstGenericPlayer::setupElement), this);
     m_glibWrapper->gSignalConnect(m_context.pipeline, "deep-element-added",
                                   G_CALLBACK(&GstGenericPlayer::deepElementAdded), this);
+    m_glibWrapper->gSignalConnect(m_context.pipeline, "deep-element-removed",
+                                  G_CALLBACK(&GstGenericPlayer::deepElementRemoved), this);
 
     // Set uri
     m_glibWrapper->gObjectSet(m_context.pipeline, "uri", "rialto://", nullptr);
@@ -557,6 +559,9 @@ void GstGenericPlayer::setupElement(GstElement *pipeline, GstElement *element, G
                  isVideoSink(*self->m_gstWrapper, element) || isAudioSink(*self->m_gstWrapper, element)) &&
                 sessionId >= 0 && sourceId >= 0)
             {
+                // Defensive unregister: remove any stale entry at this address before re-registering
+                mapper->UnregisterElement(element);
+                
                 mapper->RegisterElement(element, static_cast<uint32_t>(sessionId), static_cast<uint32_t>(sourceId));
                 RIALTO_SERVER_LOG_DEBUG("Registered element %s with mapper for enrichment", GST_ELEMENT_NAME(element));
             }
@@ -578,6 +583,18 @@ void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElemen
         self->m_gstWrapper->gstObjectRef(element);
         self->m_workerThread->enqueueTask(
             self->m_taskFactory->createDeepElementAdded(self->m_context, *self, pipeline, bin, element));
+    }
+}
+
+void GstGenericPlayer::deepElementRemoved(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self)
+{
+    RIALTO_SERVER_LOG_DEBUG("Deep element %s removed from pipeline", GST_ELEMENT_NAME(element));
+    
+    // Unregister element from metrics mapper to prevent stale address reuse
+    if (self->m_metrics && self->m_metrics->getElementToSourceMapper())
+    {
+        self->m_metrics->getElementToSourceMapper()->UnregisterElement(element);
+        RIALTO_SERVER_LOG_DEBUG("Unregistered element %s from mapper", GST_ELEMENT_NAME(element));
     }
 }
 
@@ -710,6 +727,14 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
             // Is this an auto-sink?...
             if (autoSink != sink)
             {
+                // Cleanup: unregister the auto-sink wrapper since we're using the actual sink child
+                if (m_metrics && m_metrics->getElementToSourceMapper())
+                {
+                    m_metrics->getElementToSourceMapper()->UnregisterElement(sink);
+                    RIALTO_SERVER_LOG_DEBUG("Unregistered auto-sink wrapper %s, using child %s", 
+                                           GST_ELEMENT_NAME(sink), GST_ELEMENT_NAME(autoSink));
+                }
+                
                 m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
 
                 // increase the reference count of the auto sink
