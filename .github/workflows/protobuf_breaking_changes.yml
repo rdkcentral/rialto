@@ -34,6 +34,8 @@ jobs:
 
       - name: Setup
         uses: bufbuild/buf-setup-action@v1.31.0
+        with:
+          github_token: ${{ github.token }}
 
       - name: Set target branch
         id: set-branch

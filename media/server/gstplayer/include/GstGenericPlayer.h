@@ -37,7 +37,9 @@
 #include "tasks/IPlayerTask.h"
 #include <IMediaPipeline.h>
 #include <atomic>
+#include <cstdint>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -108,7 +110,7 @@ public:
      */
     virtual ~GstGenericPlayer();
 
-    void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
+    bool attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
     void removeSource(const MediaSourceType &mediaSourceType) override;
     void allSourcesAttached() override;
     void play(bool &async) override;
@@ -191,6 +193,7 @@ private:
     void stopNotifyPlaybackInfoTimer() override;
     void startSubtitleClockResyncTimer() override;
     void stopSubtitleClockResyncTimer() override;
+    void cancelSubtitleClockResyncTimer(bool shuttingDown);
     void stopWorkerThread() override;
     void cancelUnderflow(firebolt::rialto::MediaSourceType mediaSource) override;
     void setPendingPlaybackRate() override;
@@ -489,12 +492,20 @@ private:
      */
     std::unique_ptr<firebolt::rialto::common::ITimer> m_playbackInfoTimer{nullptr};
 
+    struct SubtitleClockResyncTimerState
+    {
+        std::mutex mutex;
+        bool isActive{false};
+        bool isShuttingDown{false};
+        std::uint64_t generation{0};
+    };
+
     /**
      * @brief Timer to resync subtitle clock with AV clock
-     *
-     * Variable can be used only in worker thread
      */
     std::unique_ptr<firebolt::rialto::common::ITimer> m_subtitleClockResyncTimer{nullptr};
+    std::shared_ptr<SubtitleClockResyncTimerState> m_subtitleClockResyncTimerState{
+        std::make_shared<SubtitleClockResyncTimerState>()};
 
     /**
      * @brief The GstGenericPlayer task factory
