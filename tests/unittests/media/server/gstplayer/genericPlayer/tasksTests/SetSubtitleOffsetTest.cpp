@@ -22,25 +22,6 @@
 
 #include <limits>
 
-using testing::Return;
-using testing::StrictMock;
-
-class TextTrackSessionMock : public firebolt::rialto::server::ITextTrackSession
-{
-public:
-    MOCK_METHOD(bool, resetSession, (bool), (override));
-    MOCK_METHOD(bool, pause, (), (override));
-    MOCK_METHOD(bool, play, (), (override));
-    MOCK_METHOD(bool, mute, (bool), (override));
-    MOCK_METHOD(bool, setPosition, (uint64_t), (override));
-    MOCK_METHOD(bool, sendData, (const std::string &, int64_t), (override));
-    MOCK_METHOD(bool, setSessionWebVTTSelection, (), (override));
-    MOCK_METHOD(bool, setSessionTTMLSelection, (), (override));
-    MOCK_METHOD(bool, setSessionCCSelection, (const std::string &), (override));
-    MOCK_METHOD(bool, associateVideoDecoder, (gpointer), (override));
-    MOCK_METHOD(bool, isClosedCaptions, (), (const, override));
-};
-
 class SetSubtitleOffsetTest : public GenericTasksTestsBase
 {
 protected:
@@ -73,16 +54,6 @@ TEST(SubtitlePositionWithOffsetTest, HandlesNegativeOffsetsAndClampsBelowZero)
     EXPECT_EQ(1000U, firebolt::rialto::server::calculateSubtitlePosition(2000U, -1000));
     EXPECT_EQ(0U, firebolt::rialto::server::calculateSubtitlePosition(1000U, -1000));
     EXPECT_EQ(0U, firebolt::rialto::server::calculateSubtitlePosition(500U, -1000));
-}
-
-TEST(SubtitlePositionWithOffsetTest, AppliesNegativeOffsetBeforeSettingSessionPosition)
-{
-    constexpr uint64_t kPosition{2 * GST_SECOND};
-    constexpr int64_t kOffset{-static_cast<int64_t>(GST_SECOND)};
-    StrictMock<TextTrackSessionMock> session;
-    EXPECT_CALL(session, setPosition(1000)).WillOnce(Return(true));
-
-    EXPECT_EQ(GST_SECOND, firebolt::rialto::server::setSubtitlePosition(session, kPosition, kOffset));
 }
 
 TEST(SubtitlePositionWithOffsetTest, HandlesOffsetLimitsWithoutOverflow)

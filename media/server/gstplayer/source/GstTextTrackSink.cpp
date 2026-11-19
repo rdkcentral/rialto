@@ -60,7 +60,7 @@ struct _GstRialtoTextTrackSink
 
 struct _GstRialtoTextTrackSinkClass
 {
-    GstBaseSink parentClass;
+    GstBaseSinkClass parentClass;
 };
 
 G_END_DECLS
