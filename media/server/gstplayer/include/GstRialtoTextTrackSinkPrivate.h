@@ -47,6 +47,13 @@ inline uint64_t calculateSubtitlePosition(uint64_t position, int64_t offset)
     return position + positiveOffset;
 }
 
+inline uint64_t setSubtitlePosition(ITextTrackSession &session, uint64_t position, int64_t offset)
+{
+    const uint64_t positionWithOffset = calculateSubtitlePosition(position, offset);
+    session.setPosition(positionWithOffset / GST_MSECOND);
+    return positionWithOffset;
+}
+
 struct GstRialtoTextTrackSinkPrivate
 {
     std::unique_ptr<ITextTrackSession> m_textTrackSession;
