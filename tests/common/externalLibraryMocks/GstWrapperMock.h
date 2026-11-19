@@ -142,6 +142,8 @@ public:
                 (const gchar *name, const gchar *firstfield, GType type, gboolean value), (const));
     MOCK_METHOD(GstStructure *, gstStructureNewBufferStub,
                 (const gchar *name, const gchar *firstfield, GType type, GstBuffer *value), (const));
+    MOCK_METHOD(GstStructure *, gstStructureNewUint64Stub,
+                (const gchar *name, const gchar *firstfield, GType type, guint64 value), (const));
     MOCK_METHOD(GstStructure *, gstStructureNewUintStub,
                 (const gchar *name, const gchar *firstfield, GType type, uint32_t value), (const));
     MOCK_METHOD(GstStructure *, gstStructureNewStringStub,
@@ -332,6 +334,11 @@ public:
             {
                 GstBuffer *value = va_arg(args, GstBuffer *);
                 structure = gstStructureNewBufferStub(name, kProperty, valueType, value);
+            }
+            else if (g_type_is_a(valueType, G_TYPE_UINT64))
+            {
+                guint64 value = va_arg(args, guint64);
+                structure = gstStructureNewUint64Stub(name, kProperty, valueType, value);
             }
             else if (g_type_is_a(valueType, G_TYPE_UINT))
             {

@@ -18,6 +18,9 @@
  */
 
 #include "GenericTasksTestsBase.h"
+#include "GstRialtoTextTrackSinkPrivate.h"
+
+#include <limits>
 
 class SetSubtitleOffsetTest : public GenericTasksTestsBase
 {
@@ -36,4 +39,32 @@ TEST_F(SetSubtitleOffsetTest, ShouldSetSubtitleOffsetWithSubtitleSink)
     setContextSubtitleSink();
     shouldSetSubtitleOffset();
     triggerSetSubtitleOffset();
+}
+
+TEST_F(SetSubtitleOffsetTest, ShouldSetNegativeSubtitleOffsetWithSubtitleSink)
+{
+    constexpr int64_t kNegativeOffset{-1000};
+    setContextSubtitleSink();
+    shouldSetSubtitleOffset(kNegativeOffset);
+    triggerSetSubtitleOffset(kNegativeOffset);
+}
+
+TEST(SubtitlePositionWithOffsetTest, HandlesNegativeOffsetsAndClampsBelowZero)
+{
+    EXPECT_EQ(1000U, firebolt::rialto::server::calculateSubtitlePosition(2000U, -1000));
+    EXPECT_EQ(0U, firebolt::rialto::server::calculateSubtitlePosition(1000U, -1000));
+    EXPECT_EQ(0U, firebolt::rialto::server::calculateSubtitlePosition(500U, -1000));
+}
+
+TEST(SubtitlePositionWithOffsetTest, HandlesOffsetLimitsWithoutOverflow)
+{
+    constexpr uint64_t kMaxPosition{std::numeric_limits<uint64_t>::max()};
+    constexpr int64_t kMinOffset{std::numeric_limits<int64_t>::min()};
+    constexpr int64_t kMaxOffset{std::numeric_limits<int64_t>::max()};
+
+    EXPECT_EQ(std::numeric_limits<uint64_t>::max(),
+              firebolt::rialto::server::calculateSubtitlePosition(kMaxPosition - 1, 2));
+    EXPECT_EQ(static_cast<uint64_t>(std::numeric_limits<int64_t>::max()),
+              firebolt::rialto::server::calculateSubtitlePosition(kMaxPosition, kMinOffset));
+    EXPECT_EQ(kMaxPosition, firebolt::rialto::server::calculateSubtitlePosition(kMaxPosition, kMaxOffset));
 }

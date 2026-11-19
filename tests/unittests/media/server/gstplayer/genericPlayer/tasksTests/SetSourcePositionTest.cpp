@@ -68,3 +68,10 @@ TEST_F(SetSourcePositionTest, ShouldSetSubtitleSourcePosition)
     triggerSetSourcePosition(firebolt::rialto::MediaSourceType::SUBTITLE);
     checkInitialPositionNotSet(firebolt::rialto::MediaSourceType::SUBTITLE);
 }
+
+TEST_F(SetSourcePositionTest, ShouldNotQueueNegativeSubtitlePositionBeforeSourceSetup)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::SUBTITLE);
+    triggerSetSourcePosition(firebolt::rialto::MediaSourceType::SUBTITLE, -1);
+    checkInitialPositionNotSet(firebolt::rialto::MediaSourceType::SUBTITLE);
+}
