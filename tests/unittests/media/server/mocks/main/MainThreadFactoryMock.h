@@ -30,7 +30,7 @@ namespace firebolt::rialto::server::mock
 class MainThreadFactoryMock : public IMainThreadFactory
 {
 public:
-    MOCK_METHOD(std::shared_ptr<IMainThread>, getMainThread, (), (const, override));
+    MOCK_METHOD(std::shared_ptr<IMainThread>, createMainThread, (), (const, override));
 };
 } // namespace firebolt::rialto::server::mock
 

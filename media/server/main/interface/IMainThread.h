@@ -39,18 +39,18 @@ public:
     virtual ~IMainThreadFactory() = default;
 
     /**
-     * @brief Create a IMainThreadFactory instance.
+     * @brief Create an IMainThreadFactory instance.
      *
      * @retval the factory instance or null on error.
      */
     static std::shared_ptr<IMainThreadFactory> createFactory();
 
     /**
-     * @brief IMainThread factory method, gets a concrete implementation of IMainThread
+     * @brief IMainThread factory method, creates a concrete implementation of IMainThread
      *
      * @retval the main thread instance or null on error.
      */
-    virtual std::shared_ptr<IMainThread> getMainThread() const = 0;
+    virtual std::shared_ptr<IMainThread> createMainThread() const = 0;
 };
 
 /**

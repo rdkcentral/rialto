@@ -25,9 +25,6 @@
 
 namespace firebolt::rialto::server
 {
-std::weak_ptr<IMainThread> MainThreadFactory::m_mainThread;
-std::mutex MainThreadFactory::m_creationMutex;
-
 std::shared_ptr<IMainThreadFactory> IMainThreadFactory::createFactory()
 {
     std::shared_ptr<IMainThreadFactory> factory;
@@ -43,26 +40,9 @@ std::shared_ptr<IMainThreadFactory> IMainThreadFactory::createFactory()
     return factory;
 }
 
-std::shared_ptr<IMainThread> MainThreadFactory::getMainThread() const
+std::shared_ptr<IMainThread> MainThreadFactory::createMainThread() const
 {
-    std::lock_guard<std::mutex> lock{m_creationMutex};
-
-    std::shared_ptr<IMainThread> mainThread = m_mainThread.lock();
-    if (!mainThread)
-    {
-        try
-        {
-            mainThread = std::make_shared<MainThread>();
-        }
-        catch (const std::exception &e)
-        {
-            RIALTO_SERVER_LOG_ERROR("Failed to create the main thread, reason: %s", e.what());
-        }
-
-        m_mainThread = mainThread;
-    }
-
-    return mainThread;
+    return std::make_shared<MainThread>();
 }
 
 MainThread::MainThread() : m_isMainThreadRunning{true}, m_mainThreadClientId{0}, m_nextClientId{1}

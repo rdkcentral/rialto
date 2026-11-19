@@ -131,14 +131,14 @@ void CdmServiceTests::triggerPing()
 
 void CdmServiceTests::mediaKeysFactoryWillCreateMediaKeys()
 {
-    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_mainThreadFactoryMock, createMainThread()).WillOnce(Return(m_mainThreadMock));
     EXPECT_CALL(*m_mediaKeysFactoryMock, createMediaKeysServerInternal(_, _))
         .WillOnce(Return(ByMove(std::move(m_mediaKeys))));
 }
 
 void CdmServiceTests::mediaKeysFactoryWillReturnNullptr()
 {
-    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_mainThreadFactoryMock, createMainThread()).WillOnce(Return(m_mainThreadMock));
     EXPECT_CALL(*m_mediaKeysFactoryMock, createMediaKeysServerInternal(_, _))
         .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::server::IMediaKeysServerInternal>())));
 }

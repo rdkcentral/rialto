@@ -82,7 +82,7 @@ TEST_F(MainThreadTests, FactoryCreatesObject)
     std::shared_ptr<firebolt::rialto::server::IMainThreadFactory> factory =
         firebolt::rialto::server::IMainThreadFactory::createFactory();
     EXPECT_NE(factory, nullptr);
-    EXPECT_NE(factory->getMainThread(), nullptr);
+    EXPECT_NE(factory->createMainThread(), nullptr);
 }
 
 /**

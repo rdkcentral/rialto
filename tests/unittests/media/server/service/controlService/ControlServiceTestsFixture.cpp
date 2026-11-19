@@ -44,7 +44,7 @@ ControlServiceTests::ControlServiceTests()
 
 void ControlServiceTests::controlServerInternalFactoryWillCreateControlServerInternal(int id)
 {
-    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_mainThreadFactoryMock, createMainThread()).WillOnce(Return(m_mainThreadMock));
     EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(Eq(m_mainThreadMock), id, _))
         .WillOnce(Return(m_controlServerInternalMock));
     EXPECT_CALL(*m_controlServerInternalMock, setApplicationState(_));
@@ -52,7 +52,7 @@ void ControlServiceTests::controlServerInternalFactoryWillCreateControlServerInt
 
 void ControlServiceTests::controlServerInternalFactoryWillCreateControlServerInternalWithSetState(int id)
 {
-    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_mainThreadFactoryMock, createMainThread()).WillOnce(Return(m_mainThreadMock));
     EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(Eq(m_mainThreadMock), id, _))
         .WillOnce(Return(m_controlServerInternalMock));
     EXPECT_CALL(*m_controlServerInternalMock, setApplicationState(_));

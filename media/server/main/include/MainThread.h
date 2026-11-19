@@ -42,7 +42,7 @@ public:
     MainThreadFactory() = default;
     ~MainThreadFactory() override = default;
 
-    std::shared_ptr<IMainThread> getMainThread() const override;
+    std::shared_ptr<IMainThread> createMainThread() const override;
 
 protected:
     /**
@@ -57,7 +57,7 @@ protected:
 };
 
 /**
- * @brief The definition of the MediaKeys.
+ * @brief The definition of the MainThread.
  */
 class MainThread : public IMainThread
 {

@@ -36,7 +36,7 @@ void ControlService::addControl(int controlId, const std::shared_ptr<IControlCli
 {
     RIALTO_SERVER_LOG_INFO("Creating new Control with id: %d", controlId);
     auto controlServerInternal{
-        m_controlServerInternalFactory->createControlServerInternal(m_mainThreadFactory->getMainThread(), controlId,
+        m_controlServerInternalFactory->createControlServerInternal(m_mainThreadFactory->createMainThread(), controlId,
                                                                     client)};
     std::unique_lock<std::mutex> lock{m_mutex};
     controlServerInternal->setApplicationState(m_currentState);

@@ -84,7 +84,7 @@ bool CdmService::createMediaKeys(int mediaKeysHandle, std::string keySystem)
         m_mediaKeys.emplace(
             std::make_pair(mediaKeysHandle,
                            m_mediaKeysFactory->createMediaKeysServerInternal(keySystem,
-                                                                             m_mainThreadFactory->getMainThread())));
+                                                                             m_mainThreadFactory->createMainThread())));
         if (!m_mediaKeys.at(mediaKeysHandle))
         {
             RIALTO_SERVER_LOG_ERROR("Could not create MediaKeys for media keys handle: %d", mediaKeysHandle);

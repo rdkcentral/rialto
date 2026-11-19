@@ -75,7 +75,7 @@ void PlaybackServiceTests::createPlaybackServiceShouldSuccess()
 {
     EXPECT_CALL(*m_mediaPipelineCapabilitiesFactoryMock, createMediaPipelineCapabilities())
         .WillOnce(Return(ByMove(std::move(m_mediaPipelineCapabilities))));
-    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_mainThreadFactoryMock, createMainThread()).WillOnce(Return(m_mainThreadMock));
     m_sut = std::make_unique<firebolt::rialto::server::service::PlaybackService>(m_mediaPipelineFactoryMock,
                                                                                  m_mediaPipelineCapabilitiesFactoryMock,
                                                                                  m_webAudioPlayerFactoryMock,

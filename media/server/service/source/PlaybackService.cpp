@@ -39,7 +39,7 @@ PlaybackService::PlaybackService(
     std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory, IDecryptionService &decryptionService,
     std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory,
     const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
-    : m_playbackThread{mainThreadFactory->getMainThread()}, m_shmBufferFactory{std::move(shmBufferFactory)},
+    : m_playbackThread{mainThreadFactory->createMainThread()}, m_shmBufferFactory{std::move(shmBufferFactory)},
       m_isActive{false}, m_maxPlaybacks{0}, m_maxWebAudioPlayers{0},
       m_privateMetricsService{std::make_unique<PrivateMetricsService>(IMetricsCollectorFactory::createFactory())},
       m_mediaPipelineService{std::make_unique<MediaPipelineService>(*this, std::move(mediaPipelineFactory),
