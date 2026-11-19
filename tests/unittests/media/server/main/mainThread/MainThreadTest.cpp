@@ -44,13 +44,6 @@ protected:
         EXPECT_TRUE(m_mainThread->enqueueTaskAndWait(clientId, task));
     }
 
-    void enqueuePriorityTaskAndWaitOnDummyMock(uint32_t clientId, const std::shared_ptr<DummyMock> &dummyMock)
-    {
-        auto task = [&, dummyMock]() { dummyMock->mockMethod(); };
-
-        EXPECT_TRUE(m_mainThread->enqueuePriorityTaskAndWait(clientId, task));
-    }
-
     void enqueueTaskOnDummyMock(uint32_t clientId, const std::shared_ptr<DummyMock> &dummyMock)
     {
         auto task = [&, dummyMock]() { dummyMock->mockMethod(); };
@@ -124,7 +117,7 @@ TEST_F(MainThreadTests, MultipleClients)
     enqueueTaskOnDummyMock(clientId2, dummyMock2);
     enqueueTaskOnDummyMock(clientId1, dummyMock1);
     enqueueTaskAndWaitOnDummyMock(clientId3, dummyMock3);
-    enqueuePriorityTaskAndWaitOnDummyMock(clientId4, dummyMock4);
+    enqueueTaskAndWaitOnDummyMock(clientId4, dummyMock4);
 
     unregisterClient(clientId3);
     unregisterClient(clientId1);
@@ -155,7 +148,7 @@ TEST_F(MainThreadTests, IgnoreUnregisteredClients)
     enqueueTaskOnDummyMock(clientId2, dummyMock2);
     enqueueTaskOnDummyMock(clientId1, dummyMock1);
     enqueueTaskAndWaitOnDummyMock(clientId3, dummyMock3);
-    enqueuePriorityTaskAndWaitOnDummyMock(clientId4, dummyMock4);
+    enqueueTaskAndWaitOnDummyMock(clientId4, dummyMock4);
 
     unregisterClient(clientId2);
 }
@@ -171,6 +164,7 @@ TEST_F(MainThreadTests, EnqueueTaskAndWaitTimesOutWhenMainThreadBlocked)
 
     std::promise<void> release;
     auto releaseFlag = release.get_future().share();
+    std::atomic<bool> timedOutTaskExecuted{false};
 
     // Block the main thread with a long-running task
     m_mainThread->enqueueTask(m_mainThreadClientId, [releaseFlag]() { releaseFlag.wait(); });
@@ -178,7 +172,7 @@ TEST_F(MainThreadTests, EnqueueTaskAndWaitTimesOutWhenMainThreadBlocked)
     // Try to enqueue a task from another thread - should timeout
     auto waiter = std::async(std::launch::async, [&]() {
         auto start = std::chrono::steady_clock::now();
-        bool result = m_mainThread->enqueueTaskAndWait(clientId, []() {});
+        bool result = m_mainThread->enqueueTaskAndWait(clientId, [&]() { timedOutTaskExecuted = true; });
         auto elapsed = std::chrono::steady_clock::now() - start;
         EXPECT_FALSE(result);
         // Verify it actually waited for the timeout period
@@ -186,39 +180,10 @@ TEST_F(MainThreadTests, EnqueueTaskAndWaitTimesOutWhenMainThreadBlocked)
         EXPECT_LE(elapsed, std::chrono::milliseconds(300));
     });
 
-    waiter.wait();
+    waiter.get();
     release.set_value();
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-}
-
-/**
- * Test that enqueuePriorityTaskAndWait times out when main thread is blocked.
- * AC1: Priority variant.
- */
-TEST_F(MainThreadTests, EnqueuePriorityTaskAndWaitTimesOutWhenMainThreadBlocked)
-{
-    m_mainThread = std::make_shared<MainThread>(std::chrono::milliseconds{100});
-    uint32_t clientId = m_mainThread->registerClient();
-
-    std::promise<void> release;
-    auto releaseFlag = release.get_future().share();
-
-    // Block the main thread
-    m_mainThread->enqueueTask(m_mainThreadClientId, [releaseFlag]() { releaseFlag.wait(); });
-
-    // Try to enqueue a priority task from another thread - should timeout
-    auto waiter = std::async(std::launch::async, [&]() {
-        auto start = std::chrono::steady_clock::now();
-        bool result = m_mainThread->enqueuePriorityTaskAndWait(clientId, []() {});
-        auto elapsed = std::chrono::steady_clock::now() - start;
-        EXPECT_FALSE(result);
-        EXPECT_GE(elapsed, std::chrono::milliseconds(90));
-        EXPECT_LE(elapsed, std::chrono::milliseconds(300));
-    });
-
-    waiter.wait();
-    release.set_value();
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    EXPECT_TRUE(m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, []() {}));
+    EXPECT_FALSE(timedOutTaskExecuted);
 }
 
 /**
@@ -227,7 +192,7 @@ TEST_F(MainThreadTests, EnqueuePriorityTaskAndWaitTimesOutWhenMainThreadBlocked)
  */
 TEST_F(MainThreadTests, DestructorFailsOutstandingWaiters)
 {
-    m_mainThread = std::make_shared<MainThread>(std::chrono::milliseconds{100});
+    m_mainThread = std::make_shared<MainThread>(std::chrono::milliseconds{5000});
     uint32_t clientId = m_mainThread->registerClient();
 
     std::promise<void> release;
@@ -236,28 +201,40 @@ TEST_F(MainThreadTests, DestructorFailsOutstandingWaiters)
     // Block the main thread
     m_mainThread->enqueueTask(m_mainThreadClientId, [releaseFlag]() { releaseFlag.wait(); });
 
-    // Start two waiters (normal and priority)
+    auto mainThread = std::move(m_mainThread);
+    auto *mainThreadPtr = mainThread.get();
+    std::promise<void> waiter1Started;
+    std::promise<void> waiter2Started;
+
+    // Start two waiters
     auto waiter1 = std::async(std::launch::async, [&]() {
-        bool result = m_mainThread->enqueueTaskAndWait(clientId, []() {});
-        return result;
+        waiter1Started.set_value();
+        return mainThreadPtr->enqueueTaskAndWait(clientId, []() {});
     });
 
     auto waiter2 = std::async(std::launch::async, [&]() {
-        bool result = m_mainThread->enqueuePriorityTaskAndWait(clientId, []() {});
-        return result;
+        waiter2Started.set_value();
+        return mainThreadPtr->enqueueTaskAndWait(clientId, []() {});
     });
 
-    // Give waiters time to block
+    waiter1Started.get_future().wait();
+    waiter2Started.get_future().wait();
+
+    // Give both threads time to enqueue and block before starting shutdown.
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
-    // Destroy MainThread - should release all waiters
-    m_mainThread.reset();
+    auto destruction = std::async(std::launch::async, [mainThread = std::move(mainThread)]() mutable {
+        mainThread.reset();
+    });
 
-    // Both waiters should return false (cancelled)
+    // Destruction releases queued waiters, then joins the blocked worker.
+    EXPECT_EQ(waiter1.wait_for(std::chrono::milliseconds(500)), std::future_status::ready);
+    EXPECT_EQ(waiter2.wait_for(std::chrono::milliseconds(500)), std::future_status::ready);
     EXPECT_FALSE(waiter1.get());
     EXPECT_FALSE(waiter2.get());
 
     release.set_value();
+    destruction.get();
 }
 
 /**
@@ -285,26 +262,21 @@ TEST_F(MainThreadTests, SelfCallExecutesInline)
 }
 
 /**
- * Test that self-thread priority call executes inline.
- * AC3: Calls from the main thread run inline (priority variant).
+ * Test that exceptions from inline tasks are logged and reported without escaping.
  */
-TEST_F(MainThreadTests, SelfPriorityCallExecutesInline)
+TEST_F(MainThreadTests, InlineTaskExceptionReturnsFalse)
 {
     m_mainThread = std::make_shared<MainThread>();
+    bool inlineTaskFailed{false};
 
-    bool innerTaskExecuted{false};
-    bool outerTaskCompleted{false};
+    bool outerResult = m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, [&]() {
+        inlineTaskFailed = !m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, []() {
+            throw std::runtime_error("Inline task exception");
+        });
+    });
 
-    auto task = [&]() {
-        bool result = m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, [&]() { innerTaskExecuted = true; });
-        EXPECT_TRUE(result);
-        outerTaskCompleted = true;
-    };
-
-    bool result = m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
-    EXPECT_TRUE(result);
-    EXPECT_TRUE(innerTaskExecuted);
-    EXPECT_TRUE(outerTaskCompleted);
+    EXPECT_TRUE(outerResult);
+    EXPECT_TRUE(inlineTaskFailed);
 }
 
 /**

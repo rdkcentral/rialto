@@ -1,56 +1,32 @@
 # Proposal: MainThread Bounded Wait — RDKEMW-27333
 
-## Implementation Status
+## Status
 
-The core implementation is complete. MainThread class, interface, and comprehensive tests (13 L1 tests) have been implemented covering all acceptance criteria. Mock updates and test base updates are complete.
+Core worker behavior and focused tests are implemented. Remaining work includes propagating `enqueueTaskAndWait()` failures through all relevant server call sites, running the broader unit-test suites, and TSan/Valgrind verification.
 
-The following remains:
+## Review decisions incorporated
 
-- **Call site updates** (~95 sites across 4 ServerInternal files) – Most changes are mechanical; example patterns implemented for all four types
-- **Full test suite execution** – MainThread tests pass design criteria; full servermain/serverservice/serveripc suites pending
-- **TSan/Valgrind verification** – Thread sanitizer and memory validation
+- Keep `std::lock_guard<std::mutex> lock(m_registeredClientsMutex);` around registered-client set access.
+- Remove `enqueuePriorityTaskAndWait()` from the interface and implementation. It has no production callers; tests that depended on priority ordering are replaced with FIFO checks.
+- Catch task exceptions with `catch (...)`, log an error, mark the task failed, notify its waiter, and do not rethrow.
+- Store the worker thread id atomically and execute `enqueueTaskAndWait()` inline when called from that worker.
 
-Current progress:
-
-- ✅ Core MainThread fix (per-task state, bounded wait, cancellation, shutdown escape, self-call guard, exception safety)
-- ✅ Interface changes (bool return type)
-- ✅ Mock updates (MainThreadMock.h)
-- ✅ Test base updates (4 files: MediaPipelineTestBase, MediaKeysTestBase, WebAudioPlayerTestBase, MediaKeySessionTestBase)
-- ✅ Comprehensive L1 tests (13 new tests covering all ACs)
-- ✅ Example call site updates (3 patterns demonstrated in MediaPipelineServerInternal.cpp)
-- ⏳ Remaining call sites (~95 total, template-driven approach documented)
-- ⏳ Full integration testing
-
-## Criteria Coverage
-
-This proposal addresses the following MainThread concurrency issues:
+## Acceptance-criteria coverage
 
 | Criterion | Coverage |
 |-----------|----------|
-| **AC1: Bounded timeout** | `cv.wait_for()` with 30s default (configurable); 2 tests verify timeout behavior within 100-300ms |
-| **AC2: Shutdown escape** | Destructor drains queue, cancels pending tasks, fails all waiters; test verifies cleanup |
-| **AC3: Self-call inline** | Thread ID detection, inline execution; 2 tests verify no deadlock (<10ms execution) |
-| **AC4: Race-free registry** | `std::atomic<uint32_t>` for IDs; separate `m_registeredClientsMutex` for registry; 2 concurrent tests + TSan support |
-| **AC5: L1 test coverage** | 13 comprehensive tests covering timeout, shutdown, self-call, exceptions, concurrency |
+| **AC1: Bounded wait** | `cv.wait_for()` with a 30-second default, configurable for tests; a queued task that times out is cancelled and skipped |
+| **AC2: Shutdown escape** | Destructor drains queued tasks, cancels pending waiters, and wakes them |
+| **AC3: Self-call** | Atomic worker-thread id check executes nested synchronous calls inline |
+| **AC4: Race-free registry** | `m_nextClientId` is atomic; `m_registeredClients` access uses `m_registeredClientsMutex` |
+| **AC5: L1 coverage** | Tests cover timeout/cancellation, shutdown, self-call, exception handling, and concurrent client registration |
 
-## Why
+## Problem
 
-**Current Problems (Pre-Fix):**
+`MainThread` serializes operations by running queued tasks on a worker thread. Callers using `enqueueTaskAndWait()` block until their task finishes. Without bounded waiting, a blocked worker can leave request threads waiting indefinitely. A synchronous call made from the worker deadlocks because the worker is the only thread that can execute the queued task. An uncaught task exception can terminate the worker process, and unprotected access to the client registry can race.
 
-1. **F1 – No timeout:** `cv.wait(lockTask, [&]{ return newTask->done; })` has no timeout. If main thread blocks, IPC threads hang forever. Client RPC times out (~3s), server IPC thread leaked per call. Over many calls, server becomes unresponsive due to thread starvation.
+## Solution
 
-2. **F2 – Self-call deadlock:** Task running on main thread calls `enqueueTaskAndWait()`. Task waits for completion, but completion can only happen on main thread → guaranteed deadlock.
+Use per-task shared completion state, bounded waiting, cancellation of tasks that have not started, shutdown-aware queue draining, inline execution for nested worker-thread calls, logged exception handling, and a mutex for registered-client set access. The API exposes only `enqueueTaskAndWait()`; there is no priority blocking API.
 
-3. **F3 – Exception crash:** Task throws uncaught exception. Exception escapes `mainThreadLoop()` → `std::thread::~thread()` calls `std::terminate()` → process dies.
-
-4. **F4 – Registry race:** `m_registeredClients` is plain `std::set` accessed from multiple threads without synchronization. `ControlServerInternal::~ControlServerInternal()` calls `unregisterClient()` directly (not on main thread) → data race detected by TSan.
-
-**Consequences:**
-
-- Blocked server process (F1)
-- Cascading deadlocks (F2)  
-- Process crashes on exception (F3)
-- Hidden data races (F4)
-
-**Solution:** This proposal implements per-task shared state, bounded waits with cancellation, shutdown-safe queue draining, inline self-call execution, exception safety, and thread-safe registry access.
-
+If a task has already started when its timeout expires, its caller continues waiting for it to finish. Existing task lambdas may reference caller-owned stack variables, so returning while such a lambda is executing would create use-after-return behavior. This remaining limitation must be considered when verifying the ticket's bounded-wait requirement.

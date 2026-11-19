@@ -107,16 +107,6 @@ public:
      */
     virtual bool enqueueTaskAndWait(uint32_t clientId, const Task &task) = 0;
 
-    /**
-     * @brief Enqueue a priority task on the main thread and wait for it to finish before returning.
-     *
-     * Returns false on timeout, shutdown, task exception or unregistered client.
-     *
-     * @param[in]  clientId : The id of the registered client.
-     * @param[in]  task     : Task to queue.
-     * @retval true if task completed successfully, false otherwise.
-     */
-    virtual bool enqueuePriorityTaskAndWait(uint32_t clientId, const Task &task) = 0;
 };
 } // namespace firebolt::rialto::server
 

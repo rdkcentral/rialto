@@ -19,6 +19,7 @@
 
 #include "MainThread.h"
 #include "RialtoServerLogging.h"
+#include <exception>
 #include <string>
 #include <utility>
 #include <vector>
@@ -69,7 +70,8 @@ MainThread::MainThread(std::chrono::milliseconds taskTimeout)
     : m_taskTimeout(taskTimeout), m_isMainThreadRunning{true}, m_shutdown{false},
       m_mainThreadClientId{0}, m_nextClientId{1}
 {
-    RIALTO_SERVER_LOG_DEBUG("MainThread is constructed with timeout %lld ms", taskTimeout.count());
+    RIALTO_SERVER_LOG_DEBUG("MainThread is constructed with timeout %lld ms",
+                            static_cast<long long>(taskTimeout.count()));
     m_thread = std::thread(std::bind(&MainThread::mainThreadLoop, this));
 
     // Register itself
@@ -160,14 +162,18 @@ void MainThread::mainThreadLoop()
             continue;
         }
 
+        {
+            std::lock_guard<std::mutex> taskLock(kTaskInfo->mutex);
+            if (kTaskInfo->status == TaskStatus::Cancelled)
+            {
+                continue;
+            }
+            kTaskInfo->status = TaskStatus::Running;
+        }
+
         // Run the task with exception handling
         try
         {
-            {
-                std::unique_lock<std::mutex> taskLock(kTaskInfo->mutex);
-                kTaskInfo->status = TaskStatus::Running;
-            }
-
             // Execute the task (outside the lock)
             kTaskInfo->task();
 
@@ -180,19 +186,11 @@ void MainThread::mainThreadLoop()
                 }
             }
         }
-        catch (const std::exception &e)
-        {
-            RIALTO_SERVER_LOG_ERROR("Task threw exception: %s", e.what());
-            std::unique_lock<std::mutex> taskLock(kTaskInfo->mutex);
-            kTaskInfo->status = TaskStatus::Failed;
-            kTaskInfo->exception = std::current_exception();
-        }
         catch (...)
         {
-            RIALTO_SERVER_LOG_ERROR("Task threw unknown exception");
+            RIALTO_SERVER_LOG_ERROR("Task threw an exception");
             std::unique_lock<std::mutex> taskLock(kTaskInfo->mutex);
             kTaskInfo->status = TaskStatus::Failed;
-            kTaskInfo->exception = std::current_exception();
         }
 
         kTaskInfo->cv.notify_all();
@@ -218,13 +216,9 @@ int32_t MainThread::registerClient()
 {
     uint32_t clientId = m_nextClientId++;
 
-    auto task = [this, clientId]()
-    {
-        RIALTO_SERVER_LOG_INFO("Registering client '%u'", clientId);
-        std::lock_guard<std::mutex> lock(m_registeredClientsMutex);
-        m_registeredClients.insert(clientId);
-    };
-    enqueueTask(m_mainThreadClientId, task);
+    RIALTO_SERVER_LOG_INFO("Registering client '%u'", clientId);
+    std::lock_guard<std::mutex> lock(m_registeredClientsMutex);
+    m_registeredClients.insert(clientId);
 
     return clientId;
 }
@@ -263,18 +257,8 @@ void MainThread::enqueueTask(uint32_t clientId, const Task &task)
 
 bool MainThread::enqueueTaskAndWait(uint32_t clientId, const Task &task)
 {
-    return enqueueAndWait(clientId, task, false /* priority */);
-}
-
-bool MainThread::enqueuePriorityTaskAndWait(uint32_t clientId, const Task &task)
-{
-    return enqueueAndWait(clientId, task, true /* priority */);
-}
-
-bool MainThread::enqueueAndWait(uint32_t clientId, const Task &task, bool priority)
-{
     // Check if we're on the main thread
-    if (std::this_thread::get_id() == m_threadId)
+    if (std::this_thread::get_id() == m_threadId.load())
     {
         RIALTO_SERVER_LOG_DEBUG("Self-call detected, executing task inline");
 
@@ -294,14 +278,9 @@ bool MainThread::enqueueAndWait(uint32_t clientId, const Task &task, bool priori
             task();
             return true;
         }
-        catch (const std::exception &e)
-        {
-            RIALTO_SERVER_LOG_ERROR("Inline task threw exception: %s", e.what());
-            return false;
-        }
         catch (...)
         {
-            RIALTO_SERVER_LOG_ERROR("Inline task threw unknown exception");
+            RIALTO_SERVER_LOG_ERROR("Inline task threw an exception");
             return false;
         }
     }
@@ -319,14 +298,7 @@ bool MainThread::enqueueAndWait(uint32_t clientId, const Task &task, bool priori
             return false;
         }
 
-        if (priority)
-        {
-            m_taskQueue.push_front(newTask);
-        }
-        else
-        {
-            m_taskQueue.push_back(newTask);
-        }
+        m_taskQueue.push_back(newTask);
     }
 
     m_taskQueueCv.notify_one();
@@ -334,17 +306,25 @@ bool MainThread::enqueueAndWait(uint32_t clientId, const Task &task, bool priori
     // Wait for task completion with timeout
     std::unique_lock<std::mutex> taskLock(newTask->mutex);
 
-    bool completed =
-        newTask->cv.wait_for(taskLock, m_taskTimeout, [&newTask]() { return newTask->status != TaskStatus::Pending; });
+    bool completed = newTask->cv.wait_for(taskLock, m_taskTimeout, [&newTask]() {
+        return newTask->status == TaskStatus::Done || newTask->status == TaskStatus::Failed ||
+               newTask->status == TaskStatus::Cancelled;
+    });
 
     if (!completed)
     {
         // Timeout: task is still pending, cancel it
         if (newTask->status == TaskStatus::Pending)
         {
-            RIALTO_SERVER_LOG_ERROR("Task timeout after %lld ms, cancelling", m_taskTimeout.count());
+            RIALTO_SERVER_LOG_ERROR("Task timeout after %lld ms, cancelling",
+                                    static_cast<long long>(m_taskTimeout.count()));
             newTask->status = TaskStatus::Cancelled;
             return false;
+        }
+        if (newTask->status == TaskStatus::Running)
+        {
+            RIALTO_SERVER_LOG_ERROR("Task exceeded timeout after starting; waiting for safe completion");
+            newTask->cv.wait(taskLock, [&newTask]() { return newTask->status != TaskStatus::Running; });
         }
     }
 
@@ -357,17 +337,6 @@ bool MainThread::enqueueAndWait(uint32_t clientId, const Task &task, bool priori
     if (newTask->status == TaskStatus::Failed)
     {
         RIALTO_SERVER_LOG_ERROR("Task failed");
-        if (newTask->exception)
-        {
-            try
-            {
-                std::rethrow_exception(newTask->exception);
-            }
-            catch (const std::exception &e)
-            {
-                RIALTO_SERVER_LOG_ERROR("Task exception: %s", e.what());
-            }
-        }
         return false;
     }
 
@@ -376,4 +345,3 @@ bool MainThread::enqueueAndWait(uint32_t clientId, const Task &task, bool priori
     return false;
 }
 } // namespace firebolt::rialto::server
-

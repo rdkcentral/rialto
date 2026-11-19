@@ -4,17 +4,17 @@
 
 ### 1. Interface Update
 
-- [X] 1.1 Update `media/server/main/interface/IMainThread.h`: change `enqueueTaskAndWait()` and `enqueuePriorityTaskAndWait()` return type from `void` to `bool`. Add documentation: "Returns false on timeout, shutdown, task exception or unregistered client."
+- [X] 1.1 Update `media/server/main/interface/IMainThread.h`: change `enqueueTaskAndWait()` return type from `void` to `bool`. Add documentation: "Returns false on timeout, shutdown, task exception or unregistered client." Remove the unused `enqueuePriorityTaskAndWait()` API.
 - [X] 1.2 Verify signature changes compile against existing code (will fail, as expected).
 
 ### 2. MainThread Header – Data Structures
 
 - [X] 2.1 Add `enum class TaskStatus { Pending, Running, Done, Failed, Cancelled }` to `MainThread.h`.
-- [X] 2.2 Extend `TaskInfo` struct: remove `TaskState *state` pointer; add `std::mutex mutex`, `std::condition_variable cv`, `TaskStatus status{Pending}`, `std::exception_ptr exception`.
+- [X] 2.2 Extend `TaskInfo` struct: remove `TaskState *state` pointer; add `std::mutex mutex`, `std::condition_variable cv`, and `TaskStatus status{Pending}`.
 - [X] 2.3 Remove `TaskState` struct (no longer needed).
 - [X] 2.4 Add member variables: `std::chrono::milliseconds m_taskTimeout` (default 30s), `bool m_shutdown`, `std::atomic<std::thread::id> m_threadId`, `std::mutex m_registeredClientsMutex`.
 - [X] 2.5 Update constructor: `explicit MainThread(std::chrono::milliseconds taskTimeout = kDefaultTaskTimeout)`.
-- [X] 2.6 Add private helper: `bool enqueueAndWait(uint32_t clientId, const Task &task, bool priority)`.
+- [X] 2.6 Keep the synchronous wait logic in `enqueueTaskAndWait()`; remove the priority helper and API.
 
 ### 3. MainThread Implementation – Core Logic
 
@@ -26,15 +26,15 @@
   - Skip cancelled tasks
   - Return on shutdown signal
 - [X] 3.4 Rewrite `waitForTask()`: use condition for `!m_taskQueue.empty() || m_shutdown`; return nullptr on shutdown.
-- [X] 3.5 Implement `enqueueAndWait()` helper:
+- [X] 3.5 Implement the wait in `enqueueTaskAndWait()`:
   - Self-thread check (thread ID == m_threadId): execute inline, return true/false
   - Shutdown check: return false immediately
-  - Enqueue with priority flag
+  - Enqueue the task at the back of the FIFO queue
   - `cv.wait_for(timeout, terminal_status_predicate)`
   - If timeout while Pending: set Cancelled, return false
   - If Running on timeout: keep waiting (log ERROR), return false when done
   - Return true only on Done status
-- [X] 3.6 Update `enqueueTaskAndWait()` and `enqueuePriorityTaskAndWait()`: delegate to `enqueueAndWait()` with appropriate priority flag.
+- [X] 3.6 Implement the bounded wait directly in `enqueueTaskAndWait()`; remove `enqueuePriorityTaskAndWait()` and its priority-queue path.
 - [X] 3.7 Update `registerClient()`: acquire `m_registeredClientsMutex` when inserting; change from async enqueue to sync (eliminates priority-before-registration hole).
 - [X] 3.8 Update `unregisterClient()`: acquire `m_registeredClientsMutex` when erasing; now thread-safe.
 
@@ -42,7 +42,7 @@
 
 ### 4. Mock and Test Base Updates
 
-- [X] 4.1 Update `tests/unittests/media/server/mocks/main/MainThreadMock.h`: change `MOCK_METHOD` return type to `bool` for `enqueueTaskAndWait` and `enqueuePriorityTaskAndWait`.
+- [X] 4.1 Update `tests/unittests/media/server/mocks/main/MainThreadMock.h`: change `enqueueTaskAndWait` mock return type to `bool`; remove the unused priority mock.
 - [X] 4.2 Update all test bases (4 files):
   - `tests/.../mediaPipeline/base/MediaPipelineTestBase.cpp`: Invoke lambdas return `true`
   - `tests/.../mediaKeys/base/MediaKeysTestBase.cpp`: Invoke lambdas return `true`
@@ -53,10 +53,10 @@
 ### 5. L1 Tests (AC1–AC5)
 
 - [X] 5.1 Add `EnqueueTaskAndWaitTimesOutWhenMainThreadBlocked` – Blocks main thread, verifies waiter times out within 100±100ms. AC1.
-- [X] 5.2 Add `EnqueuePriorityTaskAndWaitTimesOutWhenMainThreadBlocked` – Same for priority. AC1.
-- [X] 5.3 Add `DestructorFailsOutstandingWaiters` – Destroy MainThread while 2 waiters pending; verify both return false. AC2.
+- [X] 5.2 Extend `EnqueueTaskAndWaitTimesOutWhenMainThreadBlocked` – After timeout, unblock the worker and verify the cancelled task is skipped. AC1.
+- [X] 5.3 Add `DestructorFailsOutstandingWaiters` – Destroy MainThread while 2 normal waiters are pending; verify both return false. AC2.
 - [X] 5.4 Add `SelfCallExecutesInline` – Task on main thread calls `enqueueTaskAndWait()`; verify inline execution, no timeout, no deadlock. AC3.
-- [X] 5.5 Add `SelfPriorityCallExecutesInline` – Same for priority. AC3.
+- [X] 5.5 Add `InlineTaskExceptionReturnsFalse` – Verify inline task exceptions are logged and reported as failure without escaping. AC3.
 - [X] 5.6 Add `TaskExceptionIsReportedAndLoopSurvives` – Task throws; verify return false, next task still runs. Exception handling.
 - [X] 5.7 Add `FireAndForgetExceptionDoesNotKillLoop` – Fire-and-forget task throws; verify loop survives. Exception handling.
 - [X] 5.8 Add `ConcurrentRegisterClientsGetUniqueIds` – 8 threads × 10 concurrent registrations; verify 80 unique IDs, no duplicates. AC4.
@@ -141,4 +141,3 @@
 | AC3 | Self-call inline | 5.4, 5.5 + inline logic |
 | AC4 | Race-free registry/IDs | 5.8, 5.9 + TSan clean (9.4) |
 | AC5 | L1 test coverage | 5.1–5.10 + full execution |
-

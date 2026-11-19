@@ -25,7 +25,6 @@
 #include <chrono>
 #include <condition_variable>
 #include <deque>
-#include <exception>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -77,7 +76,6 @@ public:
 
     void enqueueTask(uint32_t clientId, const Task &task) override;
     bool enqueueTaskAndWait(uint32_t clientId, const Task &task) override;
-    bool enqueuePriorityTaskAndWait(uint32_t clientId, const Task &task) override;
 
 private:
     /**
@@ -99,23 +97,12 @@ private:
     {
         uint32_t clientId;              /**< The id of the client creating the task */
         Task task;                      /**< The task to execute */
-        std::mutex mutex;               /**< Protects state, status, and exception */
+        std::mutex mutex;               /**< Protects task status */
         std::condition_variable cv;     /**< Signals state changes */
         TaskStatus status{TaskStatus::Pending};  /**< Current task status */
-        std::exception_ptr exception;   /**< Exception thrown by task, if any */
 
         TaskInfo() : clientId(0) {}
     };
-
-    /**
-     * @brief Helper to enqueue a task and wait with optional priority.
-     *
-     * @param[in]  clientId : The client id.
-     * @param[in]  task     : The task to run.
-     * @param[in]  priority : Whether to push to front (priority) or back.
-     * @retval true if task completed, false on timeout/shutdown/error.
-     */
-    bool enqueueAndWait(uint32_t clientId, const Task &task, bool priority);
 
     /**
      * @brief Starts a loop that listens for enqueued tasks.

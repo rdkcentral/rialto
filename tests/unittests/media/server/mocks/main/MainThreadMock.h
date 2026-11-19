@@ -34,7 +34,6 @@ public:
     MOCK_METHOD(void, unregisterClient, (uint32_t clientId), (override));
     MOCK_METHOD(void, enqueueTask, (uint32_t clientId, const Task &task), (override));
     MOCK_METHOD(bool, enqueueTaskAndWait, (uint32_t clientId, const Task &task), (override));
-    MOCK_METHOD(bool, enqueuePriorityTaskAndWait, (uint32_t clientId, const Task &task), (override));
 };
 } // namespace firebolt::rialto::server::mock
 

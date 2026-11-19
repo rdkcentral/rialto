@@ -6,7 +6,7 @@ The Rialto server's `MainThread` class is a process-wide singleton worker thread
 
 Currently:
 
-- `IMainThread::enqueueTaskAndWait()` and `enqueuePriorityTaskAndWait()` return `void` and offer no visibility into success/failure
+- `IMainThread::enqueueTaskAndWait()` returns `void` and offers no visibility into success/failure
 - Callers cannot distinguish between successful completion and timeout/exception
 - Main thread wedges or dies → IPC threads hang indefinitely
 - Self-calls (task calls `enqueueTaskAndWait()` from main thread) deadlock
@@ -18,15 +18,15 @@ Currently:
 
 **Goals:**
 
-- Add per-task shared state (mutex, cv, status, exception) to decouple caller lifetime from completion signaling
+- Add per-task shared state (mutex, cv, status) to decouple caller lifetime from completion signaling
 - Implement bounded wait with configurable timeout (default 30s) via `cv.wait_for()`
 - Cancel only tasks not yet started (`Pending` status); keep waiting for `Running` tasks to avoid stack corruption
 - Fail all pending tasks on shutdown; dtor drains queue and releases all waiters
 - Detect self-calls (thread ID check) and execute inline to avoid deadlock
-- Wrap task execution in try/catch; store exceptions for caller inspection; main loop survives exceptions
+- Wrap task execution in `catch (...)`, log exceptions, report failure without rethrowing, and keep the main loop alive
 - Protect `m_registeredClients` with separate mutex; make `unregisterClient()` thread-safe
 - Change blocking enqueue methods to return `bool` (true = success, false = timeout/shutdown/exception/unregistered)
-- Ensure all ~95 call sites handle the new return type
+- Ensure relevant call sites handle the new return type
 
 **Non-Goals:**
 
@@ -62,13 +62,12 @@ struct TaskInfo {
     std::mutex mutex;
     std::condition_variable cv;
     TaskStatus status{TaskStatus::Pending};
-    std::exception_ptr exception;
 };
 ```
 
 Both caller and queue hold `shared_ptr<TaskInfo>`. No extra allocation vs RDKEMW-15488 (which used `thread_local TaskState`).
 
-**Rationale:** Eliminates lifetime coupling – if caller times out and exits, the `shared_ptr` remains valid in the queue, and main thread can still safely mark task Done/Failed without touching a dead stack frame.
+**Rationale:** The queue and waiter share task status safely. If a timeout occurs before execution starts, the task is marked Cancelled and the worker skips it, so a queued lambda cannot later access caller stack data.
 
 ### Bounded Wait with wait_for
 
@@ -81,13 +80,16 @@ Default `m_taskTimeout = 30s` (configurable via constructor for testing). Client
 ### Inline Self-Calls
 
 ```cpp
-if (std::this_thread::get_id() == m_threadId) {
-    // On main thread – execute inline
-    try { task(); return true; } catch (...) { return false; }
+if (std::this_thread::get_id() == m_threadId.load()) {
+    try { task(); return true; }
+    catch (...) {
+        RIALTO_SERVER_LOG_ERROR("Inline task threw an exception");
+        return false;
+    }
 }
 ```
 
-Store `m_threadId` as `std::atomic<std::thread::id>` set at loop start. Avoids deadlock and maintains ordering (inline tasks run immediately, not queued).
+Store `m_threadId` as `std::atomic<std::thread::id>` set at loop start. A nested call executes immediately and cannot deadlock waiting for the worker itself.
 
 ### Thread-Safe Registry
 
@@ -108,25 +110,23 @@ virtual bool enqueueTaskAndWait(uint32_t clientId, const Task &task) = 0;
 // Returns true if task completed successfully, false on timeout/shutdown/exception/unregistered
 ```
 
-Propagate bool result through all ~95 call sites. For bool-returning methods, return false on enqueue failure. For void methods, return early. For destructors, call `unregisterClient()` on failure to prevent ID leaks.
+`enqueuePriorityTaskAndWait()` is removed: repository search found no production callers. Update tests that previously asserted priority ordering to verify FIFO order through `enqueueTaskAndWait()`. Propagate the bool result where callers can report failure. For bool-returning methods, return false on enqueue failure. For void methods, log and return. For destructors, call `unregisterClient()` on failure to prevent ID leaks.
 
 ### Exception Handling
 
-Wrap task execution:
+Wrap task execution and inline execution:
 
 ```cpp
 try {
-    { std::unique_lock lock(taskInfo->mutex); taskInfo->status = Running; }
     task();
-    { std::unique_lock lock(taskInfo->mutex); taskInfo->status = Done; }
 } catch (...) {
+    RIALTO_SERVER_LOG_ERROR("Task threw an exception");
     std::unique_lock lock(taskInfo->mutex);
     taskInfo->status = Failed;
-    taskInfo->exception = std::current_exception();
 }
 ```
 
-Caller can inspect `exception` via `std::rethrow_exception()` if desired, but primary result is the bool return (false).
+Do not rethrow task exceptions. Set the task status to Failed and notify the waiter, which returns `false`; the worker loop remains alive.
 
 ### Shutdown Escape
 
@@ -152,4 +152,3 @@ m_thread.join();
 ```
 
 If dtor runs on main thread (last owner released inside a task), `detach()` instead of `join()` to avoid `std::system_error` EDEADLK.
-
