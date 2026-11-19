@@ -9,5 +9,6 @@ add_gtests(
 target_link_libraries(
         RialtoServerMetricsUnitTests
         RialtoMetrics
+        RialtoLogging
         PkgConfig::RialtoMetricsTestGStreamer
 )
