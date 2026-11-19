@@ -18,6 +18,7 @@
  */
 
 #include "MainThread.h"
+#include <future>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -144,11 +145,18 @@ TEST_F(MainThreadTests, IgnoreUnregisteredClients)
     std::shared_ptr<DummyMock> dummyMock3 = std::make_shared<DummyMock>();
     std::shared_ptr<DummyMock> dummyMock4 = std::make_shared<DummyMock>();
     EXPECT_CALL(*dummyMock2, mockMethod());
+    EXPECT_CALL(*dummyMock4, mockMethod());
 
     enqueueTaskOnDummyMock(clientId2, dummyMock2);
     enqueueTaskOnDummyMock(clientId1, dummyMock1);
-    enqueueTaskAndWaitOnDummyMock(clientId3, dummyMock3);
-    enqueueTaskAndWaitOnDummyMock(clientId4, dummyMock4);
+
+    // Unregistered clients should return false from enqueueTaskAndWait
+    auto task3 = [&, dummyMock3]() { dummyMock3->mockMethod(); };
+    EXPECT_FALSE(m_mainThread->enqueueTaskAndWait(clientId3, task3));
+
+    // Registered clients should succeed
+    auto task4 = [&, dummyMock4]() { dummyMock4->mockMethod(); };
+    EXPECT_TRUE(m_mainThread->enqueueTaskAndWait(clientId4, task4));
 
     unregisterClient(clientId2);
 }
@@ -170,15 +178,18 @@ TEST_F(MainThreadTests, EnqueueTaskAndWaitTimesOutWhenMainThreadBlocked)
     m_mainThread->enqueueTask(m_mainThreadClientId, [releaseFlag]() { releaseFlag.wait(); });
 
     // Try to enqueue a task from another thread - should timeout
-    auto waiter = std::async(std::launch::async, [&]() {
-        auto start = std::chrono::steady_clock::now();
-        bool result = m_mainThread->enqueueTaskAndWait(clientId, [&]() { timedOutTaskExecuted = true; });
-        auto elapsed = std::chrono::steady_clock::now() - start;
-        EXPECT_FALSE(result);
-        // Verify it actually waited for the timeout period
-        EXPECT_GE(elapsed, std::chrono::milliseconds(90));
-        EXPECT_LE(elapsed, std::chrono::milliseconds(300));
-    });
+    auto waiter = std::async(std::launch::async,
+                             [&]()
+                             {
+                                 auto start = std::chrono::steady_clock::now();
+                                 bool result =
+                                     m_mainThread->enqueueTaskAndWait(clientId, [&]() { timedOutTaskExecuted = true; });
+                                 auto elapsed = std::chrono::steady_clock::now() - start;
+                                 EXPECT_FALSE(result);
+                                 // Verify it actually waited for the timeout period
+                                 EXPECT_GE(elapsed, std::chrono::milliseconds(90));
+                                 EXPECT_LE(elapsed, std::chrono::milliseconds(300));
+                             });
 
     waiter.get();
     release.set_value();
@@ -207,15 +218,19 @@ TEST_F(MainThreadTests, DestructorFailsOutstandingWaiters)
     std::promise<void> waiter2Started;
 
     // Start two waiters
-    auto waiter1 = std::async(std::launch::async, [&]() {
-        waiter1Started.set_value();
-        return mainThreadPtr->enqueueTaskAndWait(clientId, []() {});
-    });
+    auto waiter1 = std::async(std::launch::async,
+                              [&]()
+                              {
+                                  waiter1Started.set_value();
+                                  return mainThreadPtr->enqueueTaskAndWait(clientId, []() {});
+                              });
 
-    auto waiter2 = std::async(std::launch::async, [&]() {
-        waiter2Started.set_value();
-        return mainThreadPtr->enqueueTaskAndWait(clientId, []() {});
-    });
+    auto waiter2 = std::async(std::launch::async,
+                              [&]()
+                              {
+                                  waiter2Started.set_value();
+                                  return mainThreadPtr->enqueueTaskAndWait(clientId, []() {});
+                              });
 
     waiter1Started.get_future().wait();
     waiter2Started.get_future().wait();
@@ -223,9 +238,8 @@ TEST_F(MainThreadTests, DestructorFailsOutstandingWaiters)
     // Give both threads time to enqueue and block before starting shutdown.
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
-    auto destruction = std::async(std::launch::async, [mainThread = std::move(mainThread)]() mutable {
-        mainThread.reset();
-    });
+    auto destruction =
+        std::async(std::launch::async, [mainThread = std::move(mainThread)]() mutable { mainThread.reset(); });
 
     // Destruction releases queued waiters, then joins the blocked worker.
     EXPECT_EQ(waiter1.wait_for(std::chrono::milliseconds(500)), std::future_status::ready);
@@ -248,7 +262,8 @@ TEST_F(MainThreadTests, SelfCallExecutesInline)
     bool innerTaskExecuted{false};
     bool outerTaskCompleted{false};
 
-    auto task = [&]() {
+    auto task = [&]()
+    {
         // We're on the main thread, this should execute inline
         bool result = m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, [&]() { innerTaskExecuted = true; });
         EXPECT_TRUE(result);
@@ -269,11 +284,17 @@ TEST_F(MainThreadTests, InlineTaskExceptionReturnsFalse)
     m_mainThread = std::make_shared<MainThread>();
     bool inlineTaskFailed{false};
 
-    bool outerResult = m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, [&]() {
-        inlineTaskFailed = !m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, []() {
-            throw std::runtime_error("Inline task exception");
-        });
-    });
+    bool outerResult =
+        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId,
+                                         [&]()
+                                         {
+                                             inlineTaskFailed =
+                                                 !m_mainThread->enqueueTaskAndWait(m_mainThreadClientId,
+                                                                                   []() {
+                                                                                       throw std::runtime_error(
+                                                                                           "Inline task exception");
+                                                                                   });
+                                         });
 
     EXPECT_TRUE(outerResult);
     EXPECT_TRUE(inlineTaskFailed);
@@ -336,17 +357,19 @@ TEST_F(MainThreadTests, ConcurrentRegisterClientsGetUniqueIds)
     std::vector<std::future<void>> futures;
     for (int i = 0; i < kNumThreads; ++i)
     {
-        futures.push_back(std::async(std::launch::async, [&, i]() {
-            for (int j = 0; j < kIterationsPerThread; ++j)
-            {
-                int32_t id = m_mainThread->registerClient();
-                {
-                    std::lock_guard<std::mutex> lock(idsMutex);
-                    EXPECT_EQ(allIds.find(id), allIds.end()); // No duplicates
-                    allIds.insert(id);
-                }
-            }
-        }));
+        futures.push_back(std::async(std::launch::async,
+                                     [&, i]()
+                                     {
+                                         for (int j = 0; j < kIterationsPerThread; ++j)
+                                         {
+                                             int32_t id = m_mainThread->registerClient();
+                                             {
+                                                 std::lock_guard<std::mutex> lock(idsMutex);
+                                                 EXPECT_EQ(allIds.find(id), allIds.end()); // No duplicates
+                                                 allIds.insert(id);
+                                             }
+                                         }
+                                     }));
     }
 
     // Wait for all threads

@@ -83,11 +83,11 @@ private:
      */
     enum class TaskStatus
     {
-        Pending,   /**< Task is queued, not yet running */
-        Running,   /**< Task is currently executing */
-        Done,      /**< Task completed successfully */
-        Failed,    /**< Task threw an exception */
-        Cancelled  /**< Task was cancelled (timed out, not yet started) */
+        Pending,  /**< Task is queued, not yet running */
+        Running,  /**< Task is currently executing */
+        Done,     /**< Task completed successfully */
+        Failed,   /**< Task threw an exception */
+        Cancelled /**< Task was cancelled (timed out, not yet started) */
     };
 
     /**
@@ -95,11 +95,11 @@ private:
      */
     struct TaskInfo
     {
-        uint32_t clientId;              /**< The id of the client creating the task */
-        Task task;                      /**< The task to execute */
-        std::mutex mutex;               /**< Protects task status */
-        std::condition_variable cv;     /**< Signals state changes */
-        TaskStatus status{TaskStatus::Pending};  /**< Current task status */
+        uint32_t clientId;                      /**< The id of the client creating the task */
+        Task task;                              /**< The task to execute */
+        std::mutex mutex;                       /**< Protects task status */
+        std::condition_variable cv;             /**< Signals state changes */
+        TaskStatus status{TaskStatus::Pending}; /**< Current task status */
 
         TaskInfo() : clientId(0) {}
     };

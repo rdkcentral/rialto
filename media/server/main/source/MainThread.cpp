@@ -67,8 +67,8 @@ std::shared_ptr<IMainThread> MainThreadFactory::getMainThread() const
 }
 
 MainThread::MainThread(std::chrono::milliseconds taskTimeout)
-    : m_taskTimeout(taskTimeout), m_isMainThreadRunning{true}, m_shutdown{false},
-      m_mainThreadClientId{0}, m_nextClientId{1}
+    : m_taskTimeout(taskTimeout), m_isMainThreadRunning{true}, m_shutdown{false}, m_mainThreadClientId{0},
+      m_nextClientId{1}
 {
     RIALTO_SERVER_LOG_DEBUG("MainThread is constructed with timeout %lld ms",
                             static_cast<long long>(taskTimeout.count()));
@@ -306,10 +306,13 @@ bool MainThread::enqueueTaskAndWait(uint32_t clientId, const Task &task)
     // Wait for task completion with timeout
     std::unique_lock<std::mutex> taskLock(newTask->mutex);
 
-    bool completed = newTask->cv.wait_for(taskLock, m_taskTimeout, [&newTask]() {
-        return newTask->status == TaskStatus::Done || newTask->status == TaskStatus::Failed ||
-               newTask->status == TaskStatus::Cancelled;
-    });
+    bool completed = newTask->cv.wait_for(taskLock, m_taskTimeout,
+                                          [&newTask]()
+                                          {
+                                              return newTask->status == TaskStatus::Done ||
+                                                     newTask->status == TaskStatus::Failed ||
+                                                     newTask->status == TaskStatus::Cancelled;
+                                          });
 
     if (!completed)
     {

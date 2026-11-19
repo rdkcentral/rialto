@@ -106,7 +106,6 @@ public:
      * @retval true if task completed successfully, false otherwise.
      */
     virtual bool enqueueTaskAndWait(uint32_t clientId, const Task &task) = 0;
-
 };
 } // namespace firebolt::rialto::server
 

@@ -18,12 +18,12 @@
  */
 
 #include "MainThread.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
 #include <future>
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include <thread>
 #include <vector>
 
@@ -41,15 +41,9 @@ protected:
     const uint32_t m_mainThreadClientId{0};
     const std::chrono::milliseconds m_timeout{2000};
 
-    void SetUp() override
-    {
-        m_mainThread = std::make_shared<MainThread>(m_timeout);
-    }
+    void SetUp() override { m_mainThread = std::make_shared<MainThread>(m_timeout); }
 
-    void TearDown() override
-    {
-        m_mainThread.reset();
-    }
+    void TearDown() override { m_mainThread.reset(); }
 };
 
 /**
@@ -80,10 +74,12 @@ public:
 
     bool start()
     {
-        return m_mainThread->enqueueTaskAndWait(m_clientId, [this]() {
-            m_state->isPlaying = true;
-            m_state->bytesDecoded = 0;
-        });
+        return m_mainThread->enqueueTaskAndWait(m_clientId,
+                                                [this]()
+                                                {
+                                                    m_state->isPlaying = true;
+                                                    m_state->bytesDecoded = 0;
+                                                });
     }
 
     bool stop()
@@ -93,22 +89,26 @@ public:
 
     bool feedData(size_t bytesCount)
     {
-        return m_mainThread->enqueueTaskAndWait(m_clientId, [this, bytesCount]() {
-            if (m_state->isPlaying)
-            {
-                m_state->bytesDecoded += bytesCount;
-            }
-        });
+        return m_mainThread->enqueueTaskAndWait(m_clientId,
+                                                [this, bytesCount]()
+                                                {
+                                                    if (m_state->isPlaying)
+                                                    {
+                                                        m_state->bytesDecoded += bytesCount;
+                                                    }
+                                                });
     }
 
     bool checkUnderrun()
     {
         bool result = false;
-        m_mainThread->enqueueTaskAndWait(m_clientId, [this, &result]() {
-            result = m_state->bytesDecoded < 1024;
-            if (result)
-                m_state->underrun = true;
-        });
+        m_mainThread->enqueueTaskAndWait(m_clientId,
+                                         [this, &result]()
+                                         {
+                                             result = m_state->bytesDecoded < 1024;
+                                             if (result)
+                                                 m_state->underrun = true;
+                                         });
         return result;
     }
 
@@ -147,20 +147,24 @@ public:
 
     bool initializeDRM()
     {
-        return m_mainThread->enqueueTaskAndWait(m_clientId, [this]() {
-            // Simulate DRM initialization
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        });
+        return m_mainThread->enqueueTaskAndWait(m_clientId,
+                                                [this]()
+                                                {
+                                                    // Simulate DRM initialization
+                                                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                                                });
     }
 
     bool processFrame(size_t encryptedDataSize)
     {
-        return m_mainThread->enqueueTaskAndWait(m_clientId, [this, encryptedDataSize]() {
-            // Simulate VIPA frame decryption
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            m_state->frameCount++;
-            m_state->bytesProcessed += encryptedDataSize;
-        });
+        return m_mainThread->enqueueTaskAndWait(m_clientId,
+                                                [this, encryptedDataSize]()
+                                                {
+                                                    // Simulate VIPA frame decryption
+                                                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                                                    m_state->frameCount++;
+                                                    m_state->bytesProcessed += encryptedDataSize;
+                                                });
     }
 
     bool play()
@@ -209,38 +213,43 @@ public:
 
     bool startStreaming()
     {
-        return m_mainThread->enqueueTaskAndWait(m_clientId, [this]() {
-            m_state->isStreaming = true;
-            m_state->bufferSizeMs = 5000;
-        });
+        return m_mainThread->enqueueTaskAndWait(m_clientId,
+                                                [this]()
+                                                {
+                                                    m_state->isStreaming = true;
+                                                    m_state->bufferSizeMs = 5000;
+                                                });
     }
 
     bool adaptBitrate(uint32_t newBitrateKbps)
     {
-        return m_mainThread->enqueueTaskAndWait(m_clientId, [this, newBitrateKbps]() {
-            m_state->bitrateKbps = newBitrateKbps;
-        });
+        return m_mainThread->enqueueTaskAndWait(m_clientId,
+                                                [this, newBitrateKbps]() { m_state->bitrateKbps = newBitrateKbps; });
     }
 
     bool feedStreamData(size_t bytesCount)
     {
-        return m_mainThread->enqueueTaskAndWait(m_clientId, [this, bytesCount]() {
-            if (m_state->isStreaming)
-            {
-                m_state->totalBytesStreamed += bytesCount;
-                if (m_state->bufferSizeMs > 100)
-                    m_state->bufferSizeMs -= 100;
-            }
-        });
+        return m_mainThread->enqueueTaskAndWait(m_clientId,
+                                                [this, bytesCount]()
+                                                {
+                                                    if (m_state->isStreaming)
+                                                    {
+                                                        m_state->totalBytesStreamed += bytesCount;
+                                                        if (m_state->bufferSizeMs > 100)
+                                                            m_state->bufferSizeMs -= 100;
+                                                    }
+                                                });
     }
 
     bool checkNetworkStall()
     {
         bool stalled = false;
-        m_mainThread->enqueueTaskAndWait(m_clientId, [this, &stalled]() {
-            stalled = m_state->bufferSizeMs < 1000;
-            m_state->networkStalled = stalled;
-        });
+        m_mainThread->enqueueTaskAndWait(m_clientId,
+                                         [this, &stalled]()
+                                         {
+                                             stalled = m_state->bufferSizeMs < 1000;
+                                             m_state->networkStalled = stalled;
+                                         });
         return stalled;
     }
 
@@ -291,15 +300,17 @@ TEST_F(MainThreadPlaybackIntegrationTests, YouTubePlaybackTimesOutWhenMainThread
     m_mainThread->enqueueTask(m_mainThreadClientId, [releaseFlag]() { releaseFlag.wait(); });
 
     // Playback operation should timeout
-    auto future = std::async(std::launch::async, [&]() {
-        auto start = std::chrono::steady_clock::now();
-        bool result = youtube.feedData(4096);
-        auto elapsed = std::chrono::steady_clock::now() - start;
+    auto future = std::async(std::launch::async,
+                             [&]()
+                             {
+                                 auto start = std::chrono::steady_clock::now();
+                                 bool result = youtube.feedData(4096);
+                                 auto elapsed = std::chrono::steady_clock::now() - start;
 
-        EXPECT_FALSE(result) << "Expected timeout when MainThread is blocked";
-        EXPECT_GE(elapsed, std::chrono::milliseconds(1900));
-        EXPECT_LE(elapsed, std::chrono::milliseconds(2500));
-    });
+                                 EXPECT_FALSE(result) << "Expected timeout when MainThread is blocked";
+                                 EXPECT_GE(elapsed, std::chrono::milliseconds(1900));
+                                 EXPECT_LE(elapsed, std::chrono::milliseconds(2500));
+                             });
 
     future.wait();
     release.set_value();
@@ -323,14 +334,16 @@ TEST_F(MainThreadPlaybackIntegrationTests, MultipleYouTubeClientsPlayback)
     std::vector<std::future<void>> futures;
     for (auto &client : clients)
     {
-        futures.push_back(std::async(std::launch::async, [&]() {
-            EXPECT_TRUE(client->start());
-            for (int j = 0; j < 10; ++j)
-            {
-                EXPECT_TRUE(client->feedData(1024));
-            }
-            EXPECT_TRUE(client->stop());
-        }));
+        futures.push_back(std::async(std::launch::async,
+                                     [&]()
+                                     {
+                                         EXPECT_TRUE(client->start());
+                                         for (int j = 0; j < 10; ++j)
+                                         {
+                                             EXPECT_TRUE(client->feedData(1024));
+                                         }
+                                         EXPECT_TRUE(client->stop());
+                                     }));
     }
 
     for (auto &f : futures)
@@ -395,14 +408,16 @@ TEST_F(MainThreadPlaybackIntegrationTests, VIPAPlaybackTimesOutWhenMainThreadBlo
     // Block main thread
     m_mainThread->enqueueTask(m_mainThreadClientId, [releaseFlag]() { releaseFlag.wait(); });
 
-    auto future = std::async(std::launch::async, [&]() {
-        auto start = std::chrono::steady_clock::now();
-        bool result = vipa.processFrame(2048);
-        auto elapsed = std::chrono::steady_clock::now() - start;
+    auto future = std::async(std::launch::async,
+                             [&]()
+                             {
+                                 auto start = std::chrono::steady_clock::now();
+                                 bool result = vipa.processFrame(2048);
+                                 auto elapsed = std::chrono::steady_clock::now() - start;
 
-        EXPECT_FALSE(result) << "Expected timeout during DRM processing";
-        EXPECT_GE(elapsed, std::chrono::milliseconds(1900));
-    });
+                                 EXPECT_FALSE(result) << "Expected timeout during DRM processing";
+                                 EXPECT_GE(elapsed, std::chrono::milliseconds(1900));
+                             });
 
     future.wait();
     release.set_value();
@@ -426,17 +441,19 @@ TEST_F(MainThreadPlaybackIntegrationTests, MultipleVIPAClientsConcurrentPlayback
     std::vector<std::future<void>> futures;
     for (auto &client : clients)
     {
-        futures.push_back(std::async(std::launch::async, [&]() {
-            EXPECT_TRUE(client->initializeDRM());
-            EXPECT_TRUE(client->play());
+        futures.push_back(std::async(std::launch::async,
+                                     [&]()
+                                     {
+                                         EXPECT_TRUE(client->initializeDRM());
+                                         EXPECT_TRUE(client->play());
 
-            for (int j = 0; j < 5; ++j)
-            {
-                EXPECT_TRUE(client->processFrame(1024));
-            }
+                                         for (int j = 0; j < 5; ++j)
+                                         {
+                                             EXPECT_TRUE(client->processFrame(1024));
+                                         }
 
-            EXPECT_TRUE(client->pause());
-        }));
+                                         EXPECT_TRUE(client->pause());
+                                     }));
     }
 
     for (auto &f : futures)
@@ -487,14 +504,16 @@ TEST_F(MainThreadPlaybackIntegrationTests, XIPAPlaybackTimesOutWhenMainThreadBlo
     // Block main thread
     m_mainThread->enqueueTask(m_mainThreadClientId, [releaseFlag]() { releaseFlag.wait(); });
 
-    auto future = std::async(std::launch::async, [&]() {
-        auto start = std::chrono::steady_clock::now();
-        bool result = xipa.feedStreamData(2048);
-        auto elapsed = std::chrono::steady_clock::now() - start;
+    auto future = std::async(std::launch::async,
+                             [&]()
+                             {
+                                 auto start = std::chrono::steady_clock::now();
+                                 bool result = xipa.feedStreamData(2048);
+                                 auto elapsed = std::chrono::steady_clock::now() - start;
 
-        EXPECT_FALSE(result) << "Expected timeout during streaming";
-        EXPECT_GE(elapsed, std::chrono::milliseconds(1900));
-    });
+                                 EXPECT_FALSE(result) << "Expected timeout during streaming";
+                                 EXPECT_GE(elapsed, std::chrono::milliseconds(1900));
+                             });
 
     future.wait();
     release.set_value();
@@ -514,23 +533,27 @@ TEST_F(MainThreadPlaybackIntegrationTests, XIPAConcurrentBitrateAdaptation)
     std::vector<std::future<void>> futures;
 
     // Feed data from one thread
-    futures.push_back(std::async(std::launch::async, [&]() {
-        for (int i = 0; i < 20; ++i)
-        {
-            EXPECT_TRUE(xipa.feedStreamData(256));
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        }
-    }));
+    futures.push_back(std::async(std::launch::async,
+                                 [&]()
+                                 {
+                                     for (int i = 0; i < 20; ++i)
+                                     {
+                                         EXPECT_TRUE(xipa.feedStreamData(256));
+                                         std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                                     }
+                                 }));
 
     // Adapt bitrate from another thread
-    futures.push_back(std::async(std::launch::async, [&]() {
-        std::vector<uint32_t> bitrates = {5000, 3000, 1500, 3000, 5000};
-        for (uint32_t bitrate : bitrates)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            EXPECT_TRUE(xipa.adaptBitrate(bitrate));
-        }
-    }));
+    futures.push_back(std::async(std::launch::async,
+                                 [&]()
+                                 {
+                                     std::vector<uint32_t> bitrates = {5000, 3000, 1500, 3000, 5000};
+                                     for (uint32_t bitrate : bitrates)
+                                     {
+                                         std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                                         EXPECT_TRUE(xipa.adaptBitrate(bitrate));
+                                     }
+                                 }));
 
     for (auto &f : futures)
     {
@@ -557,17 +580,19 @@ TEST_F(MainThreadPlaybackIntegrationTests, MultipleXIPAClientsConcurrentStreamin
     std::vector<std::future<void>> futures;
     for (auto &client : clients)
     {
-        futures.push_back(std::async(std::launch::async, [&]() {
-            EXPECT_TRUE(client->startStreaming());
+        futures.push_back(std::async(std::launch::async,
+                                     [&]()
+                                     {
+                                         EXPECT_TRUE(client->startStreaming());
 
-            for (int j = 0; j < 10; ++j)
-            {
-                EXPECT_TRUE(client->feedStreamData(256));
-            }
+                                         for (int j = 0; j < 10; ++j)
+                                         {
+                                             EXPECT_TRUE(client->feedStreamData(256));
+                                         }
 
-            EXPECT_FALSE(client->checkNetworkStall());
-            EXPECT_TRUE(client->stop());
-        }));
+                                         EXPECT_FALSE(client->checkNetworkStall());
+                                         EXPECT_TRUE(client->stop());
+                                     }));
     }
 
     for (auto &f : futures)
@@ -592,27 +617,33 @@ TEST_F(MainThreadPlaybackIntegrationTests, MixedPlaybackTypesCoexist)
 
     std::vector<std::future<void>> futures;
 
-    futures.push_back(std::async(std::launch::async, [&]() {
-        EXPECT_TRUE(youtube.start());
-        for (int i = 0; i < 5; ++i)
-            EXPECT_TRUE(youtube.feedData(1024));
-        EXPECT_TRUE(youtube.stop());
-    }));
+    futures.push_back(std::async(std::launch::async,
+                                 [&]()
+                                 {
+                                     EXPECT_TRUE(youtube.start());
+                                     for (int i = 0; i < 5; ++i)
+                                         EXPECT_TRUE(youtube.feedData(1024));
+                                     EXPECT_TRUE(youtube.stop());
+                                 }));
 
-    futures.push_back(std::async(std::launch::async, [&]() {
-        EXPECT_TRUE(vipa.initializeDRM());
-        EXPECT_TRUE(vipa.play());
-        for (int i = 0; i < 5; ++i)
-            EXPECT_TRUE(vipa.processFrame(512));
-        EXPECT_TRUE(vipa.pause());
-    }));
+    futures.push_back(std::async(std::launch::async,
+                                 [&]()
+                                 {
+                                     EXPECT_TRUE(vipa.initializeDRM());
+                                     EXPECT_TRUE(vipa.play());
+                                     for (int i = 0; i < 5; ++i)
+                                         EXPECT_TRUE(vipa.processFrame(512));
+                                     EXPECT_TRUE(vipa.pause());
+                                 }));
 
-    futures.push_back(std::async(std::launch::async, [&]() {
-        EXPECT_TRUE(xipa.startStreaming());
-        for (int i = 0; i < 5; ++i)
-            EXPECT_TRUE(xipa.feedStreamData(256));
-        EXPECT_TRUE(xipa.stop());
-    }));
+    futures.push_back(std::async(std::launch::async,
+                                 [&]()
+                                 {
+                                     EXPECT_TRUE(xipa.startStreaming());
+                                     for (int i = 0; i < 5; ++i)
+                                         EXPECT_TRUE(xipa.feedStreamData(256));
+                                     EXPECT_TRUE(xipa.stop());
+                                 }));
 
     for (auto &f : futures)
     {
@@ -669,16 +700,20 @@ TEST_F(MainThreadPlaybackIntegrationTests, PlaybackSynchronousFifoEnqueueing)
     auto vipa_id = vipa.getClientId();
 
     // Normal task
-    m_mainThread->enqueueTask(youtube_id, [&]() {
-        std::lock_guard<std::mutex> lock(orderMutex);
-        order.push_back(1);
-    });
+    m_mainThread->enqueueTask(youtube_id,
+                              [&]()
+                              {
+                                  std::lock_guard<std::mutex> lock(orderMutex);
+                                  order.push_back(1);
+                              });
 
     // Synchronous task
-    m_mainThread->enqueueTaskAndWait(vipa_id, [&]() {
-        std::lock_guard<std::mutex> lock(orderMutex);
-        order.push_back(2);
-    });
+    m_mainThread->enqueueTaskAndWait(vipa_id,
+                                     [&]()
+                                     {
+                                         std::lock_guard<std::mutex> lock(orderMutex);
+                                         order.push_back(2);
+                                     });
 
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
