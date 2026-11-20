@@ -225,6 +225,7 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
         return false;
     }
 
+    RIALTO_SERVER_LOG_MIL("RDKAI: rialto media session id=%d loaded (type=%d)", m_sessionId, static_cast<int>(type));
     notifyNetworkState(NetworkState::BUFFERING);
 
     return true;
