@@ -22,6 +22,7 @@
 
 #include "IMainThread.h"
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <deque>
 #include <map>
@@ -57,39 +58,50 @@ protected:
 };
 
 /**
- * @brief The definition of the MediaKeys.
+ * @brief The definition of the MainThread.
  */
 class MainThread : public IMainThread
 {
 public:
-    MainThread();
+    /**
+     * @brief Constructor with optional timeout parameter for testing.
+     *
+     * @param[in]  taskTimeout : Timeout for blocking task enqueues (default 30s).
+     */
+    explicit MainThread(std::chrono::milliseconds taskTimeout = std::chrono::milliseconds{30000});
     virtual ~MainThread();
 
     int32_t registerClient() override;
     void unregisterClient(uint32_t clientId) override;
 
     void enqueueTask(uint32_t clientId, const Task &task) override;
-    void enqueueTaskAndWait(uint32_t clientId, const Task &task) override;
-    void enqueuePriorityTaskAndWait(uint32_t clientId, const Task &task) override;
+    bool enqueueTaskAndWait(uint32_t clientId, const Task &task) override;
 
 private:
     /**
-     * @brief Information of a task.
+     * @brief Status of a task in the queue.
      */
-    struct TaskState
+    enum class TaskStatus
     {
-        std::mutex mutex;
-        std::condition_variable cv;
-        bool done;
+        Pending,  /**< Task is queued, not yet running */
+        Running,  /**< Task is currently executing */
+        Done,     /**< Task completed successfully */
+        Failed,   /**< Task threw an exception */
+        Cancelled /**< Task was cancelled (timed out, not yet started) */
     };
+
+    /**
+     * @brief Information of a task with completion state.
+     */
     struct TaskInfo
     {
-        bool done{false};  /**< A flag indicating whether the task has completed. */
-        uint32_t clientId; /**< The id of the client creating the task. */
-        Task task;         /**< The task to execute. */
-        TaskState *state;  /**< The states maintained for task completion. */
+        uint32_t clientId;                      /**< The id of the client creating the task */
+        Task task;                              /**< The task to execute */
+        std::mutex mutex;                       /**< Protects task status */
+        std::condition_variable cv;             /**< Signals state changes */
+        TaskStatus status{TaskStatus::Pending}; /**< Current task status */
 
-        TaskInfo() : clientId(0), state(nullptr) {}
+        TaskInfo() : clientId(0) {}
     };
 
     /**
@@ -100,19 +112,36 @@ private:
     /**
      * @brief Waits for tasks to enter the queue and returns the next task.
      *
-     * @retval The next task in the queue.
+     * @retval The next task in the queue, or nullptr on shutdown.
      */
     const std::shared_ptr<TaskInfo> waitForTask();
 
     /**
-     * @brief Whether the main thread is running.
+     * @brief Default timeout for blocking task enqueues (30 seconds).
      */
-    bool m_isMainThreadRunning;
+    static constexpr std::chrono::milliseconds kDefaultTaskTimeout{30000};
+
+    /**
+     * @brief The main thread's timeout for blocking enqueues.
+     */
+    std::chrono::milliseconds m_taskTimeout;
+
+    /**
+     * @brief Whether the main thread is running.
+     * Uses shared_ptr to prevent use-after-free: if destructor is called from
+     * the main thread itself (via detach), the flag survives via reference counting.
+     */
+    std::shared_ptr<std::atomic<bool>> m_isMainThreadRunning;
 
     /**
      * @brief The main thread.
      */
     std::thread m_thread;
+
+    /**
+     * @brief Thread id of the main thread.
+     */
+    std::atomic<std::thread::id> m_threadId;
 
     /**
      * @brief A mutex protecting access to the task queue.
@@ -125,12 +154,17 @@ private:
     std::condition_variable m_taskQueueCv;
 
     /**
-     * @brief The queue of tasks and there infomation.
+     * @brief The queue of tasks and their information.
      */
     std::deque<std::shared_ptr<TaskInfo>> m_taskQueue;
 
     /**
-     * @brief The main thread objects client id, for registering new clients.
+     * @brief Flag indicating the main thread is shutting down.
+     */
+    bool m_shutdown;
+
+    /**
+     * @brief The main thread object's client id.
      */
     const uint32_t m_mainThreadClientId;
 
@@ -138,6 +172,11 @@ private:
      * @brief The next client id to be given to a registering client.
      */
     std::atomic<uint32_t> m_nextClientId;
+
+    /**
+     * @brief Mutex protecting access to registered clients set.
+     */
+    std::mutex m_registeredClientsMutex;
 
     /**
      * @brief Clients registered on this thread.

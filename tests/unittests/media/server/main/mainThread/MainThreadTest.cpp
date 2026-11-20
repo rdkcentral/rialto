@@ -18,6 +18,7 @@
  */
 
 #include "MainThread.h"
+#include <future>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -41,14 +42,7 @@ protected:
     {
         auto task = [&, dummyMock]() { dummyMock->mockMethod(); };
 
-        m_mainThread->enqueueTaskAndWait(clientId, task);
-    }
-
-    void enqueuePriorityTaskAndWaitOnDummyMock(uint32_t clientId, const std::shared_ptr<DummyMock> &dummyMock)
-    {
-        auto task = [&, dummyMock]() { dummyMock->mockMethod(); };
-
-        m_mainThread->enqueuePriorityTaskAndWait(clientId, task);
+        EXPECT_TRUE(m_mainThread->enqueueTaskAndWait(clientId, task));
     }
 
     void enqueueTaskOnDummyMock(uint32_t clientId, const std::shared_ptr<DummyMock> &dummyMock)
@@ -62,7 +56,7 @@ protected:
     {
         auto task = [&, clientId]() { m_mainThread->unregisterClient(clientId); };
 
-        m_mainThread->enqueueTaskAndWait(clientId, task);
+        EXPECT_TRUE(m_mainThread->enqueueTaskAndWait(clientId, task));
     }
 };
 
@@ -124,7 +118,7 @@ TEST_F(MainThreadTests, MultipleClients)
     enqueueTaskOnDummyMock(clientId2, dummyMock2);
     enqueueTaskOnDummyMock(clientId1, dummyMock1);
     enqueueTaskAndWaitOnDummyMock(clientId3, dummyMock3);
-    enqueuePriorityTaskAndWaitOnDummyMock(clientId4, dummyMock4);
+    enqueueTaskAndWaitOnDummyMock(clientId4, dummyMock4);
 
     unregisterClient(clientId3);
     unregisterClient(clientId1);
@@ -151,11 +145,261 @@ TEST_F(MainThreadTests, IgnoreUnregisteredClients)
     std::shared_ptr<DummyMock> dummyMock3 = std::make_shared<DummyMock>();
     std::shared_ptr<DummyMock> dummyMock4 = std::make_shared<DummyMock>();
     EXPECT_CALL(*dummyMock2, mockMethod());
+    EXPECT_CALL(*dummyMock4, mockMethod());
 
     enqueueTaskOnDummyMock(clientId2, dummyMock2);
     enqueueTaskOnDummyMock(clientId1, dummyMock1);
-    enqueueTaskAndWaitOnDummyMock(clientId3, dummyMock3);
-    enqueuePriorityTaskAndWaitOnDummyMock(clientId4, dummyMock4);
+
+    // Unregistered clients should return false from enqueueTaskAndWait
+    auto task3 = [&, dummyMock3]() { dummyMock3->mockMethod(); };
+    EXPECT_FALSE(m_mainThread->enqueueTaskAndWait(clientId3, task3));
+
+    // Registered clients should succeed
+    auto task4 = [&, dummyMock4]() { dummyMock4->mockMethod(); };
+    EXPECT_TRUE(m_mainThread->enqueueTaskAndWait(clientId4, task4));
 
     unregisterClient(clientId2);
+}
+
+/**
+ * Test that enqueueTaskAndWait times out when main thread is blocked.
+ * AC1: Blocking enqueue returns an error within a bounded timeout.
+ */
+TEST_F(MainThreadTests, EnqueueTaskAndWaitTimesOutWhenMainThreadBlocked)
+{
+    m_mainThread = std::make_shared<MainThread>(std::chrono::milliseconds{100});
+    uint32_t clientId = m_mainThread->registerClient();
+
+    std::promise<void> release;
+    auto releaseFlag = release.get_future().share();
+    std::atomic<bool> timedOutTaskExecuted{false};
+
+    // Block the main thread with a long-running task
+    m_mainThread->enqueueTask(m_mainThreadClientId, [releaseFlag]() { releaseFlag.wait(); });
+
+    // Try to enqueue a task from another thread - should timeout
+    auto waiter = std::async(std::launch::async,
+                             [&]()
+                             {
+                                 auto start = std::chrono::steady_clock::now();
+                                 bool result =
+                                     m_mainThread->enqueueTaskAndWait(clientId, [&]() { timedOutTaskExecuted = true; });
+                                 auto elapsed = std::chrono::steady_clock::now() - start;
+                                 EXPECT_FALSE(result);
+                                 // Verify it actually waited for the timeout period
+                                 EXPECT_GE(elapsed, std::chrono::milliseconds(90));
+                                 EXPECT_LE(elapsed, std::chrono::milliseconds(300));
+                             });
+
+    waiter.get();
+    release.set_value();
+    EXPECT_TRUE(m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, []() {}));
+    EXPECT_FALSE(timedOutTaskExecuted);
+}
+
+/**
+ * Test that destructor fails outstanding waiters.
+ * AC2: Waiters are released and failed on shutdown.
+ */
+TEST_F(MainThreadTests, DestructorFailsOutstandingWaiters)
+{
+    m_mainThread = std::make_shared<MainThread>(std::chrono::milliseconds{5000});
+    uint32_t clientId = m_mainThread->registerClient();
+
+    std::promise<void> release;
+    auto releaseFlag = release.get_future().share();
+
+    // Block the main thread
+    m_mainThread->enqueueTask(m_mainThreadClientId, [releaseFlag]() { releaseFlag.wait(); });
+
+    auto mainThread = std::move(m_mainThread);
+    auto *mainThreadPtr = mainThread.get();
+    std::promise<void> waiter1Started;
+    std::promise<void> waiter2Started;
+
+    // Start two waiters
+    auto waiter1 = std::async(std::launch::async,
+                              [&]()
+                              {
+                                  waiter1Started.set_value();
+                                  return mainThreadPtr->enqueueTaskAndWait(clientId, []() {});
+                              });
+
+    auto waiter2 = std::async(std::launch::async,
+                              [&]()
+                              {
+                                  waiter2Started.set_value();
+                                  return mainThreadPtr->enqueueTaskAndWait(clientId, []() {});
+                              });
+
+    waiter1Started.get_future().wait();
+    waiter2Started.get_future().wait();
+
+    // Give both threads time to enqueue and block before starting shutdown.
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+    auto destruction =
+        std::async(std::launch::async, [mainThread = std::move(mainThread)]() mutable { mainThread.reset(); });
+
+    // Destruction releases queued waiters, then joins the blocked worker.
+    EXPECT_EQ(waiter1.wait_for(std::chrono::milliseconds(500)), std::future_status::ready);
+    EXPECT_EQ(waiter2.wait_for(std::chrono::milliseconds(500)), std::future_status::ready);
+    EXPECT_FALSE(waiter1.get());
+    EXPECT_FALSE(waiter2.get());
+
+    release.set_value();
+    destruction.get();
+}
+
+/**
+ * Test that self-thread call executes inline (no deadlock).
+ * AC3: Calls from the main thread run inline.
+ */
+TEST_F(MainThreadTests, SelfCallExecutesInline)
+{
+    m_mainThread = std::make_shared<MainThread>();
+
+    bool innerTaskExecuted{false};
+    bool outerTaskCompleted{false};
+
+    auto task = [&]()
+    {
+        // We're on the main thread, this should execute inline
+        bool result = m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, [&]() { innerTaskExecuted = true; });
+        EXPECT_TRUE(result);
+        outerTaskCompleted = true;
+    };
+
+    bool result = m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    EXPECT_TRUE(result);
+    EXPECT_TRUE(innerTaskExecuted);
+    EXPECT_TRUE(outerTaskCompleted);
+}
+
+/**
+ * Test that exceptions from inline tasks are logged and reported without escaping.
+ */
+TEST_F(MainThreadTests, InlineTaskExceptionReturnsFalse)
+{
+    m_mainThread = std::make_shared<MainThread>();
+    bool inlineTaskFailed{false};
+
+    bool outerResult =
+        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId,
+                                         [&]()
+                                         {
+                                             inlineTaskFailed =
+                                                 !m_mainThread->enqueueTaskAndWait(m_mainThreadClientId,
+                                                                                   []() {
+                                                                                       throw std::runtime_error(
+                                                                                           "Inline task exception");
+                                                                                   });
+                                         });
+
+    EXPECT_TRUE(outerResult);
+    EXPECT_TRUE(inlineTaskFailed);
+}
+
+/**
+ * Test that task exceptions are reported and the loop survives.
+ */
+TEST_F(MainThreadTests, TaskExceptionIsReportedAndLoopSurvives)
+{
+    m_mainThread = std::make_shared<MainThread>();
+    uint32_t clientId = m_mainThread->registerClient();
+
+    bool nextTaskExecuted{false};
+
+    // Enqueue a task that throws
+    bool result1 = m_mainThread->enqueueTaskAndWait(clientId, []() { throw std::runtime_error("Test exception"); });
+    EXPECT_FALSE(result1); // Should return false due to exception
+
+    // Enqueue another task to verify the loop survived
+    bool result2 = m_mainThread->enqueueTaskAndWait(clientId, [&]() { nextTaskExecuted = true; });
+    EXPECT_TRUE(result2);
+    EXPECT_TRUE(nextTaskExecuted);
+}
+
+/**
+ * Test that fire-and-forget task exceptions don't kill the loop.
+ */
+TEST_F(MainThreadTests, FireAndForgetExceptionDoesNotKillLoop)
+{
+    m_mainThread = std::make_shared<MainThread>();
+    uint32_t clientId = m_mainThread->registerClient();
+
+    bool nextTaskExecuted{false};
+
+    // Enqueue a fire-and-forget task that throws
+    m_mainThread->enqueueTask(clientId, []() { throw std::runtime_error("Fire and forget exception"); });
+
+    // Give it time to execute
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+    // Enqueue another task to verify the loop survived
+    bool result = m_mainThread->enqueueTaskAndWait(clientId, [&]() { nextTaskExecuted = true; });
+    EXPECT_TRUE(result);
+    EXPECT_TRUE(nextTaskExecuted);
+}
+
+/**
+ * Test concurrent registration - AC4: m_nextClientId access is race-free.
+ */
+TEST_F(MainThreadTests, ConcurrentRegisterClientsGetUniqueIds)
+{
+    m_mainThread = std::make_shared<MainThread>();
+    std::set<int32_t> allIds;
+    std::mutex idsMutex;
+    const int kNumThreads = 8;
+    const int kIterationsPerThread = 10;
+
+    // Launch multiple threads registering clients concurrently
+    std::vector<std::future<void>> futures;
+    for (int i = 0; i < kNumThreads; ++i)
+    {
+        futures.push_back(std::async(std::launch::async,
+                                     [&, i]()
+                                     {
+                                         for (int j = 0; j < kIterationsPerThread; ++j)
+                                         {
+                                             int32_t id = m_mainThread->registerClient();
+                                             {
+                                                 std::lock_guard<std::mutex> lock(idsMutex);
+                                                 EXPECT_EQ(allIds.find(id), allIds.end()); // No duplicates
+                                                 allIds.insert(id);
+                                             }
+                                         }
+                                     }));
+    }
+
+    // Wait for all threads
+    for (auto &future : futures)
+    {
+        future.wait();
+    }
+
+    // Verify total count and uniqueness
+    EXPECT_EQ(allIds.size(), kNumThreads * kIterationsPerThread);
+}
+
+/**
+ * Test that unregister from non-main thread is safe.
+ * AC4: m_registeredClients access is race-free.
+ */
+TEST_F(MainThreadTests, UnregisterFromNonMainThreadIsSafe)
+{
+    m_mainThread = std::make_shared<MainThread>();
+    uint32_t testClientId = m_mainThread->registerClient();
+
+    // Unregister from a different thread
+    auto unregister_thread = std::async(std::launch::async, [&]() { m_mainThread->unregisterClient(testClientId); });
+
+    unregister_thread.wait();
+
+    // Task for this client should now return false (unregistered)
+    bool taskExecuted{false};
+    bool result = m_mainThread->enqueueTaskAndWait(testClientId, [&]() { taskExecuted = true; });
+
+    EXPECT_FALSE(result); // Should fail because client is unregistered
+    EXPECT_FALSE(taskExecuted);
 }

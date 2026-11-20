@@ -66,7 +66,12 @@ public:
     void mainThreadWillEnqueueTaskAndWait()
     {
         EXPECT_CALL(*m_mainThreadMock, enqueueTaskAndWait(kMainThreadClientId, _))
-            .WillOnce(Invoke([](uint32_t clientId, firebolt::rialto::server::IMainThread::Task task) { task(); }))
+            .WillOnce(Invoke(
+                [](uint32_t clientId, firebolt::rialto::server::IMainThread::Task task)
+                {
+                    task();
+                    return true;
+                }))
             .RetiresOnSaturation();
     }
 
