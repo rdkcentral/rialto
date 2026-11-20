@@ -114,6 +114,9 @@ add_gtests(RialtoServerGstPlayerUnitTests
     #ProtectionMetadata unittests
     protectionMetadata/ProtectionMetadataTest.cpp
 
+    #TextTrack sink unittests
+    textTrackSink/GstTextTrackSinkTest.cpp
+
     #ProtectionMetadata unittests
     dispatcherThread/GstDispatcherThreadTest.cpp
 

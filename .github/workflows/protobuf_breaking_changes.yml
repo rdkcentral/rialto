@@ -27,6 +27,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
@@ -49,3 +51,5 @@ jobs:
         with:
           input: proto
           against: "${{ github.server_url }}/${{ github.repository }}.git#branch=${{ steps.set-branch.outputs.branch }},subdir=proto"
+          buf_input_https_username: ${{ github.actor }}
+          buf_input_https_password: ${{ github.token }}

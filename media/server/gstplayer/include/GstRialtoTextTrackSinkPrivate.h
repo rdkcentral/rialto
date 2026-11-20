@@ -31,7 +31,7 @@ namespace firebolt::rialto::server
 {
 struct GstRialtoTextTrackSinkPrivate
 {
-    std::unique_ptr<ITextTrackSession> m_textTrackSession;
+    std::shared_ptr<ITextTrackSession> m_textTrackSession;
     std::atomic<bool> m_isMuted{false};
     std::string m_textTrackIdentifier;
     gpointer m_videoDecoderIdentifier{nullptr};
@@ -41,6 +41,8 @@ struct GstRialtoTextTrackSinkPrivate
     std::optional<uint64_t> m_offset;
     std::optional<uint64_t> m_queuedOffset;
     std::mutex m_mutex;
+    std::mutex m_sessionConfigMutex;
+    std::mutex m_positionMutex;
 };
 }; // namespace firebolt::rialto::server
 
