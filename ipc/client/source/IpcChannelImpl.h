@@ -114,7 +114,7 @@ private:
     static void completeWithError(MethodCall *call, std::string reason);
 
 private:
-    int m_sock;
+    std::atomic<int> m_sock;
     int m_epollFd;
     int m_timerFd;
     int m_eventFd;
@@ -127,6 +127,13 @@ private:
     const std::chrono::milliseconds m_timeout;
 
     std::map<uint64_t, MethodCall> m_methodCalls;
+
+    std::vector<uint8_t> m_recvDataBuf;
+    std::vector<uint8_t> m_recvCtrlBuf;
+    mutable std::mutex m_recvBuffersLock;
+
+    // Guards descriptor lifetime across send/recv vs shutdown/close.
+    mutable std::mutex m_socketIoLock;
 
     std::mutex m_eventsLock;
 
