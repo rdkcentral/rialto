@@ -203,11 +203,11 @@ MediaKeyErrorStatus OcdmSession::update(const uint8_t response[], uint32_t respo
     return convertOpenCdmError(status);
 }
 
-MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *caps)
+DecryptionStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *caps)
 {
     if (!m_session)
     {
-        return MediaKeyErrorStatus::FAIL;
+        return DecryptionStatus::FAIL;
     }
 
     if (m_ocdmGstSessionDecryptBufferOnce)
@@ -241,7 +241,7 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
                 opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
             if (preStatus == OutputRestricted || preStatus == OutputRestrictedHDCP22)
             {
-                return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
+                return DecryptionStatus::OUTPUT_RESTRICTED;
             }
         }
 
@@ -255,7 +255,7 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
                 opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
             if (postStatus == OutputRestricted || postStatus == OutputRestrictedHDCP22)
             {
-                return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
+                return DecryptionStatus::OUTPUT_RESTRICTED;
             }
         }
 

@@ -35,7 +35,7 @@ public:
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, loadSession, (const std::string &cdmKeySessionId), (override));
     MOCK_METHOD(MediaKeyErrorStatus, updateSession, (const std::vector<uint8_t> &responseData), (override));
-    MOCK_METHOD(MediaKeyErrorStatus, decrypt, (GstBuffer * encrypted, GstCaps *caps), (override));
+    MOCK_METHOD(wrappers::DecryptionStatus, decrypt, (GstBuffer * encrypted, GstCaps *caps), (override));
     MOCK_METHOD(MediaKeyErrorStatus, closeKeySession, (), (override));
     MOCK_METHOD(MediaKeyErrorStatus, removeKeySession, (), (override));
     MOCK_METHOD(MediaKeyErrorStatus, getCdmKeySessionId, (std::string & cdmKeySessionId), (override));

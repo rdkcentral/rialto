@@ -28,6 +28,8 @@
  * This interface defines the server internal API of Rialto for EME decryption of AV content.
  */
 
+#include "DecryptionStatus.h"
+#include "IDecryptionService.h"
 #include "IHeartbeatHandler.h"
 #include "IMediaKeys.h"
 #include "MediaCommon.h"
@@ -87,7 +89,7 @@ public:
      *
      * @retval an error status.
      */
-    virtual MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) = 0;
+    virtual wrappers::DecryptionStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) = 0;
 
     /**
      * @brief Checks, if MediaKeys main thread is not deadlocked

@@ -363,15 +363,15 @@ TEST_F(CdmServiceTests, shouldDecrypt)
     createMediaKeysShouldSucceed();
     mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     createKeySessionShouldSucceed();
-    mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
-    decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    mediaKeysWillDecryptWithStatus(firebolt::rialto::wrappers::DecryptionStatus::OK);
+    decryptShouldReturnStatus(firebolt::rialto::wrappers::DecryptionStatus::OK);
     destroyMediaKeysShouldSucceed();
 }
 
 TEST_F(CdmServiceTests, shouldFailToDecryptWhenNoMediaKeys)
 {
     triggerSwitchToActiveSuccess();
-    decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
+    decryptShouldReturnStatus(firebolt::rialto::wrappers::DecryptionStatus::FAIL);
 }
 
 TEST_F(CdmServiceTests, shouldFailToDecryptWhenMediaKeysFails)
@@ -381,8 +381,8 @@ TEST_F(CdmServiceTests, shouldFailToDecryptWhenMediaKeysFails)
     createMediaKeysShouldSucceed();
     mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     createKeySessionShouldSucceed();
-    mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
-    decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
+    mediaKeysWillDecryptWithStatus(firebolt::rialto::wrappers::DecryptionStatus::KEY_NOT_USABLE);
+    decryptShouldReturnStatus(firebolt::rialto::wrappers::DecryptionStatus::KEY_NOT_USABLE);
     destroyMediaKeysShouldSucceed();
 }
 
@@ -391,7 +391,7 @@ TEST_F(CdmServiceTests, shouldFailToDecryptWhenMediaKeysIsNotFoundForSession)
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
-    decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
+    decryptShouldReturnStatus(firebolt::rialto::wrappers::DecryptionStatus::FAIL);
     destroyMediaKeysShouldSucceed();
 }
 

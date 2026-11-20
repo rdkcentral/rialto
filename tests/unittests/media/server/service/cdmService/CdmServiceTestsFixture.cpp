@@ -231,7 +231,7 @@ void CdmServiceTests::mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto:
     EXPECT_CALL(m_mediaKeysMock, releaseKeySession(kKeySessionId)).WillOnce(Return(status));
 }
 
-void CdmServiceTests::mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+void CdmServiceTests::mediaKeysWillDecryptWithStatus(firebolt::rialto::wrappers::DecryptionStatus status)
 {
     EXPECT_CALL(m_mediaKeysMock, decrypt(kKeySessionId, _, _)).WillOnce(Return(status));
 }
@@ -323,7 +323,7 @@ void CdmServiceTests::getCdmKeySessionIdShouldReturnStatus(firebolt::rialto::Med
     EXPECT_EQ(status, m_sut.getCdmKeySessionId(kMediaKeysHandle, kKeySessionId, cdmKeySessionId));
 }
 
-void CdmServiceTests::decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+void CdmServiceTests::decryptShouldReturnStatus(firebolt::rialto::wrappers::DecryptionStatus status)
 {
     GstBuffer encryptedData{};
     GstCaps caps{};

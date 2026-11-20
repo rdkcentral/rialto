@@ -51,4 +51,35 @@ firebolt::rialto::MediaKeyErrorStatus convertOpenCdmError(const OpenCDMError &st
     }
     }
 }
+
+DecryptionStatus convertDecryptionStatus(const OpenCDMError &status)
+{
+    switch (status)
+    {
+    case OpenCDMError::ERROR_NONE:
+    {
+        return DecryptionStatus::OK;
+    }
+    case OpenCDMError::ERROR_INVALID_SESSION:
+    {
+        return DecryptionStatus::INVALID_SESSION;
+    }
+    case OpenCDMError::ERROR_INTERFACE_NOT_IMPLEMENTED:
+    {
+        return DecryptionStatus::INTERFACE_NOT_IMPLEMENTED;
+    }
+    case OpenCDMError::ERROR_BUFFER_TOO_SMALL:
+    {
+        return DecryptionStatus::BUFFER_TOO_SMALL;
+    }
+    case OpenCDMError::ERROR_KEYSYSTEM_NOT_SUPPORTED:
+    {
+        return DecryptionStatus::KEYSYSTEM_NOT_SUPPORTED;
+    }
+    default:
+    {
+        return DecryptionStatus::FAIL;
+    }
+    }
+}
 } // namespace firebolt::rialto::wrappers

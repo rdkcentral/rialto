@@ -61,7 +61,7 @@ public:
     void mediaKeysWillGetLastDrmErrorWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillGetDrmTimeWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
-    void mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void mediaKeysWillDecryptWithStatus(firebolt::rialto::wrappers::DecryptionStatus status);
     void mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillPing();
     void mediaKeysWillGetMetricSystemDataWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
@@ -93,7 +93,7 @@ public:
     void closeKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void removeKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void getCdmKeySessionIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
-    void decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void decryptShouldReturnStatus(firebolt::rialto::wrappers::DecryptionStatus status);
     void selectKeyIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void containsKeyShouldReturn(bool result);
     void setDrmHeaderShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);

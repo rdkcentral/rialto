@@ -78,7 +78,7 @@ public:
 
     MediaKeyErrorStatus updateSession(const std::vector<uint8_t> &responseData) override;
 
-    MediaKeyErrorStatus decrypt(GstBuffer *encrypted, GstCaps *caps) override;
+    wrappers::DecryptionStatus decrypt(GstBuffer *encrypted, GstCaps *caps) override;
 
     MediaKeyErrorStatus closeKeySession() override;
 

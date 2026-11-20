@@ -39,9 +39,9 @@ protected:
 TEST_F(RialtoServerMediaKeysDecryptTest, Success)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mediaKeySessionMock, decrypt(&m_encrypted, &m_caps)).WillOnce(Return(MediaKeyErrorStatus::OK));
+    EXPECT_CALL(*m_mediaKeySessionMock, decrypt(&m_encrypted, &m_caps)).WillOnce(Return(wrappers::DecryptionStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->decrypt(m_kKeySessionId, &m_encrypted, &m_caps));
+    EXPECT_EQ(wrappers::DecryptionStatus::OK, m_mediaKeys->decrypt(m_kKeySessionId, &m_encrypted, &m_caps));
 }
 
 /**
@@ -50,7 +50,8 @@ TEST_F(RialtoServerMediaKeysDecryptTest, Success)
 TEST_F(RialtoServerMediaKeysDecryptTest, SessionDoesNotExistFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID, m_mediaKeys->decrypt(m_kKeySessionId + 1, &m_encrypted, &m_caps));
+    EXPECT_EQ(wrappers::DecryptionStatus::INVALID_SESSION,
+              m_mediaKeys->decrypt(m_kKeySessionId + 1, &m_encrypted, &m_caps));
 }
 
 /**
@@ -59,7 +60,7 @@ TEST_F(RialtoServerMediaKeysDecryptTest, SessionDoesNotExistFailure)
 TEST_F(RialtoServerMediaKeysDecryptTest, DecryptFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mediaKeySessionMock, decrypt(&m_encrypted, &m_caps)).WillOnce(Return(MediaKeyErrorStatus::INVALID_STATE));
+    EXPECT_CALL(*m_mediaKeySessionMock, decrypt(&m_encrypted, &m_caps)).WillOnce(Return(wrappers::DecryptionStatus::FAIL));
 
-    EXPECT_EQ(MediaKeyErrorStatus::INVALID_STATE, m_mediaKeys->decrypt(m_kKeySessionId, &m_encrypted, &m_caps));
+    EXPECT_EQ(wrappers::DecryptionStatus::FAIL, m_mediaKeys->decrypt(m_kKeySessionId, &m_encrypted, &m_caps));
 }

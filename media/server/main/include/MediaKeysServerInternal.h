@@ -111,7 +111,7 @@ public:
 
     MediaKeyErrorStatus releaseKeySession(int32_t keySessionId) override;
 
-    MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
+    wrappers::DecryptionStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
 
     MediaKeyErrorStatus getMetricSystemData(std::vector<uint8_t> &buffer) override;
 
@@ -232,7 +232,7 @@ private:
      *
      * @retval an error status.
      */
-    MediaKeyErrorStatus decryptInternal(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps);
+    wrappers::DecryptionStatus decryptInternal(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps);
 
     /**
      * @brief Selects the specified keyId for the key session internally, only to be called on the main thread.

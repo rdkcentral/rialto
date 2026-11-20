@@ -251,29 +251,29 @@ MediaKeyErrorStatus MediaKeySession::updateSession(const std::vector<uint8_t> &r
     return status;
 }
 
-MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps)
+wrappers::DecryptionStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps)
 {
     constexpr uint32_t kHdcpOutputProtectionFailure{4427};
 
     initOcdmErrorChecking();
 
-    MediaKeyErrorStatus status = m_ocdmSession->decryptBuffer(encrypted, caps);
-    if (MediaKeyErrorStatus::OUTPUT_RESTRICTED == status)
+    wrappers::DecryptionStatus status = m_ocdmSession->decryptBuffer(encrypted, caps);
+    if (wrappers::DecryptionStatus::OUTPUT_RESTRICTED == status)
     {
         RIALTO_SERVER_LOG_WARN("Decrypt failed due to HDCP output protection");
     }
-    else if (MediaKeyErrorStatus::OK != status)
+    else if (wrappers::DecryptionStatus::OK != status)
     {
         uint32_t lastDrmError{0};
         m_ocdmSession->getLastDrmError(lastDrmError);
         if (lastDrmError == kHdcpOutputProtectionFailure)
         {
             RIALTO_SERVER_LOG_WARN("Decrypt failed due to HDCP output protection (DRM error %u)", lastDrmError);
-            status = MediaKeyErrorStatus::OUTPUT_RESTRICTED;
+            status = wrappers::DecryptionStatus::OUTPUT_RESTRICTED;
         }
 
         // Log decrypt failures once and re-enable logging only after a successful decrypt.
-        if ((MediaKeyErrorStatus::OUTPUT_RESTRICTED != status) && !m_decryptErrorLogged)
+        if ((wrappers::DecryptionStatus::OUTPUT_RESTRICTED != status) && !m_decryptErrorLogged)
         {
             RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer");
             m_decryptErrorLogged = true;
@@ -284,9 +284,9 @@ MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps
         m_decryptErrorLogged = false;
     }
 
-    if ((checkForOcdmErrors("decrypt")) && (MediaKeyErrorStatus::OK == status))
+    if ((checkForOcdmErrors("decrypt")) && (wrappers::DecryptionStatus::OK == status))
     {
-        status = MediaKeyErrorStatus::FAIL;
+        status = wrappers::DecryptionStatus::FAIL;
     }
 
     return status;

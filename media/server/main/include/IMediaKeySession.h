@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_MEDIA_KEY_SESSION_H_
 #define FIREBOLT_RIALTO_SERVER_I_MEDIA_KEY_SESSION_H_
 
+#include "DecryptionStatus.h"
 #include "IMediaKeysClient.h"
 #include "IOcdmSystem.h"
 #include "MediaCommon.h"
@@ -116,7 +117,7 @@ public:
      *
      * @retval an error status.
      */
-    virtual MediaKeyErrorStatus decrypt(GstBuffer *encrypted, GstCaps *caps) = 0;
+    virtual wrappers::DecryptionStatus decrypt(GstBuffer *encrypted, GstCaps *caps) = 0;
 
     /**
      * @brief Closes the key session.

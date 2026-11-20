@@ -38,9 +38,9 @@ TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, Success)
 {
     createKeySession(kWidevineKeySystem);
 
-    EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps)).WillOnce(Return(MediaKeyErrorStatus::OK));
+    EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps)).WillOnce(Return(wrappers::DecryptionStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+    EXPECT_EQ(wrappers::DecryptionStatus::OK, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
 }
 
 /**
@@ -50,10 +50,10 @@ TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, OcdmSessionFailure)
 {
     createKeySession(kWidevineKeySystem);
 
-    EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps)).WillOnce(Return(MediaKeyErrorStatus::FAIL));
+    EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps)).WillOnce(Return(wrappers::DecryptionStatus::FAIL));
     EXPECT_CALL(*m_ocdmSessionMock, getLastDrmError(_)).WillOnce(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+    EXPECT_EQ(wrappers::DecryptionStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
 }
 
 /**
@@ -65,11 +65,11 @@ TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, RepeatedOcdmSessionFailure)
 
     EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps))
         .Times(2)
-        .WillRepeatedly(Return(MediaKeyErrorStatus::FAIL));
+        .WillRepeatedly(Return(wrappers::DecryptionStatus::FAIL));
     EXPECT_CALL(*m_ocdmSessionMock, getLastDrmError(_)).Times(2).WillRepeatedly(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
-    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+    EXPECT_EQ(wrappers::DecryptionStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+    EXPECT_EQ(wrappers::DecryptionStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
 }
 
 /**
@@ -80,14 +80,14 @@ TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, OcdmSessionFailureAfterSucc
     createKeySession(kWidevineKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps))
-        .WillOnce(Return(MediaKeyErrorStatus::FAIL))
-        .WillOnce(Return(MediaKeyErrorStatus::OK))
-        .WillOnce(Return(MediaKeyErrorStatus::FAIL));
+        .WillOnce(Return(wrappers::DecryptionStatus::FAIL))
+        .WillOnce(Return(wrappers::DecryptionStatus::OK))
+        .WillOnce(Return(wrappers::DecryptionStatus::FAIL));
     EXPECT_CALL(*m_ocdmSessionMock, getLastDrmError(_)).Times(2).WillRepeatedly(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
-    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+    EXPECT_EQ(wrappers::DecryptionStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+    EXPECT_EQ(wrappers::DecryptionStatus::OK, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+    EXPECT_EQ(wrappers::DecryptionStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
 }
 
 /**
@@ -99,11 +99,11 @@ TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, OcdmSessionOutputRestricted
 
     createKeySession(kWidevineKeySystem);
 
-    EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps)).WillOnce(Return(MediaKeyErrorStatus::FAIL));
+    EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps)).WillOnce(Return(wrappers::DecryptionStatus::FAIL));
     EXPECT_CALL(*m_ocdmSessionMock, getLastDrmError(_))
         .WillOnce(DoAll(SetArgReferee<0>(kHdcpOutputProtectionFailure), Return(MediaKeyErrorStatus::OK)));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OUTPUT_RESTRICTED, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+    EXPECT_EQ(wrappers::DecryptionStatus::OUTPUT_RESTRICTED, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
 }
 
 /**
@@ -114,9 +114,9 @@ TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, OcdmSessionDirectOutputRest
     createKeySession(kWidevineKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps))
-        .WillOnce(Return(MediaKeyErrorStatus::OUTPUT_RESTRICTED));
+        .WillOnce(Return(wrappers::DecryptionStatus::OUTPUT_RESTRICTED));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OUTPUT_RESTRICTED, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+    EXPECT_EQ(wrappers::DecryptionStatus::OUTPUT_RESTRICTED, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
 }
 
 /**
@@ -131,8 +131,8 @@ TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, OnErrorFailure)
             [this](GstBuffer *encrypted, GstCaps *caps)
             {
                 m_mediaKeySession->onError("Failure");
-                return MediaKeyErrorStatus::OK;
+                return wrappers::DecryptionStatus::OK;
             }));
 
-    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+    EXPECT_EQ(wrappers::DecryptionStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
 }

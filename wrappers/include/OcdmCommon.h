@@ -20,9 +20,9 @@
 #ifndef FIREBOLT_RIALTO_WRAPPERS_OCDM_COMMON_H_
 #define FIREBOLT_RIALTO_WRAPPERS_OCDM_COMMON_H_
 
+#include "IOcdmSession.h"
 #include "opencdm/open_cdm.h"
 #include <MediaCommon.h>
-#include <string>
 
 namespace firebolt::rialto::wrappers
 {
@@ -34,6 +34,15 @@ namespace firebolt::rialto::wrappers
  * @retval the media key error status.
  */
 firebolt::rialto::MediaKeyErrorStatus convertOpenCdmError(const OpenCDMError &status);
+
+/**
+ * @brief Converts the OpenCDM error status to a DecryptionStatus.
+ *
+ * @param[in] status    : The open cdm error status.
+ *
+ * @retval the decryption status.
+ */
+DecryptionStatus convertDecryptionStatus(const OpenCDMError &status);
 } // namespace firebolt::rialto::wrappers
 
 #endif // FIREBOLT_RIALTO_WRAPPERS_OCDM_COMMON_H_

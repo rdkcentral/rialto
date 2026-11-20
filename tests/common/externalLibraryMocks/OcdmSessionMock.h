@@ -40,7 +40,7 @@ public:
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, load, (), (override));
     MOCK_METHOD(MediaKeyErrorStatus, update, (const uint8_t response[], uint32_t responseSize), (override));
-    MOCK_METHOD(MediaKeyErrorStatus, decryptBuffer, (GstBuffer * encrypted, GstCaps *caps), (override));
+    MOCK_METHOD(DecryptionStatus, decryptBuffer, (GstBuffer * encrypted, GstCaps *caps), (override));
     MOCK_METHOD(MediaKeyErrorStatus, remove, (), (override));
     MOCK_METHOD(MediaKeyErrorStatus, close, (), (override));
     MOCK_METHOD(MediaKeyErrorStatus, cancelChallengeData, (), (override));

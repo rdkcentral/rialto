@@ -306,15 +306,15 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
             }
             else
             {
-                firebolt::rialto::MediaKeyErrorStatus status =
+                firebolt::rialto::wrappers::DecryptionStatus status =
                     m_decryptionService->decrypt(protectionData->keySessionId, buffer, caps);
-                if (firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED == status)
+                if (firebolt::rialto::wrappers::DecryptionStatus::OUTPUT_RESTRICTED == status)
                 {
                     m_hdcpOutputRestricted = true;
                     m_metadataWrapper->removeProtectionMetadata(buffer);
                     return GST_BASE_TRANSFORM_FLOW_DROPPED;
                 }
-                else if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
+                else if (firebolt::rialto::wrappers::DecryptionStatus::OK != status)
                 {
                     GST_ERROR_OBJECT(self, "Failed decrypt the buffer");
                     m_hdcpOutputRestricted = false;

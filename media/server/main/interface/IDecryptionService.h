@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_DECRYPTION_SERVICE_H_
 #define FIREBOLT_RIALTO_SERVER_I_DECRYPTION_SERVICE_H_
 
+#include "DecryptionStatus.h"
 #include "MediaCommon.h"
 #include <cstdint>
 #include <gst/gst.h>
@@ -31,7 +32,7 @@ class IDecryptionService
 {
 public:
     virtual ~IDecryptionService() = default;
-    virtual MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) = 0;
+    virtual wrappers::DecryptionStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) = 0;
     virtual bool isExtendedInterfaceUsed(int32_t keySessionId) = 0;
     virtual MediaKeyErrorStatus selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId) = 0;
     virtual void incrementSessionIdUsageCounter(int32_t keySessionId) = 0;

@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_WRAPPERS_I_OCDM_SESSION_H_
 #define FIREBOLT_RIALTO_WRAPPERS_I_OCDM_SESSION_H_
 
+#include "DecryptionStatus.h"
 #include <MediaCommon.h>
 #include <gst/gst.h>
 #include <memory>
@@ -105,7 +106,7 @@ public:
      *
      * @retval the return status.
      */
-    virtual MediaKeyErrorStatus decryptBuffer(GstBuffer *encrypted, GstCaps *caps) = 0;
+    virtual DecryptionStatus decryptBuffer(GstBuffer *encrypted, GstCaps *caps) = 0;
 
     /**
      * @brief Removes all data related to a session.

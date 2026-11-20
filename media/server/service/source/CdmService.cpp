@@ -522,7 +522,7 @@ bool CdmService::getSupportedRobustnessLevels(const std::string &keySystem, std:
     return mediaKeysCapabilities->getSupportedRobustnessLevels(keySystem, robustnessLevels);
 }
 
-MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
+wrappers::DecryptionStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to decrypt, key session id: %d", keySessionId);
 
@@ -531,7 +531,7 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
     if (mediaKeysHandleIter == m_sessionInfo.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
-        return MediaKeyErrorStatus::FAIL;
+        return wrappers::DecryptionStatus::FAIL;
     }
     return m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->decrypt(keySessionId, encrypted, caps);
 }

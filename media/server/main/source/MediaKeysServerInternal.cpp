@@ -571,11 +571,11 @@ MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionIdInternal(int32_t 
     return status;
 }
 
-MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
+wrappers::DecryptionStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
+    wrappers::DecryptionStatus status{wrappers::DecryptionStatus::FAIL};
 
     auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
@@ -583,17 +583,18 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
     return status;
 }
 
-MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
+wrappers::DecryptionStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionId, GstBuffer *encrypted,
+                                                                    GstCaps *caps)
 {
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
-        return MediaKeyErrorStatus::BAD_SESSION_ID;
+        return wrappers::DecryptionStatus::INVALID_SESSION;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second->decrypt(encrypted, caps);
-    if (MediaKeyErrorStatus::OK != status)
+    wrappers::DecryptionStatus status = sessionIter->second->decrypt(encrypted, caps);
+    if (wrappers::DecryptionStatus::OK != status)
     {
         RIALTO_SERVER_LOG_DEBUG("Failed to decrypt buffer.");
         return status;

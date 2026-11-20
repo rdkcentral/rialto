@@ -50,6 +50,7 @@ target_include_directories (
 
         PUBLIC
         include
+        $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
 
         PRIVATE
         $<TARGET_PROPERTY:RialtoServerCommon,INTERFACE_INCLUDE_DIRECTORIES>
