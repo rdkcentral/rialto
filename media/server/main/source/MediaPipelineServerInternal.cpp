@@ -194,20 +194,6 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
     if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
     {
         RIALTO_SERVER_LOG_ERROR("~MediaPipelineServerInternal: main-thread task failed or timed out");
-        // Task timed out - ensure partition is cleaned up synchronously to prevent partition leak
-        // If main thread is blocked, we still need to unmap partition and unregister client
-        try
-        {
-            if (m_shmBuffer && !m_shmBuffer->unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId))
-            {
-                RIALTO_SERVER_LOG_ERROR("Unable to unmap shm partition in fallback cleanup");
-            }
-        }
-        catch (const std::exception &e)
-        {
-            RIALTO_SERVER_LOG_ERROR("Exception during fallback partition cleanup: %s", e.what());
-        }
-        m_shmBuffer.reset();
         // Still need to unregister the client to prevent ID leaks
         m_mainThread->unregisterClient(m_mainThreadClientId);
     }
@@ -307,13 +293,10 @@ bool MediaPipelineServerInternal::removeSource(int32_t id)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = removeSourceInternal(id); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -347,13 +330,10 @@ bool MediaPipelineServerInternal::allSourcesAttached()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = allSourcesAttachedInternal(); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -380,13 +360,10 @@ bool MediaPipelineServerInternal::play(bool &async)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = playInternal(async); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -406,13 +383,10 @@ bool MediaPipelineServerInternal::pause()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = pauseInternal(); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -432,13 +406,10 @@ bool MediaPipelineServerInternal::stop()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = stopInternal(); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -458,13 +429,10 @@ bool MediaPipelineServerInternal::setPlaybackRate(double rate)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = setPlaybackRateInternal(rate); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -490,13 +458,10 @@ bool MediaPipelineServerInternal::setPosition(int64_t position)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = setPositionInternal(position); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -553,13 +518,10 @@ bool MediaPipelineServerInternal::getStats(int32_t sourceId, uint64_t &renderedF
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = getStatsInternal(sourceId, renderedFrames, droppedFrames); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -584,13 +546,10 @@ bool MediaPipelineServerInternal::setImmediateOutput(int32_t sourceId, bool imme
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = setImmediateOutputInternal(sourceId, immediateOutput); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -624,13 +583,10 @@ bool MediaPipelineServerInternal::setReportDecodeErrors(int32_t sourceId, bool r
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = setReportDecodeErrorsInternal(sourceId, reportDecodeErrors); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -656,13 +612,10 @@ bool MediaPipelineServerInternal::getQueuedFrames(int32_t sourceId, uint32_t &qu
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = getQueuedFramesInternal(sourceId, queuedFrames); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -687,13 +640,10 @@ bool MediaPipelineServerInternal::getImmediateOutput(int32_t sourceId, bool &imm
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = getImmediateOutputInternal(sourceId, immediateOutput); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -718,13 +668,10 @@ bool MediaPipelineServerInternal::setVideoWindow(uint32_t x, uint32_t y, uint32_
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = setVideoWindowInternal(x, y, width, height); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -744,13 +691,10 @@ bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t ne
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = haveDataInternal(status, needDataRequestId); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -825,13 +769,10 @@ bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t nu
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = haveDataInternal(status, numFrames, needDataRequestId); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -950,13 +891,10 @@ bool MediaPipelineServerInternal::renderFrame()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = renderFrameInternal(); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -976,13 +914,10 @@ bool MediaPipelineServerInternal::setVolume(double targetVolume, uint32_t volume
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = setVolumeInternal(targetVolume, volumeDuration, easeType); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1003,13 +938,10 @@ bool MediaPipelineServerInternal::getVolume(double &currentVolume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = getVolumeInternal(currentVolume); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1029,13 +961,10 @@ bool MediaPipelineServerInternal::setMute(std::int32_t sourceId, bool mute)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = setMuteInternal(sourceId, mute); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1066,13 +995,10 @@ bool MediaPipelineServerInternal::getMute(std::int32_t sourceId, bool &mute)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = getMuteInternal(sourceId, mute); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1101,13 +1027,10 @@ bool MediaPipelineServerInternal::setTextTrackIdentifier(const std::string &text
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = setTextTrackIdentifierInternal(textTrackIdentifier); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1130,13 +1053,10 @@ bool MediaPipelineServerInternal::getTextTrackIdentifier(std::string &textTrackI
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = getTextTrackIdentifierInternal(textTrackIdentifier); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1157,13 +1077,10 @@ bool MediaPipelineServerInternal::flush(int32_t sourceId, bool resetTime, bool &
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = flushInternal(sourceId, resetTime, async); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1171,13 +1088,10 @@ bool MediaPipelineServerInternal::setLowLatency(bool lowLatency)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = setLowLatencyInternal(lowLatency); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1199,13 +1113,10 @@ bool MediaPipelineServerInternal::setSync(bool sync)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = setSyncInternal(sync); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1225,13 +1136,10 @@ bool MediaPipelineServerInternal::getSync(bool &sync)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = getSyncInternal(sync); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1251,13 +1159,10 @@ bool MediaPipelineServerInternal::setSyncOff(bool syncOff)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = setSyncOffInternal(syncOff); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1277,13 +1182,10 @@ bool MediaPipelineServerInternal::setStreamSyncMode(int32_t sourceId, int32_t st
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = setStreamSyncModeInternal(sourceId, streamSyncMode); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1312,13 +1214,10 @@ bool MediaPipelineServerInternal::getStreamSyncMode(int32_t &streamSyncMode)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = getStreamSyncModeInternal(streamSyncMode); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1368,13 +1267,10 @@ bool MediaPipelineServerInternal::setSourcePosition(int32_t sourceId, int64_t po
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = setSourcePositionInternal(sourceId, position, resetTime, appliedRate, stopPosition); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1410,13 +1306,10 @@ bool MediaPipelineServerInternal::setSubtitleOffset(int32_t sourceId, int64_t po
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = setSubtitleOffsetInternal(sourceId, position); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1444,13 +1337,10 @@ bool MediaPipelineServerInternal::processAudioGap(int64_t position, uint32_t dur
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result{false};
+    bool result;
     auto task = [&]() { result = processAudioGapInternal(position, duration, discontinuityGap, audioAac); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1468,13 +1358,10 @@ bool MediaPipelineServerInternal::processAudioGapInternal(int64_t position, uint
 
 bool MediaPipelineServerInternal::setBufferingLimit(uint32_t limitBufferingMs)
 {
-    bool result{false};
+    bool result;
     auto task = [&]() { result = setBufferingLimitInternal(limitBufferingMs); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1491,13 +1378,10 @@ bool MediaPipelineServerInternal::setBufferingLimitInternal(uint32_t limitBuffer
 
 bool MediaPipelineServerInternal::getBufferingLimit(uint32_t &limitBufferingMs)
 {
-    bool result{false};
+    bool result;
     auto task = [&]() { result = getBufferingLimitInternal(limitBufferingMs); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1513,13 +1397,10 @@ bool MediaPipelineServerInternal::getBufferingLimitInternal(uint32_t &limitBuffe
 
 bool MediaPipelineServerInternal::setUseBuffering(bool useBuffering)
 {
-    bool result{false};
+    bool result;
     auto task = [&]() { result = setUseBufferingInternal(useBuffering); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1536,13 +1417,10 @@ bool MediaPipelineServerInternal::setUseBufferingInternal(bool useBuffering)
 
 bool MediaPipelineServerInternal::getUseBuffering(bool &useBuffering)
 {
-    bool result{false};
+    bool result;
     auto task = [&]() { result = getUseBufferingInternal(useBuffering); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1558,13 +1436,10 @@ bool MediaPipelineServerInternal::getUseBufferingInternal(bool &useBuffering)
 
 bool MediaPipelineServerInternal::switchSource(const std::unique_ptr<MediaSource> &source)
 {
-    bool result{false};
+    bool result;
     auto task = [&]() { result = switchSourceInternal(source); };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        RIALTO_SERVER_LOG_ERROR("Main thread task timed out or failed");
-        return false;
-    }
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
