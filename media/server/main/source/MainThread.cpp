@@ -103,6 +103,24 @@ void MainThread::mainThreadLoop()
             kTaskInfo->state->cv.notify_one();
         }
     }
+
+    // Release any waiters on tasks still queued behind the shutdown task -
+    // without this, enqueueTaskAndWait callers block forever during teardown.
+    std::deque<std::shared_ptr<TaskInfo>> remainingTasks;
+    {
+        const std::lock_guard<std::mutex> lock(m_taskQueueMutex);
+        remainingTasks.swap(m_taskQueue);
+    }
+    for (const auto &taskInfo : remainingTasks)
+    {
+        if (taskInfo->state)
+        {
+            std::unique_lock<std::mutex> lockTask(taskInfo->state->mutex);
+            taskInfo->state->done = true;
+            taskInfo->state->cv.notify_one();
+        }
+    }
+}
 }
 
 const std::shared_ptr<MainThread::TaskInfo> MainThread::waitForTask()
