@@ -125,4 +125,18 @@ service TestModule {
     rpc TestRequestSingleVarNoReply(TestSingleVarNoReply) returns (TestNoVar) {
         option (rialto.ipc.no_reply) = true;
     }
+
+    // File descriptor transfer at different depths
+    rpc TestFdNestedRepeatedRequest(TestFdNestedRepeated) returns (TestNoVar) {
+    }
+    rpc TestFdNestedRepeatedResponse(TestNoVar) returns (TestFdNestedRepeated) {
+    }
+    rpc TestFdRepeatedFieldRequest(TestFdRepeatedField) returns (TestNoVar) {
+    }
+    rpc TestFdRepeatedFieldResponse(TestNoVar) returns (TestFdRepeatedField) {
+    }
+    rpc TestFdMixedRequest(TestFdMixed) returns (TestNoVar) {
+    }
+    rpc TestFdMixedResponse(TestNoVar) returns (TestFdMixed) {
+    }
 }

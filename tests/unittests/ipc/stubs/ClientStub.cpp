@@ -286,3 +286,14 @@ void ClientStub::onTestEventMultiVarReceived(const std::shared_ptr<firebolt::ria
     m_multiVarEvent = event;
     m_messageReceived.store(true);
 }
+
+void ClientStub::onCallDone(std::atomic_bool *done)
+{
+    done->store(true);
+}
+
+std::shared_ptr<google::protobuf::RpcController> ClientStub::createController()
+{
+    auto controllerFactory = firebolt::rialto::ipc::IControllerFactory::createFactory();
+    return controllerFactory->create();
+}

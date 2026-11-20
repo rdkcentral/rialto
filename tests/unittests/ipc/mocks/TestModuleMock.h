@@ -44,6 +44,24 @@ public:
     MOCK_METHOD(void, TestRequestSingleVarNoReply,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::TestSingleVarNoReply *request,
                  ::firebolt::rialto::TestNoVar *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, TestFdNestedRepeatedRequest,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::TestFdNestedRepeated *request,
+                 ::firebolt::rialto::TestNoVar *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, TestFdNestedRepeatedResponse,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::TestNoVar *request,
+                 ::firebolt::rialto::TestFdNestedRepeated *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, TestFdRepeatedFieldRequest,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::TestFdRepeatedField *request,
+                 ::firebolt::rialto::TestNoVar *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, TestFdRepeatedFieldResponse,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::TestNoVar *request,
+                 ::firebolt::rialto::TestFdRepeatedField *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, TestFdMixedRequest,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::TestFdMixed *request,
+                 ::firebolt::rialto::TestNoVar *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, TestFdMixedResponse,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::TestNoVar *request,
+                 ::firebolt::rialto::TestFdMixed *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {

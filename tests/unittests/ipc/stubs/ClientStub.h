@@ -25,6 +25,7 @@
 #include "testmodule.pb.h"
 #include <atomic>
 #include <condition_variable>
+#include <functional>
 #include <memory>
 #include <string>
 #include <thread>
@@ -46,12 +47,54 @@ public:
     bool sendRequestWithMultiVarResponse(int32_t &var1, uint32_t &var2, firebolt::rialto::TestMultiVar_TestType &var3,
                                          std::string &var4);
 
+    /**
+     * @brief Calls a TestModule method and processes the channel until it completes.
+     *
+     * @retval true if the call completed without failure.
+     */
+    template <typename Request, typename Response>
+    bool call(void (firebolt::rialto::TestModule_Stub::*method)(google::protobuf::RpcController *, const Request *,
+                                                                Response *, google::protobuf::Closure *),
+              const Request &request, Response &response)
+    {
+        auto controller = createController();
+        std::atomic_bool done{false};
+        (m_testModuleStub.get()->*method)(controller.get(), &request, &response,
+                                          google::protobuf::NewCallback(&ClientStub::onCallDone, &done));
+        while (m_channel->process() && !done.load())
+        {
+            m_channel->wait(1);
+        }
+        return done.load() && !controller->Failed();
+    }
+
+    /**
+     * @brief Subscribes to an event and processes the channel on this thread until it arrives.
+     *
+     * @retval the received event, or nullptr after \a timeoutMs.
+     */
+    template <typename Event> std::shared_ptr<Event> receiveEvent(const std::function<void()> &trigger, int timeoutMs)
+    {
+        std::shared_ptr<Event> received;
+        const int kTag =
+            m_channel->subscribe<Event>([&received](const std::shared_ptr<Event> &event) { received = event; });
+        trigger();
+        for (int waited = 0; !received && waited < timeoutMs && m_channel->process(); ++waited)
+        {
+            m_channel->wait(1);
+        }
+        m_channel->unsubscribe(kTag);
+        return received;
+    }
+
     void startMessageThread(bool expectMessage = true);
     void waitForSingleVarEvent(int32_t &var1);
     void waitForMultiVarEvent(int32_t &var1, uint32_t &var2, firebolt::rialto::TestEventMultiVar_TestType &var3,
                               std::string &var4);
 
 private:
+    static void onCallDone(std::atomic_bool *done);
+    std::shared_ptr<google::protobuf::RpcController> createController();
     void onTestEventSingleVarReceived(const std::shared_ptr<firebolt::rialto::TestEventSingleVar> &event);
     void onTestEventMultiVarReceived(const std::shared_ptr<firebolt::rialto::TestEventMultiVar> &event);
 

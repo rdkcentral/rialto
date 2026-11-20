@@ -46,6 +46,7 @@ public:
     void sendSingleVarEvent(int32_t var1);
     void sendMultiVarEvent(int32_t var1, uint32_t var2, firebolt::rialto::TestEventMultiVar_TestType var3,
                            std::string var4);
+    bool sendEvent(const std::shared_ptr<google::protobuf::Message> &event);
 
 private:
     std::shared_ptr<::firebolt::rialto::ipc::IServer> m_server;

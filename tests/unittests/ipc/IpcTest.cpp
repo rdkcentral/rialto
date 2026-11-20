@@ -23,6 +23,13 @@
 #include "TestModuleMock.h"
 #include <gtest/gtest.h>
 
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include <functional>
+#include <vector>
+
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::ipc;
 
@@ -244,4 +251,284 @@ TEST_F(RialtoIpcTest, NoReply)
                                                [&] { return messageReceived; });
 
     ASSERT_TRUE(status);
+}
+
+// -----------------------------------------------------------------------------
+// File descriptor transfer at any depth (vfc-ipc-nested-fd-transfer, task 2.3)
+// -----------------------------------------------------------------------------
+
+namespace
+{
+constexpr int kEventTimeoutMs{1000};
+
+std::vector<int> createFiles(size_t count)
+{
+    std::vector<int> fds;
+    for (size_t i = 0; i < count; ++i)
+    {
+        const int kFd = memfd_create("rialto-ipc-test", MFD_CLOEXEC);
+        EXPECT_GE(kFd, 0);
+        fds.push_back(kFd);
+    }
+    return fds;
+}
+
+void closeAll(const std::vector<int> &fds)
+{
+    for (int fd : fds)
+    {
+        if (fd >= 0)
+            close(fd);
+    }
+}
+
+bool refersToSameFile(int first, int second)
+{
+    struct stat firstStat{};
+    struct stat secondStat{};
+    if (fstat(first, &firstStat) != 0 || fstat(second, &secondStat) != 0)
+        return false;
+    return firstStat.st_dev == secondStat.st_dev && firstStat.st_ino == secondStat.st_ino;
+}
+
+// Every received descriptor must be a different descriptor number for the same file, in the same position.
+void expectSameFilesInOrder(const std::vector<int> &sent, const std::vector<int> &received)
+{
+    ASSERT_EQ(sent.size(), received.size());
+    for (size_t i = 0; i < sent.size(); ++i)
+    {
+        EXPECT_NE(sent[i], received[i]) << "position " << i;
+        EXPECT_TRUE(refersToSameFile(sent[i], received[i])) << "position " << i;
+    }
+}
+
+TestFdNestedRepeated makeNestedRepeated(const std::vector<int> &fds)
+{
+    TestFdNestedRepeated message;
+    for (size_t i = 0; i < fds.size(); ++i)
+    {
+        auto *holder = message.add_holders();
+        holder->set_id(static_cast<int32_t>(i));
+        holder->set_fd(fds[i]);
+    }
+    return message;
+}
+
+std::vector<int> fdsOf(const TestFdNestedRepeated &message)
+{
+    std::vector<int> fds;
+    for (int i = 0; i < message.holders_size(); ++i)
+    {
+        EXPECT_EQ(message.holders(i).id(), i);
+        fds.push_back(message.holders(i).fd());
+    }
+    return fds;
+}
+
+TestFdRepeatedField makeRepeatedField(const std::vector<int> &fds)
+{
+    TestFdRepeatedField message;
+    for (int fd : fds)
+        message.add_fds(fd);
+    return message;
+}
+
+std::vector<int> fdsOf(const TestFdRepeatedField &message)
+{
+    return std::vector<int>(message.fds().begin(), message.fds().end());
+}
+
+// Expects four descriptors: first_fd, two nested holders, last_fd.
+TestFdMixed makeMixed(const std::vector<int> &fds)
+{
+    TestFdMixed message;
+    message.set_first_fd(fds[0]);
+    message.add_holders()->set_fd(fds[1]);
+    message.add_holders()->set_fd(fds[2]);
+    message.set_last_fd(fds[3]);
+    return message;
+}
+
+std::vector<int> fdsOf(const TestFdMixed &message)
+{
+    std::vector<int> fds{message.first_fd()};
+    for (const auto &holder : message.holders())
+        fds.push_back(holder.fd());
+    fds.push_back(message.last_fd());
+    return fds;
+}
+} // namespace
+
+class RialtoIpcFdTest : public RialtoIpcTest
+{
+protected:
+    // Sends \a sentMessage as a request; the handler checks the received descriptors while they are open.
+    template <typename Message>
+    void testRequest(void (TestModule_Stub::*method)(google::protobuf::RpcController *, const Message *, TestNoVar *,
+                                                     google::protobuf::Closure *),
+                     const std::vector<int> &sent, const Message &sentMessage)
+    {
+        bool handled{false};
+        auto handler = [&](google::protobuf::RpcController *, const Message *request, TestNoVar *,
+                           google::protobuf::Closure *done)
+        {
+            expectSameFilesInOrder(sent, fdsOf(*request));
+            handled = true;
+            done->Run();
+        };
+        expectRequest(handler, sentMessage);
+
+        TestNoVar response;
+        EXPECT_TRUE(m_clientStub->call(method, sentMessage, response));
+        EXPECT_TRUE(handled);
+    }
+
+    // Sends \a sentMessage as a reply and returns the received descriptors, which the caller owns.
+    template <typename Message>
+    std::vector<int> testReply(void (TestModule_Stub::*method)(google::protobuf::RpcController *, const TestNoVar *,
+                                                               Message *, google::protobuf::Closure *),
+                               const Message &sentMessage)
+    {
+        expectResponse(sentMessage);
+
+        TestNoVar request;
+        Message response;
+        EXPECT_TRUE(m_clientStub->call(method, request, response));
+        return fdsOf(response);
+    }
+
+    // Sends \a sentMessage as an event and returns the received descriptors, which the caller owns.
+    template <typename Message> std::vector<int> testEvent(const Message &sentMessage)
+    {
+        auto event = m_clientStub->receiveEvent<Message>(
+            [&]() { EXPECT_TRUE(m_serverStub->sendEvent(std::make_shared<Message>(sentMessage))); }, kEventTimeoutMs);
+        EXPECT_NE(event, nullptr);
+        return event ? fdsOf(*event) : std::vector<int>{};
+    }
+
+private:
+    template <typename Handler> void expectRequest(Handler handler, const TestFdNestedRepeated &)
+    {
+        EXPECT_CALL(*m_testModuleMock, TestFdNestedRepeatedRequest(_, _, _, _)).WillOnce(Invoke(handler));
+    }
+    template <typename Handler> void expectRequest(Handler handler, const TestFdRepeatedField &)
+    {
+        EXPECT_CALL(*m_testModuleMock, TestFdRepeatedFieldRequest(_, _, _, _)).WillOnce(Invoke(handler));
+    }
+    template <typename Handler> void expectRequest(Handler handler, const TestFdMixed &)
+    {
+        EXPECT_CALL(*m_testModuleMock, TestFdMixedRequest(_, _, _, _)).WillOnce(Invoke(handler));
+    }
+
+    void expectResponse(const TestFdNestedRepeated &message)
+    {
+        EXPECT_CALL(*m_testModuleMock, TestFdNestedRepeatedResponse(_, _, _, _))
+            .WillOnce(DoAll(SetArgPointee<2>(message),
+                            WithArgs<0, 3>(Invoke(&(*m_testModuleMock), &TestModuleMock::defaultReturn))));
+    }
+    void expectResponse(const TestFdRepeatedField &message)
+    {
+        EXPECT_CALL(*m_testModuleMock, TestFdRepeatedFieldResponse(_, _, _, _))
+            .WillOnce(DoAll(SetArgPointee<2>(message),
+                            WithArgs<0, 3>(Invoke(&(*m_testModuleMock), &TestModuleMock::defaultReturn))));
+    }
+    void expectResponse(const TestFdMixed &message)
+    {
+        EXPECT_CALL(*m_testModuleMock, TestFdMixedResponse(_, _, _, _))
+            .WillOnce(DoAll(SetArgPointee<2>(message),
+                            WithArgs<0, 3>(Invoke(&(*m_testModuleMock), &TestModuleMock::defaultReturn))));
+    }
+};
+
+/**
+ * Requests carry nested, repeated and mixed FD fields at the right positions.
+ */
+TEST_F(RialtoIpcFdTest, ShouldTransferNestedRepeatedFdsInRequests)
+{
+    for (size_t count : {0U, 1U, 3U})
+    {
+        const auto kSent = createFiles(count);
+        testRequest(&TestModule_Stub::TestFdNestedRepeatedRequest, kSent, makeNestedRepeated(kSent));
+        closeAll(kSent);
+    }
+}
+
+TEST_F(RialtoIpcFdTest, ShouldTransferRepeatedFdFieldInRequest)
+{
+    const auto kSent = createFiles(2);
+    testRequest(&TestModule_Stub::TestFdRepeatedFieldRequest, kSent, makeRepeatedField(kSent));
+    closeAll(kSent);
+}
+
+TEST_F(RialtoIpcFdTest, ShouldTransferMixedFdsInRequestInOrder)
+{
+    const auto kSent = createFiles(4);
+    testRequest(&TestModule_Stub::TestFdMixedRequest, kSent, makeMixed(kSent));
+    closeAll(kSent);
+}
+
+/**
+ * Replies carry nested, repeated and mixed FD fields at the right positions.
+ */
+TEST_F(RialtoIpcFdTest, ShouldTransferNestedRepeatedFdsInReplies)
+{
+    for (size_t count : {0U, 1U, 3U})
+    {
+        const auto kSent = createFiles(count);
+        const auto kReceived = testReply(&TestModule_Stub::TestFdNestedRepeatedResponse, makeNestedRepeated(kSent));
+        expectSameFilesInOrder(kSent, kReceived);
+        closeAll(kReceived);
+        closeAll(kSent);
+    }
+}
+
+TEST_F(RialtoIpcFdTest, ShouldTransferRepeatedFdFieldInReply)
+{
+    const auto kSent = createFiles(2);
+    const auto kReceived = testReply(&TestModule_Stub::TestFdRepeatedFieldResponse, makeRepeatedField(kSent));
+    expectSameFilesInOrder(kSent, kReceived);
+    closeAll(kReceived);
+    closeAll(kSent);
+}
+
+TEST_F(RialtoIpcFdTest, ShouldTransferMixedFdsInReplyInOrder)
+{
+    const auto kSent = createFiles(4);
+    const auto kReceived = testReply(&TestModule_Stub::TestFdMixedResponse, makeMixed(kSent));
+    expectSameFilesInOrder(kSent, kReceived);
+    closeAll(kReceived);
+    closeAll(kSent);
+}
+
+/**
+ * Events carry nested, repeated and mixed FD fields at the right positions.
+ */
+TEST_F(RialtoIpcFdTest, ShouldTransferNestedRepeatedFdsInEvents)
+{
+    for (size_t count : {0U, 1U, 3U})
+    {
+        const auto kSent = createFiles(count);
+        const auto kReceived = testEvent(makeNestedRepeated(kSent));
+        expectSameFilesInOrder(kSent, kReceived);
+        closeAll(kReceived);
+        closeAll(kSent);
+    }
+}
+
+TEST_F(RialtoIpcFdTest, ShouldTransferRepeatedFdFieldInEvent)
+{
+    const auto kSent = createFiles(2);
+    const auto kReceived = testEvent(makeRepeatedField(kSent));
+    expectSameFilesInOrder(kSent, kReceived);
+    closeAll(kReceived);
+    closeAll(kSent);
+}
+
+TEST_F(RialtoIpcFdTest, ShouldTransferMixedFdsInEventInOrder)
+{
+    const auto kSent = createFiles(4);
+    const auto kReceived = testEvent(makeMixed(kSent));
+    expectSameFilesInOrder(kSent, kReceived);
+    closeAll(kReceived);
+    closeAll(kSent);
 }

@@ -103,6 +103,20 @@ void ServerStub::initWithFd(int fd)
         });
 }
 
+bool ServerStub::sendEvent(const std::shared_ptr<google::protobuf::Message> &event)
+{
+    if (!m_clientConnected.load())
+    {
+        std::unique_lock<std::mutex> clientConnectedLock(m_clientConnectMutex);
+        m_clientConnectCond.wait_for(clientConnectedLock, std::chrono::milliseconds(100));
+    }
+    if (!m_client)
+    {
+        return false;
+    }
+    return m_client->sendEvent(event);
+}
+
 ServerStub::~ServerStub()
 {
     if (m_serverThread.joinable())
