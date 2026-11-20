@@ -73,8 +73,10 @@ public:
 
     /**
      * @brief Wait for the response.
+     *
+     * @retval true if the response was received, false on timeout.
      */
-    virtual void wait() = 0;
+    virtual bool wait() = 0;
 };
 
 }; // namespace firebolt::rialto::ipc

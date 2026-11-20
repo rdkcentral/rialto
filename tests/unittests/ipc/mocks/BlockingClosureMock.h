@@ -31,7 +31,7 @@ public:
     BlockingClosureMock() = default;
     virtual ~BlockingClosureMock() = default;
 
-    MOCK_METHOD(void, wait, (), (override));
+    MOCK_METHOD(bool, wait, (), (override));
     MOCK_METHOD(void, Run, (), (override));
 };
 } // namespace firebolt::rialto::ipc

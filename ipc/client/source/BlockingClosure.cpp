@@ -20,9 +20,17 @@
 #include "BlockingClosure.h"
 #include "IpcLogging.h"
 
+#include <chrono>
+#include <errno.h>
 #include <memory>
+#include <time.h>
 #include <unistd.h>
 #include <utility>
+
+namespace
+{
+constexpr std::chrono::milliseconds kBlockingClosureMaxWait{30000};
+} // namespace
 
 namespace firebolt::rialto::ipc
 {
@@ -82,12 +90,24 @@ void BlockingClosurePoll::Run() // NOLINT(build/function_format)
     m_done = true;
 }
 
-void BlockingClosurePoll::wait()
+bool BlockingClosurePoll::wait()
 {
+    const auto kDeadline = std::chrono::steady_clock::now() + kBlockingClosureMaxWait;
     while (m_kChannel->process() && !m_done)
     {
-        m_kChannel->wait(-1);
+        const auto kRemaining =
+            std::chrono::duration_cast<std::chrono::milliseconds>(kDeadline - std::chrono::steady_clock::now());
+        if (kRemaining.count() <= 0 || !m_kChannel->wait(static_cast<int>(kRemaining.count())))
+        {
+            if (!m_done)
+            {
+                RIALTO_IPC_LOG_ERROR("Timed out waiting for ipc response");
+                return false;
+            }
+            return true;
+        }
     }
+    return m_done;
 }
 
 BlockingClosureSemaphore::BlockingClosureSemaphore() : m_sem{{0}}
@@ -106,8 +126,30 @@ void BlockingClosureSemaphore::Run() // NOLINT(build/function_format)
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to signal semaphore");
 }
 
-void BlockingClosureSemaphore::wait()
+bool BlockingClosureSemaphore::wait()
 {
-    TEMP_FAILURE_RETRY(sem_wait(&m_sem));
+    struct timespec deadline{};
+    clock_gettime(CLOCK_REALTIME, &deadline);
+    deadline.tv_sec += std::chrono::duration_cast<std::chrono::seconds>(kBlockingClosureMaxWait).count();
+    deadline.tv_nsec += (kBlockingClosureMaxWait.count() % 1000) * 1000000;
+    if (deadline.tv_nsec >= 1000000000)
+    {
+        deadline.tv_sec += 1;
+        deadline.tv_nsec -= 1000000000;
+    }
+
+    while (true)
+    {
+        if (sem_timedwait(&m_sem, &deadline) == 0)
+        {
+            return true;
+        }
+        if (errno == EINTR)
+        {
+            continue;
+        }
+        RIALTO_IPC_LOG_SYS_ERROR(errno, "Failed to wait for ipc response");
+        return false;
+    }
 }
 }; // namespace firebolt::rialto::ipc
