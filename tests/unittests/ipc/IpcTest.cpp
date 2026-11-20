@@ -33,8 +33,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <atomic>
 #include <chrono>
 #include <functional>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
@@ -838,4 +840,169 @@ TEST_F(RialtoIpcRawServerTest, ShouldCloseOwnedFdsWhenClientIsGone)
     ASSERT_NE(pendingDone, nullptr);
     pendingDone->Run();
     EXPECT_EQ(countFilesNamed(kOwnedFileName), 0U);
+}
+
+// -----------------------------------------------------------------------------
+// Reply delivery callback (vfc-ipc-nested-fd-transfer, task 4.5)
+// -----------------------------------------------------------------------------
+
+namespace
+{
+// Records every delivery callback invocation; the server may invoke it just after the client sees the reply.
+class DeliveryRecorder
+{
+public:
+    std::function<void(bool)> callback()
+    {
+        return [this](bool delivered)
+        {
+            std::lock_guard<std::mutex> lock{m_mutex};
+            m_results.push_back(delivered);
+        };
+    }
+
+    std::vector<bool> waitForResults(size_t count)
+    {
+        for (int i = 0; i < 500 && results().size() < count; ++i)
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        return results();
+    }
+
+    std::vector<bool> results()
+    {
+        std::lock_guard<std::mutex> lock{m_mutex};
+        return m_results;
+    }
+
+private:
+    std::mutex m_mutex;
+    std::vector<bool> m_results;
+};
+} // namespace
+
+TEST_F(RialtoIpcOwnedFdTest, ShouldReportDeliveredOnceOnSuccess)
+{
+    const auto kSent = createFiles(1);
+    DeliveryRecorder recorder;
+    std::vector<int> received;
+
+    EXPECT_TRUE(
+        replyWith(kSent, [&](IController &controller) { controller.setDeliveryCallback(recorder.callback()); }, received));
+
+    EXPECT_EQ(recorder.waitForResults(1), std::vector<bool>{true});
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    EXPECT_EQ(recorder.results().size(), 1U); // exactly once
+    closeAll(received);
+    closeAll(kSent);
+}
+
+TEST_F(RialtoIpcOwnedFdTest, ShouldReportNotDeliveredForErrorReply)
+{
+    const auto kSent = createFiles(1);
+    DeliveryRecorder recorder;
+    std::vector<int> received;
+
+    EXPECT_FALSE(replyWith(
+        kSent,
+        [&](IController &controller)
+        {
+            controller.setDeliveryCallback(recorder.callback());
+            controller.SetFailed("failed");
+        },
+        received));
+
+    EXPECT_EQ(recorder.waitForResults(1), std::vector<bool>{false});
+    closeAll(kSent);
+}
+
+TEST_F(RialtoIpcOwnedFdTest, ShouldSendReplyUnchangedWithoutCallback)
+{
+    const auto kSent = createFiles(2);
+    std::vector<int> received;
+
+    EXPECT_TRUE(replyWith(kSent, [](IController &) {}, received));
+    expectSameFilesInOrder(kSent, received);
+    closeAll(received);
+    closeAll(kSent);
+}
+
+TEST_F(RialtoIpcOwnedFdTest, ShouldAllowCallbackToSendToClientAgain)
+{
+    const auto kSent = createFiles(1);
+    std::vector<int> received;
+    std::atomic<bool> callbackSent{false};
+
+    auto event = m_clientStub->receiveEvent<TestEventSingleVar>(
+        [&]()
+        {
+            EXPECT_TRUE(replyWith(
+                kSent,
+                [&](IController &controller)
+                {
+                    std::shared_ptr<IClient> client = controller.getClient();
+                    controller.setDeliveryCallback(
+                        [client, &callbackSent](bool delivered)
+                        {
+                            // would deadlock if the client lock were still held
+                            auto followUp = std::make_shared<TestEventSingleVar>();
+                            followUp->set_var1(delivered ? 1 : 0);
+                            callbackSent = client->sendEvent(followUp);
+                        });
+                },
+                received));
+        },
+        kEventTimeoutMs);
+
+    ASSERT_NE(event, nullptr);
+    EXPECT_EQ(event->var1(), 1);
+    EXPECT_TRUE(callbackSent);
+    closeAll(received);
+    closeAll(kSent);
+}
+
+TEST_F(RialtoIpcRawServerTest, ShouldReportNotDeliveredWhenClientIsGone)
+{
+    DeliveryRecorder recorder;
+    google::protobuf::Closure *pendingDone{nullptr};
+    EXPECT_CALL(*m_moduleMock, TestFdRepeatedFieldResponse(_, _, _, _))
+        .WillOnce(Invoke(
+            [&](google::protobuf::RpcController *controller, const TestNoVar *, TestFdRepeatedField *,
+                google::protobuf::Closure *done)
+            {
+                ipcController(controller).setDeliveryCallback(recorder.callback());
+                pendingDone = done;
+            }));
+
+    sendCall();
+    processServerUntil([&]() { return pendingDone != nullptr; });
+    disconnectClient();
+
+    ASSERT_NE(pendingDone, nullptr);
+    pendingDone->Run();
+    EXPECT_EQ(recorder.results(), std::vector<bool>{false});
+}
+
+TEST_F(RialtoIpcRawServerTest, ShouldReportNotDeliveredWhenSendFails)
+{
+    DeliveryRecorder recorder;
+    google::protobuf::Closure *pendingDone{nullptr};
+    EXPECT_CALL(*m_moduleMock, TestFdRepeatedFieldResponse(_, _, _, _))
+        .WillOnce(Invoke(
+            [&](google::protobuf::RpcController *controller, const TestNoVar *, TestFdRepeatedField *,
+                google::protobuf::Closure *done)
+            {
+                ipcController(controller).setDeliveryCallback(recorder.callback());
+                pendingDone = done;
+            }));
+
+    sendCall();
+    processServerUntil([&]() { return pendingDone != nullptr; });
+
+    // close the peer without letting the server notice: the client is still registered, but sendmsg fails
+    close(m_sockets[1]);
+    m_sockets[1] = -1;
+
+    ASSERT_NE(pendingDone, nullptr);
+    pendingDone->Run();
+    EXPECT_EQ(recorder.results(), std::vector<bool>{false});
 }
