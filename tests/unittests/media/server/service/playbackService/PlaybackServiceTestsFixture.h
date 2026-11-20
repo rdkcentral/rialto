@@ -47,6 +47,7 @@ public:
     void triggerSwitchToInactive();
     void triggerSetMaxPlaybacks();
     void triggerSetMaxWebAudioPlayers();
+    void triggerSetPlaybackInfoTimer();
     void triggerSetClientDisplayName();
     void triggerPing();
 

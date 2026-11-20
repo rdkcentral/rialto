@@ -25,6 +25,8 @@
 #include <stdint.h>
 #include <string>
 
+#define RIALTO_DEFAULT_PLAYBACK_INFO_TIMER_MS 250
+
 namespace firebolt::rialto::common
 {
 /**
@@ -70,6 +72,8 @@ struct AppConfig
      * "/tmp/bar" In all cases the name can be retrieved with getAppConnectionInfo()
      */
     std::string clientDisplayName; /**< Socket name that Rialto client should connect to */
+    /** PlaybackInfo interval; values <= 0 select RIALTO_DEFAULT_PLAYBACK_INFO_TIMER_MS. */
+    std::chrono::milliseconds playbackInfoTimer{0};
 };
 
 /**

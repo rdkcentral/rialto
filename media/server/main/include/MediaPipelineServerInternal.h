@@ -27,6 +27,7 @@
 #include "IMediaPipelineServerInternal.h"
 #include "ITimer.h"
 #include "NeedDataDelayCalculator.h"
+#include <chrono>
 #include <map>
 #include <memory>
 #include <shared_mutex>
@@ -50,7 +51,8 @@ public:
 
     std::unique_ptr<server::IMediaPipelineServerInternal> createMediaPipelineServerInternal(
         std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements, int sessionId,
-        const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService) const override;
+        const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService,
+        std::chrono::milliseconds playbackInfoTimer) const override;
 
     /**
      * @brief Create the generic media player factory object.
@@ -86,7 +88,8 @@ public:
                                 const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
                                 const std::shared_ptr<common::ITimerFactory> &timerFactory,
                                 std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
-                                std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService);
+                                std::unique_ptr<IActiveRequests> &&activeRequests,
+                                IDecryptionService &decryptionService, std::chrono::milliseconds playbackInfoTimer);
 
     /**
      * @brief Virtual destructor.
@@ -233,6 +236,7 @@ protected:
      * @brief The video decoder requirements for the MediaPipeline session.
      */
     const VideoRequirements m_kVideoRequirements;
+    const std::chrono::milliseconds m_kPlaybackInfoTimer;
 
     /**
      * @brief ID of a session represented by this MediaPipeline

@@ -63,6 +63,7 @@ public:
     void switchToInactive() override;
     void setMaxPlaybacks(int maxPlaybacks) override;
     void setMaxWebAudioPlayers(int maxWebAudio) override;
+    void setPlaybackInfoTimer(std::chrono::milliseconds playbackInfoTimer) override;
     void setClientDisplayName(const std::string &clientDisplayName) const override;
     void setResourceManagerAppName(const std::string &clientDisplayName) const override;
 

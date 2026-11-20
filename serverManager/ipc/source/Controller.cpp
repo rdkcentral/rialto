@@ -84,7 +84,8 @@ bool Controller::performSetConfiguration(
     const std::string &clientDisplayName, const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
     const unsigned int socketPermissions, const std::string &socketOwner, const std::string &socketGroup,
     const std::string &appName, const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
-    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps,
+    std::chrono::milliseconds playbackInfoTimer)
 {
     std::unique_lock<std::mutex> lock{m_clientMutex};
     auto client = m_clients.find(serverId);
@@ -92,7 +93,7 @@ bool Controller::performSetConfiguration(
     {
         return client->second->performSetConfiguration(initialState, socketName, clientDisplayName, maxResource,
                                                        socketPermissions, socketOwner, socketGroup, appName, audioCaps,
-                                                       videoCaps);
+                                                       videoCaps, playbackInfoTimer);
     }
     return false;
 }
@@ -101,14 +102,15 @@ bool Controller::performSetConfiguration(
     int serverId, const firebolt::rialto::common::SessionServerState &initialState, int socketFd,
     const std::string &clientDisplayName, const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
     const std::string &appName, const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
-    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps,
+    std::chrono::milliseconds playbackInfoTimer)
 {
     std::unique_lock<std::mutex> lock{m_clientMutex};
     auto client = m_clients.find(serverId);
     if (client != m_clients.end())
     {
         return client->second->performSetConfiguration(initialState, socketFd, clientDisplayName, maxResource, appName,
-                                                       audioCaps, videoCaps);
+                                                       audioCaps, videoCaps, playbackInfoTimer);
     }
     return false;
 }

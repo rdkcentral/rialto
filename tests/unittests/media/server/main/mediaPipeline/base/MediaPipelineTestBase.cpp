@@ -51,9 +51,10 @@ void MediaPipelineTestBase::createMediaPipeline()
     EXPECT_NO_THROW(
         m_mediaPipeline =
             std::make_unique<MediaPipelineServerInternal>(m_mediaPipelineClientMock, m_videoReq, m_gstPlayerFactoryMock,
-                                                          m_kSessionId, m_sharedMemoryBufferMock, m_mainThreadFactoryMock,
-                                                          m_timerFactoryMock, std::move(m_dataReaderFactory),
-                                                          std::move(m_activeRequests), m_decryptionServiceMock));
+                                                          m_kSessionId, m_sharedMemoryBufferMock,
+                                                          m_mainThreadFactoryMock, m_timerFactoryMock,
+                                                          std::move(m_dataReaderFactory), std::move(m_activeRequests),
+                                                          m_decryptionServiceMock, std::chrono::milliseconds{32}));
     EXPECT_NE(m_mediaPipeline, nullptr);
 }
 
@@ -86,7 +87,7 @@ void MediaPipelineTestBase::loadGstPlayer()
 {
     mainThreadWillEnqueueTaskAndWait();
     mainThreadWillEnqueueTask();
-    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, _, _, _, _, _))
+    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, _, _, _, _, _, _))
         .WillOnce(DoAll(SaveArg<0>(&m_gstPlayerCallback), Return(ByMove(std::move(m_gstPlayer)))));
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyNetworkState(NetworkState::BUFFERING));
 

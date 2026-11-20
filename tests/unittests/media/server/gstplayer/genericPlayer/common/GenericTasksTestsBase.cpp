@@ -3037,11 +3037,13 @@ void GenericTasksTestsBase::shouldReportPosition()
     EXPECT_CALL(testContext->m_gstPlayerClient, notifyPosition(kPosition));
 }
 
-void GenericTasksTestsBase::triggerReportPosition()
+void GenericTasksTestsBase::triggerReportPosition(bool positionAvailable)
 {
+    testContext->m_context.streamPosition.store(kPosition + 1);
     firebolt::rialto::server::tasks::generic::ReportPosition task{testContext->m_context, &testContext->m_gstPlayerClient,
                                                                   testContext->m_gstWrapper, testContext->m_gstPlayer};
     task.execute();
+    EXPECT_EQ(testContext->m_context.streamPosition.load(), positionAvailable ? kPosition : kPosition + 1);
 }
 
 void GenericTasksTestsBase::shouldFailToReportPosition()

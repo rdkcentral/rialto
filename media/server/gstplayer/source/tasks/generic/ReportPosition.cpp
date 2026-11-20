@@ -42,6 +42,7 @@ void ReportPosition::execute() const
         return;
     }
 
+    m_context.streamPosition.store(position);
     if (m_gstPlayerClient)
     {
         m_gstPlayerClient->notifyPosition(position);

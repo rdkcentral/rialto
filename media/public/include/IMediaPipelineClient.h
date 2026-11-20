@@ -228,7 +228,10 @@ public:
     /**
      * @brief Notifies the client about the current playback state
      *
-     * Notification shall be sent every 32ms after reaching the PLAYING state.
+     * Playback information is sampled at a configurable interval (250 ms by default).
+     * Periodic notifications are sent only when position or volume changes. A completed PAUSED
+     * transition forces a notification even when these values are unchanged. Samples with an
+     * unavailable position, including seek preroll or asynchronous flush, are not delivered.
      *
      * @param[in] playbackInfo : The current playback information.
      */

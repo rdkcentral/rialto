@@ -541,15 +541,18 @@ void MediaPipelineServiceTests::mediaPipelineWillPing()
     EXPECT_CALL(m_mediaPipelineMock, ping(_));
 }
 
-void MediaPipelineServiceTests::mediaPipelineFactoryWillCreateMediaPipeline()
+void MediaPipelineServiceTests::mediaPipelineFactoryWillCreateMediaPipeline(std::chrono::milliseconds playbackInfoTimer)
 {
-    EXPECT_CALL(*m_mediaPipelineFactoryMock, createMediaPipelineServerInternal(_, kRequirements, _, _, _))
+    EXPECT_CALL(*m_mediaPipelineFactoryMock,
+                createMediaPipelineServerInternal(_, kRequirements, _, _, _, playbackInfoTimer))
         .WillOnce(Return(ByMove(std::move(m_mediaPipeline))));
 }
 
 void MediaPipelineServiceTests::mediaPipelineFactoryWillReturnNullptr()
 {
-    EXPECT_CALL(*m_mediaPipelineFactoryMock, createMediaPipelineServerInternal(_, kRequirements, _, _, _))
+    EXPECT_CALL(*m_mediaPipelineFactoryMock,
+                createMediaPipelineServerInternal(_, kRequirements, _, _, _,
+                                                  std::chrono::milliseconds{RIALTO_DEFAULT_PLAYBACK_INFO_TIMER_MS}))
         .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::server::IMediaPipelineServerInternal>())));
 }
 
@@ -583,6 +586,11 @@ void MediaPipelineServiceTests::createMediaPipelineShouldSuccess()
                                                                                   m_mediaPipelineCapabilitiesFactoryMock,
                                                                                   m_decryptionServiceMock,
                                                                                   m_metricsServiceMock);
+}
+
+void MediaPipelineServiceTests::configurePlaybackInfoTimer(std::chrono::milliseconds playbackInfoTimer)
+{
+    m_sut->setPlaybackInfoTimer(playbackInfoTimer);
 }
 
 void MediaPipelineServiceTests::createMediaPipelineShouldFailWhenMediaPipelineCapabilitiesFactoryReturnsNullptr()

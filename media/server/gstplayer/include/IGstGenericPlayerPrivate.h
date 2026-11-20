@@ -365,6 +365,7 @@ public:
      * @brief Sends PlaybackInfo notification. Called by the worker thread.
      */
     virtual void notifyPlaybackInfo() = 0;
+    virtual void notifyPlaybackInfo(bool force) = 0;
 };
 } // namespace firebolt::rialto::server
 

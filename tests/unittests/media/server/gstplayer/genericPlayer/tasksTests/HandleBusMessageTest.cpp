@@ -285,6 +285,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedMessage)
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::PAUSED));
+    EXPECT_CALL(m_gstPlayer, notifyPlaybackInfo(true));
     EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayer, startNotifyPlaybackInfoTimer());
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
@@ -315,6 +316,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedMessageWhenSyncFlus
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::PAUSED));
+    EXPECT_CALL(m_gstPlayer, notifyPlaybackInfo(true));
     EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayer, startNotifyPlaybackInfoTimer());
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
@@ -329,6 +331,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedMessageWhenSyncFlus
 
 TEST_F(HandleBusMessageTest, shouldSkipHandlingStateChangedToPausedMessageWhenAsyncFlushWasQueuedBeforeHandleBusMessage)
 {
+    EXPECT_CALL(m_gstPlayer, notifyPlaybackInfo(_)).Times(0);
     constexpr bool kFlushOngoing{true};
 
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
@@ -357,6 +360,7 @@ TEST_F(HandleBusMessageTest, shouldSkipHandlingStateChangedToPausedMessageWhenAs
 
 TEST_F(HandleBusMessageTest, shouldSkipHandlingStateChangedToPausedMessageWhenAsyncFlushWasQueuedAfterHandleBusMessage)
 {
+    EXPECT_CALL(m_gstPlayer, notifyPlaybackInfo(_)).Times(0);
     constexpr bool kFlushOngoing{true};
 
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
@@ -385,6 +389,7 @@ TEST_F(HandleBusMessageTest, shouldSkipHandlingStateChangedToPausedMessageWhenAs
 
 TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedAndPendingPausedMessage)
 {
+    EXPECT_CALL(m_gstPlayer, notifyPlaybackInfo(_)).Times(0);
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_STATE_CHANGED;
     GstState oldState = GST_STATE_PAUSED;

@@ -32,5 +32,5 @@ TEST_F(ReportPositionTest, shouldReportPosition)
 TEST_F(ReportPositionTest, shouldFailToReportPosition)
 {
     shouldFailToReportPosition();
-    triggerReportPosition();
+    triggerReportPosition(false);
 }

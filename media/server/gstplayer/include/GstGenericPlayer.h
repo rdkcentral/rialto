@@ -37,7 +37,10 @@
 #include "tasks/IPlayerTask.h"
 #include <IMediaPipeline.h>
 #include <atomic>
+#include <chrono>
 #include <memory>
+#include <mutex>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -60,7 +63,7 @@ public:
 
     std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(
         IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-        const VideoRequirements &videoRequirements, bool isLive,
+        const VideoRequirements &videoRequirements, bool isLive, std::chrono::milliseconds playbackInfoTimer,
         const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory,
         const std::shared_ptr<IGstProfilerFactory> &gstProfilerFactory) override;
 };
@@ -90,7 +93,7 @@ public:
      * @param[in] gstDispatcherThreadFactory   : The gst dispatcher thread factory
      */
     GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-                     const VideoRequirements &videoRequirements, bool isLive,
+                     const VideoRequirements &videoRequirements, bool isLive, std::chrono::milliseconds playbackInfoTimer,
                      const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                      const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                      const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
@@ -208,6 +211,7 @@ private:
     void setSourceFlushed(const MediaSourceType &mediaSourceType) override;
     bool isAsync(const MediaSourceType &mediaSourceType) const;
     void notifyPlaybackInfo() override;
+    void notifyPlaybackInfo(bool force) override;
 
 private:
     /**
@@ -428,6 +432,9 @@ private:
      * @brief The player context.
      */
     GenericPlayerContext m_context;
+    std::mutex m_playbackInfoMutex;
+    std::optional<PlaybackInfo> m_lastReportedPlaybackInfo;
+    const std::chrono::milliseconds m_playbackInfoTimerInterval;
 
     /**
      * @brief The gstreamer player client.

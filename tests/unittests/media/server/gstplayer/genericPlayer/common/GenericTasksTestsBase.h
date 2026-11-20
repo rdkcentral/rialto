@@ -370,7 +370,7 @@ protected:
 
     // ReportPosition test methods
     void shouldReportPosition();
-    void triggerReportPosition();
+    void triggerReportPosition(bool positionAvailable = true);
     void shouldFailToReportPosition();
 
     // FinishSetupSource test methods
