@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_MAIN_THREAD_H_
 
 #include "IMainThread.h"
+#include "ISharedMemoryBuffer.h"
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
@@ -31,9 +32,81 @@
 #include <set>
 #include <string>
 #include <thread>
+#include <vector>
 
 namespace firebolt::rialto::server
 {
+/**
+ * @brief State container for deferred partition cleanup.
+ *
+ * When a MediaPipeline destructor times out during cleanup, the partition
+ * state is tracked here and cleanup is retried later. This prevents resource
+ * exhaustion from leaked partitions.
+ */
+struct PartitionCleanupState
+{
+    // Partition identity
+    ISharedMemoryBuffer::MediaPlaybackType playbackType;
+    int sessionId;
+
+    // Resources needed for cleanup
+    std::shared_ptr<ISharedMemoryBuffer> shmBuffer;
+    std::shared_ptr<IMainThread> mainThread;
+    uint32_t clientId;
+
+    // Cleanup status tracking
+    enum class Status
+    {
+        Pending,    /**< Cleanup not yet attempted */
+        InProgress, /**< Cleanup currently executing */
+        Completed,  /**< Cleanup succeeded */
+        Failed      /**< Cleanup failed (may retry) */
+    };
+    std::atomic<Status> status{Status::Pending};
+
+    // Retry tracking
+    int retryCount{0};
+    static constexpr int MAX_RETRIES = 3;
+    std::chrono::system_clock::time_point createdAt;
+
+    PartitionCleanupState() : playbackType(ISharedMemoryBuffer::MediaPlaybackType::GENERIC),
+                               sessionId(-1),
+                               clientId(0),
+                               createdAt(std::chrono::system_clock::now())
+    {
+    }
+
+    /**
+     * @brief Execute partition cleanup.
+     * @return true if cleanup succeeded, false otherwise.
+     */
+    bool executeCleanup()
+    {
+        if (status.load() != Status::Pending)
+            return status.load() == Status::Completed;
+
+        status = Status::InProgress;
+
+        if (shmBuffer && shmBuffer->unmapPartition(playbackType, sessionId))
+        {
+            status = Status::Completed;
+            return true;
+        }
+
+        status = Status::Failed;
+        return false;
+    }
+
+    /**
+     * @brief Check if cleanup should be retried.
+     * @return true if cleanup should be retried, false if max retries exceeded.
+     */
+    bool shouldRetry() const
+    {
+        return retryCount < MAX_RETRIES && status.load() == Status::Failed;
+    }
+};
+
 /**
  * @brief IMainThread factory class definition.
  */
@@ -77,6 +150,14 @@ public:
     void enqueueTask(uint32_t clientId, const Task &task) override;
     bool enqueueTaskAndWait(uint32_t clientId, const Task &task) override;
 
+    /**
+     * @brief Register a deferred cleanup task when synchronous cleanup times out.
+     *
+     * @param[in] cleanupState : The partition cleanup state to track and retry.
+     * @return true if cleanup state was registered, false otherwise.
+     */
+    bool deferCleanup(std::shared_ptr<PartitionCleanupState> cleanupState);
+
 private:
     /**
      * @brief Status of a task in the queue.
@@ -115,6 +196,14 @@ private:
      * @retval The next task in the queue, or nullptr on shutdown.
      */
     const std::shared_ptr<TaskInfo> waitForTask();
+
+    /**
+     * @brief Process pending partition cleanup states.
+     *
+     * Attempts to clean up partitions that timed out during destructor.
+     * Retries periodically and removes completed cleanups.
+     */
+    void processPendingCleanups();
 
     /**
      * @brief Default timeout for blocking task enqueues (30 seconds).
@@ -182,6 +271,16 @@ private:
      * @brief Clients registered on this thread.
      */
     std::set<uint32_t> m_registeredClients;
+
+    /**
+     * @brief Mutex protecting access to pending cleanup states.
+     */
+    std::mutex m_cleanupMutex;
+
+    /**
+     * @brief Pending partition cleanup states waiting for retry.
+     */
+    std::vector<std::shared_ptr<PartitionCleanupState>> m_pendingCleanups;
 };
 } // namespace firebolt::rialto::server
 

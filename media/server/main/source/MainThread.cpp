@@ -209,6 +209,9 @@ void MainThread::mainThreadLoop()
         }
 
         kTaskInfo->cv.notify_all();
+
+        // Process pending partition cleanups periodically
+        processPendingCleanups();
     }
 }
 
@@ -361,5 +364,75 @@ bool MainThread::enqueueTaskAndWait(uint32_t clientId, const Task &task)
     // Cancelled or other terminal state
     RIALTO_SERVER_LOG_DEBUG("Task did not complete successfully, status: %d", static_cast<int>(newTask->status));
     return false;
+}
+
+bool MainThread::deferCleanup(std::shared_ptr<PartitionCleanupState> cleanupState)
+{
+    std::lock_guard<std::mutex> lock(m_cleanupMutex);
+
+    if (!cleanupState)
+        return false;
+
+    m_pendingCleanups.push_back(cleanupState);
+
+    RIALTO_SERVER_LOG_INFO("Registered deferred cleanup for session %d (pending: %zu)",
+                          cleanupState->sessionId,
+                          m_pendingCleanups.size());
+
+    return true;
+}
+
+void MainThread::processPendingCleanups()
+{
+    std::lock_guard<std::mutex> lock(m_cleanupMutex);
+
+    for (auto it = m_pendingCleanups.begin(); it != m_pendingCleanups.end();)
+    {
+        auto& cleanupState = *it;
+
+        // Skip if already completed
+        if (cleanupState->status.load() == PartitionCleanupState::Status::Completed)
+        {
+            RIALTO_SERVER_LOG_DEBUG("Cleanup completed for session %d", cleanupState->sessionId);
+            it = m_pendingCleanups.erase(it);
+            continue;
+        }
+
+        // Skip if in progress
+        if (cleanupState->status.load() == PartitionCleanupState::Status::InProgress)
+        {
+            ++it;
+            continue;
+        }
+
+        // Try to execute if pending
+        if (cleanupState->status.load() == PartitionCleanupState::Status::Pending)
+        {
+            if (cleanupState->executeCleanup())
+            {
+                RIALTO_SERVER_LOG_INFO("Deferred cleanup successful for session %d",
+                                      cleanupState->sessionId);
+                it = m_pendingCleanups.erase(it);
+                continue;
+            }
+
+            // Failed - check if should retry
+            if (cleanupState->shouldRetry())
+            {
+                cleanupState->retryCount++;
+                RIALTO_SERVER_LOG_WARN("Cleanup retry %d for session %d",
+                                      cleanupState->retryCount,
+                                      cleanupState->sessionId);
+                ++it;
+                continue;
+            }
+        }
+
+        // All retries exhausted
+        RIALTO_SERVER_LOG_ERROR("Cleanup failed for session %d after %d attempts",
+                               cleanupState->sessionId,
+                               cleanupState->retryCount);
+        it = m_pendingCleanups.erase(it);
+    }
 }
 } // namespace firebolt::rialto::server

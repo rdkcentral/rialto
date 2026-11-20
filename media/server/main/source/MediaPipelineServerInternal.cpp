@@ -185,8 +185,17 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    auto task = [&]()
+    // Create cleanup state for deferred cleanup if main task times out
+    auto cleanupState = std::make_shared<firebolt::rialto::server::PartitionCleanupState>();
+    cleanupState->playbackType = ISharedMemoryBuffer::MediaPlaybackType::GENERIC;
+    cleanupState->sessionId = m_sessionId;
+    cleanupState->shmBuffer = m_shmBuffer;
+    cleanupState->mainThread = m_mainThread;
+    cleanupState->clientId = m_mainThreadClientId;
+
+    auto task = [&, cleanupState]()
     {
+        // Cancel all active timers
         for (const auto &timer : m_needMediaDataTimers)
         {
             if (timer.second && timer.second->isActive())
@@ -194,20 +203,43 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
                 timer.second->cancel();
             }
         }
-        if (!m_shmBuffer->unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId))
+
+        // Execute cleanup immediately
+        if (cleanupState->executeCleanup())
         {
-            RIALTO_SERVER_LOG_ERROR("Unable to unmap shm partition");
+            RIALTO_SERVER_LOG_DEBUG("Partition cleanup successful");
+            m_shmBuffer.reset();
+            m_mainThread->unregisterClient(m_mainThreadClientId);
+            cleanupState->status = firebolt::rialto::server::PartitionCleanupState::Status::Completed;
+            return true;
         }
 
-        m_shmBuffer.reset();
-        m_mainThread->unregisterClient(m_mainThreadClientId);
+        RIALTO_SERVER_LOG_ERROR("Unable to unmap shm partition");
+        return false;
     };
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
+
+    // Try immediate cleanup with timeout
+    if (m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
     {
-        RIALTO_SERVER_LOG_ERROR("~MediaPipelineServerInternal: main-thread task failed or timed out");
-        // Still need to unregister the client to prevent ID leaks
-        m_mainThread->unregisterClient(m_mainThreadClientId);
+        RIALTO_SERVER_LOG_DEBUG("Destructor cleanup completed successfully");
+        return;
     }
+
+    // Task timeout: defer cleanup to prevent partition leak
+    RIALTO_SERVER_LOG_ERROR("~MediaPipelineServerInternal: main-thread task failed or timed out");
+    RIALTO_SERVER_LOG_WARN("Deferring partition cleanup for session %d", m_sessionId);
+
+    // Register cleanup state to be retried later
+    // The cleanupState shared_ptr keeps resources alive until cleanup completes
+    if (m_mainThread->deferCleanup(cleanupState))
+    {
+        RIALTO_SERVER_LOG_INFO("Partition cleanup deferred and registered with MainThread");
+        return;
+    }
+
+    // Last resort: cleanup failed completely
+    RIALTO_SERVER_LOG_ERROR("Failed to defer cleanup - manual recovery may be needed");
+    m_mainThread->unregisterClient(m_mainThreadClientId);
 }
 
 bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive)

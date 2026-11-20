@@ -536,3 +536,172 @@ TEST_F(MainThreadTests, P4_1_TaskStatusNotificationsWorkWithStateCopy)
     EXPECT_EQ(results[1], "success2");
 }
 
+/**
+ * P4.2 Test: Deferred cleanup registration and retry
+ * 
+ * Verify that partition cleanup states can be deferred and retried
+ */
+TEST_F(MainThreadTests, P4_2_DeferredCleanupStateCreationAndRetry)
+{
+    m_mainThread = std::make_shared<MainThread>();
+
+    // Create a cleanup state
+    auto cleanupState = std::make_shared<firebolt::rialto::server::PartitionCleanupState>();
+    cleanupState->playbackType = firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC;
+    cleanupState->sessionId = 123;
+    cleanupState->clientId = m_mainThread->registerClient();
+    cleanupState->mainThread = m_mainThread;
+
+    // Create a mock shared memory buffer that initially fails
+    auto mockShmBuffer = std::make_shared<NiceMock<firebolt::rialto::server::SharedMemoryBufferMock>>();
+    cleanupState->shmBuffer = mockShmBuffer;
+
+    // Test that cleanup state can be registered
+    bool registerResult = m_mainThread->deferCleanup(cleanupState);
+    EXPECT_TRUE(registerResult);
+}
+
+/**
+ * P4.2 Test: Cleanup state successful execution
+ * 
+ * Verify that executeCleanup works correctly when unmapPartition succeeds
+ */
+TEST_F(MainThreadTests, P4_2_CleanupStateSuccessfulExecution)
+{
+    auto mockShmBuffer = std::make_shared<NiceMock<firebolt::rialto::server::SharedMemoryBufferMock>>();
+    
+    // Setup mock to succeed
+    EXPECT_CALL(*mockShmBuffer,
+                unmapPartition(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, 456))
+        .Times(1)
+        .WillOnce(Return(true));
+
+    auto cleanupState = std::make_shared<firebolt::rialto::server::PartitionCleanupState>();
+    cleanupState->playbackType = firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC;
+    cleanupState->sessionId = 456;
+    cleanupState->shmBuffer = mockShmBuffer;
+
+    // Execute cleanup
+    bool result = cleanupState->executeCleanup();
+    EXPECT_TRUE(result);
+    EXPECT_EQ(cleanupState->status.load(), 
+              firebolt::rialto::server::PartitionCleanupState::Status::Completed);
+}
+
+/**
+ * P4.2 Test: Cleanup state failure and retry
+ * 
+ * Verify that failed cleanup can be retried up to MAX_RETRIES
+ */
+TEST_F(MainThreadTests, P4_2_CleanupStateFailureAndRetry)
+{
+    auto mockShmBuffer = std::make_shared<NiceMock<firebolt::rialto::server::SharedMemoryBufferMock>>();
+    
+    // Setup mock to fail
+    EXPECT_CALL(*mockShmBuffer,
+                unmapPartition(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, 789))
+        .WillRepeatedly(Return(false));
+
+    auto cleanupState = std::make_shared<firebolt::rialto::server::PartitionCleanupState>();
+    cleanupState->playbackType = firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC;
+    cleanupState->sessionId = 789;
+    cleanupState->shmBuffer = mockShmBuffer;
+
+    // First attempt - should fail
+    bool result1 = cleanupState->executeCleanup();
+    EXPECT_FALSE(result1);
+    EXPECT_TRUE(cleanupState->shouldRetry());
+
+    // Retry multiple times
+    for (int i = 0; i < 3; ++i)
+    {
+        EXPECT_TRUE(cleanupState->shouldRetry());
+        cleanupState->retryCount++;
+        result1 = cleanupState->executeCleanup();
+        EXPECT_FALSE(result1);
+    }
+
+    // Should not retry after max attempts
+    EXPECT_FALSE(cleanupState->shouldRetry());
+}
+
+/**
+ * P4.2 Test: MainThread deferCleanup integration
+ * 
+ * Verify that MainThread can register and track deferred cleanups
+ */
+TEST_F(MainThreadTests, P4_2_MainThreadDeferCleanupIntegration)
+{
+    m_mainThread = std::make_shared<MainThread>();
+    uint32_t clientId = m_mainThread->registerClient();
+
+    auto mockShmBuffer = std::make_shared<NiceMock<firebolt::rialto::server::SharedMemoryBufferMock>>();
+    
+    // Create cleanup state
+    auto cleanupState = std::make_shared<firebolt::rialto::server::PartitionCleanupState>();
+    cleanupState->playbackType = firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC;
+    cleanupState->sessionId = 999;
+    cleanupState->clientId = clientId;
+    cleanupState->mainThread = m_mainThread;
+    cleanupState->shmBuffer = mockShmBuffer;
+
+    // Register deferred cleanup
+    bool result = m_mainThread->deferCleanup(cleanupState);
+    EXPECT_TRUE(result);
+
+    // Cleanup state should still be pending
+    EXPECT_EQ(cleanupState->status.load(),
+              firebolt::rialto::server::PartitionCleanupState::Status::Pending);
+}
+
+/**
+ * P4.2 Test: Multiple deferred cleanups
+ * 
+ * Verify that MainThread can handle multiple concurrent deferred cleanups
+ */
+TEST_F(MainThreadTests, P4_2_MultipleDeforredCleanups)
+{
+    m_mainThread = std::make_shared<MainThread>();
+    uint32_t clientId = m_mainThread->registerClient();
+
+    auto mockShmBuffer = std::make_shared<NiceMock<firebolt::rialto::server::SharedMemoryBufferMock>>();
+    
+    // Create multiple cleanup states
+    std::vector<std::shared_ptr<firebolt::rialto::server::PartitionCleanupState>> cleanupStates;
+    for (int i = 0; i < 5; ++i)
+    {
+        auto cleanupState = std::make_shared<firebolt::rialto::server::PartitionCleanupState>();
+        cleanupState->playbackType = firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC;
+        cleanupState->sessionId = 1000 + i;
+        cleanupState->clientId = clientId;
+        cleanupState->mainThread = m_mainThread;
+        cleanupState->shmBuffer = mockShmBuffer;
+
+        bool result = m_mainThread->deferCleanup(cleanupState);
+        EXPECT_TRUE(result);
+        cleanupStates.push_back(cleanupState);
+    }
+
+    // All cleanups should still be pending
+    for (const auto& cleanupState : cleanupStates)
+    {
+        EXPECT_EQ(cleanupState->status.load(),
+                  firebolt::rialto::server::PartitionCleanupState::Status::Pending);
+    }
+}
+
+/**
+ * P4.2 Test: Null cleanup state rejection
+ * 
+ * Verify that deferCleanup properly rejects null states
+ */
+TEST_F(MainThreadTests, P4_2_NullCleanupStateRejected)
+{
+    m_mainThread = std::make_shared<MainThread>();
+
+    // Try to register null cleanup state
+    bool result = m_mainThread->deferCleanup(nullptr);
+    EXPECT_FALSE(result);
+}
+
+
