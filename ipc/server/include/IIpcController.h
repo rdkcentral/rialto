@@ -23,6 +23,7 @@
 #include "IIpcServer.h"
 #include <google/protobuf/service.h>
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -125,6 +126,36 @@ public:
      * @param[in] callback : Callback on closure.
      */
     void NotifyOnCancel(google::protobuf::Closure *callback) override = 0;
+
+    /**
+     * @brief Marks the file descriptors in this call's reply as owned by the IPC layer.
+     *
+     * When set, the server closes every file descriptor held in the reply's \c field_is_fd fields exactly once,
+     * after the send attempt, whatever its outcome: sent, failed, replaced by an error reply or refused for being
+     * over the per-message limit. When not set (the default), the descriptors are left open, as before.
+     *
+     * Call before completing the call with \c done->Run().
+     *
+     * @param[in] owned : true to have the server close the reply's descriptors.
+     */
+    virtual void setReplyFdsOwned(bool owned) {}
+
+    /**
+     * @brief Registers a callback that reports whether this call's reply was delivered.
+     *
+     * The callback is invoked exactly once, after the send attempt and after any owned descriptors have been closed.
+     * \a delivered is true only if the whole success reply, with all its descriptors, was written to the client's
+     * socket; it is false if the client was gone, the write failed or was short, or an error reply was sent instead.
+     * A reply written in full counts as delivered even if the client exits before reading it.
+     *
+     * The callback runs on the thread that completed the call, with no IPC lock held, so it may call back into the
+     * service or make further IPC calls.
+     *
+     * Call before completing the call with \c done->Run(). The default implementation ignores the callback.
+     *
+     * @param[in] callback : Called once with the delivery result.
+     */
+    virtual void setDeliveryCallback(std::function<void(bool delivered)> callback) {}
 };
 
 } // namespace firebolt::rialto::ipc

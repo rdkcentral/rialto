@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_IPC_IPC_CONTROLLER_MOCK_H_
 
 #include "IIpcController.h"
+#include <functional>
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
@@ -41,6 +42,8 @@ public:
     MOCK_METHOD(void, SetFailed, (const std::string &reason), (override));
     MOCK_METHOD(bool, IsCanceled, (), (override, const));
     MOCK_METHOD(void, NotifyOnCancel, (google::protobuf::Closure * callback), (override));
+    MOCK_METHOD(void, setReplyFdsOwned, (bool owned), (override));
+    MOCK_METHOD(void, setDeliveryCallback, (std::function<void(bool delivered)> callback), (override));
 };
 } // namespace firebolt::rialto::ipc
 
