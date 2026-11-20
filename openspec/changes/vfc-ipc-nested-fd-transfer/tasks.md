@@ -18,7 +18,7 @@ Unit tests run with `./build_ut.py -s ipc` (suite `RialtoIpcUnitTests`, `tests/u
 
 ## 3. Per-message FD limits (D4; spec: Per-message FD limit)
 
-- [ ] 3.1 Turn the 16 (client to server) and 32 (server to client) limits into named constants shared by `readMessageFds` on both sides. Verify that grep finds no remaining literal `16`/`32` FD limits in `ipc/`.
+- [x] 3.1 Turn the 16 (client to server) and 32 (server to client) limits into named constants shared by `readMessageFds` on both sides. Verify that grep finds no remaining literal `16`/`32` FD limits in `ipc/`.
 - [ ] 3.2 Enforce the limits on the sender: a client request over 16 fails the call locally and sends nothing; a server reply over 32 becomes an error reply; a server event over 32 makes `sendEvent` return `false`. Add one test per direction in `IpcTest.cpp` and verify with `./build_ut.py -s ipc`.
 
 ## 4. Owned reply FDs and delivery callback (D2, D3; spec: Owned reply FDs, Reply delivery is reported)

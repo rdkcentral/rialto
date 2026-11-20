@@ -34,6 +34,7 @@
 
 #include "IpcChannelImpl.h"
 #include "FdFieldWalker.h"
+#include "FdLimits.h"
 #include "IpcLogging.h"
 #include "rialtoipc.pb.h"
 
@@ -524,7 +525,7 @@ bool ChannelImpl::processSocketEvent()
             // make sure to close all the fds, otherwise we'll leak them, this
             // will read the fds and return in a vector, which will then be
             // destroyed, closing all the fds
-            readMessageFds(&msg, 16);
+            readMessageFds(&msg, kMaxFdsServerToClient);
         }
         else
         {
@@ -532,7 +533,7 @@ bool ChannelImpl::processSocketEvent()
             std::vector<FileDescriptor> fds;
             if (msg.msg_controllen > 0)
             {
-                fds = readMessageFds(&msg, 32);
+                fds = readMessageFds(&msg, kMaxFdsServerToClient);
             }
 
             // process the message from the server

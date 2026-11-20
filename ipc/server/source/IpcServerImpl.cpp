@@ -19,6 +19,7 @@
 
 #include "IpcServerImpl.h"
 #include "FdFieldWalker.h"
+#include "FdLimits.h"
 #include "IIpcServerFactory.h"
 #include "IpcClientImpl.h"
 #include "IpcLogging.h"
@@ -819,14 +820,14 @@ void ServerImpl::processClientSocket(uint64_t clientId, unsigned events)
                 RIALTO_IPC_LOG_WARN("received message from client %" PRIu64 " truncated, discarding", clientId);
 
                 // make sure to close all the fds, otherwise we'll leak them
-                readMessageFds(&msg, 16);
+                readMessageFds(&msg, kMaxFdsClientToServer);
             }
             else
             {
                 // if there is control data then assume fd(s) have been passed
                 if (msg.msg_controllen > 0)
                 {
-                    processClientMessage(clientObj, m_recvDataBuf, rd, readMessageFds(&msg, 16));
+                    processClientMessage(clientObj, m_recvDataBuf, rd, readMessageFds(&msg, kMaxFdsClientToServer));
                 }
                 else
                 {
