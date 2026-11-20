@@ -233,6 +233,29 @@ void MediaPipelineClient::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
     m_ipcClient->sendEvent(event);
 }
 
+void MediaPipelineClient::notifyMetricEvent(int32_t sourceId, uint64_t renderedFrames, uint64_t droppedFrames,
+                                            uint64_t corruptedFrames, uint64_t ptsNs, const std::string &errorInfo,
+                                            uint32_t phase)
+{
+    RIALTO_SERVER_LOG_DEBUG(
+        "Sending playback metric IPC event sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu, type: %s, phase: %u",
+        m_sessionId, sourceId, static_cast<unsigned long long>(renderedFrames),
+        static_cast<unsigned long long>(droppedFrames), static_cast<unsigned long long>(corruptedFrames),
+        static_cast<unsigned long long>(ptsNs), errorInfo.c_str(), phase);
+
+    auto event = std::make_shared<firebolt::rialto::NotifyMetricEvent>();
+    event->set_session_id(m_sessionId);
+    event->set_source_id(sourceId);
+    event->set_rendered_frames(renderedFrames);
+    event->set_dropped_frames(droppedFrames);
+    event->set_corrupted_frames(corruptedFrames);
+    event->set_pts_ns(ptsNs);
+    event->set_error_info(errorInfo);
+    event->set_phase(phase);
+
+    m_ipcClient->sendEvent(event);
+}
+
 void MediaPipelineClient::notifyBufferUnderflow(int32_t sourceId)
 {
     RIALTO_SERVER_LOG_DEBUG("Sending BufferUnderflowEvent...");

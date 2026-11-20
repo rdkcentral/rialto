@@ -151,6 +151,21 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         return false;
     m_eventTags.push_back(eventTag);
 
+    eventTag = ipcChannel->subscribe<firebolt::rialto::NotifyMetricEvent>(
+        [this](const std::shared_ptr<firebolt::rialto::NotifyMetricEvent> &event)
+        {
+            RIALTO_CLIENT_LOG_DEBUG("Received playback metric IPC event for sessionId: %d, sourceId: %d",
+                                    event->session_id(), event->source_id());
+            m_eventThread->add(&MediaPipelineIpc::onMetricEvent, this, event);
+        });
+    if (eventTag < 0)
+    {
+        RIALTO_CLIENT_LOG_ERROR("Failed to subscribe to playback metric IPC events");
+        return false;
+    }
+    m_eventTags.push_back(eventTag);
+    RIALTO_CLIENT_LOG_DEBUG("Subscribed to playback metric IPC events");
+
     eventTag = ipcChannel->subscribe<firebolt::rialto::BufferUnderflowEvent>(
         [this](const std::shared_ptr<firebolt::rialto::BufferUnderflowEvent> &event)
         { m_eventThread->add(&MediaPipelineIpc::onBufferUnderflow, this, event); });
@@ -738,6 +753,44 @@ bool MediaPipelineIpc::getStats(int32_t sourceId, uint64_t &renderedFrames, uint
 
     renderedFrames = response.rendered_frames();
     droppedFrames = response.dropped_frames();
+    return true;
+}
+
+bool MediaPipelineIpc::getFrameCounters(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
+                                        uint64_t &corruptedFrames, uint64_t &timestamp)
+{
+    RIALTO_CLIENT_LOG_DEBUG("Requesting playback metrics sessionId: %d, sourceId: %d", m_sessionId, sourceId);
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetFrameCountersRequest request;
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+
+    firebolt::rialto::GetFrameCountersResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getFrameCounters(ipcController.get(), &request, &response, blockingClosure.get());
+    blockingClosure->wait();
+
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Failed to get frame counters for sessionId: %d, sourceId: %d, reason: '%s'",
+                                m_sessionId, sourceId, ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    renderedFrames = response.rendered_frames();
+    droppedFrames = response.dropped_frames();
+    corruptedFrames = response.corrupted_frames();
+    timestamp = response.timestamp();
+    RIALTO_CLIENT_LOG_DEBUG(
+        "Received playback metrics sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, timestamp: %llu",
+        sourceId, static_cast<unsigned long long>(renderedFrames), static_cast<unsigned long long>(droppedFrames),
+        static_cast<unsigned long long>(corruptedFrames), static_cast<unsigned long long>(timestamp));
     return true;
 }
 
@@ -1595,6 +1648,27 @@ void MediaPipelineIpc::onQos(const std::shared_ptr<firebolt::rialto::QosEvent> &
     {
         QosInfo qosInfo = {event->qos_info().processed(), event->qos_info().dropped()};
         m_mediaPipelineIpcClient->notifyQos(event->source_id(), qosInfo);
+    }
+}
+
+void MediaPipelineIpc::onMetricEvent(const std::shared_ptr<firebolt::rialto::NotifyMetricEvent> &event)
+{
+    RIALTO_CLIENT_LOG_DEBUG(
+        "Dispatching playback metric event sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, ptsNs: %llu, type: %s, phase: %u",
+        event->session_id(), event->source_id(), static_cast<unsigned long long>(event->rendered_frames()),
+        static_cast<unsigned long long>(event->dropped_frames()),
+        static_cast<unsigned long long>(event->corrupted_frames()),
+        static_cast<unsigned long long>(event->pts_ns()), event->error_info().c_str(), event->phase());
+    if (event->session_id() == m_sessionId)
+    {
+        m_mediaPipelineIpcClient->notifyMetricEvent(event->source_id(), event->rendered_frames(), event->dropped_frames(),
+                                                    event->corrupted_frames(), event->pts_ns(), event->error_info(),
+                                                    event->phase());
+    }
+    else
+    {
+        RIALTO_CLIENT_LOG_DEBUG("Ignoring playback metric event for sessionId: %d (current sessionId: %d)",
+                                event->session_id(), m_sessionId);
     }
 }
 
