@@ -4,7 +4,7 @@ Unit tests run with `./build_ut.py -s ipc` (suite `RialtoIpcUnitTests`, `tests/u
 
 ## 1. Shared FD walker (D1)
 
-- [ ] 1.1 Add an internal `FdFieldWalker` (`ipc/common/source/FdFieldWalker.{h,cpp}`) that visits every present `field_is_fd` field in the spec's order (declaration order, repeated elements by index, sub-messages recursed at their own position) and reports any non-`int32` FD field as an error. Add it to `ipc/common/CMakeLists.txt` and verify that `ipc` builds.
+- [x] 1.1 Add an internal `FdFieldWalker` (`ipc/common/source/FdFieldWalker.{h,cpp}`) that visits every present `field_is_fd` field in the spec's order (declaration order, repeated elements by index, sub-messages recursed at their own position) and reports any non-`int32` FD field as an error. Add it to `ipc/common/CMakeLists.txt` and verify that `ipc` builds.
 - [ ] 1.2 Extend `tests/unittests/ipc/proto/testmodule.proto` with FD test messages: top-level only; a repeated sub-message with a nested FD; a repeated `int32` FD field; mixed top-level, nested, top-level; a nested optional sub-message left unset; a non-`int32` field marked `field_is_fd`. Verify that the test proto compiles.
 - [ ] 1.3 Add walker unit tests (`tests/unittests/ipc/FdFieldWalkerTest.cpp`) that pin the visit order for every 1.2 message, check that unset fields and sub-messages are skipped, and check the non-`int32` error. Verify with `./build_ut.py -s ipc -gf '*FdFieldWalker*'`.
 

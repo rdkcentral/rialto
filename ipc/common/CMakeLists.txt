@@ -25,6 +25,7 @@ add_library(
         RialtoIpcCommon
         STATIC
 
+        source/FdFieldWalker.cpp
         source/FileDescriptor.cpp
         source/SimpleBufferPool.cpp
         source/NamedSocket.cpp
