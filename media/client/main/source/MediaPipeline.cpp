@@ -417,7 +417,11 @@ bool MediaPipeline::handleHaveData(MediaSourceStatus status, uint32_t needDataRe
         return true;
     }
 
-    uint32_t numFrames = needDataRequest->frameWriter ? needDataRequest->frameWriter->getNumFrames() : 0;
+    uint32_t numFrames;
+    {
+        std::lock_guard<std::mutex> writeLock{needDataRequest->writeMutex};
+        numFrames = needDataRequest->frameWriter ? needDataRequest->frameWriter->getNumFrames() : 0;
+    }
     return m_mediaPipelineIpc->haveData(status, numFrames, needDataRequestId);
 }
 
@@ -430,15 +434,18 @@ AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std
         return AddSegmentStatus::ERROR;
     }
 
-    std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
-    auto needDataRequestIt = m_needDataRequestMap.find(needDataRequestId);
-    if (needDataRequestIt == m_needDataRequestMap.end())
+    std::shared_ptr<NeedDataRequest> needDataRequest;
     {
-        RIALTO_CLIENT_LOG_ERROR("Could not find need data request, with id %u", needDataRequestId);
-        return AddSegmentStatus::ERROR;
+        std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
+        auto needDataRequestIt = m_needDataRequestMap.find(needDataRequestId);
+        if (needDataRequestIt == m_needDataRequestMap.end())
+        {
+            RIALTO_CLIENT_LOG_ERROR("Could not find need data request, with id %u", needDataRequestId);
+            return AddSegmentStatus::ERROR;
+        }
+        needDataRequest = needDataRequestIt->second;
     }
 
-    std::shared_ptr<NeedDataRequest> needDataRequest = needDataRequestIt->second;
     std::shared_ptr<ISharedMemoryHandle> shmHandle;
     {
         std::lock_guard<std::mutex> shmLock{m_shmMutex};
@@ -462,6 +469,7 @@ AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std
         }
     }
 
+    std::lock_guard<std::mutex> writeLock{needDataRequest->writeMutex};
     if (!needDataRequest->frameWriter)
     {
         if (firebolt::rialto::MediaSourceType::UNKNOWN != mediaSegment->getType())

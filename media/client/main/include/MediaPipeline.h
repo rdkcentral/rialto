@@ -226,6 +226,7 @@ protected:
         int32_t sourceId;                                       /**< The source id. */
         std::shared_ptr<MediaPlayerShmInfo> shmInfo;            /**< The shared memory information. */
         std::unique_ptr<common::IMediaFrameWriter> frameWriter; /**< The frame writer used to add segments. */
+        std::mutex writeMutex; /**< Serializes frameWriter creation, writeFrame and getNumFrames calls. */
     };
 
     /**
