@@ -1,0 +1,16 @@
+version: "1.0"
+default_schema: spec-driven
+
+schemas:
+  spec-driven:
+    artifacts:
+      - proposal
+      - tasks
+      - design
+      - implementation
+      - verification
+  rapid:
+    artifacts:
+      - proposal
+      - tasks
+      - implementation
