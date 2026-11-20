@@ -74,10 +74,6 @@ TEST_F(RialtoClientMediaPipelineIpcGetMuteTest, ChannelDisconnected)
 
     bool mute;
     EXPECT_FALSE(m_mediaPipelineIpc->getMute(m_kSourceId, mute));
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**

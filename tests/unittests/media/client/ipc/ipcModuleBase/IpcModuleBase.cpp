@@ -64,6 +64,8 @@ void IpcModuleBase::expectAttachChannel()
 {
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
     EXPECT_CALL(*m_channelMock, isConnected()).InSequence(m_isConnectedSeq).WillOnce(Return(true)).RetiresOnSaturation();
+
+    m_channelDetached = false;
 }
 
 void IpcModuleBase::expectIpcApiCallSuccess()
@@ -96,6 +98,15 @@ void IpcModuleBase::expectIpcApiCallDisconnected()
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
     EXPECT_CALL(*m_channelMock, isConnected()).InSequence(m_isConnectedSeq).WillOnce(Return(false)).RetiresOnSaturation();
     EXPECT_CALL(*m_ipcClientMock, reconnect()).WillOnce(Return(false)).RetiresOnSaturation();
+
+    // The failed reattachment leaves the module detached from the channel
+    m_channelDetached = true;
+}
+
+void IpcModuleBase::expectIpcApiCallSkippedDisconnected()
+{
+    // Destruction paths only check the channel, they never reattach or reconnect
+    EXPECT_CALL(*m_channelMock, isConnected()).InSequence(m_isConnectedSeq).WillOnce(Return(false)).RetiresOnSaturation();
 }
 
 void IpcModuleBase::expectIpcApiCallReconnected()
