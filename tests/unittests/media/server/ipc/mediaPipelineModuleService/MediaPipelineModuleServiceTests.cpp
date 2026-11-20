@@ -380,6 +380,38 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetStats)
     sendGetStatsRequestAndReceiveResponseWithoutStatsMatch();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldGetStatsWithFrameCounters)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillGetFrameCounters();
+    sendGetStatsRequestAndReceiveFrameCounters();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetMetricSubscription)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillSetMetricSubscription();
+    sendSetMetricSubscriptionRequest();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetMetricSubscription)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToSetMetricSubscription();
+    sendSetMetricSubscriptionRequest();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetMetricSubscriptionWithUnknownType)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillRejectUnknownMetricType();
+    sendSetMetricSubscriptionRequestWithUnknownType();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldSendPlaybackStateChangedEvent)
 {
     mediaPipelineServiceWillCreateSession();
@@ -418,6 +450,14 @@ TEST_F(MediaPipelineModuleServiceTests, shouldSendQosEvent)
     sendCreateSessionRequestAndReceiveResponse();
     mediaClientWillSendQosEvent();
     sendQosEvent();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSendMediaMetricBatchEvents)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaClientWillSendMediaMetricBatchEvents();
+    sendMediaMetricEvents();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldSendPlaybackErrorEvent)

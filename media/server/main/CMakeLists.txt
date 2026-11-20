@@ -37,6 +37,7 @@ add_library(
         ${PROTO_SRCS}
         ${PROTO_HEADERS}
 
+        source/MediaMetricsQueue.cpp
         source/MediaPipelineServerInternal.cpp
         source/MediaPipelineCapabilities.cpp
         source/ActiveRequests.cpp

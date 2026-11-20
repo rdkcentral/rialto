@@ -1535,6 +1535,60 @@ void MediaPipelineTestMethods::getStats(uint64_t expectedFrames, uint64_t expect
     EXPECT_EQ(returnDropped, expectedDropped);
 }
 
+void MediaPipelineTestMethods::shouldGetFrameCounters(const VideoFrameCounters &frameCounters)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getStats(_, getStatsRequestMatcher(kSessionId, kVideoSourceId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getFrameCountersResponse(frameCounters)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getFrameCounters(const VideoFrameCounters &expectedFrameCounters)
+{
+    VideoFrameCounters frameCounters;
+    EXPECT_TRUE(m_mediaPipeline->getFrameCounters(kVideoSourceId, frameCounters));
+    EXPECT_EQ(frameCounters.renderedFrames, expectedFrameCounters.renderedFrames);
+    EXPECT_EQ(frameCounters.droppedFrames, expectedFrameCounters.droppedFrames);
+    EXPECT_EQ(frameCounters.corruptedFrames, expectedFrameCounters.corruptedFrames);
+}
+
+void MediaPipelineTestMethods::shouldSetMetricSubscription(const std::vector<MetricType> &types)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setMetricSubscription(_, setMetricSubscriptionRequestMatcher(kSessionId, types), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setMetricSubscription(const std::vector<MetricType> &types)
+{
+    EXPECT_TRUE(m_mediaPipeline->setMetricSubscription(types));
+}
+
+void MediaPipelineTestMethods::shouldNotifyMetric(const MetricEvent &metric, uint32_t missedCount)
+{
+    testing::InSequence sequence;
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyEventsMissed(missedCount));
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyMetric(_))
+        .WillOnce(Invoke(
+            [this, metric](const MetricEvent &notified)
+            {
+                EXPECT_EQ(notified.type, metric.type);
+                EXPECT_EQ(notified.phase, metric.phase);
+                EXPECT_EQ(notified.sourceId, metric.sourceId);
+                EXPECT_EQ(notified.presentationTimeStampNs, metric.presentationTimeStampNs);
+                EXPECT_EQ(notified.count, metric.count);
+                EXPECT_EQ(notified.durationNs, metric.durationNs);
+                EXPECT_EQ(notified.observedAtMonotonicNs, metric.observedAtMonotonicNs);
+                EXPECT_EQ(notified.observedAtUnixNs, metric.observedAtUnixNs);
+                notifyEvent();
+            }));
+}
+
+void MediaPipelineTestMethods::sendNotifyMetric(const MetricEvent &metric, uint32_t missedCount)
+{
+    getServerStub()->notifyMediaMetricBatchEvent(kSessionId, metric, missedCount);
+    waitEvent();
+}
+
 void MediaPipelineTestMethods::shouldFlush()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock, flush(_, flushRequestMatcher(kSessionId, kAudioSourceId, kResetTime), _, _))

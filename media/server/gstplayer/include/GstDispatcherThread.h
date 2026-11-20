@@ -68,6 +68,12 @@ private:
     static gboolean onBusMessage(GstBus *bus, GstMessage *message, gpointer userData);
 
     /**
+     * @brief Bus sync handler. Takes media metric messages when they are posted, so that the bus flush at the
+     *        NULL state cannot drop final episode resolutions posted during stop().
+     */
+    static GstBusSyncReply onBusSyncMessage(GstBus *bus, GstMessage *message, gpointer userData);
+
+    /**
      * @brief Idle-source callback that quits the main loop. Scheduling the quit this way, rather than
      *        calling gMainLoopQuit directly from the destructor, guarantees it only runs once the loop
      *        has actually started (idle sources dispatch strictly from within a running loop), so a
@@ -105,6 +111,11 @@ private:
      * @brief The pipeline being watched, used to identify pipeline-scoped messages.
      */
     GstElement *m_pipeline;
+
+    /**
+     * @brief The pipeline bus, while the sync handler is installed.
+     */
+    GstBus *m_bus{nullptr};
 
     /**
      * @brief Thread for handling gst bus callbacks

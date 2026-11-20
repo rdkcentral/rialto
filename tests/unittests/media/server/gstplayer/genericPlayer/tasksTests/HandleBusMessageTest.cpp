@@ -28,6 +28,7 @@
 #include "Matchers.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
+#include <optional>
 
 using testing::_;
 using testing::DoAll;
@@ -39,6 +40,47 @@ using testing::StrictMock;
 namespace
 {
 constexpr bool kNoFlushOngoing{false};
+
+constexpr guint kVideoFrameDrop{1};
+constexpr guint kVideoDecodeError{3};
+constexpr guint kVideoFrameRepeat{5};
+constexpr guint kAudioGap{6};
+constexpr guint kBufferUnderflow{7};
+constexpr guint kOccurrence{1};
+constexpr guint kStarted{2};
+constexpr guint kResolved{3};
+
+GstMessage *createMediaMetricMessage(GstObject *source, guint metric, guint observationKind)
+{
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, metric,
+                                                "observation-kind", G_TYPE_UINT, observationKind, nullptr);
+    return gst_message_new_element(source, structure);
+}
+
+GstMessage *createMediaMetricMessage(GstObject *source, guint metric, guint observationKind, gint64 ptsNs)
+{
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, metric,
+                                                "observation-kind", G_TYPE_UINT, observationKind, "pts-ns",
+                                                G_TYPE_INT64, ptsNs, "unknown-field", G_TYPE_UINT, 7u, nullptr);
+    return gst_message_new_element(source, structure);
+}
+
+GstMessage *createResolvedMessage(GstObject *source, guint metric, std::optional<guint64> durationNs,
+                                  std::optional<guint64> count)
+{
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, metric,
+                                                "observation-kind", G_TYPE_UINT, kResolved, "pts-ns", G_TYPE_INT64,
+                                                static_cast<gint64>(0), nullptr);
+    if (durationNs)
+    {
+        gst_structure_set(structure, "duration-ns", G_TYPE_UINT64, *durationNs, nullptr);
+    }
+    if (count)
+    {
+        gst_structure_set(structure, "count", G_TYPE_UINT64, *count, nullptr);
+    }
+    return gst_message_new_element(source, structure);
+}
 } // namespace
 
 MATCHER_P2(QosInfoMatcher, expectedProcessed, expectedSropped, "")
@@ -976,4 +1018,172 @@ TEST_F(HandleBusMessageTest, shouldHandleApplicationMessageForAudioOutputProtect
 
     gst_message_unref(message);
     g_object_unref(decryptor);
+}
+
+class HandleBusMessageMediaMetricTest : public HandleBusMessageTest
+{
+protected:
+    GstObject *m_producer{GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr))};
+
+    ~HandleBusMessageMediaMetricTest() override { g_object_unref(m_producer); }
+
+    void handle(GstMessage *message, const char *klass = nullptr)
+    {
+        EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+        EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+        EXPECT_CALL(*m_gstWrapper,
+                    gstStructureHasName(gst_message_get_structure(message), StrEq("media-pipeline-metric")))
+            .WillOnce(Return(true));
+        if (klass)
+        {
+            EXPECT_CALL(*m_gstWrapper, gstElementClassGetMetadata(_, StrEq(GST_ELEMENT_METADATA_KLASS)))
+                .WillOnce(Return(klass));
+        }
+        EXPECT_CALL(*m_gstWrapper, gstMessageUnref(message));
+
+        firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                        &m_gstPlayerClient, m_gstWrapper,
+                                                                        m_glibWrapper,      message,
+                                                                        m_flushWatcherMock};
+        task.execute();
+        gst_message_unref(message);
+    }
+};
+
+/**
+ * Test HandleBusMessage forwards one occurrence per message with its PTS and both observed-at clocks.
+ */
+TEST_F(HandleBusMessageMediaMetricTest, shouldForwardOccurrence)
+{
+    EXPECT_CALL(m_gstPlayerClient, notifyMetric(firebolt::rialto::MediaSourceType::VIDEO, _))
+        .Times(2)
+        .WillRepeatedly(testing::Invoke(
+            [](firebolt::rialto::MediaSourceType, const firebolt::rialto::MetricEvent &metric)
+            {
+                EXPECT_EQ(metric.type, firebolt::rialto::MetricType::VIDEO_DECODE_ERROR);
+                EXPECT_EQ(metric.phase, firebolt::rialto::MetricPhase::OCCURRENCE);
+                EXPECT_EQ(metric.presentationTimeStampNs, 0);
+                EXPECT_FALSE(metric.count);
+                EXPECT_FALSE(metric.durationNs);
+                EXPECT_EQ(metric.sourceId, -1);
+                EXPECT_GT(metric.observedAtMonotonicNs, 0u);
+                EXPECT_GT(metric.observedAtUnixNs, 0);
+            }));
+
+    // Zero is a valid PTS; occurrences are never merged
+    handle(createMediaMetricMessage(m_producer, kVideoDecodeError, kOccurrence, 0));
+    handle(createMediaMetricMessage(m_producer, kVideoDecodeError, kOccurrence, 0));
+}
+
+/**
+ * Test HandleBusMessage forwards a metric without the optional pts-ns.
+ */
+TEST_F(HandleBusMessageMediaMetricTest, shouldForwardMetricWithoutPts)
+{
+    EXPECT_CALL(m_gstPlayerClient, notifyMetric(firebolt::rialto::MediaSourceType::VIDEO, _))
+        .WillOnce(testing::Invoke([](firebolt::rialto::MediaSourceType, const firebolt::rialto::MetricEvent &metric)
+                                  { EXPECT_FALSE(metric.presentationTimeStampNs); }));
+    handle(createMediaMetricMessage(m_producer, kVideoFrameDrop, kOccurrence));
+}
+
+/**
+ * Test HandleBusMessage forwards producer duration and count of a resolved repeat episode.
+ */
+TEST_F(HandleBusMessageMediaMetricTest, shouldForwardResolvedRepeatWithProducerDurationAndCount)
+{
+    EXPECT_CALL(m_gstPlayerClient, notifyMetric(firebolt::rialto::MediaSourceType::VIDEO, _))
+        .WillOnce(testing::Invoke(
+            [](firebolt::rialto::MediaSourceType, const firebolt::rialto::MetricEvent &metric)
+            {
+                EXPECT_EQ(metric.type, firebolt::rialto::MetricType::VIDEO_FRAME_REPEAT);
+                EXPECT_EQ(metric.phase, firebolt::rialto::MetricPhase::RESOLVED);
+                EXPECT_EQ(metric.durationNs, 1500u);
+                EXPECT_EQ(metric.count, 3u);
+            }));
+    handle(createResolvedMessage(m_producer, kVideoFrameRepeat, 1500u, 3u));
+}
+
+/**
+ * Test HandleBusMessage attributes an audio gap to the audio source.
+ */
+TEST_F(HandleBusMessageMediaMetricTest, shouldForwardAudioGapStartedForAudio)
+{
+    EXPECT_CALL(m_gstPlayerClient, notifyMetric(firebolt::rialto::MediaSourceType::AUDIO, _));
+    handle(createMediaMetricMessage(m_producer, kAudioGap, kStarted, 100));
+}
+
+/**
+ * Test HandleBusMessage attributes buffer underflow using the class of the producing decoder.
+ */
+TEST_F(HandleBusMessageMediaMetricTest, shouldAttributeBufferUnderflowByProducerClass)
+{
+    EXPECT_CALL(m_gstPlayerClient, notifyMetric(firebolt::rialto::MediaSourceType::AUDIO, _));
+    handle(createMediaMetricMessage(m_producer, kBufferUnderflow, kStarted, 100), "Codec/Decoder/Audio");
+
+    EXPECT_CALL(m_gstPlayerClient, notifyMetric(firebolt::rialto::MediaSourceType::VIDEO, _))
+        .WillOnce(testing::Invoke([](firebolt::rialto::MediaSourceType, const firebolt::rialto::MetricEvent &metric)
+                                  { EXPECT_FALSE(metric.count); }));
+    handle(createResolvedMessage(m_producer, kBufferUnderflow, 10u, std::nullopt), "Codec/Decoder/Video");
+}
+
+/**
+ * Test HandleBusMessage rejects buffer underflow from an element that is neither audio nor video.
+ */
+TEST_F(HandleBusMessageMediaMetricTest, shouldRejectBufferUnderflowFromUnknownElement)
+{
+    handle(createMediaMetricMessage(m_producer, kBufferUnderflow, kStarted, 100), "Generic/Bin");
+}
+
+/**
+ * Test HandleBusMessage rejects unknown metric and observation-kind values.
+ */
+TEST_F(HandleBusMessageMediaMetricTest, shouldRejectUnknownValues)
+{
+    handle(createMediaMetricMessage(m_producer, 0, kOccurrence, 100));
+    handle(createMediaMetricMessage(m_producer, 8, kOccurrence, 100));
+    handle(createMediaMetricMessage(m_producer, kVideoFrameDrop, 0, 100));
+    handle(createMediaMetricMessage(m_producer, kVideoFrameDrop, 4, 100));
+}
+
+/**
+ * Test HandleBusMessage rejects invalid shapes.
+ */
+TEST_F(HandleBusMessageMediaMetricTest, shouldRejectInvalidShapes)
+{
+    // Occurrence type with an episode kind, episode type with occurrence kind
+    handle(createMediaMetricMessage(m_producer, kVideoFrameDrop, kStarted, 100));
+    handle(createMediaMetricMessage(m_producer, kAudioGap, kOccurrence, 100));
+    // Resolved without duration-ns, repeat without count or with zero count
+    handle(createResolvedMessage(m_producer, kBufferUnderflow, std::nullopt, std::nullopt));
+    handle(createResolvedMessage(m_producer, kVideoFrameRepeat, 10u, std::nullopt));
+    handle(createResolvedMessage(m_producer, kVideoFrameRepeat, 10u, 0u));
+}
+
+/**
+ * Test HandleBusMessage rejects a metric with a wrongly typed field.
+ */
+TEST_F(HandleBusMessageMediaMetricTest, shouldRejectWronglyTypedField)
+{
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_STRING, "1",
+                                                "observation-kind", G_TYPE_UINT, kOccurrence, nullptr);
+    handle(gst_message_new_element(m_producer, structure));
+}
+
+/**
+ * Test HandleBusMessage ignores other element messages.
+ */
+TEST_F(HandleBusMessageMediaMetricTest, shouldIgnoreOtherElementMessages)
+{
+    GstMessage *message = gst_message_new_element(m_producer, gst_structure_new_empty("other-message"));
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(*m_gstWrapper, gstStructureHasName(_, StrEq("media-pipeline-metric"))).WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapper, gstMessageUnref(message));
+
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      message,
+                                                                    m_flushWatcherMock};
+    task.execute();
+    gst_message_unref(message);
 }

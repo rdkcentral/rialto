@@ -47,6 +47,7 @@ public:
     void sendStateChanged(GstState oldState, GstState newState, GstState pendingState, bool handleParseCall = false);
     void sendEos();
     void sendQos(GstElement *src);
+    void sendMediaMetric(GstElement *src, GstStructure *structure);
     void sendWarning(GstElement *src, GError *error, const gchar *debug);
 
 private:
@@ -64,6 +65,8 @@ private:
     std::mutex m_mutex;
     std::condition_variable m_cv;
     GSourceFunc m_busWatchFunc{nullptr};
+    GstBusSyncHandler m_syncHandler{nullptr};
+    gpointer m_syncHandlerUserData{nullptr};
     gpointer m_busWatchUserData{nullptr};
     GSourceFunc m_quitFunc{nullptr};
     gpointer m_quitUserData{nullptr};

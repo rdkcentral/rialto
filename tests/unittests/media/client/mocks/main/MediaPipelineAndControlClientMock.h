@@ -25,6 +25,7 @@
 #include <string>
 
 #include "MediaPipeline.h"
+#include <vector>
 
 namespace firebolt::rialto::client
 {
@@ -54,6 +55,8 @@ public:
     MOCK_METHOD(bool, setReportDecodeErrors, (int32_t sourceId, bool reportDecodeErrors), (override));
     MOCK_METHOD(bool, getQueuedFrames, (int32_t sourceId, uint32_t &queuedFrames), (override));
     MOCK_METHOD(bool, getStats, (int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames), (override));
+    MOCK_METHOD(bool, getFrameCounters, (int32_t sourceId, VideoFrameCounters &out), (const, override));
+    MOCK_METHOD(bool, setMetricSubscription, (const std::vector<MetricType> &types), (override));
 
     MOCK_METHOD(bool, setVideoWindow, (uint32_t x, uint32_t y, uint32_t width, uint32_t height), (override));
 

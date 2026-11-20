@@ -347,6 +347,33 @@ bool MediaPipelineService::getStats(int sessionId, int32_t sourceId, uint64_t &r
     return mediaPipelineIter->second->getStats(sourceId, renderedFrames, droppedFrames);
 }
 
+bool MediaPipelineService::getFrameCounters(int sessionId, int32_t sourceId, VideoFrameCounters &frameCounters)
+{
+    RIALTO_SERVER_LOG_DEBUG("MediaPipelineService requested to get frame counters, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->getFrameCounters(sourceId, frameCounters);
+}
+
+bool MediaPipelineService::setMetricSubscription(int sessionId, const std::vector<MetricType> &types)
+{
+    RIALTO_SERVER_LOG_DEBUG("MediaPipelineService requested to set metric subscription, session id: %d", sessionId);
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setMetricSubscription(types);
+}
+
 bool MediaPipelineService::setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
                                           std::uint32_t height)
 {

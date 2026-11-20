@@ -88,6 +88,20 @@ public:
     virtual void notifyQos(int32_t sourceId, const QosInfo &qosInfo) = 0;
 
     /**
+     * @brief Handler for a media metric notification from the server.
+     *
+     * @param[in] metric : The metric observation.
+     */
+    virtual void notifyMetric(const MetricEvent &metric) = 0;
+
+    /**
+     * @brief Handler for lost media metric notifications reported by the server.
+     *
+     * @param[in] count : The number of lost notifications.
+     */
+    virtual void notifyEventsMissed(uint32_t count) = 0;
+
+    /**
      * @brief Notifies the client that buffer underflow occurred.
      *
      * Notification shall be sent whenever a video/audio buffer underflow occurs

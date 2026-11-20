@@ -350,3 +350,61 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyFirstFrameReceivedFailureSou
 
     m_gstPlayerCallback->notifyFirstFrameReceived(mediaSourceType);
 }
+
+/**
+ * Test a subscribed media metric is delivered with the id of the attached source.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetric)
+{
+    int sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_TRUE(m_mediaPipeline->setMetricSubscription({MetricType::VIDEO_FRAME_DROP}));
+
+    MetricEvent metric;
+    metric.type = MetricType::VIDEO_FRAME_DROP;
+    metric.phase = MetricPhase::OCCURRENCE;
+    metric.observedAtMonotonicNs = 5;
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyMetric(_))
+        .WillOnce(Invoke(
+            [&](const MetricEvent &notified)
+            {
+                EXPECT_EQ(notified.type, MetricType::VIDEO_FRAME_DROP);
+                EXPECT_EQ(notified.sourceId, sourceId);
+                EXPECT_EQ(notified.observedAtMonotonicNs, 5u);
+            }));
+    m_gstPlayerCallback->notifyMetric(MediaSourceType::VIDEO, metric);
+}
+
+/**
+ * Test an unsubscribed media metric is not delivered.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricIsFilteredWithoutSubscription)
+{
+    attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    MetricEvent metric;
+    m_gstPlayerCallback->notifyMetric(MediaSourceType::VIDEO, metric);
+}
+
+/**
+ * Test a media metric is not delivered when its source is not attached.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricFailsWhenSourceNotAttached)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_TRUE(m_mediaPipeline->setMetricSubscription({MetricType::AUDIO_GAP}));
+    mainThreadWillEnqueueTask();
+    MetricEvent metric;
+    metric.type = MetricType::AUDIO_GAP;
+    metric.phase = MetricPhase::STARTED;
+    m_gstPlayerCallback->notifyMetric(MediaSourceType::AUDIO, metric);
+}
+
+/**
+ * Test the subscription is rejected for duplicate types.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, setMetricSubscriptionRejectsDuplicateTypes)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_FALSE(m_mediaPipeline->setMetricSubscription({MetricType::AUDIO_GAP, MetricType::AUDIO_GAP}));
+}

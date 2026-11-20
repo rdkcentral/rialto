@@ -33,6 +33,7 @@ add_gtests (
 
         heartbeatProcedure/HeartbeatProcedureTests.cpp
 
+        mediaMetricsQueue/MediaMetricsQueueTest.cpp
         mediaPipeline/base/MediaPipelineTestBase.cpp
         mediaPipeline/CreateTest.cpp
         mediaPipeline/LoadTest.cpp

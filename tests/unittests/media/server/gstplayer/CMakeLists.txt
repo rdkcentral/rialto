@@ -117,6 +117,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     #ProtectionMetadata unittests
     dispatcherThread/GstDispatcherThreadTest.cpp
 
+
     #WorkerThread unittests
     workerThread/WorkerThreadTest.cpp
 

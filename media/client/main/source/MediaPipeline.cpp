@@ -18,6 +18,7 @@
  */
 
 #include <inttypes.h>
+#include <set>
 #include <stdexcept>
 #include <stdint.h>
 
@@ -339,6 +340,39 @@ bool MediaPipeline::getImmediateOutput(int32_t sourceId, bool &immediateOutput)
 bool MediaPipeline::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
 {
     return m_mediaPipelineIpc->getStats(sourceId, renderedFrames, droppedFrames);
+}
+
+bool MediaPipeline::getFrameCounters(int32_t sourceId, VideoFrameCounters &out) const
+{
+    VideoFrameCounters counters;
+    if (!m_mediaPipelineIpc->getFrameCounters(sourceId, counters))
+    {
+        return false;
+    }
+    out.renderedFrames = counters.renderedFrames;
+    out.droppedFrames = counters.droppedFrames;
+    out.corruptedFrames = counters.corruptedFrames;
+    return true;
+}
+
+bool MediaPipeline::setMetricSubscription(const std::vector<MetricType> &types)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    std::set<MetricType> uniqueTypes;
+    for (const auto &type : types)
+    {
+        if (static_cast<uint32_t>(type) > static_cast<uint32_t>(MetricType::BUFFER_UNDERFLOW))
+        {
+            RIALTO_CLIENT_LOG_ERROR("Unknown metric type %u", static_cast<uint32_t>(type));
+            return false;
+        }
+        if (!uniqueTypes.insert(type).second)
+        {
+            RIALTO_CLIENT_LOG_ERROR("Duplicate metric type %u", static_cast<uint32_t>(type));
+            return false;
+        }
+    }
+    return m_mediaPipelineIpc->setMetricSubscription(types);
 }
 
 bool MediaPipeline::handleSetPosition(int64_t position)
@@ -886,6 +920,25 @@ void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
     if (client)
     {
         client->notifyQos(sourceId, qosInfo);
+    }
+}
+
+void MediaPipeline::notifyMetric(const MetricEvent &metric)
+{
+    std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
+    if (client)
+    {
+        client->notifyMetric(metric);
+    }
+}
+
+void MediaPipeline::notifyEventsMissed(uint32_t count)
+{
+    RIALTO_CLIENT_LOG_WARN("%u media metric notifications were missed", count);
+    std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
+    if (client)
+    {
+        client->notifyEventsMissed(count);
     }
 }
 

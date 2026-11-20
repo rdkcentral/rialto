@@ -285,8 +285,10 @@ public:
             .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
         EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_secondaryPipeline)))
             .WillOnce(Return(&m_secondaryBus));
-        EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_secondaryBus, nullptr, nullptr, nullptr));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_secondaryBus));
+        // Removed by the dispatcher and by the player teardown
+        EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_secondaryBus, nullptr, nullptr, nullptr))
+            .Times(testing::AtLeast(1));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_secondaryBus)).RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_secondaryPipeline)).Times(testing::Between(1, 2));
         EXPECT_CALL(*m_glibWrapperMock, gThreadPoolStopUnusedThreads()).Times(testing::Between(1, 2));
     }

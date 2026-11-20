@@ -28,6 +28,7 @@
 #include <string>
 
 #include "mediapipelinemodule.pb.h"
+#include <vector>
 
 namespace firebolt::rialto::client
 {
@@ -100,6 +101,10 @@ public:
     bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override;
 
     bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
+
+    bool getFrameCounters(int32_t sourceId, VideoFrameCounters &out) override;
+
+    bool setMetricSubscription(const std::vector<MetricType> &types) override;
 
     bool setPlaybackRate(double rate) override;
 
@@ -211,6 +216,13 @@ private:
      * @param[in] event : The qos event structure.
      */
     void onQos(const std::shared_ptr<firebolt::rialto::QosEvent> &event);
+
+    /**
+     * @brief Handler for a media metric batch from the server.
+     *
+     * @param[in] event : The media metric batch event structure.
+     */
+    void onMediaMetricBatch(const std::shared_ptr<firebolt::rialto::MediaMetricBatchEvent> &event);
 
     /**
      * @brief Handler for a buffer underflow notification from the server.

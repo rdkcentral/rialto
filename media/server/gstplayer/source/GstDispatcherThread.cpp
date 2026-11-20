@@ -26,6 +26,8 @@ namespace
 constexpr GstMessageType kHandledMessageTypes =
     static_cast<GstMessageType>(GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_QOS | GST_MESSAGE_EOS | GST_MESSAGE_ERROR |
                                 GST_MESSAGE_WARNING | GST_MESSAGE_APPLICATION);
+
+constexpr const char *kMediaMetricMessageName{"media-pipeline-metric"};
 } // namespace
 
 namespace firebolt::rialto::server
@@ -64,7 +66,8 @@ GstDispatcherThread::GstDispatcherThread(IGstDispatcherThreadClient &client, Gst
                                       this, nullptr);
     m_glibWrapper->gSourceAttach(busSource, m_mainContext);
     m_glibWrapper->gSourceUnref(busSource);
-    m_gstWrapper->gstObjectUnref(bus);
+    m_gstWrapper->gstBusSetSyncHandler(bus, &GstDispatcherThread::onBusSyncMessage, this, nullptr);
+    m_bus = bus;
 
     m_gstBusDispatcherThread = std::thread(&GstDispatcherThread::gstBusEventHandler, this);
 }
@@ -73,6 +76,11 @@ GstDispatcherThread::~GstDispatcherThread()
 {
     RIALTO_SERVER_LOG_INFO("Stopping GstDispatcherThread");
     m_isGstreamerDispatcherActive = false;
+    if (m_bus)
+    {
+        m_gstWrapper->gstBusSetSyncHandler(m_bus, nullptr, nullptr, nullptr);
+        m_gstWrapper->gstObjectUnref(m_bus);
+    }
     if (m_mainLoop)
     {
         // Schedule the quit as an idle source on the private context rather than calling gMainLoopQuit
@@ -99,6 +107,21 @@ gboolean GstDispatcherThread::onBusMessage(GstBus * /*bus*/, GstMessage *message
 {
     static_cast<GstDispatcherThread *>(userData)->handleMessage(message);
     return G_SOURCE_CONTINUE;
+}
+
+GstBusSyncReply GstDispatcherThread::onBusSyncMessage(GstBus * /*bus*/, GstMessage *message, gpointer userData)
+{
+    auto *self = static_cast<GstDispatcherThread *>(userData);
+    if (GST_MESSAGE_ELEMENT == GST_MESSAGE_TYPE(message))
+    {
+        const GstStructure *structure = gst_message_get_structure(message);
+        if (structure && self->m_gstWrapper->gstStructureHasName(structure, kMediaMetricMessageName))
+        {
+            self->m_client.handleBusMessage(self->m_gstWrapper->gstMessageRef(message));
+            return GST_BUS_DROP;
+        }
+    }
+    return GST_BUS_PASS;
 }
 
 gboolean GstDispatcherThread::onQuitRequested(gpointer userData)
@@ -128,6 +151,7 @@ void GstDispatcherThread::handleMessage(GstMessage *message)
         return;
     }
     // The bus watch delivers every message; only these types were previously popped from the bus at all.
+    // Media metric element messages are taken by the sync handler.
     if (!(GST_MESSAGE_TYPE(message) & kHandledMessageTypes))
     {
         return;

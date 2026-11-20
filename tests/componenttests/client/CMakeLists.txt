@@ -59,6 +59,7 @@ add_gtests (
         tests/mse/PlaybackErrorNotificationTest.cpp
         tests/mse/PositionUpdatesTest.cpp
         tests/mse/ProcessAudioGapTest.cpp
+        tests/mse/PlaybackMetricsTest.cpp
         tests/mse/QosNotificationTest.cpp
         tests/mse/RemoveAudioPlaybackTest.cpp
         tests/mse/RenderFrameTest.cpp

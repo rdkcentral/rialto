@@ -287,7 +287,8 @@ void WebAudioTestMethods::willCreateWebAudioPlayer()
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_NULL))
         .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
 
-    EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr));
+    // Removed by the dispatcher and by the player teardown
+    EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr)).Times(testing::AtLeast(1));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pipeline));
 }
 

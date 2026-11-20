@@ -20,6 +20,8 @@
 #include "MediaPipelineStructureMatchers.h"
 #include "MediaPipelineTestBase.h"
 
+using ::testing::Ref;
+
 class RialtoClientMediaPipelineCallbackTest : public MediaPipelineTestBase
 {
 protected:
@@ -122,4 +124,20 @@ TEST_F(RialtoClientMediaPipelineCallbackTest, PlaybackInfo)
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackInfo(playbackInfoMatcher(playbackInfo)));
 
     m_mediaPipelineCallback->notifyPlaybackInfo(playbackInfo);
+}
+
+/**
+ * Test media metric notifications are forwarded to the registered client.
+ */
+TEST_F(RialtoClientMediaPipelineCallbackTest, NotifyMetric)
+{
+    MetricEvent metric;
+    metric.type = MetricType::VIDEO_DECODE_ERROR;
+    metric.sourceId = 1;
+
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyMetric(Ref(metric)));
+    m_mediaPipelineCallback->notifyMetric(metric);
+
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyEventsMissed(3));
+    m_mediaPipelineCallback->notifyEventsMissed(3);
 }
