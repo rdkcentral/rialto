@@ -373,6 +373,9 @@ GstGenericPlayer::~GstGenericPlayer()
         RIALTO_SERVER_LOG_ERROR("Unknown exception during resetWorkerThread in destructor");
     }
 
+    stopNotifyPlaybackInfoTimer();
+    stopPlaybackInfoThread();
+
     try
     {
         termPipeline();
@@ -2763,9 +2766,59 @@ void GstGenericPlayer::startNotifyPlaybackInfoTimer()
 
     notifyPlaybackInfo();
 
-    const auto kNotifyPlaybackInfo = [this]() { notifyPlaybackInfo(); };
+    {
+        std::lock_guard<std::mutex> lock{m_playbackInfoThreadMutex};
+        if (!m_playbackInfoThread)
+        {
+            auto eventThreadFactory = firebolt::rialto::common::IEventThreadFactory::createFactory();
+            if (eventThreadFactory)
+            {
+                m_playbackInfoThread = eventThreadFactory->createEventThread("RialtoPlaybackInfo");
+            }
+        }
+    }
+
+    const auto kNotifyPlaybackInfo = [this]() { schedulePlaybackInfo(); };
     m_playbackInfoTimer = m_timerFactory->createTimer(kPlaybackInfoTimerMs, kNotifyPlaybackInfo,
                                                       firebolt::rialto::common::TimerType::PERIODIC);
+}
+
+void GstGenericPlayer::schedulePlaybackInfo()
+{
+    std::lock_guard<std::mutex> lock{m_playbackInfoThreadMutex};
+    if (!m_playbackInfoThread)
+    {
+        return;
+    }
+    if (m_playbackInfoPending.exchange(true))
+    {
+        // Rate limited: this runs on the shared timer thread
+        const auto skipped = ++m_playbackInfoSkipped;
+        if (skipped == 1 || skipped % 100 == 0)
+        {
+            RIALTO_SERVER_LOG_INFO("Playback info update still pending, skipped %llu timer ticks so far", skipped);
+        }
+        return;
+    }
+    m_playbackInfoThread->add(
+        [this]()
+        {
+            notifyPlaybackInfo();
+            m_playbackInfoPending = false;
+        });
+}
+
+void GstGenericPlayer::stopPlaybackInfoThread()
+{
+    std::unique_ptr<firebolt::rialto::common::IEventThread> playbackInfoThread;
+    {
+        std::lock_guard<std::mutex> lock{m_playbackInfoThreadMutex};
+        playbackInfoThread = std::move(m_playbackInfoThread);
+    }
+    if (playbackInfoThread)
+    {
+        playbackInfoThread->flush();
+    }
 }
 
 void GstGenericPlayer::stopNotifyPlaybackInfoTimer()

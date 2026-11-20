@@ -18,6 +18,8 @@
  */
 
 #include <algorithm>
+#include <atomic>
+#include <chrono>
 #include <stdexcept>
 
 #include "ActiveRequests.h"
@@ -32,6 +34,11 @@
 
 namespace
 {
+[[maybe_unused]] long long elapsedMicroseconds(const std::chrono::steady_clock::time_point &start)
+{
+    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count();
+}
+
 const char *toString(const firebolt::rialto::MediaSourceStatus &status)
 {
     switch (status)
@@ -1511,8 +1518,11 @@ bool MediaPipelineServerInternal::notifyNeedMediaData(MediaSourceType mediaSourc
 
 bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType mediaSourceType)
 {
+    [[maybe_unused]] const auto prepareStartedAt = std::chrono::steady_clock::now();
     m_needMediaDataTimers.erase(mediaSourceType);
+    const auto clearStartedAt = std::chrono::steady_clock::now();
     m_shmBuffer->clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
+    [[maybe_unused]] const auto clearUs = elapsedMicroseconds(clearStartedAt);
     const auto kSourceIter = m_attachedSources.find(mediaSourceType);
 
     if (m_attachedSources.cend() == kSourceIter)
@@ -1527,9 +1537,19 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType me
         RIALTO_SERVER_LOG_INFO("EOS, NeedMediaData not needed for %s", common::convertMediaSourceType(mediaSourceType));
         return false;
     }
+    const auto buildStartedAt = std::chrono::steady_clock::now();
     NeedMediaData event{m_mediaPipelineClient, *m_activeRequests,   *m_shmBuffer,          m_sessionId,
                         mediaSourceType,       kSourceIter->second, m_currentPlaybackState};
-    if (!event.send())
+    [[maybe_unused]] const auto buildUs = elapsedMicroseconds(buildStartedAt);
+    const auto sendStartedAt = std::chrono::steady_clock::now();
+    const bool sent = event.send();
+    [[maybe_unused]] const auto sendUs = elapsedMicroseconds(sendStartedAt);
+    RIALTO_SERVER_LOG_DEBUG(
+        "NMD_TIMER stage=request_complete session=%d source=%s clear_us=%lld build_us=%lld send_us=%lld "
+        "prepare_us=%lld sent=%d",
+        m_sessionId, common::convertMediaSourceType(mediaSourceType), clearUs, buildUs, sendUs,
+        elapsedMicroseconds(prepareStartedAt), sent);
+    if (!sent)
     {
         RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed for %s",
                                common::convertMediaSourceType(mediaSourceType));
@@ -1758,22 +1778,63 @@ void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType me
     auto timer = m_needMediaDataTimers.find(mediaSourceType);
     if (m_needMediaDataTimers.end() != timer && timer->second && timer->second->isActive())
     {
+        RIALTO_SERVER_LOG_DEBUG("NMD_TIMER stage=skip_active session=%d source=%s timer=%p", m_sessionId,
+                               common::convertMediaSourceType(mediaSourceType),
+                               static_cast<void *>(timer->second.get()));
         RIALTO_SERVER_LOG_DEBUG("Skip scheduling need media data for %s - it is already scheduled",
                                 common::convertMediaSourceType(mediaSourceType));
         return;
     }
 
+    static std::atomic<unsigned long long> nextRetryId{0};
+    const auto retryId = nextRetryId.fetch_add(1, std::memory_order_relaxed) + 1;
+    const auto timeout = getNeedMediaDataTimeout(mediaSourceType);
+    const auto scheduledAt = std::chrono::steady_clock::now();
+    RIALTO_SERVER_LOG_DEBUG(
+        "NMD_TIMER stage=schedule session=%d source=%s retry=%llu timeout_ms=%lld mono_us=%lld",
+        m_sessionId, common::convertMediaSourceType(mediaSourceType), retryId,
+        static_cast<long long>(timeout.count()),
+        static_cast<long long>(std::chrono::duration_cast<std::chrono::microseconds>(
+                                   scheduledAt.time_since_epoch()).count()));
     m_needMediaDataTimers[mediaSourceType] =
         m_timerFactory
-            ->createTimer(getNeedMediaDataTimeout(mediaSourceType),
-                          [this, mediaSourceType]()
+            ->createTimer(timeout,
+                          [this, mediaSourceType, retryId, scheduledAt]()
                           {
+                              const auto callbackAt = std::chrono::steady_clock::now();
+                              RIALTO_SERVER_LOG_DEBUG(
+                                  "NMD_TIMER stage=timer_callback session=%d source=%s retry=%llu elapsed_us=%lld",
+                                  m_sessionId, common::convertMediaSourceType(mediaSourceType), retryId,
+                                  elapsedMicroseconds(scheduledAt));
+                              const auto dispatchAt = std::chrono::steady_clock::now();
                               m_mainThread
                                   ->enqueueTask(m_mainThreadClientId,
-                                                [this, mediaSourceType]()
+                                                [this, mediaSourceType, retryId, scheduledAt, callbackAt, dispatchAt]()
                                                 {
+                                                    [[maybe_unused]] const auto dispatchUs =
+                                                        elapsedMicroseconds(dispatchAt);
+                                                    RIALTO_SERVER_LOG_DEBUG(
+                                                        "NMD_TIMER stage=task_begin session=%d source=%s "
+                                                        "retry=%llu dispatch_us=%lld",
+                                                        m_sessionId, common::convertMediaSourceType(mediaSourceType),
+                                                        retryId, dispatchUs);
+                                                    const auto cleanupAt = std::chrono::steady_clock::now();
                                                     m_needMediaDataTimers.erase(mediaSourceType);
-                                                    if (!notifyNeedMediaDataInternal(mediaSourceType))
+                                                    [[maybe_unused]] const auto cleanupUs =
+                                                        elapsedMicroseconds(cleanupAt);
+                                                    const auto requestAt = std::chrono::steady_clock::now();
+                                                    const bool sent = notifyNeedMediaDataInternal(mediaSourceType);
+                                                    [[maybe_unused]] const auto requestUs =
+                                                        elapsedMicroseconds(requestAt);
+                                                    RIALTO_SERVER_LOG_DEBUG(
+                                                        "NMD_TIMER stage=retry_complete session=%d source=%s "
+                                                        "retry=%llu dispatch_us=%lld cleanup_us=%lld request_us=%lld "
+                                                        "callback_to_done_us=%lld total_us=%lld sent=%d",
+                                                        m_sessionId, common::convertMediaSourceType(mediaSourceType),
+                                                        retryId, dispatchUs, cleanupUs, requestUs,
+                                                        elapsedMicroseconds(callbackAt),
+                                                        elapsedMicroseconds(scheduledAt), sent);
+                                                    if (!sent)
                                                     {
                                                         RIALTO_SERVER_LOG_WARN("Scheduled Need media data sending "
                                                                                "failed for: %s. Scheduling again...",
@@ -1788,16 +1849,24 @@ void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType me
                                                     }
                                                 });
                           });
+    RIALTO_SERVER_LOG_DEBUG("NMD_TIMER stage=timer_created session=%d source=%s retry=%llu timer=%p elapsed_us=%lld",
+                           m_sessionId, common::convertMediaSourceType(mediaSourceType), retryId,
+                           static_cast<void *>(m_needMediaDataTimers[mediaSourceType].get()),
+                           elapsedMicroseconds(scheduledAt));
 }
 
 std::chrono::milliseconds MediaPipelineServerInternal::getNeedMediaDataTimeout(MediaSourceType mediaSourceType)
 {
     constexpr std::chrono::milliseconds kNeedMediaDataResendTimeMsForLowLatency{5};
-    if ((mediaSourceType == MediaSourceType::VIDEO && m_IsLowLatencyVideoPlayer) ||
-        (mediaSourceType == MediaSourceType::AUDIO && m_IsLowLatencyAudioPlayer))
-    {
-        return kNeedMediaDataResendTimeMsForLowLatency;
-    }
-    return m_needDataDelayCalculator.getNeedMediaDataDelay(mediaSourceType);
+    const bool lowLatency = (mediaSourceType == MediaSourceType::VIDEO && m_IsLowLatencyVideoPlayer) ||
+                            (mediaSourceType == MediaSourceType::AUDIO && m_IsLowLatencyAudioPlayer);
+    const auto timeout = lowLatency ? kNeedMediaDataResendTimeMsForLowLatency
+                                   : m_needDataDelayCalculator.getNeedMediaDataDelay(mediaSourceType);
+    RIALTO_SERVER_LOG_DEBUG(
+        "NMD_TIMER stage=timeout_selected session=%d source=%s low_latency_video=%d low_latency_audio=%d "
+        "selected_low_latency=%d timeout_ms=%lld",
+        m_sessionId, common::convertMediaSourceType(mediaSourceType), m_IsLowLatencyVideoPlayer,
+        m_IsLowLatencyAudioPlayer, lowLatency, static_cast<long long>(timeout.count()));
+    return timeout;
 }
 }; // namespace firebolt::rialto::server

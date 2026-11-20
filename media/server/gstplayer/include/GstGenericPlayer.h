@@ -31,6 +31,7 @@
 #include "IGstProtectionMetadataHelperFactory.h"
 #include "IGstSrc.h"
 #include "IGstWrapper.h"
+#include "IEventThread.h"
 #include "ITimer.h"
 #include "IWorkerThread.h"
 #include "tasks/IGenericPlayerTaskFactory.h"
@@ -38,6 +39,7 @@
 #include <IMediaPipeline.h>
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -277,6 +279,17 @@ private:
     void resetWorkerThread();
 
     /**
+     * @brief Runs the pending playback info update and destroys the playback info thread.
+     */
+    void stopPlaybackInfoThread();
+
+    /**
+     * @brief Queues a playback info update on the playback info thread, skipping it if one is already pending.
+     *        Called from the shared timer thread, which must not run the position/volume queries or IPC itself.
+     */
+    void schedulePlaybackInfo();
+
+    /**
      * @brief Whether native audio should be enabled on the current platform.
      */
     bool shouldEnableNativeAudio();
@@ -488,6 +501,26 @@ private:
      * Variable can be used only in worker thread
      */
     std::unique_ptr<firebolt::rialto::common::ITimer> m_playbackInfoTimer{nullptr};
+
+    /**
+     * @brief Set while a playback info update is queued or running on m_playbackInfoThread
+     */
+    std::atomic<bool> m_playbackInfoPending{false};
+
+    /**
+     * @brief Number of playback info timer ticks skipped because the previous update was still pending
+     */
+    std::atomic<unsigned long long> m_playbackInfoSkipped{0};
+
+    /**
+     * @brief Guards m_playbackInfoThread, which is used by the shared timer thread
+     */
+    std::mutex m_playbackInfoThreadMutex;
+
+    /**
+     * @brief Thread running the playback info updates, so the shared timer thread is never blocked by them
+     */
+    std::unique_ptr<firebolt::rialto::common::IEventThread> m_playbackInfoThread;
 
     /**
      * @brief Timer to resync subtitle clock with AV clock
