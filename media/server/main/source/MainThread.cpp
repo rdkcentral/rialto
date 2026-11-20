@@ -89,7 +89,18 @@ void MainThread::mainThreadLoop()
         const std::shared_ptr<TaskInfo> kTaskInfo = waitForTask();
         if (m_registeredClients.find(kTaskInfo->clientId) != m_registeredClients.end())
         {
-            kTaskInfo->task();
+            try
+            {
+                kTaskInfo->task();
+            }
+            catch (const std::exception &e)
+            {
+                RIALTO_SERVER_LOG_ERROR("Exception thrown by task on the main thread: %s", e.what());
+            }
+            catch (...)
+            {
+                RIALTO_SERVER_LOG_ERROR("Unknown exception thrown by task on the main thread");
+            }
         }
         else
         {
