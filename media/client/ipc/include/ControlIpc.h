@@ -100,7 +100,7 @@ private:
     /**
      * @brief The control handle for the current instance.
      */
-    std::atomic<int> m_controlHandle;
+    std::atomic<int> m_controlHandle{-1};
 
     /**
      * @brief Thread for handling media player events from the server.
