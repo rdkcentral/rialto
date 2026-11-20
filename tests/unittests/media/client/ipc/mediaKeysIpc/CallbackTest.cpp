@@ -155,6 +155,42 @@ TEST_F(RialtoClientMediaKeysIpcCallbackTest, NoClientLicenseRenewal)
 }
 
 /**
+ * Test that a license release over IPC is forwarded to the client.
+ */
+TEST_F(RialtoClientMediaKeysIpcCallbackTest, NotifyLicenseRelease)
+{
+    createKeySession();
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRelease(m_kKeySessionId, m_licenseReleaseMessage, ""));
+
+    m_licenseReleaseCb(createLicenseReleaseEvent());
+}
+
+/**
+ * Test that if the session id of the event is not the same as the playback session the event will be ignored.
+ */
+TEST_F(RialtoClientMediaKeysIpcCallbackTest, InvalidHandleLicenseRelease)
+{
+    createKeySession();
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+
+    auto licenseReleaseEvent = createLicenseReleaseEvent();
+    licenseReleaseEvent->set_media_keys_handle(m_mediaKeysHandle + 1);
+    m_licenseReleaseCb(licenseReleaseEvent);
+}
+
+/**
+ * Test that if no client has been registered/key session not created on the media keys object the event will be ignored.
+ */
+TEST_F(RialtoClientMediaKeysIpcCallbackTest, NoClientLicenseRelease)
+{
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+    m_licenseReleaseCb(createLicenseReleaseEvent());
+}
+
+/**
  * Test that a key statuses change over IPC is forwarded to the client.
  */
 TEST_F(RialtoClientMediaKeysIpcCallbackTest, NotifyKeyStatusesChanged)

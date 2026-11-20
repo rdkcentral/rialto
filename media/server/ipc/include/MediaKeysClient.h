@@ -38,6 +38,8 @@ public:
                           const std::string &url) override;
     void onLicenseRenewal(int32_t keySessionId, const std::vector<unsigned char> &licenseRenewalMessage) override;
     void onKeyStatusesChanged(int32_t keySessionId, const KeyStatusVector &keyStatuses) override;
+    void onLicenseRelease(int32_t keySessionId, const std::vector<unsigned char> &licenseReleaseMessage,
+                          const std::string &url) override;
 
 private:
     int m_mediaKeysHandle;

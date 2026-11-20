@@ -40,6 +40,9 @@ public:
     MOCK_METHOD(void, onLicenseRenewal, (int32_t keySessionId, const std::vector<unsigned char> &licenseRenewalMessage),
                 (override));
     MOCK_METHOD(void, onKeyStatusesChanged, (int32_t keySessionId, const KeyStatusVector &keyStatuses), (override));
+    MOCK_METHOD(void, onLicenseRelease,
+                (int32_t keySessionId, const std::vector<unsigned char> &licenseReleaseMessage, const std::string &url),
+                (override));
 };
 } // namespace firebolt::rialto
 

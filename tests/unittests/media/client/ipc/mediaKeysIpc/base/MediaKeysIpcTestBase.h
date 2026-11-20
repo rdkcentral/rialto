@@ -70,17 +70,20 @@ protected:
     int32_t m_kKeySessionId = 456;
     MediaKeyErrorStatus m_errorStatus = MediaKeyErrorStatus::BAD_SESSION_ID;
     std::vector<unsigned char> m_licenseRenewalMessage{'a', 'b', 'c'};
+    std::vector<unsigned char> m_licenseReleaseMessage{'x', 'y', 'z'};
 
     enum class EventTags
     {
         LicenseRequestEvent = 0,
         LicenseRenewalEvent,
+        LicenseReleaseEvent,
         KeyStatusesChangedEvent
     };
 
     // Callbacks
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_licenseRequestCb;
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_licenseRenewalCb;
+    std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_licenseReleaseCb;
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_KeyStatusesChangeCb;
 
     void createMediaKeysIpc();
@@ -89,6 +92,7 @@ protected:
     void expectUnsubscribeEvents();
     void createKeySession();
     std::shared_ptr<firebolt::rialto::LicenseRenewalEvent> createLicenseRenewalEvent();
+    std::shared_ptr<firebolt::rialto::LicenseReleaseEvent> createLicenseReleaseEvent();
 };
 
 #endif // MEDIA_KEYS_IPC_TEST_BASE_H_

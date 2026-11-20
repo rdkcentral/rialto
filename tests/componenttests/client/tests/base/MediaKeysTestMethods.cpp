@@ -39,6 +39,7 @@ constexpr firebolt::rialto::MediaKeyErrorStatus kStatusInterfaceNotImplemented{
 constexpr firebolt::rialto::InitDataType kInitDataTypeCenc{firebolt::rialto::InitDataType::CENC};
 const std::vector<unsigned char> kLicenseRequestMessage{'r', 'e', 'q', 'u', 'e', 's', 't'};
 const std::vector<unsigned char> kLicensRenewalMessage{'r', 'e', 'n', 'e', 'w', 'a', 'l'};
+const std::vector<unsigned char> kLicenseReleaseMessage{'r', 'e', 'l', 'e', 'a', 's', 'e'};
 const std::vector<uint8_t> kLicenseResponse{0x4D, 0x79, 0x4C, 0x69, 0x63, 0x65, 0x6E, 0x73,
                                             0x65, 0x44, 0x61, 0x74, 0x61, 0x3A, 0x20, 0x31};
 const std::vector<uint8_t> kLicenseRenewalResponse{0x1A, 0xB3, 0x7F, 0x8E, 0xD4, 0x60, 0x2F, 0x91,
@@ -365,6 +366,18 @@ void MediaKeysTestMethods::shouldNotifyLicenseRenewal()
 void MediaKeysTestMethods::sendNotifyLicenseRenewal()
 {
     getServerStub()->notifyLicenseRenewal(kMediaKeysHandle, kKeySessionId, kLicensRenewalMessage);
+    waitEvent();
+}
+
+void MediaKeysTestMethods::shouldNotifyLicenseRelease()
+{
+    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRelease(kKeySessionId, kLicenseReleaseMessage, ""))
+        .WillOnce(Invoke(this, &MediaKeysTestMethods::notifyEvent));
+}
+
+void MediaKeysTestMethods::sendNotifyLicenseRelease()
+{
+    getServerStub()->notifyLicenseRelease(kMediaKeysHandle, kKeySessionId, kLicenseReleaseMessage);
     waitEvent();
 }
 

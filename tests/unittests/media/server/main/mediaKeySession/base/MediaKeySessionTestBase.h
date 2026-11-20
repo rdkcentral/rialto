@@ -94,6 +94,7 @@ protected:
     void generateRequest();
     void generateRequestPlayready();
     void generateRequestPlayreadyWithTwoCalls();
+    void removeKeySession();
     void mainThreadWillEnqueueTask();
 };
 

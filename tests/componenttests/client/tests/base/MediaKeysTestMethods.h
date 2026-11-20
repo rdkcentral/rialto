@@ -96,6 +96,7 @@ protected:
     void shouldNotifyLicenseRequest();
     void shouldNotifyKeyStatusesChanged();
     void shouldNotifyLicenseRenewal();
+    void shouldNotifyLicenseRelease();
 
     // MediaKeysCapabilities Expect methods
     void shouldGetSupportedKeySystems();
@@ -156,6 +157,7 @@ protected:
     void sendNotifyLicenseRequest();
     void sendNotifyKeyStatusesChanged();
     void sendNotifyLicenseRenewal();
+    void sendNotifyLicenseRelease();
 
     // Helper methods
     void initaliseWidevineMediaKeySession();

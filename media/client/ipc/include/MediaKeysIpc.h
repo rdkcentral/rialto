@@ -146,6 +146,13 @@ private:
     void onLicenseRenewal(const std::shared_ptr<rialto::LicenseRenewalEvent> &event);
 
     /**
+     * @brief Handler for a license release from the server.
+     *
+     * @param[in] event : The license release event structure.
+     */
+    void onLicenseRelease(const std::shared_ptr<rialto::LicenseReleaseEvent> &event);
+
+    /**
      * @brief Handler for a key statues change from the server.
      *
      * @param[in] event : The key statues change event structure.

@@ -33,6 +33,7 @@ protected:
     const std::string m_kUrl{"http://"};
     const std::vector<unsigned char> m_kLicenseRequestMessage{'d', 'e', 'f'};
     const std::vector<unsigned char> m_kLicenseRenewalMessage{'a', 'b', 'c'};
+    const std::vector<unsigned char> m_kLicenseReleaseMessage{'a', 'b', 'c'};
     KeyStatusVector m_keyStatusVec;
 
     RialtoServerMediaKeySessionCallbacksTest() { createKeySession(kWidevineKeySystem); }
@@ -70,6 +71,18 @@ TEST_F(RialtoServerMediaKeySessionCallbacksTest, ProcessChallengeGenerateRequest
 
     // OcdmSession will be closed on destruction
     expectCloseKeySession(kWidevineKeySystem);
+}
+
+/**
+ * Test that onProcessChallenge after a removeKeySession notifies licenseRelease.
+ */
+TEST_F(RialtoServerMediaKeySessionCallbacksTest, ProcessChallengeRemoveKeySession)
+{
+    removeKeySession();
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRelease(m_kKeySessionId, m_kLicenseReleaseMessage, m_kUrl));
+
+    m_mediaKeySession->onProcessChallenge(m_kUrl.c_str(), &m_kLicenseReleaseMessage[0], m_kLicenseReleaseMessage.size());
 }
 
 /**

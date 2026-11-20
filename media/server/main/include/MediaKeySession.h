@@ -149,6 +149,11 @@ private:
     std::atomic<bool> m_licenseRequested;
 
     /**
+     * @brief Set to true if removeKeySession has been called and waiting for license release indication.
+     */
+    std::atomic<bool> m_licenseRemoved;
+
+    /**
      * @brief Store of the updated key statuses from a onKeyUpdated.
      */
     KeyStatusVector m_updatedKeyStatuses;

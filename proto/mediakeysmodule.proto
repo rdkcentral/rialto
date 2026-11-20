@@ -71,6 +71,22 @@ message LicenseRenewalEvent {
 }
 
 /**
+ * @brief Event to notify that a license has been released.
+ *
+ * @param media_keys_handle       The handle of the media keys.
+ * @param key_session_id          The key session id for the session.
+ * @param license_release_message The license release message blob
+ * @param url                     URL to which the message should be sent or empty string.
+ *
+ */
+message LicenseReleaseEvent {
+    optional int32 media_keys_handle = 1 [default = -1];
+    optional int32 key_session_id = 2 [default = -1];
+    repeated uint32 license_release_message = 3;
+    optional string url = 4;
+}
+
+/**
  * @brief Event to notify that the status of one or more keys in the key session has changed.
  *
  * @param media_keys_handle       The handle of the media keys.

@@ -76,6 +76,16 @@ public:
      * @param[in] keyStatuses   : Vector of key ID/key status pairs
      */
     virtual void onKeyStatusesChanged(int32_t keySessionId, const KeyStatusVector &keyStatuses) = 0;
+
+    /**
+     * @brief Notification that a license has been released
+     *
+     * @param[in] keySessionId  : The idea of the session triggering the callback
+     * @param[in] licenseReleaseMessage : The license release message blob
+     * @param[in] url                   : URL to which the message should be sent or empty string
+     */
+    virtual void onLicenseRelease(int32_t keySessionId, const std::vector<unsigned char> &licenseReleaseMessage,
+                                  const std::string &url) = 0;
 };
 
 }; // namespace firebolt::rialto
