@@ -37,6 +37,71 @@ protected:
     RialtoServerMediaPipelineHaveDataTest() { createMediaPipeline(); }
 
     ~RialtoServerMediaPipelineHaveDataTest() { destroyMediaPipeline(); }
+
+    void haveDataErrorTwiceWithResend(PlaybackState playbackState, const std::chrono::milliseconds &expectedSecondTimeout)
+    {
+        constexpr auto kStatus = firebolt::rialto::MediaSourceStatus::ERROR;
+        constexpr auto kMediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+        constexpr uint32_t kNextNeedDataRequestId{5};
+        std::function<void()> resendCallback;
+        loadGstPlayer();
+
+        std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+            std::make_unique<IMediaPipeline::MediaSourceVideo>("video/h264");
+        mainThreadWillEnqueueTaskAndWait();
+        EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
+        ASSERT_TRUE(m_mediaPipeline->attachSource(mediaSource));
+        const int kSourceId{mediaSource->getId()};
+
+        if (PlaybackState::UNKNOWN != playbackState)
+        {
+            mainThreadWillEnqueueTask();
+            EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(playbackState));
+            m_gstPlayerCallback->notifyPlaybackState(playbackState);
+        }
+
+        mainThreadWillEnqueueTaskAndWait();
+        ASSERT_TRUE(m_activeRequestsMock);
+        EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId)).WillOnce(Return(kMediaSourceType));
+        EXPECT_CALL(*m_activeRequestsMock, getMaxFrames(m_kNeedDataRequestId)).WillOnce(Return(m_kNumFrames));
+        EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
+        EXPECT_CALL(*m_timerMock, isActive()).WillRepeatedly(Return(false));
+        EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kDefaultNeedMediaDataResendTimeout, _, _))
+            .WillOnce(Invoke(
+                [&](const std::chrono::milliseconds &timeout, const std::function<void()> &callback,
+                    firebolt::rialto::common::TimerType timerType)
+                {
+                    resendCallback = callback;
+                    return std::move(m_timerMock);
+                }));
+        EXPECT_TRUE(m_mediaPipeline->haveData(kStatus, m_kNumFrames, m_kNeedDataRequestId));
+        ASSERT_TRUE(resendCallback);
+
+        ASSERT_TRUE(m_sharedMemoryBufferMock);
+        EXPECT_CALL(*m_sharedMemoryBufferMock,
+                    clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, kMediaSourceType))
+            .WillOnce(Return(true));
+        EXPECT_CALL(*m_sharedMemoryBufferMock,
+                    getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, kMediaSourceType))
+            .WillOnce(Return(7 * 1024 * 1024));
+        EXPECT_CALL(*m_sharedMemoryBufferMock,
+                    getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, kMediaSourceType))
+            .WillOnce(Return(0));
+        EXPECT_CALL(*m_activeRequestsMock, insert(kMediaSourceType, _, _)).WillOnce(Return(kNextNeedDataRequestId));
+        EXPECT_CALL(*m_mediaPipelineClientMock, notifyNeedMediaData(kSourceId, _, kNextNeedDataRequestId, _));
+        mainThreadWillEnqueueTask();
+        resendCallback();
+
+        mainThreadWillEnqueueTaskAndWait();
+        EXPECT_CALL(*m_activeRequestsMock, getType(kNextNeedDataRequestId)).WillOnce(Return(kMediaSourceType));
+        EXPECT_CALL(*m_activeRequestsMock, getMaxFrames(kNextNeedDataRequestId)).WillOnce(Return(m_kNumFrames));
+        EXPECT_CALL(*m_activeRequestsMock, erase(kNextNeedDataRequestId));
+        auto secondTimerMock = std::make_unique<StrictMock<TimerMock>>();
+        EXPECT_CALL(*secondTimerMock, isActive()).WillRepeatedly(Return(false));
+        EXPECT_CALL(*m_timerFactoryMock, createTimer(expectedSecondTimeout, _, _))
+            .WillOnce(Return(ByMove(std::move(secondTimerMock))));
+        EXPECT_TRUE(m_mediaPipeline->haveData(kStatus, m_kNumFrames, kNextNeedDataRequestId));
+    }
 };
 
 TEST_F(RialtoServerMediaPipelineHaveDataTest, CommonHaveDataFailureDueToUninitializedPlayer)
@@ -505,4 +570,29 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessEosWi
         .WillOnce(Return(offset));
     EXPECT_CALL(*m_gstPlayerMock, setEos(firebolt::rialto::MediaSourceType::VIDEO));
     EXPECT_TRUE(m_mediaPipeline->haveData(status, 0, m_kNeedDataRequestId));
+}
+
+TEST_F(RialtoServerMediaPipelineHaveDataTest, NeedMediaDataResendDelayIsNotIncreasedBeforePreroll)
+{
+    haveDataErrorTwiceWithResend(PlaybackState::UNKNOWN, m_kDefaultNeedMediaDataResendTimeout);
+}
+
+TEST_F(RialtoServerMediaPipelineHaveDataTest, NeedMediaDataResendDelayIsNotIncreasedInIdleState)
+{
+    haveDataErrorTwiceWithResend(PlaybackState::IDLE, m_kDefaultNeedMediaDataResendTimeout);
+}
+
+TEST_F(RialtoServerMediaPipelineHaveDataTest, NeedMediaDataResendDelayIsIncreasedAfterPreroll)
+{
+    haveDataErrorTwiceWithResend(PlaybackState::PAUSED, m_kDefaultNeedMediaDataResendTimeout * 2);
+}
+
+TEST_F(RialtoServerMediaPipelineHaveDataTest, NeedMediaDataResendDelayIsIncreasedInPlayingState)
+{
+    haveDataErrorTwiceWithResend(PlaybackState::PLAYING, m_kDefaultNeedMediaDataResendTimeout * 2);
+}
+
+TEST_F(RialtoServerMediaPipelineHaveDataTest, NeedMediaDataResendDelayIsIncreasedInSeekingState)
+{
+    haveDataErrorTwiceWithResend(PlaybackState::SEEKING, m_kDefaultNeedMediaDataResendTimeout * 2);
 }
