@@ -18,6 +18,7 @@
  */
 
 #include "IpcServerImpl.h"
+#include "FdFieldWalker.h"
 #include "IIpcServerFactory.h"
 #include "IpcClientImpl.h"
 #include "IpcLogging.h"
@@ -842,47 +843,33 @@ void ServerImpl::processClientSocket(uint64_t clientId, unsigned events)
 
     Places the received file descriptors into the request message.
 
-    It works by iterating over the fields in the message, finding ones that are
-    marked as 'field_is_fd' and then replacing the received integer value with
-    an actual file descriptor.
+    It walks every field marked as 'field_is_fd', at any depth and in the order
+    defined by FdFieldWalker, and replaces the received placeholder value with
+    the matching received file descriptor.
 
  */
 static bool addRequestFileDescriptors(google::protobuf::Message *request, const std::vector<FileDescriptor> &requestFds)
 {
     auto fdIterator = requestFds.begin();
 
-    const google::protobuf::Descriptor *kDescriptor = request->GetDescriptor();
-    const google::protobuf::Reflection *kReflection = nullptr;
+    const bool kWalked = walkFdFields(*request,
+                                      [&](google::protobuf::Message &message,
+                                          const google::protobuf::FieldDescriptor &field, int index)
+                                      {
+                                          if (fdIterator == requestFds.end())
+                                          {
+                                              RIALTO_IPC_LOG_ERROR(
+                                                  "field is marked as containing an fd but none or too few were supplied");
+                                              return false;
+                                          }
 
-    const int n = kDescriptor->field_count();
-    for (int i = 0; i < n; i++)
+                                          writeFdField(message, field, index, fdIterator->fd());
+                                          ++fdIterator;
+                                          return true;
+                                      });
+    if (!kWalked)
     {
-        auto fieldDescriptor = kDescriptor->field(i);
-        if (fieldDescriptor->options().HasExtension(field_is_fd) && fieldDescriptor->options().GetExtension(field_is_fd))
-        {
-            if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_INT32)
-            {
-                RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but not an int32 type");
-                return false;
-            }
-
-            if (!kReflection)
-            {
-                kReflection = request->GetReflection();
-            }
-
-            if (kReflection->HasField(*request, fieldDescriptor))
-            {
-                if (fdIterator == requestFds.end())
-                {
-                    RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but one was supplied");
-                    return false;
-                }
-
-                kReflection->SetInt32(request, fieldDescriptor, fdIterator->fd());
-                ++fdIterator;
-            }
-        }
+        return false;
     }
 
     if (fdIterator != requestFds.end())
@@ -1105,43 +1092,28 @@ void ServerImpl::handleResponse(ServerControllerImpl *controller, google::protob
     Gets all the file descriptors that are stored in the \a response message
     and returns them as a vector of ints.
 
-    It works by iterating over the fields in the message, finding ones that are
-    marked as 'field_is_fd' and inserting the fd value into control part of the
-    message.  The actual integer sent in the data part of the message is set to
-    -1.
+    It walks every field marked as 'field_is_fd', at any depth and in the order
+    defined by FdFieldWalker, and collects the fd values to be sent in the control
+    part of the message.  The actual integer sent in the data part of the message
+    is set to -1.
 
  */
 static std::vector<int> getResponseFileDescriptors(google::protobuf::Message *response)
 {
     std::vector<int> fds;
 
-    // process any file descriptors from the response message
-    const google::protobuf::Descriptor *kDescriptor = response->GetDescriptor();
-    const google::protobuf::Reflection *kReflection = nullptr;
-
-    const int n = kDescriptor->field_count();
-    for (int i = 0; i < n; i++)
+    // process any file descriptors from the response message, at any depth
+    const bool kWalked = walkFdFields(*response,
+                                      [&](google::protobuf::Message &message,
+                                          const google::protobuf::FieldDescriptor &field, int index)
+                                      {
+                                          fds.push_back(readFdField(message, field, index));
+                                          writeFdField(message, field, index, -1);
+                                          return true;
+                                      });
+    if (!kWalked)
     {
-        auto fieldDescriptor = kDescriptor->field(i);
-        if (fieldDescriptor->options().HasExtension(field_is_fd) && fieldDescriptor->options().GetExtension(field_is_fd))
-        {
-            if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_INT32)
-            {
-                RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but not an int32 type");
-                return {};
-            }
-
-            if (!kReflection)
-            {
-                kReflection = response->GetReflection();
-            }
-
-            if (kReflection->HasField(*response, fieldDescriptor))
-            {
-                fds.push_back(kReflection->GetInt32(*response, fieldDescriptor));
-                kReflection->SetInt32(response, fieldDescriptor, -1);
-            }
-        }
+        return {};
     }
 
     return fds;

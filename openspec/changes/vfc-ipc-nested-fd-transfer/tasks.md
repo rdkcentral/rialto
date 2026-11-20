@@ -10,7 +10,7 @@ Unit tests run with `./build_ut.py -s ipc` (suite `RialtoIpcUnitTests`, `tests/u
 
 ## 2. Nested FDs end to end (spec: FD fields at any depth, Deterministic FD order, FD count mismatch)
 
-- [ ] 2.1 Replace the server's top-level loops with the walker: `getResponseFileDescriptors` (collect, write `-1`) and `addRequestFileDescriptors` (restore) in `ipc/server/source/IpcServerImpl.cpp`. Verify that the existing `RialtoIpcTest` cases still pass.
+- [x] 2.1 Replace the server's top-level loops with the walker: `getResponseFileDescriptors` (collect, write `-1`) and `addRequestFileDescriptors` (restore) in `ipc/server/source/IpcServerImpl.cpp`. Verify that the existing `RialtoIpcTest` cases still pass.
 - [ ] 2.2 Replace the client's top-level loops with the walker: request FD collection and `addReplyFileDescriptors` in `ipc/client/source/IpcChannelImpl.cpp`. Verify that the existing `RialtoIpcTest` cases still pass.
 - [ ] 2.3 Add round-trip tests in `tests/unittests/ipc/IpcTest.cpp` over a real socket pair for requests, replies and events using the 1.2 messages: 0, 1 and 3 nested repeated FDs, a repeated FD field, and the mixed order. Assert that each received FD refers to the same file as the one sent (compare `fstat` `st_ino`/`st_dev`) and is a different descriptor number. Verify with `./build_ut.py -s ipc`.
 - [ ] 2.4 Add mismatch tests that send with too few and too many attached FDs (inject at the raw socket) and assert the message is rejected, every received FD is closed (check the open-FD count in `/proc/self/fd`), and the error is logged. Verify with `./build_ut.py -s ipc`.
