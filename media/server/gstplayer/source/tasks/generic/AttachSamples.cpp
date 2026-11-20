@@ -83,6 +83,22 @@ AttachSamples::AttachSamples(GenericPlayerContext &context,
 AttachSamples::~AttachSamples()
 {
     RIALTO_SERVER_LOG_DEBUG("AttachSamples finished");
+
+    // The task owns the GstBuffers created in the constructor. If the task is
+    // dropped from the worker queue without execute() running (shutdown),
+    // they must be unref'd here or they leak.
+    for (const AudioData &audioData : m_audioData)
+    {
+        m_gstWrapper->gstBufferUnref(audioData.buffer);
+    }
+    for (const VideoData &videoData : m_videoData)
+    {
+        m_gstWrapper->gstBufferUnref(videoData.buffer);
+    }
+    for (GstBuffer *buffer : m_subtitleData)
+    {
+        m_gstWrapper->gstBufferUnref(buffer);
+    }
 }
 
 void AttachSamples::execute() const
@@ -106,15 +122,25 @@ void AttachSamples::execute() const
         attachData(firebolt::rialto::MediaSourceType::SUBTITLE, buffer);
     }
 
-    if (!m_audioData.empty())
+    const bool kHadAudio{!m_audioData.empty()};
+    const bool kHadVideo{!m_videoData.empty()};
+    const bool kHadSubtitle{!m_subtitleData.empty()};
+
+    // attachData() transfers each buffer's ownership (attached downstream or
+    // unref'd) - clear so the destructor only releases buffers never executed.
+    m_audioData.clear();
+    m_videoData.clear();
+    m_subtitleData.clear();
+
+    if (kHadAudio)
     {
         m_player.notifyNeedMediaData(firebolt::rialto::MediaSourceType::AUDIO);
     }
-    else if (!m_videoData.empty())
+    else if (kHadVideo)
     {
         m_player.notifyNeedMediaData(firebolt::rialto::MediaSourceType::VIDEO);
     }
-    else if (!m_subtitleData.empty())
+    else if (kHadSubtitle)
     {
         m_player.notifyNeedMediaData(firebolt::rialto::MediaSourceType::SUBTITLE);
     }

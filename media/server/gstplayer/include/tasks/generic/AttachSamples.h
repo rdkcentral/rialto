@@ -63,9 +63,9 @@ private:
     GenericPlayerContext &m_context;
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     IGstGenericPlayerPrivate &m_player;
-    std::vector<AudioData> m_audioData;
-    std::vector<VideoData> m_videoData;
-    std::vector<GstBuffer *> m_subtitleData;
+    mutable std::vector<AudioData> m_audioData;
+    mutable std::vector<VideoData> m_videoData;
+    mutable std::vector<GstBuffer *> m_subtitleData;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 
