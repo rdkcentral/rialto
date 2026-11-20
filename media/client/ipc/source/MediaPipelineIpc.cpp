@@ -463,18 +463,12 @@ bool MediaPipelineIpc::haveData(MediaSourceStatus status, uint32_t numFrames, ui
     request.set_num_frames(numFrames);
     request.set_request_id(requestId);
 
-    firebolt::rialto::HaveDataResponse response;
     auto ipcController = m_ipc.createRpcController();
-    auto blockingClosure = m_ipc.createBlockingClosure();
-    m_mediaPipelineStub->haveData(ipcController.get(), &request, &response, blockingClosure.get());
+    m_mediaPipelineStub->haveData(ipcController.get(), &request, nullptr, nullptr);
 
-    // wait for the call to complete
-    blockingClosure->wait();
-
-    // check the result
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to stop due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_ERROR("failed to send have-data request due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
