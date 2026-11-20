@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,6 +118,17 @@ public:
      * @retval an error status.
      */
     virtual MediaKeyErrorStatus decrypt(GstBuffer *encrypted, GstCaps *caps) = 0;
+
+    /**
+     * @brief Decrypts vector of buffers.
+     *
+     * @param[in]  bufferVec        : Vector of gstreamer buffers containing encrypted data and related meta data. If
+     *                                applicable, decrypted data will be stored here after this call returns.
+     * @param[in] caps              : The gst caps of buffer.
+     *
+     * @retval an error status.
+     */
+    virtual MediaKeyErrorStatus decryptMulti(std::vector<GstBuffer *> &bufferVec, GstCaps *caps) = 0;
 
     /**
      * @brief Closes the key session.

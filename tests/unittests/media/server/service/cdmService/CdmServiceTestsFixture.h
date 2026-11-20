@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +63,7 @@ public:
     void mediaKeysWillGetDrmTimeWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void mediaKeysWillDecryptMultiWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillPing();
     void mediaKeysWillGetMetricSystemDataWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
@@ -94,6 +96,7 @@ public:
     void removeKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void getCdmKeySessionIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void decryptMultiShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void selectKeyIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void containsKeyShouldReturn(bool result);
     void setDrmHeaderShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);

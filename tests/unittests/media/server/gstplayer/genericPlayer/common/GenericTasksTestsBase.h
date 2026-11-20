@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2023 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +64,7 @@ public:
 protected:
     // Set context methods
     void setContextStreamInfo(firebolt::rialto::MediaSourceType sourceType);
+    void setContextBatchDecryption();
     void setContextPlaying();
     void setContextNeedData(bool doNeedData);
     void setContextAudioUnderflowOccured(bool isUnderflow);
@@ -180,6 +182,9 @@ protected:
     void shouldSkipAttachingSubtitleSamples();
     void triggerAttachSamplesSubtitle();
     void checkSubtitleSamplesAttached();
+    void shouldAttachAllAudioSamplesInBatch();
+    void shouldAttachAllVideoSamplesInBatch();
+    void shouldAttachAllSubtitleSamplesInBatch();
 
     // AttachSource test methods
     void shouldAttachAudioSource();
@@ -311,6 +316,9 @@ protected:
     void shouldSetReportDecodeErrors();
     void triggerSetReportDecodeErrors();
 
+    // SetBatchDecryption test methods
+    void triggerSetBatchDecryption();
+
     // immediate-output sink property test methods
     void shouldSetImmediateOutput();
     void triggerSetImmediateOutput();
@@ -374,7 +382,7 @@ protected:
     void shouldFailToReportPosition();
 
     // FinishSetupSource test methods
-    void shouldFinishSetupSource();
+    void shouldFinishSetupSource(bool batchDecryption = false);
     void triggerFinishSetupSource();
     void shouldScheduleNeedMediaDataAudio();
     void triggerAudioCallbackNeedData();

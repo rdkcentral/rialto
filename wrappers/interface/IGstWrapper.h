@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -555,6 +556,18 @@ public:
     virtual GstFlowReturn gstAppSrcPushBuffer(GstAppSrc *appsrc, GstBuffer *buffer) = 0;
 
     /**
+     * @brief Adds a list of buffers to the queue of buffers that the appsrc element will push to its source pad.
+     * This function takes ownership of the buffer list.
+     * When the block property is TRUE, this function can block until free space becomes available in the queue.
+     *
+     * @param[in] appsrc     : The app src.
+     * @param[in] bufferList : a GstBufferList to push
+     *
+     * @retval GST_FLOW_OK when the buffer list was successfully queued.
+     */
+    virtual GstFlowReturn gstAppSrcPushBufferList(GstAppSrc *appsrc, GstBufferList *bufferList) = 0;
+
+    /**
      * @brief Compare two sets of caps.
      *
      * @param[in] caps1 : First set of caps.
@@ -640,6 +653,26 @@ public:
      * @param[in] info   : a GstMapInfo
      */
     virtual void gstBufferUnmap(GstBuffer *buffer, GstMapInfo *info) = 0;
+
+    /**
+     * @brief Creates a new, empty #GstBufferList. The list will have @size space preallocated so
+     * that memory reallocations can be avoided.
+     *
+     * @param[in] size : initial size of list
+     *
+     * @retval the new GstBufferList - requires gst_buffer_list_unref() after usage.
+     */
+    virtual GstBufferList *gstBufferListNewSized(guint size) = 0;
+
+    /**
+     * @brief Insert @buffer at @idx in @list. Other buffers are moved to make room for
+     * this new buffer.
+     *
+     * @param[in] list   : a GstBufferList.
+     * @param[in] idx    : idx to insert at, -1 will append the buffer at the end
+     * @param[in] buffer : GstBuffer to insert
+     */
+    virtual void gstBufferListInsert(GstBufferList *list, gint idx, GstBuffer *buffer) = 0;
 
     /**
      * @brief Decreases the refcount of the message. If the refcount reaches 0, the message with the associated
@@ -1544,6 +1577,97 @@ public:
      * @param[in] id : The probe id returned by gstPadAddProbe.
      */
     virtual void gstPadRemoveProbe(GstPad *pad, gulong id) = 0;
+
+    /**
+     * @brief Pushes a buffer to the peer of the pad. This function takes ownership of the buffer.
+     *
+     * @param[in] pad    : A source GstPad.
+     * @param[in] buffer : The GstBuffer to push.
+     *
+     * @retval A GstFlowReturn from the peer pad.
+     */
+    virtual GstFlowReturn gstPadPush(GstPad *pad, GstBuffer *buffer) = 0;
+
+    /**
+     * @brief Sets the caps on the pad, by sending a caps event.
+     *
+     * @param[in] pad  : A GstPad to set the caps on.
+     * @param[in] caps : A GstCaps to set.
+     *
+     * @retval TRUE if the caps could be set, FALSE otherwise.
+     */
+    virtual gboolean gstPadSetCaps(GstPad *pad, GstCaps *caps) = 0;
+
+    /**
+     * @brief Invokes the default event handler for the given pad. This function takes ownership of the event.
+     *
+     * @param[in] pad    : A GstPad to call the default event handler on.
+     * @param[in] parent : The parent of pad or NULL.
+     * @param[in] event  : The GstEvent to handle.
+     *
+     * @retval TRUE if the event was sent successfully.
+     */
+    virtual gboolean gstPadEventDefault(GstPad *pad, GstObject *parent, GstEvent *event) = 0;
+
+    /**
+     * @brief Gets the caps from the caps event. The caps remain valid as long as the event is kept alive.
+     *
+     * @param[in]  event : The caps event to parse.
+     * @param[out] caps  : A pointer to the caps.
+     */
+    virtual void gstEventParseCaps(GstEvent *event, GstCaps **caps) = 0;
+
+    /**
+     * @brief Decreases the refcount of the event. If the refcount reaches 0, the event will be freed.
+     *
+     * @param[in] event : The event to unref.
+     */
+    virtual void gstEventUnref(GstEvent *event) = 0;
+
+    /**
+     * @brief Increases the refcount of the buffer.
+     *
+     * @param[in] buffer : The buffer to ref.
+     *
+     * @retval The buffer.
+     */
+    virtual GstBuffer *gstBufferRef(GstBuffer *buffer) = 0;
+
+    /**
+     * @brief Returns the number of buffers in the list.
+     *
+     * @param[in] list : A GstBufferList.
+     *
+     * @retval The number of buffers in the list.
+     */
+    virtual guint gstBufferListLength(GstBufferList *list) = 0;
+
+    /**
+     * @brief Gets the buffer at idx. The buffer remains owned by the list.
+     *
+     * @param[in] list : A GstBufferList.
+     * @param[in] idx  : The index.
+     *
+     * @retval The buffer at idx in the list.
+     */
+    virtual GstBuffer *gstBufferListGet(GstBufferList *list, guint idx) = 0;
+
+    /**
+     * @brief Decreases the refcount of the buffer list. If the refcount reaches 0, the list will be freed.
+     *
+     * @param[in] list : The buffer list to unref.
+     */
+    virtual void gstBufferListUnref(GstBufferList *list) = 0;
+
+    /**
+     * @brief Modifies a pointer to a GstCaps to point to a different GstCaps, taking a ref on the new caps.
+     *
+     * @param[in,out] oldCaps : Pointer to a pointer to a GstCaps to be replaced.
+     * @param[in]     newCaps : Pointer to a GstCaps that will replace the caps pointed to by oldCaps.
+     *
+     * @retval TRUE if newCaps was different from oldCaps.
+     */
+    virtual gboolean gstCapsReplace(GstCaps **oldCaps, GstCaps *newCaps) = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

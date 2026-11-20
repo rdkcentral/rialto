@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -599,6 +600,40 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
         return status;
     }
     RIALTO_SERVER_LOG_INFO("Successfully decrypted buffer.");
+
+    return status;
+}
+
+MediaKeyErrorStatus MediaKeysServerInternal::decryptMulti(int32_t keySessionId, std::vector<GstBuffer *> &bufferVec,
+                                                          GstCaps *caps)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
+
+    auto task = [&]() { status = decryptMultiInternal(keySessionId, bufferVec, caps); };
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+
+    return status;
+}
+
+MediaKeyErrorStatus MediaKeysServerInternal::decryptMultiInternal(int32_t keySessionId,
+                                                                  std::vector<GstBuffer *> &bufferVec, GstCaps *caps)
+{
+    auto sessionIter = m_mediaKeySessions.find(keySessionId);
+    if (sessionIter == m_mediaKeySessions.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
+        return MediaKeyErrorStatus::BAD_SESSION_ID;
+    }
+
+    MediaKeyErrorStatus status = sessionIter->second->decryptMulti(bufferVec, caps);
+    if (MediaKeyErrorStatus::OK != status)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Failed to decrypt vector of buffers.");
+        return status;
+    }
+    RIALTO_SERVER_LOG_INFO("Successfully decrypted vector of buffers.");
 
     return status;
 }

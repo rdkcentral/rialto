@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +85,7 @@ public:
     MOCK_METHOD(bool, getBufferingLimit, (int sessionId, uint32_t &limitBufferingMs), (override));
     MOCK_METHOD(bool, setUseBuffering, (int sessionId, bool useBuffering), (override));
     MOCK_METHOD(bool, getUseBuffering, (int sessionId, bool &useBuffering), (override));
+    MOCK_METHOD(bool, setBatchDecryption, (int sessionId, bool batchDecryption), (override));
     MOCK_METHOD(bool, switchSource, (int, const std::unique_ptr<IMediaPipeline::MediaSource> &), (override));
     MOCK_METHOD(bool, isVideoMaster, (bool &isVideoMaster), (override));
     MOCK_METHOD(std::vector<std::string>, getSupportedMimeTypes, (MediaSourceType type), (override));

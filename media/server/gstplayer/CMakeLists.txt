@@ -53,6 +53,7 @@ add_library(
         source/tasks/generic/RemoveSource.cpp
         source/tasks/generic/RenderFrame.cpp
         source/tasks/generic/ReportPosition.cpp
+        source/tasks/generic/SetBatchDecryption.cpp
         source/tasks/generic/SetBufferingLimit.cpp
         source/tasks/generic/SetImmediateOutput.cpp
         source/tasks/generic/SetLowLatency.cpp
@@ -93,8 +94,12 @@ add_library(
         source/CapsBuilder.cpp
         source/FlushOnPrerollController.cpp
         source/FlushWatcher.cpp
+        source/GstBatchDecryptor.cpp
+        source/GstBatchDecryptorPrivate.cpp
         source/GstCapabilities.cpp
         source/GstDecryptor.cpp
+        source/GstDecryptorElementFactory.cpp
+        source/GstDecryptorPrivate.cpp
         source/GstDispatcherThread.cpp
         source/GstGenericPlayer.cpp
         source/GstInitialiser.cpp

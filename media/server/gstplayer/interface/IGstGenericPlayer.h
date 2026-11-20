@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -480,6 +481,16 @@ public:
      * @retval true on success.
      */
     virtual bool getUseBuffering(bool &useBuffering) = 0;
+
+    /**
+     * @brief Enables/disables batch decryption
+     *
+     * Selects the decryptor element created for encrypted sources. Takes effect for
+     * sources set up after this call.
+     *
+     * @param[in] batchDecryption      : true if batch decryption enabled.
+     */
+    virtual void setBatchDecryption(bool batchDecryption) = 0;
 
     /**
      * @brief Switches a source.

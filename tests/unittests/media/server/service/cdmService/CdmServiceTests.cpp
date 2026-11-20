@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -392,6 +393,45 @@ TEST_F(CdmServiceTests, shouldFailToDecryptWhenMediaKeysIsNotFoundForSession)
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
     decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldDecryptMulti)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
+    mediaKeysWillDecryptMultiWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    decryptMultiShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldFailToDecryptMultiWhenNoMediaKeys)
+{
+    triggerSwitchToActiveSuccess();
+    decryptMultiShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
+}
+
+TEST_F(CdmServiceTests, shouldFailToDecryptMultiWhenMediaKeysFails)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
+    mediaKeysWillDecryptMultiWithStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
+    decryptMultiShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldFailToDecryptMultiWhenMediaKeysIsNotFoundForSession)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    decryptMultiShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
     destroyMediaKeysShouldSucceed();
 }
 

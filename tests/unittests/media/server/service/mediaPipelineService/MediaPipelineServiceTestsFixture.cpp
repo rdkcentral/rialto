@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -268,6 +269,16 @@ void MediaPipelineServiceTests::mediaPipelineWillSetReportDecodeErrors()
 void MediaPipelineServiceTests::mediaPipelineWillFailToSetReportDecodeErrors()
 {
     EXPECT_CALL(m_mediaPipelineMock, setReportDecodeErrors(_, _)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillSetBatchDecryption()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setBatchDecryption(true)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToSetBatchDecryption()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setBatchDecryption(true)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillGetQueuedFrames()
@@ -807,6 +818,16 @@ void MediaPipelineServiceTests::setReportDecodeErrorsShouldSucceed()
 void MediaPipelineServiceTests::setReportDecodeErrorsShouldFail()
 {
     EXPECT_FALSE(m_sut->setReportDecodeErrors(kSessionId, kSourceId, true));
+}
+
+void MediaPipelineServiceTests::setBatchDecryptionShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->setBatchDecryption(kSessionId, true));
+}
+
+void MediaPipelineServiceTests::setBatchDecryptionShouldFail()
+{
+    EXPECT_FALSE(m_sut->setBatchDecryption(kSessionId, true));
 }
 
 void MediaPipelineServiceTests::getQueuedFramesShouldSucceed()

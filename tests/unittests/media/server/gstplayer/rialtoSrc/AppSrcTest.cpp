@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,9 +150,9 @@ protected:
         EXPECT_CALL(*m_gstWrapperMock, gstElementSyncStateWithParent(expectedElement));
     }
 
-    void expectLinkDecryptor(GstElement *expectedSrcElement, gchar *decryptorName)
+    void expectLinkDecryptor(GstElement *expectedSrcElement, gchar *decryptorName, bool batchDecryption = false)
     {
-        expectCreateDecryptor(decryptorName);
+        expectCreateDecryptor(decryptorName, batchDecryption);
         expectBin(&m_decryptor);
         expectSyncElement(&m_decryptor);
         EXPECT_CALL(*m_gstWrapperMock, gstElementLink(expectedSrcElement, &m_decryptor));
@@ -201,11 +202,12 @@ protected:
         EXPECT_CALL(*m_gstWrapperMock, gstElementLink(expectedSrcElement, &m_queue));
     }
 
-    void expectCreateDecryptor(gchar *decryptorName)
+    void expectCreateDecryptor(gchar *decryptorName, bool batchDecryption = false)
     {
         EXPECT_CALL(*m_decryptorFactoryMock,
                     createDecryptorElement(StrEq(decryptorName),
-                                           reinterpret_cast<IDecryptionService *>(m_decryptionServiceMock.get()), _))
+                                           reinterpret_cast<IDecryptionService *>(m_decryptionServiceMock.get()), _,
+                                           batchDecryption))
             .WillOnce(Return(&m_decryptor));
         EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(StrEq(decryptorName))).WillOnce(Return(decryptorName));
         EXPECT_CALL(*m_glibWrapperMock, gFree(PtrStrMatcher(decryptorName)));
@@ -234,7 +236,32 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideo)
     expectSetupPad(&m_queue);
 
     m_gstSrc->setupAndAddAppSrc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
-                                this, MediaSourceType::VIDEO);
+                                this, MediaSourceType::VIDEO, false);
+}
+
+/**
+ * Test that GstSrc creates the batch decryptor for a video source, when batch decryption is enabled
+ */
+TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithBatchDecryption)
+{
+    guint64 videoMaxBytes = 8 * 1024 * 1024;
+
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(m_streamInfo.appSrc))).WillOnce(Return(&m_dummyCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_dummyCaps, 0)).WillOnce(Return(&m_dummyStructure));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h264"))).WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h265"))).WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_dummyCaps));
+
+    expectSettings(videoMaxBytes);
+    expectBin(m_streamInfo.appSrc);
+    expectSyncElement(m_streamInfo.appSrc);
+    expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName, true);
+    expectLinkPayloader(&m_decryptor);
+    expectLinkQueue(&m_payloader);
+    expectSetupPad(&m_queue);
+
+    m_gstSrc->setupAndAddAppSrc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
+                                this, MediaSourceType::VIDEO, true);
 }
 
 /**
@@ -271,7 +298,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithMaxTimeSet)
     expectSetupPad(&m_queue);
 
     m_gstSrc->setupAndAddAppSrc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
-                                this, MediaSourceType::VIDEO);
+                                this, MediaSourceType::VIDEO, false);
 }
 
 /**
@@ -311,7 +338,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithMaxBuffersSet)
     expectSetupPad(&m_queue);
 
     m_gstSrc->setupAndAddAppSrc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
-                                this, MediaSourceType::VIDEO);
+                                this, MediaSourceType::VIDEO, false);
 }
 
 /**
@@ -331,7 +358,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoH264WithoutStreamFormat)
     expectSetupPad(&m_queue);
 
     m_gstSrc->setupAndAddAppSrc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
-                                this, MediaSourceType::VIDEO);
+                                this, MediaSourceType::VIDEO, false);
 }
 
 /**
@@ -357,7 +384,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithStreamFormat)
     expectSetupPad(&m_queue);
 
     m_gstSrc->setupAndAddAppSrc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
-                                this, MediaSourceType::VIDEO);
+                                this, MediaSourceType::VIDEO, false);
 }
 
 /**
@@ -383,7 +410,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithCodecData)
     expectSetupPad(&m_queue);
 
     m_gstSrc->setupAndAddAppSrc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
-                                this, MediaSourceType::VIDEO);
+                                this, MediaSourceType::VIDEO, false);
 }
 
 /**
@@ -412,7 +439,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupAudio)
     expectSetupPad(&m_queue);
 
     m_gstSrc->setupAndAddAppSrc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
-                                this, MediaSourceType::AUDIO);
+                                this, MediaSourceType::AUDIO, false);
 }
 
 /**
@@ -425,7 +452,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, DecryptorFailure)
     EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(StrEq(m_videoDecryptorName))).WillOnce(Return(m_videoDecryptorName));
     EXPECT_CALL(*m_decryptorFactoryMock,
                 createDecryptorElement(StrEq(m_videoDecryptorName),
-                                       reinterpret_cast<IDecryptionService *>(m_decryptionServiceMock.get()), _))
+                                       reinterpret_cast<IDecryptionService *>(m_decryptionServiceMock.get()), _, false))
         .WillOnce(Return(nullptr));
     EXPECT_CALL(*m_glibWrapperMock, gFree(PtrStrMatcher(m_videoDecryptorName)));
 
@@ -438,7 +465,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, DecryptorFailure)
     expectSetupPad(&m_queue);
 
     m_gstSrc->setupAndAddAppSrc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
-                                this, MediaSourceType::VIDEO);
+                                this, MediaSourceType::VIDEO, false);
 }
 
 /**
@@ -463,7 +490,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, PayloaderFailure)
     expectSetupPad(&m_queue);
 
     m_gstSrc->setupAndAddAppSrc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
-                                this, MediaSourceType::VIDEO);
+                                this, MediaSourceType::VIDEO, false);
 }
 
 /**
@@ -484,7 +511,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, QueueFailure)
     expectSetupPad(&m_payloader);
 
     m_gstSrc->setupAndAddAppSrc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
-                                this, MediaSourceType::VIDEO);
+                                this, MediaSourceType::VIDEO, false);
 }
 
 /**
@@ -502,7 +529,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, NotDrm)
     expectSetupPad(&m_queue);
 
     m_gstSrc->setupAndAddAppSrc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
-                                this, MediaSourceType::VIDEO);
+                                this, MediaSourceType::VIDEO, false);
 }
 
 /**

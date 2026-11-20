@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1563,9 +1564,21 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
             m_context.lastAudioSampleTimestamps = static_cast<int64_t>(GST_BUFFER_PTS(streamInfo.buffers.back()));
         }
 
-        for (GstBuffer *buffer : streamInfo.buffers)
+        if (m_context.batchDecryption)
         {
-            m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(streamInfo.appSrc), buffer);
+            GstBufferList *bufferList = m_gstWrapper->gstBufferListNewSized(streamInfo.buffers.size());
+            for (GstBuffer *buffer : streamInfo.buffers)
+            {
+                m_gstWrapper->gstBufferListInsert(bufferList, -1, buffer);
+            }
+            m_gstWrapper->gstAppSrcPushBufferList(GST_APP_SRC(streamInfo.appSrc), bufferList);
+        }
+        else
+        {
+            for (GstBuffer *buffer : streamInfo.buffers)
+            {
+                m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(streamInfo.appSrc), buffer);
+            }
         }
         streamInfo.buffers.clear();
         streamInfo.isDataPushed = true;
@@ -1615,6 +1628,10 @@ void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels, const std
 
         if (!m_gstWrapper->gstCapsIsEqual(currentCaps, newCaps))
         {
+            if (m_context.batchDecryption)
+            {
+                attachData(MediaSourceType::AUDIO);
+            }
             m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(streamInfo.appSrc), newCaps);
         }
 
@@ -1654,6 +1671,10 @@ void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height, Fraction f
 
         if (!m_gstWrapper->gstCapsIsEqual(currentCaps, newCaps))
         {
+            if (m_context.batchDecryption)
+            {
+                attachData(MediaSourceType::VIDEO);
+            }
             m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(streamInfo.appSrc), newCaps);
         }
 
@@ -3161,6 +3182,14 @@ void GstGenericPlayer::setUseBuffering(bool useBuffering)
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createSetUseBuffering(m_context, *this, useBuffering));
+    }
+}
+
+void GstGenericPlayer::setBatchDecryption(bool batchDecryption)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetBatchDecryption(m_context, batchDecryption));
     }
 }
 

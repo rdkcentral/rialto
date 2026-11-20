@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2022 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -670,6 +671,20 @@ bool MediaPipelineService::getUseBuffering(int sessionId, bool &useBuffering)
         return false;
     }
     return mediaPipelineIter->second->getUseBuffering(useBuffering);
+}
+
+bool MediaPipelineService::setBatchDecryption(int sessionId, bool batchDecryption)
+{
+    RIALTO_SERVER_LOG_DEBUG("Set batch decryption requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setBatchDecryption(batchDecryption);
 }
 
 bool MediaPipelineService::switchSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source)

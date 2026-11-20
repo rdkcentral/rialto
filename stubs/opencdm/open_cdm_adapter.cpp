@@ -3,6 +3,7 @@
  * following copyright and licenses apply:
  *
  * Copyright 2023 Sky UK
+ * Copyright 2026 Liberty Global Service B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,4 +25,17 @@ extern "C"
     {
         return ERROR_NONE;
     }
+#ifdef ENABLE_MULTI_DECRYPT
+    OpenCDMError opencdm_gstreamer_session_decrypt_buffer_multi(struct OpenCDMSession *session, GstBuffer *buffers[],
+                                                                const uint16_t count, GstCaps *caps)
+    {
+        return ERROR_NONE;
+    }
+
+    OpenCDMError opencdm_gstreamer_session_decrypt_buffer_multi_once(struct OpenCDMSession *session, GstBuffer *buffers[],
+                                                                     const uint16_t count, GstCaps *caps)
+    {
+        return ERROR_NONE;
+    }
+#endif // ENABLE_MULTI_DECRYPT
 }
