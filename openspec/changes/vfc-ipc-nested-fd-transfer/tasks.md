@@ -31,7 +31,7 @@ Unit tests run with `./build_ut.py -s ipc` (suite `RialtoIpcUnitTests`, `tests/u
 
 ## 5. Documentation
 
-- [ ] 5.1 Add a "File descriptors" section to `docs/IpcOverview.md` that covers `field_is_fd` at any depth, the walk order, the per-message limits, receiver ownership, owned replies, and the delivery callback, with a short handler example. Verify that the section's example matches the API from 4.1.
+- [x] 5.1 Add a "File descriptors" section to `docs/IpcOverview.md` that covers `field_is_fd` at any depth, the walk order, the per-message limits, receiver ownership, owned replies, and the delivery callback, with a short handler example. Verify that the section's example matches the API from 4.1.
 
 ## 6. Integration check
 
