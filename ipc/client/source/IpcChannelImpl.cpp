@@ -1087,6 +1087,13 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
 
     // extract the fds from the message
     const std::vector<int> kFds = getMessageFds(*request);
+    if (kFds.size() > kMaxFdsClientToServer)
+    {
+        RIALTO_IPC_LOG_ERROR("method call has too many file descriptors (%zu, max %zu)", kFds.size(),
+                             kMaxFdsClientToServer);
+        completeWithError(&methodCall, "Too many file descriptors");
+        return;
+    }
     const size_t kRequiredCtrlLen = kFds.empty() ? 0 : CMSG_SPACE(sizeof(int) * kFds.size());
 
     // build the socket message to send

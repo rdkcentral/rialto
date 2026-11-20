@@ -539,3 +539,55 @@ TEST_F(RialtoIpcFdTest, ShouldTransferMixedFdsInEventInOrder)
     closeAll(kReceived);
     closeAll(kSent);
 }
+
+// -----------------------------------------------------------------------------
+// Per-message FD limits on the sending side (vfc-ipc-nested-fd-transfer, task 3.2)
+// -----------------------------------------------------------------------------
+
+/**
+ * A request with more FDs than the server accepts fails locally and is not sent.
+ */
+TEST_F(RialtoIpcFdTest, ShouldFailRequestOverFdLimitWithoutSending)
+{
+    const auto kSent = createFiles(17); // server accepts 16
+    TestNoVar response;
+
+    // StrictMock: any call to the handler fails the test
+    EXPECT_FALSE(m_clientStub->call(&TestModule_Stub::TestFdRepeatedFieldRequest, makeRepeatedField(kSent), response));
+    closeAll(kSent);
+}
+
+/**
+ * A reply with more FDs than the client accepts is replaced by an error reply.
+ */
+TEST_F(RialtoIpcFdTest, ShouldReplaceReplyOverFdLimitWithError)
+{
+    const auto kSent = createFiles(33); // client accepts 32
+    EXPECT_CALL(*m_testModuleMock, TestFdRepeatedFieldResponse(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(makeRepeatedField(kSent)),
+                        WithArgs<0, 3>(Invoke(&(*m_testModuleMock), &TestModuleMock::defaultReturn))));
+
+    TestNoVar request;
+    TestFdRepeatedField response;
+    EXPECT_FALSE(m_clientStub->call(&TestModule_Stub::TestFdRepeatedFieldResponse, request, response));
+    EXPECT_EQ(response.fds_size(), 0);
+    closeAll(kSent);
+}
+
+/**
+ * An event with more FDs than the client accepts is not sent, and sending reports failure.
+ */
+TEST_F(RialtoIpcFdTest, ShouldNotSendEventOverFdLimit)
+{
+    constexpr int kShortTimeoutMs{100};
+    const auto kSent = createFiles(33); // client accepts 32
+    bool sent{true};
+
+    auto event = m_clientStub->receiveEvent<TestFdRepeatedField>(
+        [&]() { sent = m_serverStub->sendEvent(std::make_shared<TestFdRepeatedField>(makeRepeatedField(kSent))); },
+        kShortTimeoutMs);
+
+    EXPECT_FALSE(sent);
+    EXPECT_EQ(event, nullptr);
+    closeAll(kSent);
+}

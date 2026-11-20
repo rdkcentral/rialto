@@ -1150,6 +1150,13 @@ std::shared_ptr<msghdr> ServerImpl::populateReply(const std::shared_ptr<const Cl
     // next need to check if the response message has any file descriptors in
     // it that need to be attached
     const std::vector<int> kFds = getResponseFileDescriptors(response);
+    if (kFds.size() > kMaxFdsServerToClient)
+    {
+        RIALTO_IPC_LOG_ERROR("reply has too many file descriptors (%zu, max %zu)", kFds.size(), kMaxFdsServerToClient);
+
+        // the client would drop the extra descriptors, so send an error instead
+        return populateErrorReply(client, serialId, "Internal error - too many file descriptors in reply");
+    }
     const size_t kRequiredCtrlLen = kFds.empty() ? 0 : CMSG_SPACE(sizeof(int) * kFds.size());
 
     // calculate the size of the reply
@@ -1307,6 +1314,11 @@ bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::prot
 {
     // gets the file descriptors from the event message
     const std::vector<int> kFds = getResponseFileDescriptors(eventMessage.get());
+    if (kFds.size() > kMaxFdsServerToClient)
+    {
+        RIALTO_IPC_LOG_ERROR("event has too many file descriptors (%zu, max %zu)", kFds.size(), kMaxFdsServerToClient);
+        return false;
+    }
     const size_t kRequiredCtrlLen = kFds.empty() ? 0 : CMSG_SPACE(sizeof(int) * kFds.size());
 
     // create the base reply
