@@ -291,6 +291,9 @@ void ChannelImpl::termChannel()
     if ((m_eventFd >= 0) && (close(m_eventFd) != 0))
         RIALTO_IPC_LOG_SYS_ERROR(errno, "closing event fd failed");
 
+    // reset so a second termChannel() call does not close stale fd numbers
+    m_epollFd = m_timerFd = m_eventFd = -1;
+
     // if any method calls are still outstanding then complete them with errors now
     for (auto &entry : m_methodCalls)
     {
