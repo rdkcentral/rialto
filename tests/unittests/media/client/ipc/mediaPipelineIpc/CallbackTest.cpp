@@ -118,6 +118,21 @@ TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyQos)
     m_qosCb(updateQosEvent);
 }
 
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyMetricEvent)
+{
+    auto metricEvent = std::make_shared<firebolt::rialto::NotifyMetricEvent>();
+    metricEvent->set_session_id(m_sessionId);
+    metricEvent->set_source_id(m_sourceId);
+    metricEvent->set_pts_ns(9001);
+    metricEvent->set_error_info("decoder error");
+    metricEvent->set_phase(2);
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+    EXPECT_CALL(*m_clientMock, notifyMetricEvent(m_sourceId, 9001, "decoder error", 2));
+
+    m_metricEventCb(metricEvent);
+}
+
 /**
  * Test that if the session id of the event is not the same as the playback session the event will be ignored.
  */

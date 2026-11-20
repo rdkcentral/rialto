@@ -97,6 +97,7 @@ target_link_libraries(
         PRIVATE
         RialtoLogging
         RialtoServerGstPlayer
+        RialtoMetrics
         RialtoWrappers
         RialtoCommon
         RialtoProtobuf

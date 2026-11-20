@@ -73,6 +73,8 @@ TEST(MetricsClientsTests, mediaPipelineCallbacksAreForwarded)
     sut.notifyCancelNeedMediaData(5);
     EXPECT_CALL(*client, notifyQos(6, Ref(qosInfo)));
     sut.notifyQos(6, qosInfo);
+    EXPECT_CALL(*client, notifyMetricEvent(6, 9001, "decoder error", 2));
+    sut.notifyMetricEvent(6, 9001, "decoder error", 2);
     EXPECT_CALL(*client, notifyBufferUnderflow(7));
     sut.notifyBufferUnderflow(7);
     EXPECT_CALL(*client, notifyFirstFrameReceived(8));

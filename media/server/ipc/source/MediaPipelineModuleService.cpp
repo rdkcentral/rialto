@@ -946,6 +946,39 @@ void MediaPipelineModuleService::getStats(::google::protobuf::RpcController *con
     done->Run();
 }
 
+void MediaPipelineModuleService::getFrameCounters(::google::protobuf::RpcController *controller,
+                                                  const ::firebolt::rialto::GetFrameCountersRequest *request,
+                                                  ::firebolt::rialto::GetFrameCountersResponse *response,
+                                                  ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("GetFrameCounters request sessionId: %d, sourceId: %d", request->session_id(),
+                            request->source_id());
+    uint64_t renderedFrames;
+    uint64_t droppedFrames;
+    uint64_t corruptedFrames;
+    uint64_t timestamp;
+    if (!m_mediaPipelineService.getFrameCounters(request->session_id(), request->source_id(), renderedFrames,
+                                                 droppedFrames, corruptedFrames, timestamp))
+    {
+        RIALTO_SERVER_LOG_ERROR("GetFrameCounters failed for sessionId: %d, sourceId: %d", request->session_id(),
+                                request->source_id());
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_rendered_frames(renderedFrames);
+        response->set_dropped_frames(droppedFrames);
+        response->set_corrupted_frames(corruptedFrames);
+        response->set_timestamp(timestamp);
+        RIALTO_SERVER_LOG_DEBUG(
+            "GetFrameCounters response sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, timestamp: %llu",
+            request->session_id(), request->source_id(), static_cast<unsigned long long>(renderedFrames),
+            static_cast<unsigned long long>(droppedFrames), static_cast<unsigned long long>(corruptedFrames),
+            static_cast<unsigned long long>(timestamp));
+    }
+    done->Run();
+}
+
 void MediaPipelineModuleService::renderFrame(::google::protobuf::RpcController *controller,
                                              const ::firebolt::rialto::RenderFrameRequest *request,
                                              ::firebolt::rialto::RenderFrameResponse *response,

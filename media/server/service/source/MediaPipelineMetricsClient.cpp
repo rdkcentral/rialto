@@ -18,6 +18,7 @@
  */
 
 #include "MediaPipelineMetricsClient.h"
+#include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server::service
 {
@@ -69,6 +70,15 @@ void MediaPipelineMetricsClient::notifyCancelNeedMediaData(int32_t sourceId)
 void MediaPipelineMetricsClient::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
 {
     m_client->notifyQos(sourceId, qosInfo);
+}
+void MediaPipelineMetricsClient::notifyMetricEvent(int32_t sourceId, uint64_t ptsNs, const std::string &errorInfo,
+                                                   uint32_t phase, uint64_t count, uint64_t durationNs)
+{
+    RIALTO_SERVER_LOG_DEBUG(
+        "Relaying playback metric event sessionId: %d, sourceId: %d, ptsNs: %llu, type: %s, phase: %u, count: %llu, durationNs: %llu",
+        m_sessionId, sourceId, static_cast<unsigned long long>(ptsNs), errorInfo.c_str(), phase,
+        static_cast<unsigned long long>(count), static_cast<unsigned long long>(durationNs));
+    m_client->notifyMetricEvent(sourceId, ptsNs, errorInfo, phase, count, durationNs);
 }
 void MediaPipelineMetricsClient::notifyBufferUnderflow(int32_t sourceId)
 {
