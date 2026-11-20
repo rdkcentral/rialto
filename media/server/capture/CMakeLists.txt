@@ -32,6 +32,31 @@ target_include_directories(
         include
         )
 
+# Rialto's server-side capture code, built on the HAL interface.
+add_library(
+        RialtoServerCapture
+        STATIC
+
+        source/CapturedFrameUtils.cpp
+        )
+
+target_include_directories(
+        RialtoServerCapture
+        PUBLIC
+        include
+        )
+
+set_property(
+        TARGET RialtoServerCapture
+        PROPERTY POSITION_INDEPENDENT_CODE ON
+        )
+
+target_link_libraries(
+        RialtoServerCapture
+        PUBLIC
+        RialtoCaptureHal
+        )
+
 install (
         FILES include/ICaptureSession.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rialto/capture

@@ -17,6 +17,7 @@
 # limitations under the License.
 #
 
+add_subdirectory(capture)
 add_subdirectory(gstplayer)
 add_subdirectory(ipc)
 add_subdirectory(main)

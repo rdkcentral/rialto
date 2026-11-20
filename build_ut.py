@@ -30,6 +30,7 @@ from scripts.gtest.generate_coverage import generateCoverageReport
 # {Component Name : {Test Suite, Test Path}}
 suiteInfo = {
     "servermain" : {"suite" : "RialtoServerMainUnitTests", "path" : "/tests/unittests/media/server/main/"},
+    "servercapture" : {"suite" : "RialtoServerCaptureUnitTests", "path" : "/tests/unittests/media/server/capture/"},
     "servergstplayer" : {"suite" : "RialtoServerGstPlayerUnitTests", "path" : "/tests/unittests/media/server/gstplayer/"},
     "serveripc" : {"suite" : "RialtoServerIpcUnitTests", "path" : "/tests/unittests/media/server/ipc/"},
     "serverservice" : {"suite" : "RialtoServerServiceUnitTests", "path" : "/tests/unittests/media/server/service/"},
