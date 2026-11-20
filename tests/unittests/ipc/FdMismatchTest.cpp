@@ -190,7 +190,15 @@ protected:
         EXPECT_TRUE(log.contains("mismatch of file descriptors to the request"));
         EXPECT_EQ(openFdCount(), kBaseline);
 
-        client->disconnect();
+        // let the server remove the client before it is destroyed; it does not close client sockets itself
+        close(m_sockets[1]);
+        m_sockets[1] = -1;
+        for (int i = 0; i < 500 && client->isConnected(); ++i)
+        {
+            server->process();
+            server->wait(1);
+        }
+        EXPECT_FALSE(client->isConnected());
         closeAll(kFiles);
     }
 

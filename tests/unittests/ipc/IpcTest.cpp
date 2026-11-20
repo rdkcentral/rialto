@@ -566,6 +566,11 @@ TEST_F(RialtoIpcFdTest, ShouldFailRequestOverFdLimitWithoutSending)
     // StrictMock: any call to the handler fails the test
     EXPECT_FALSE(m_clientStub->call(&TestModule_Stub::TestFdRepeatedFieldRequest, makeRepeatedField(kSent), response));
     closeAll(kSent);
+
+    // the channel still works after the refused call
+    EXPECT_CALL(*m_testModuleMock, TestRequestSingleVar(_, SingleVarRequestMatcher(m_int), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_testModuleMock), &TestModuleMock::defaultReturn)));
+    EXPECT_TRUE(m_clientStub->sendSingleVarRequest(m_int));
 }
 
 /**
@@ -775,11 +780,15 @@ protected:
 
     void TearDown() override
     {
-        for (int sock : m_sockets)
+        // let the server remove the client before it is destroyed; it does not close client sockets itself
+        if (m_sockets[1] >= 0)
         {
-            if (sock >= 0)
-                close(sock);
+            close(m_sockets[1]);
+            m_sockets[1] = -1;
         }
+        processServerUntil([this]() { return !m_client->isConnected(); });
+        if (m_sockets[0] >= 0)
+            close(m_sockets[0]);
     }
 
     // Sends a TestFdRepeatedFieldResponse call from the raw client end.

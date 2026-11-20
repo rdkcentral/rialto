@@ -35,7 +35,7 @@ Unit tests run with `./build_ut.py -s ipc` (suite `RialtoIpcUnitTests`, `tests/u
 
 ## 6. Integration check
 
-- [ ] 6.1 Run the full unit and component suites (`./build_ut.py` and `./build_ct.py`) and confirm no regressions. Then run `./build_ut.py -s ipc -val` and confirm valgrind reports no FD or memory leaks in the new tests.
+- [x] 6.1 Run the full unit and component suites (`./build_ut.py` and `./build_ct.py`) and confirm no regressions. Then run `./build_ut.py -s ipc -val` and confirm valgrind reports no FD or memory leaks in the new tests.
 
 ## Workflow follow-up
 
