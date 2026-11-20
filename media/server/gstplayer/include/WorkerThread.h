@@ -23,9 +23,9 @@
 #include "IWorkerThread.h"
 #include "tasks/IPlayerTask.h"
 #include <condition_variable>
+#include <deque>
 #include <memory>
 #include <mutex>
-#include <queue>
 #include <thread>
 
 namespace firebolt::rialto::server
@@ -45,6 +45,7 @@ public:
     void stop() override;
     void join() override;
     void enqueueTask(std::unique_ptr<IPlayerTask> &&task) override;
+    void enqueuePriorityTask(std::unique_ptr<IPlayerTask> &&task) override;
 
 private:
     /**
@@ -83,7 +84,12 @@ private:
     /**
      * @brief Queue to store new tasks.
      */
-    std::queue<std::unique_ptr<IPlayerTask>> m_taskQueue{};
+    std::deque<std::unique_ptr<IPlayerTask>> m_taskQueue{};
+
+    /**
+     * @brief Number of priority tasks at the front of the task queue
+     */
+    std::size_t m_priorityTaskCount{0};
 };
 } // namespace firebolt::rialto::server
 

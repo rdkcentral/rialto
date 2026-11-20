@@ -59,6 +59,11 @@ public:
      * @brief Queues a task in the task queue.
      */
     virtual void enqueueTask(std::unique_ptr<IPlayerTask> &&task) = 0;
+
+    /**
+     * @brief Queues a task ahead of all normal tasks, after previously queued priority tasks.
+     */
+    virtual void enqueuePriorityTask(std::unique_ptr<IPlayerTask> &&task) = 0;
 };
 } // namespace firebolt::rialto::server
 

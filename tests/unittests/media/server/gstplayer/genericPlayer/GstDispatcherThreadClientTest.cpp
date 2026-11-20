@@ -64,5 +64,57 @@ TEST_F(GstDispatcherThreadClientTest, shouldHandleBusMessage)
     EXPECT_CALL(m_taskFactoryMock, createHandleBusMessage(_, _, &message, _))
         .WillOnce(Return(ByMove(std::move(messageTask))));
 
-    m_sut->handleBusMessage(&message);
+    m_sut->handleBusMessage(&message, false);
+}
+
+TEST_F(GstDispatcherThreadClientTest, shouldEnqueuePriorityBusMessageAsPriorityTask)
+{
+    GstMessage message{};
+    std::unique_ptr<IPlayerTask> messageTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*messageTask), execute());
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillOnce(Return(false));
+    EXPECT_CALL(m_workerThreadMock, enqueuePriorityTask(_))
+        .WillOnce(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
+    EXPECT_CALL(m_taskFactoryMock, createHandleBusMessage(_, _, &message, _))
+        .WillOnce(Return(ByMove(std::move(messageTask))));
+
+    m_sut->handleBusMessage(&message, true);
+}
+
+TEST_F(GstDispatcherThreadClientTest, shouldNotPrioritiseBusMessagesAfterFlushWasOngoing)
+{
+    GstMessage firstMessage{};
+    GstMessage secondMessage{};
+    std::unique_ptr<IPlayerTask> firstTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    std::unique_ptr<IPlayerTask> secondTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*firstTask), execute());
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*secondTask), execute());
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillOnce(Return(true));
+    EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
+        .WillRepeatedly(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
+    EXPECT_CALL(m_taskFactoryMock, createHandleBusMessage(_, _, &firstMessage, _))
+        .WillOnce(Return(ByMove(std::move(firstTask))));
+    EXPECT_CALL(m_taskFactoryMock, createHandleBusMessage(_, _, &secondMessage, _))
+        .WillOnce(Return(ByMove(std::move(secondTask))));
+
+    m_sut->handleBusMessage(&firstMessage, true);
+    m_sut->handleBusMessage(&secondMessage, true);
+}
+
+TEST_F(GstDispatcherThreadClientTest, shouldNotPrioritiseBusMessageAfterSetPosition)
+{
+    constexpr std::int64_t kPosition{1234};
+    GstMessage message{};
+    std::unique_ptr<IPlayerTask> setPositionTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    std::unique_ptr<IPlayerTask> messageTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*setPositionTask), execute());
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*messageTask), execute());
+    EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
+        .WillRepeatedly(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
+    EXPECT_CALL(m_taskFactoryMock, createSetPosition(_, _, kPosition)).WillOnce(Return(ByMove(std::move(setPositionTask))));
+    EXPECT_CALL(m_taskFactoryMock, createHandleBusMessage(_, _, &message, _))
+        .WillOnce(Return(ByMove(std::move(messageTask))));
+
+    dynamic_cast<GstGenericPlayer &>(*m_sut).setPosition(kPosition);
+    m_sut->handleBusMessage(&message, true);
 }

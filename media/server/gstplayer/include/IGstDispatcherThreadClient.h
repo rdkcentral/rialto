@@ -38,9 +38,10 @@ public:
     /**
      * @brief Callback on a new bus message.
      *
-     * @param[in] message : The new Gst message.
+     * @param[in] message    : The new Gst message.
+     * @param[in] isPriority : True if the message may be handled ahead of already queued tasks.
      */
-    virtual void handleBusMessage(GstMessage *message) = 0;
+    virtual void handleBusMessage(GstMessage *message, bool isPriority) = 0;
 };
 } // namespace firebolt::rialto::server
 

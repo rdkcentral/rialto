@@ -76,6 +76,11 @@ private:
     std::atomic<bool> m_isGstreamerDispatcherActive;
 
     /**
+     * @brief Set when the pipeline reaches PAUSED (or PLAYING) for the first time
+     */
+    bool m_isInitialPrerollDone{false};
+
+    /**
      * @brief Thread for handling gst bus callbacks
      */
     std::thread m_gstBusDispatcherThread;

@@ -70,6 +70,7 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
         if (message)
         {
             bool shouldHandleMessage{true};
+            bool isPriority{false};
             if (GST_MESSAGE_SRC(message) == GST_OBJECT(pipeline))
             {
                 switch (GST_MESSAGE_TYPE(message))
@@ -78,6 +79,12 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
                 {
                     GstState oldState, newState, pending;
                     m_gstWrapper->gstMessageParseStateChanged(message, &oldState, &newState, &pending);
+                    // Only the state changes of the initial preroll are handled ahead of queued tasks
+                    isPriority = !m_isInitialPrerollDone && (GST_STATE_READY == newState || GST_STATE_PAUSED == newState);
+                    if ((GST_STATE_PAUSED == newState && GST_STATE_PAUSED != pending) || GST_STATE_PLAYING == newState)
+                    {
+                        m_isInitialPrerollDone = true;
+                    }
                     switch (newState)
                     {
                     case GST_STATE_NULL:
@@ -138,7 +145,7 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
 
             if (shouldHandleMessage)
             {
-                m_client.handleBusMessage(message);
+                m_client.handleBusMessage(message, isPriority);
             }
         }
     }
