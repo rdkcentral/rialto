@@ -719,7 +719,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
         if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
         {
             RIALTO_SERVER_LOG_ERROR("getMetricSystemData: main-thread task failed or timed out");
-            return status;
+            return MediaKeyErrorStatus::FAIL;
         }
 
         if (status != MediaKeyErrorStatus::BUFFER_TOO_SMALL)
