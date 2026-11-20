@@ -18,6 +18,7 @@
  */
 
 #include <stdexcept>
+#include <utility>
 
 #include "KeyIdMap.h"
 #include "MediaKeys.h"
@@ -119,7 +120,7 @@ MediaKeyErrorStatus MediaKeys::createKeySession(KeySessionType sessionType, std:
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    auto result{m_mediaKeysIpc->createKeySession(sessionType, client, keySessionId)};
+    auto result{m_mediaKeysIpc->createKeySession(sessionType, std::move(client), keySessionId)};
     if (isNetflixPlayready(m_keySystem) && MediaKeyErrorStatus::OK == result)
     {
         KeyIdMap::instance().addSession(keySessionId);

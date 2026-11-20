@@ -50,7 +50,8 @@ MediaKeySessionFactory::createMediaKeySession(const std::string &keySystem, int3
     std::unique_ptr<IMediaKeySession> mediaKeys;
     try
     {
-        mediaKeys = std::make_unique<server::MediaKeySession>(keySystem, keySessionId, ocdmSystem, sessionType, client,
+        mediaKeys = std::make_unique<server::MediaKeySession>(keySystem, keySessionId, ocdmSystem, sessionType,
+                                                              std::move(client),
                                                               server::IMainThreadFactory::createFactory());
     }
     catch (const std::exception &e)
@@ -65,9 +66,9 @@ MediaKeySession::MediaKeySession(const std::string &keySystem, int32_t keySessio
                                  const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem, KeySessionType sessionType,
                                  std::weak_ptr<IMediaKeysClient> client,
                                  const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
-    : m_kKeySystem(keySystem), m_kKeySessionId(keySessionId), m_kSessionType(sessionType), m_mediaKeysClient(client),
-      m_isSessionConstructed(false), m_isSessionClosed(false), m_licenseRequested(false), m_ongoingOcdmOperation(false),
-      m_ocdmError(false), m_decryptErrorLogged(false)
+    : m_kKeySystem(keySystem), m_kKeySessionId(keySessionId), m_kSessionType(sessionType),
+      m_mediaKeysClient(std::move(client)), m_isSessionConstructed(false), m_isSessionClosed(false),
+      m_licenseRequested(false), m_ongoingOcdmOperation(false), m_ocdmError(false), m_decryptErrorLogged(false)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 

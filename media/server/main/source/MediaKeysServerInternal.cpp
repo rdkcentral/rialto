@@ -18,6 +18,7 @@
  */
 
 #include <stdexcept>
+#include <utility>
 
 #include "MediaKeysServerInternal.h"
 #include "RialtoServerLogging.h"
@@ -231,7 +232,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::createKeySessionInternal(KeySession
     int32_t keySessionIdTemp = generateSessionId();
     std::unique_ptr<IMediaKeySession> mediaKeySession =
         m_mediaKeySessionFactory->createMediaKeySession(m_kKeySystem, keySessionIdTemp, *m_ocdmSystem, sessionType,
-                                                        client);
+                                                        std::move(client));
     if (!mediaKeySession)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create a new media key session");
