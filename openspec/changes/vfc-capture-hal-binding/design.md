@@ -35,6 +35,8 @@ Add `wrappers/interface/ICaptureHalLibrary.h` with a factory accessor like the o
 The deleter deletes the session through the virtual destructor and then drops a `std::shared_ptr` to the library handle. The handle's own deleter calls `dlclose`. So the library unloads only after the loader and every session are gone.
 
 *Why:* a shared handle owned by each session satisfies §4.6 without a global counter, and works when sessions outlive pipelines (R10).
+**Build mode.** Unlike the other wrappers, whose implementations are compiled only outside `UnitTests` and `ComponentTests` builds, the loader source is listed with the always-built accessors in `wrappers/CMakeLists.txt`. It depends only on `libdl`, so it is safe in test builds, and the loader tests (task 3.2) need the real `dlopen` path against the fake HAL library. Higher layers still use `ICaptureHalLibrary` through its mock.
+
 *Alternative:* never `dlclose`, as OCDM does. Viable and simpler, but it hides leaks in valgrind runs and keeps a vendor library mapped after capture is no longer used. Kept as the fallback if a vendor library is not safe to unload: a `RIALTO_CAPTURE_HAL_NO_UNLOAD` switch is cheap to add later without changing the spec.
 
 ### D3. Exception guard at the boundary
