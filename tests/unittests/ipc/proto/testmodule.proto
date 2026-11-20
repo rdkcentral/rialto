@@ -62,6 +62,57 @@ message TestSingleVarNoReply {
     required int32 var1 = 1;
 }
 
+// -----------------------------------------------------------------------------
+// File descriptor fields (field_is_fd) at different depths, for FdFieldWalker
+// and FD transfer tests.
+
+// Top-level FD fields only, with a non-FD field between them.
+message TestFdTopLevel {
+    optional int32 fd1 = 1 [(rialto.ipc.field_is_fd) = true];
+    optional int32 value = 2;
+    optional int32 fd2 = 3 [(rialto.ipc.field_is_fd) = true];
+}
+
+// A sub-message holding one FD field.
+message TestFdHolder {
+    optional int32 id = 1;
+    optional int32 fd = 2 [(rialto.ipc.field_is_fd) = true];
+}
+
+// A repeated sub-message, each element carrying a nested FD.
+message TestFdNestedRepeated {
+    repeated TestFdHolder holders = 1;
+}
+
+// A repeated int32 FD field.
+message TestFdRepeatedField {
+    repeated int32 fds = 1 [(rialto.ipc.field_is_fd) = true];
+}
+
+// Top-level, nested, top-level. Field numbers deliberately differ from the
+// declaration order: the walk follows declaration order.
+message TestFdMixed {
+    optional int32 first_fd = 3 [(rialto.ipc.field_is_fd) = true];
+    repeated TestFdHolder holders = 1;
+    optional int32 last_fd = 2 [(rialto.ipc.field_is_fd) = true];
+}
+
+// An optional sub-message that may be left unset.
+message TestFdOptionalNested {
+    optional TestFdHolder holder = 1;
+    optional int32 fd = 2 [(rialto.ipc.field_is_fd) = true];
+}
+
+// Two levels of nesting.
+message TestFdDeep {
+    optional TestFdNestedRepeated inner = 1;
+}
+
+// A field marked field_is_fd that is not int32.
+message TestFdNotInt32 {
+    optional string fd = 1 [(rialto.ipc.field_is_fd) = true];
+}
+
 service TestModule {
     rpc TestRequestSingleVar(TestSingleVar) returns (TestNoVar) {
     }
