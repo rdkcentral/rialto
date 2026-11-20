@@ -20,6 +20,7 @@
 add_gtests (
         RialtoServerCaptureUnitTests
 
+        CapturedFrameTraitsTests.cpp
         CapturedFrameUtilsTests.cpp
         )
 
