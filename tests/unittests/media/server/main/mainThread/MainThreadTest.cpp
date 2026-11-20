@@ -403,3 +403,136 @@ TEST_F(MainThreadTests, UnregisterFromNonMainThreadIsSafe)
     EXPECT_FALSE(result); // Should fail because client is unregistered
     EXPECT_FALSE(taskExecuted);
 }
+
+/**
+ * P4.1 Test: Worker state copy prevents use-after-free
+ * 
+ * This test verifies that the worker thread keeps a local copy of m_isMainThreadRunning
+ * to prevent accessing destroyed memory when the MainThread is destroyed from the main thread.
+ */
+TEST_F(MainThreadTests, P4_1_WorkerStateIsKeptAliveDuringDestructionFromMainThread)
+{
+    // Create a MainThread
+    std::shared_ptr<MainThread> mainThread = std::make_shared<MainThread>();
+    uint32_t clientId = mainThread->registerClient();
+
+    // Track if the task was executed successfully
+    bool taskExecuted{false};
+    
+    // Enqueue a task (fire-and-forget) that will execute
+    mainThread->enqueueTask(clientId, [&]() { 
+        taskExecuted = true;
+        // Sleep to give the main thread time to exit the loop
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    });
+
+    // Give the task a moment to start
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    // Now destroy the MainThread object from outside
+    // This should NOT cause a crash in the worker thread's loop
+    mainThread.reset();
+
+    // Sleep to allow the worker thread to finish and exit safely
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    
+    // If we got here without crashing, the test passed
+    EXPECT_TRUE(taskExecuted);
+}
+
+/**
+ * P4.1 Test: Multiple tasks execute correctly with worker state copy
+ * 
+ * Verify that the local shared_ptr copy doesn't affect normal task execution
+ */
+TEST_F(MainThreadTests, P4_1_MultipleTasksExecuteWithLocalStateCopy)
+{
+    m_mainThread = std::make_shared<MainThread>();
+    uint32_t clientId = m_mainThread->registerClient();
+
+    std::vector<int> executionOrder;
+    std::mutex orderMutex;
+
+    // Enqueue multiple tasks
+    for (int i = 0; i < 5; ++i)
+    {
+        bool result = m_mainThread->enqueueTaskAndWait(clientId, [&, i]() {
+            std::lock_guard<std::mutex> lock(orderMutex);
+            executionOrder.push_back(i);
+        });
+        EXPECT_TRUE(result);
+    }
+
+    // Verify all tasks executed in order
+    EXPECT_EQ(executionOrder.size(), 5);
+    for (int i = 0; i < 5; ++i)
+    {
+        EXPECT_EQ(executionOrder[i], i);
+    }
+}
+
+/**
+ * P4.1 Test: Rapid destruction after task enqueueing is safe
+ * 
+ * Verify that destroying MainThread immediately after enqueuing doesn't crash
+ */
+TEST_F(MainThreadTests, P4_1_RapidDestructionAfterTaskEnqueueIsSafe)
+{
+    for (int iteration = 0; iteration < 10; ++iteration)
+    {
+        {
+            std::shared_ptr<MainThread> tempMainThread = std::make_shared<MainThread>();
+            uint32_t clientId = tempMainThread->registerClient();
+
+            // Fire-and-forget enqueue
+            tempMainThread->enqueueTask(clientId, []() { 
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            });
+
+            // Destroy immediately (scope exit)
+        }
+        // Sleep to allow cleanup
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+    // If we completed all iterations without crashing, test passes
+}
+
+/**
+ * P4.1 Test: Task completion callback correctness with shared_ptr copy
+ * 
+ * Verify that task status notifications work correctly with the local copy
+ */
+TEST_F(MainThreadTests, P4_1_TaskStatusNotificationsWorkWithStateCopy)
+{
+    m_mainThread = std::make_shared<MainThread>();
+    uint32_t clientId = m_mainThread->registerClient();
+
+    std::vector<std::string> results;
+    std::mutex resultsMutex;
+
+    // Enqueue tasks with different outcomes
+    bool result1 = m_mainThread->enqueueTaskAndWait(clientId, [&]() {
+        std::lock_guard<std::mutex> lock(resultsMutex);
+        results.push_back("success");
+    });
+    EXPECT_TRUE(result1);
+
+    // Enqueue a task that throws
+    bool result2 = m_mainThread->enqueueTaskAndWait(clientId, [&]() { 
+        throw std::runtime_error("Test error");
+    });
+    EXPECT_FALSE(result2);
+
+    // Enqueue another success task
+    bool result3 = m_mainThread->enqueueTaskAndWait(clientId, [&]() {
+        std::lock_guard<std::mutex> lock(resultsMutex);
+        results.push_back("success2");
+    });
+    EXPECT_TRUE(result3);
+
+    // Verify results
+    EXPECT_EQ(results.size(), 2);
+    EXPECT_EQ(results[0], "success");
+    EXPECT_EQ(results[1], "success2");
+}
+

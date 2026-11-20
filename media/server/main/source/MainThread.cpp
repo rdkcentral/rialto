@@ -144,7 +144,13 @@ void MainThread::mainThreadLoop()
     // Store this thread's id
     m_threadId = std::this_thread::get_id();
 
-    while (m_isMainThreadRunning->load())
+    // Keep a local copy of the shared_ptr to prevent use-after-free:
+    // If the last MainThread owner is released while this loop is running,
+    // the destructor may detach the worker thread. The MainThread object
+    // may then be destroyed, but our local copy keeps m_isMainThreadRunning alive.
+    const auto isMainThreadRunning = m_isMainThreadRunning;
+
+    while (isMainThreadRunning->load())
     {
         const std::shared_ptr<TaskInfo> kTaskInfo = waitForTask();
         if (!kTaskInfo)
