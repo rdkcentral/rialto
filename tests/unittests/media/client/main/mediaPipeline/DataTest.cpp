@@ -17,824 +17,365 @@
  * limitations under the License.
  */
 
-#include "KeyIdMap.h"
-#include "MediaFrameWriterMock.h"
-#include "MediaPipelineTestBase.h"
-#include "SharedMemoryHandleMock.h"
-#include <condition_variable>
+#ifndef FIREBOLT_RIALTO_MEDIA_PIPELINE_H_
+#define FIREBOLT_RIALTO_MEDIA_PIPELINE_H_
+
+#include "AttachedSources.h"
+#include "IClientController.h"
+#include "IControlClient.h"
+#include "IMediaFrameWriter.h"
+#include "IMediaPipeline.h"
+#include "IMediaPipelineIpc.h"
+#include <atomic>
+#include <cstddef>
+#include <deque>
+#include <map>
+#include <memory>
 #include <mutex>
-#include <thread>
+#include <string>
 #include <vector>
 
-MATCHER_P(ShmInfoMatcher, shmInfo, "")
+namespace firebolt::rialto
 {
-    return ((arg->maxMetadataBytes == shmInfo->maxMetadataBytes) && (arg->metadataOffset == shmInfo->metadataOffset) &&
-            (arg->mediaDataOffset == shmInfo->mediaDataOffset) && (arg->maxMediaBytes == shmInfo->maxMediaBytes));
-}
-
-class RialtoClientMediaPipelineDataTest : public MediaPipelineTestBase
+/**
+ * @brief IMediaPipeline factory class definition.
+ */
+class MediaPipelineFactory : public IMediaPipelineFactory
 {
-protected:
-    StrictMock<MediaFrameWriterMock> *m_mediaFrameWriterMock = nullptr;
+public:
+    MediaPipelineFactory() = default;
+    ~MediaPipelineFactory() override = default;
 
-    int32_t m_sourceId = 1;
-    size_t m_frameCount = 2;
-    uint32_t m_requestId = 4U;
-    uint32_t m_numFrames = 5U;
-    int32_t m_mksId{6};
-    std::vector<uint8_t> m_keyId{1, 2, 3, 4};
-    uint8_t m_shmBuffer;
-    std::shared_ptr<MediaPlayerShmInfo> m_shmInfo;
-    const bool m_kResetTime{true};
-    std::shared_ptr<SharedMemoryHandleMock> m_sharedMemoryHandleMock;
-    MediaSourceStatus m_status = MediaSourceStatus::NO_AVAILABLE_SAMPLES;
-    IMediaPipeline::MediaSegmentVector m_dataVec;
-    std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock;
+    std::unique_ptr<IMediaPipeline> createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
+                                                        const VideoRequirements &videoRequirements) const override;
 
-    std::thread m_haveDataThread;
-    std::mutex m_haveDataMutex;
-    std::condition_variable m_haveDataCond;
+    /**
+     * @brief IMediaPipeline factory method with factory parameters for mock injection.
+     *
+     * @param[in] client                  : The Rialto media player client.
+     * @param[in] videoRequirements       : The video decoder requirements for the MediaPipeline session.
+     * @param[in] mediaPipelineIpcFactory : This was added for the test environment where a mock object needs to be passed in.
+     * @param[in] clientController        : This was added for the test environment where a mock object needs to be passed in.
+     *
+     * @retval the new backend instance or null on error.
+     */
+    std::unique_ptr<IMediaPipeline>
+    createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
+                        std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory,
+                        std::weak_ptr<client::IClientController> clientController) const;
+};
 
-    virtual void SetUp()
-    {
-        MediaPipelineTestBase::SetUp();
+}; // namespace firebolt::rialto
 
-        createMediaPipeline();
-
-        // InitShm
-        m_shmInfo = std::make_shared<MediaPlayerShmInfo>();
-        m_shmInfo->maxMetadataBytes = 5;
-        m_shmInfo->metadataOffset = 6;
-        m_shmInfo->mediaDataOffset = 7;
-        m_shmInfo->maxMediaBytes = 3U;
-
-        m_sharedMemoryHandleMock = std::make_shared<SharedMemoryHandleMock>();
-
-        attachSource(m_sourceId);
-
-        // Set the MediaPipeline state to playing by default
-        setPlaybackState(PlaybackState::PLAYING);
-    }
-
-    virtual void TearDown()
-    {
-        deleteFrames();
-
-        m_mediaFrameWriterMock = nullptr;
-
-        destroyMediaPipeline();
-
-        MediaPipelineTestBase::TearDown();
-    }
-
-    void attachSource(std::int32_t sourceId)
-    {
-        std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-            std::make_unique<IMediaPipeline::MediaSourceAudio>("audio/mp4");
-        EXPECT_CALL(*m_mediaPipelineIpcMock, attachSource(Ref(mediaSource), _))
-            .WillOnce(DoAll(SetArgReferee<1>(sourceId), Return(true)));
-        EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
-    }
-
-    void needDataGeneric() { needData(m_sourceId, m_frameCount, m_requestId, m_shmInfo); }
-
-    void addFrames(MediaSourceType sourceType, uint32_t numberOfFrames, const std::vector<uint8_t> &data)
-    {
-        int64_t timestamp = 0;
-
-        mediaFrameWriterMock = std::make_unique<StrictMock<MediaFrameWriterMock>>();
-        m_mediaFrameWriterMock = mediaFrameWriterMock.get();
-
-        EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(&m_shmBuffer));
-        updateSharedMemoryHandle(m_sharedMemoryHandleMock);
-
-        if (sourceType == MediaSourceType::VIDEO)
-        {
-            EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
-                .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))))
-                .RetiresOnSaturation();
-        }
-        else if (sourceType == MediaSourceType::AUDIO)
-        {
-            EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
-                .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))))
-                .RetiresOnSaturation();
-        }
-
-        EXPECT_CALL(*m_mediaFrameWriterMock, writeFrame(_)).Times(numberOfFrames).WillRepeatedly(Return(AddSegmentStatus::OK));
-
-        for (uint32_t i = 0; i < numberOfFrames; i++)
-        {
-            std::unique_ptr<IMediaPipeline::MediaSegment> frame =
-                createFrame(sourceType, data.size(), data.data(), timestamp);
-
-            EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::OK);
-        }
-    }
-
-    void deleteFrames()
-    {
-        for (auto it = m_dataVec.begin(); it != m_dataVec.end(); it++)
-        {
-            delete[] (*it)->getData();
-        }
-        m_dataVec.clear();
-    }
-
-    void haveDataSuccess(MediaSourceType sourceType)
-    {
-        EXPECT_CALL(*m_mediaFrameWriterMock, getNumFrames()).WillOnce(Return(m_numFrames));
-        EXPECT_CALL(*m_mediaPipelineIpcMock, haveData(m_status, m_numFrames, m_requestId))
-            .WillOnce(Return(true))
-            .RetiresOnSaturation();
-
-        EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
-    }
-
-    std::unique_ptr<IMediaPipeline::MediaSegment> createFrame(MediaSourceType sourceType, uint32_t dataLength,
-                                                              const uint8_t *data, int64_t timestamp = 0)
-    {
-        std::unique_ptr<IMediaPipeline::MediaSegment> frame;
-        int64_t duration = 1000000000;
-
-        if (sourceType == MediaSourceType::AUDIO)
-        {
-            int32_t sampleRate = 6;
-            int32_t numberOfChannels = 7;
-            uint64_t clippingStart = 1024;
-            uint64_t clippingEnd = 2048;
-            frame = std::make_unique<IMediaPipeline::MediaSegmentAudio>(m_sourceId, timestamp, duration, sampleRate,
-                                                                        numberOfChannels, clippingStart, clippingEnd);
-        }
-        else if (sourceType == MediaSourceType::VIDEO)
-        {
-            int32_t width = 8;
-            int32_t height = 9;
-            Fraction frameRate = {10, 1};
-            frame = std::make_unique<IMediaPipeline::MediaSegmentVideo>(m_sourceId, timestamp, duration, width, height,
-                                                                        frameRate);
-        }
-        else
-        {
-            frame = std::make_unique<IMediaPipeline::MediaSegment>(m_sourceId, sourceType, timestamp, duration);
-        }
-
-        frame->setData(dataLength, data);
-        return frame;
-    }
-
-    void startAddSegmentThread()
-    {
-        // Call haveData on a separate thread.
-        m_haveDataThread = std::thread(
-            [this]()
-            {
-                mediaFrameWriterMock = std::make_unique<StrictMock<MediaFrameWriterMock>>();
-
-                std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-                std::unique_ptr<IMediaPipeline::MediaSegment> frame =
-                    createFrame(MediaSourceType::VIDEO, data.size(), data.data());
-                // Save a raw pointer to the unique object for use when testing mocks
-                // Object shall be freed by the holder of the unique ptr on destruction
-                m_mediaFrameWriterMock = mediaFrameWriterMock.get();
-
-                EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(&m_shmBuffer));
-                updateSharedMemoryHandle(m_sharedMemoryHandleMock);
-
-                EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
-                    .WillOnce(DoAll(Invoke(
-                                        [this](uint8_t *shmBuffer, const std::shared_ptr<MediaPlayerShmInfo> &shminfo)
-                                        {
-                                            m_haveDataCond.notify_all();
-
-                                            // Sleep for 0.1 sec so that notifyBufferTerm can be called
-                                            usleep(10000);
-                                        }),
-                                    Return(ByMove(std::move(mediaFrameWriterMock)))));
-
-                // haveData should still write all the frames if the MediaPipeline has been notified of termination
-                EXPECT_CALL(*m_mediaFrameWriterMock, writeFrame(Ref(frame))).WillOnce(Return(AddSegmentStatus::OK));
-                EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::OK);
-            });
-    }
+namespace firebolt::rialto::client
+{
+class IMediaPipelineAndIControlClient : public IMediaPipeline, public IControlClient
+{
 };
 
 /**
- * Test that a need data notification is forwarded to the client on the event thread.
- * shmPosition is stored and invalid shmPosition is passed to the client.
+ * @brief The definition of the MediaPipeline.
  */
-TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEvent)
+class MediaPipeline : public IMediaPipelineAndIControlClient, public IMediaPipelineIpcClient
 {
-    // Playing
-    needDataGeneric();
-}
-
-/**
- * Test that a need data notification is forwarded to the client on the event thread in the BUFFERING state.
- * shmPosition is stored and invalid shmPosition is passed to the client.
- */
-TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventBuffering)
-{
-    setNetworkState(NetworkState::BUFFERING);
-    needDataGeneric();
-}
-
-/**
- * Test that an audio need data notification is not forwarded to the client, when audio source switch is ongoing
- */
-TEST_F(RialtoClientMediaPipelineDataTest, AudioNeedDataEventDuringAudioSourceSwitch)
-{
-    EXPECT_CALL(*m_mediaPipelineIpcMock, removeSource(m_sourceId)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->removeSource(m_sourceId), true);
-    // Should not trigger any expect calls when audio source is removed
-    m_mediaPipelineCallback->notifyNeedMediaData(m_sourceId, m_frameCount, m_requestId, m_shmInfo);
-}
-
-/**
- * Test that a video need data notification is forwarded to the client, when audio source switch is ongoing
- */
-TEST_F(RialtoClientMediaPipelineDataTest, VideoNeedDataEventDuringAudioSourceSwitch)
-{
-    attachSource(m_sourceId + 1);
-    EXPECT_CALL(*m_mediaPipelineIpcMock, removeSource(m_sourceId)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->removeSource(m_sourceId), true);
-    needData(m_sourceId + 1, m_frameCount, m_requestId, m_shmInfo);
-}
-
-/**
- * Test that an audio need data notification is forwarded to the client, when audio source switch is finished
- */
-TEST_F(RialtoClientMediaPipelineDataTest, AudioNeedDataEventAfterFinishOfAudioSourceSwitch)
-{
-    // Remove audio source
-    EXPECT_CALL(*m_mediaPipelineIpcMock, removeSource(m_sourceId)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->removeSource(m_sourceId), true);
-
-    // Reattach audio source
-    attachSource(m_sourceId);
-
-    // Need data should be forwarded to the client.
-    needDataGeneric();
-}
-
-/**
- * Test that a need data notification is forwarded to the client on the event thread in the SEEK_DONE state.
- * shmPosition is stored and invalid shmPosition is passed to the client.
- */
-TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventSeekDone)
-{
-    setPlaybackState(PlaybackState::SEEK_DONE);
-    needDataGeneric();
-}
-
-/**
- * Test that a need data notification in an invalid state is ignored.
- */
-TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventInvalidStates)
-{
-    std::vector<PlaybackState> invalidStates = {PlaybackState::SEEKING, PlaybackState::STOPPED,
-                                                PlaybackState::END_OF_STREAM, PlaybackState::FAILURE};
-
-    for (auto it = invalidStates.begin(); it != invalidStates.end(); it++)
+public:
+    /**
+     * @brief The possible states of the MediaPipeline.
+     */
+    enum class State
     {
-        setPlaybackState(*it);
-
-        // Should not trigger any expect calls in all invalid states
-        m_mediaPipelineCallback->notifyNeedMediaData(m_sourceId, m_frameCount, m_requestId, m_shmInfo);
-    }
-}
-
-/**
- * Test that a need data notification for flushing source is ignored.
- */
-TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventFlushingSource)
-{
-    // Flush source
-    bool isAsync{false};
-    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime, _)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime, isAsync), true);
-
-    // Should not trigger any expect calls in all invalid states
-    m_mediaPipelineCallback->notifyNeedMediaData(m_sourceId, m_frameCount, m_requestId, m_shmInfo);
-}
-
-/**
- * Test that a need data notification is handled when flush is finished
- */
-TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventAfterFlushingSource)
-{
-    // Flush source
-    bool isAsync{false};
-    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime, _)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime, isAsync), true);
-
-    // Finish flush
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifySourceFlushed(m_sourceId));
-    m_mediaPipelineCallback->notifySourceFlushed(m_sourceId);
-
-    // Need data should be handled here.
-    needDataGeneric();
-}
-
-/**
- * Test that a need data notification is handled when flush is finished in EOS state
- */
-TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventAfterFlushingSourceInEos)
-{
-    setPlaybackState(PlaybackState::END_OF_STREAM);
-
-    // Flush source
-    bool isAsync{false};
-    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime, _)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime, isAsync), true);
-
-    // Finish flush
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifySourceFlushed(m_sourceId));
-    m_mediaPipelineCallback->notifySourceFlushed(m_sourceId);
-
-    // Need data should be handled here.
-    needDataGeneric();
-}
-
-/**
- * Test that a have data call without a paired need data notification returns success.
- */
-TEST_F(RialtoClientMediaPipelineDataTest, HaveDataNoNeedData)
-{
-    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
-}
-
-TEST_F(RialtoClientMediaPipelineDataTest, HaveDataNoSegments)
-{
-    needDataGeneric();
-
-    EXPECT_CALL(*m_mediaPipelineIpcMock, haveData(m_status, 0, m_requestId)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
-}
-
-// /**
-//  * Test that a have data call succeeds when segments are added
-//  */
-TEST_F(RialtoClientMediaPipelineDataTest, haveDataSuccess)
-{
-    uint32_t numFrames = 1;
-    needDataGeneric();
-
-    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-    std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::VIDEO, data.size(), data.data());
-
-    std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock =
-        std::make_unique<StrictMock<MediaFrameWriterMock>>();
-
-    // Save a raw pointer to the unique object for use when testing mocks
-    // Object shall be freed by the holder of the unique ptr on destruction
-    m_mediaFrameWriterMock = mediaFrameWriterMock.get();
-
-    EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(&m_shmBuffer));
-    updateSharedMemoryHandle(m_sharedMemoryHandleMock);
-
-    EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
-        .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
-
-    EXPECT_CALL(*m_mediaFrameWriterMock, writeFrame(_)).WillOnce(Return(AddSegmentStatus::OK));
-    EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::OK);
-
-    EXPECT_CALL(*m_mediaFrameWriterMock, getNumFrames()).WillOnce(Return(numFrames));
-
-    EXPECT_CALL(*m_mediaPipelineIpcMock, haveData(m_status, numFrames, m_requestId)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
-}
-
-// /**
-//  * Test that an add segment call with a null segment returns error.
-//  */
-TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentNullSegment)
-{
-    EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, nullptr), AddSegmentStatus::ERROR);
-}
-
-// /**
-//  * Test that an add segment call with an unknown data type returns error.
-//  */
-TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentUnknownDataType)
-{
-    needDataGeneric();
-    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-    std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::UNKNOWN, data.size(), data.data());
+        IDLE,         /**< The MediaPipeline is idle. */
+        BUFFERING,    /**< The MediaPipeline is buffering data. */
+        PLAYING,      /**< The MediaPipeline is playing. */
+        SEEKING,      /**< The MediaPipeline is seeking position. */
+        FAILURE,      /**< The MediaPipeline is failed. */
+        END_OF_STREAM /**< The MediaPipeline is at the end of stream. */
+    };
 
-    EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(&m_shmBuffer));
-    updateSharedMemoryHandle(m_sharedMemoryHandleMock);
-
-    EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::ERROR);
-}
-
-// /**
-//  * Test that an add segment call with no data type returns error.
-//  */
-TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentNoData)
-{
-    needDataGeneric();
-    std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::UNKNOWN, 0, nullptr);
-
-    EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::ERROR);
-}
-
-/**
- * Test that an add segment call with getting shared memory failure returns false
- */
-TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentGetSharedMemoryFailure)
-{
-    needDataGeneric();
+    /**
+     * @brief The constructor.
+     *
+     * @param[in] client                        : The Rialto media player client.
+     * @param[in] videoRequirements             : The video decoder requirements for the MediaPipeline session.
+     * @param[in] mediaPipelineIpcFactory         : The media player ipc factory.
+     * @param[in] mediaFrameWriterFactory       : The media frame writer factory.
+     * @param[in] clientController           : The shared memory manager.
+     */
+    MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
+                  const std::shared_ptr<IMediaPipelineIpcFactory> &mediaPipelineIpcFactory,
+                  const std::shared_ptr<common::IMediaFrameWriterFactory> &mediaFrameWriterFactory,
+                  IClientController &clientController);
 
-    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-    std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::UNKNOWN, data.size(), data.data());
+    /**
+     * @brief Virtual destructor.
+     */
+    virtual ~MediaPipeline();
 
-    EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(nullptr));
-    updateSharedMemoryHandle(m_sharedMemoryHandleMock);
+    bool load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive) override;
 
-    EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::ERROR);
-}
+    bool attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
 
-/**
- * Test that an add segment call with getting missing shared memory handle returns false
- */
-TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentGetSharedMemoryHandleFailure)
-{
-    needDataGeneric();
+    bool removeSource(int32_t id) override;
 
-    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-    std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::UNKNOWN, data.size(), data.data());
+    bool allSourcesAttached() override;
 
-    updateSharedMemoryHandle(nullptr);
+    bool play(bool &async) override;
 
-    EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::ERROR);
-}
+    bool pause() override;
 
-// /**
-//  * Test that have data fails if failed to create the frame writer.
-//  */
-TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentcreateFrameWriterFailure)
-{
-    needDataGeneric();
+    bool stop() override;
 
-    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-    std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::AUDIO, data.size(), data.data());
+    bool setPlaybackRate(double rate) override;
 
-    std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock;
+    bool setPosition(int64_t position) override;
 
-    EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(&m_shmBuffer));
-    updateSharedMemoryHandle(m_sharedMemoryHandleMock);
+    bool getPosition(int64_t &position) override;
 
-    EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
-        .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
+    bool setImmediateOutput(int32_t sourceId, bool immediateOutput) override;
 
-    EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::ERROR);
-}
+    bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) override;
 
-// /**
-//  * Test that add segment fails if writing the frame to the buffer fails due to no space
-//  */
-TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentWriteFrameFailure)
-{
-    needDataGeneric();
+    bool getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames) override;
 
-    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-    std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::VIDEO, data.size(), data.data());
+    bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override;
 
-    std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock =
-        std::make_unique<StrictMock<MediaFrameWriterMock>>();
+    bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
+    bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
-    // Save a raw pointer to the unique object for use when testing mocks
-    // Object shall be freed by the holder of the unique ptr on destruction
-    m_mediaFrameWriterMock = mediaFrameWriterMock.get();
+    bool haveData(MediaSourceStatus status, uint32_t needDataRequestId) override;
 
-    EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(&m_shmBuffer));
-    updateSharedMemoryHandle(m_sharedMemoryHandleMock);
+    AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
-    EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
-        .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
+    std::weak_ptr<IMediaPipelineClient> getClient() override;
 
-    EXPECT_CALL(*m_mediaFrameWriterMock, writeFrame(_)).WillOnce(Return(AddSegmentStatus::NO_SPACE));
+    void notifyPlaybackState(PlaybackState state) override;
 
-    EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::NO_SPACE);
-}
+    void notifyPosition(int64_t position) override;
 
-// /**
-//  * Test that a an add segment call returns success if writing frame succeeds
-//  */
-TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentVideoSuccess)
-{
-    needDataGeneric();
+    void notifyNetworkState(NetworkState state) override;
 
-    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-    std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::VIDEO, data.size(), data.data());
+    void notifyNeedMediaData(int32_t sourceId, size_t frameCount, uint32_t requestId,
+                             const std::shared_ptr<MediaPlayerShmInfo> &shmInfo) override;
 
-    std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock =
-        std::make_unique<StrictMock<MediaFrameWriterMock>>();
+    void notifyQos(int32_t sourceId, const QosInfo &qosInfo) override;
 
-    // Save a raw pointer to the unique object for use when testing mocks
-    // Object shall be freed by the holder of the unique ptr on destruction
-    m_mediaFrameWriterMock = mediaFrameWriterMock.get();
+    void notifyBufferUnderflow(int32_t sourceId) override;
 
-    EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(&m_shmBuffer));
-    updateSharedMemoryHandle(m_sharedMemoryHandleMock);
+    void notifyFirstFrameReceived(int32_t sourceId) override;
 
-    EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
-        .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
+    void notifyPlaybackError(int32_t sourceId, PlaybackError error) override;
 
-    EXPECT_CALL(*m_mediaFrameWriterMock, writeFrame(_)).WillOnce(Return(AddSegmentStatus::OK));
+    void notifySourceFlushed(int32_t sourceId) override;
 
-    EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::OK);
-}
+    void notifyPlaybackInfo(const PlaybackInfo &playbackInfo) override;
 
-TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentAudioSuccess)
-{
-    needDataGeneric();
+    bool renderFrame() override;
 
-    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-    std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::AUDIO, data.size(), data.data());
+    bool setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType) override;
 
-    std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock =
-        std::make_unique<StrictMock<MediaFrameWriterMock>>();
+    bool getVolume(double &currentVolume) override;
 
-    // Save a raw pointer to the unique object for use when testing mocks
-    // Object shall be freed by the holder of the unique ptr on destruction
-    m_mediaFrameWriterMock = mediaFrameWriterMock.get();
+    bool setMute(int32_t sourceId, bool mute) override;
 
-    EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(&m_shmBuffer));
-    updateSharedMemoryHandle(m_sharedMemoryHandleMock);
+    bool getMute(int32_t sourceId, bool &mute) override;
 
-    EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
-        .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
+    bool setTextTrackIdentifier(const std::string &textTrackIdentifier) override;
 
-    EXPECT_CALL(*m_mediaFrameWriterMock, writeFrame(_)).WillOnce(Return(AddSegmentStatus::OK));
+    bool getTextTrackIdentifier(std::string &textTrackIdentifier) override;
 
-    EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::OK);
-}
+    bool setLowLatency(bool lowLatency) override;
 
-/**
- * Test that a an add segment call with encrypted frame does not update keyId when KeyId is not found in map
- */
-TEST_F(RialtoClientMediaPipelineDataTest, AddEncryptedCobaltSegmentSuccess)
-{
-    needDataGeneric();
+    bool setSync(bool sync) override;
 
-    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-    std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::VIDEO, data.size(), data.data());
-    frame->setEncrypted(true);
-    frame->setMediaKeySessionId(m_mksId);
+    bool getSync(bool &sync) override;
 
-    std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock =
-        std::make_unique<StrictMock<MediaFrameWriterMock>>();
+    bool setSyncOff(bool syncOff) override;
 
-    // Save a raw pointer to the unique object for use when testing mocks
-    // Object shall be freed by the holder of the unique ptr on destruction
-    m_mediaFrameWriterMock = mediaFrameWriterMock.get();
+    bool setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode) override;
 
-    EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(&m_shmBuffer));
-    updateSharedMemoryHandle(m_sharedMemoryHandleMock);
+    bool getStreamSyncMode(int32_t &streamSyncMode) override;
 
-    EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
-        .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
+    bool getDuration(int64_t &duration) override;
 
-    EXPECT_CALL(*m_mediaFrameWriterMock, writeFrame(_)).WillOnce(Return(AddSegmentStatus::OK));
+    bool flush(int32_t sourceId, bool resetTime, bool &async) override;
 
-    EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::OK);
+    bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
+                           uint64_t stopPosition) override;
 
-    // For non-netflix segment, key ID should not be updated
-    EXPECT_TRUE(frame->isEncrypted());
-    EXPECT_TRUE(frame->getKeyId().empty());
-}
+    bool setSubtitleOffset(int32_t sourceId, int64_t position) override;
 
-/**
- * Test that a an add segment call with encrypted frame updates keyId when KeyId is found in map
- */
-TEST_F(RialtoClientMediaPipelineDataTest, AddEncryptedNetflixSegmentSuccess)
-{
-    needDataGeneric();
+    bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
 
-    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-    KeyIdMap::instance().addSession(m_mksId);
-    KeyIdMap::instance().updateKey(m_mksId, m_keyId);
-    std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::VIDEO, data.size(), data.data());
-    frame->setEncrypted(true);
-    frame->setMediaKeySessionId(m_mksId);
+    bool setBufferingLimit(uint32_t limitBufferingMs) override;
 
-    std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock =
-        std::make_unique<StrictMock<MediaFrameWriterMock>>();
+    bool getBufferingLimit(uint32_t &limitBufferingMs) override;
 
-    // Save a raw pointer to the unique object for use when testing mocks
-    // Object shall be freed by the holder of the unique ptr on destruction
-    m_mediaFrameWriterMock = mediaFrameWriterMock.get();
+    bool setUseBuffering(bool useBuffering) override;
 
-    EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(&m_shmBuffer));
-    updateSharedMemoryHandle(m_sharedMemoryHandleMock);
+    bool getUseBuffering(bool &useBuffering) override;
 
-    EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
-        .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
+    bool switchSource(const std::unique_ptr<MediaSource> &source) override;
 
-    EXPECT_CALL(*m_mediaFrameWriterMock, writeFrame(_)).WillOnce(Return(AddSegmentStatus::OK));
+    void notifyApplicationState(ApplicationState state) override;
 
-    EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::OK);
-
-    // For non-netflix segment, key ID should not be updated
-    EXPECT_TRUE(frame->isEncrypted());
-    EXPECT_EQ(frame->getKeyId(), m_keyId);
-
-    // Cleanup
-    KeyIdMap::instance().erase(m_mksId);
-}
-
-/**
- * Test that a have data writes data successfully in the BUFFERING state.
- */
-// TEST_F(RialtoClientMediaPipelineDataTest, haveDataSuccessBuffering)
-// {
-//     needDataGeneric();
-
-//     std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-//     std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::AUDIO, data.size(), data.data());
-
-//     std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock =
-//         std::make_unique<StrictMock<MediaFrameWriterMock>>();
-
-//     // Save a raw pointer to the unique object for use when testing mocks
-//     // Object shall be freed by the holder of the unique ptr on destruction
-//     m_mediaFrameWriterMock = mediaFrameWriterMock.get();
-
-// <<<<<<< HEAD
-//     setNetworkState(NetworkState::BUFFERING);
-
-//     haveDataSuccess(MediaSourceType::AUDIO);
-// }
-
-/**
- * Test that a have data writes data successfully in the BUFFERING state.
- */
-TEST_F(RialtoClientMediaPipelineDataTest, haveDataSuccessBuffering)
-{
-    needDataGeneric();
-
-    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-    addFrames(MediaSourceType::AUDIO, m_numFrames, data);
-
-    setNetworkState(NetworkState::BUFFERING);
-
-    haveDataSuccess(MediaSourceType::AUDIO);
-}
-
-/**
- * Test that a have data is ignored and the needDataRequest discarded in the SEEKING state.
- * haveData should return success as this is a valid scenario.
- */
-TEST_F(RialtoClientMediaPipelineDataTest, HaveDataSeeking)
-{
-    needDataGeneric();
-
-    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-    addFrames(MediaSourceType::AUDIO, m_numFrames, data);
-
-    setPlaybackState(PlaybackState::SEEKING);
-
-    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
-
-    // Check that the needDataRequest has been discarded by initiating another haveData
-    setPlaybackState(PlaybackState::PLAYING);
-
-    // haveData should return success but will not be forwarded to media ipc
-    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
-}
-
-/**
- * Test that a have data is ignored and the needDataRequest discarded in the SEEKING state.
- * haveData should return success when Seek is completed in SEEK_DONE state
- */
-TEST_F(RialtoClientMediaPipelineDataTest, HaveDataAfterSeekCompleted)
-{
-    needDataGeneric();
-
-    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-    addFrames(MediaSourceType::AUDIO, m_numFrames, data);
-
-    setPlaybackState(PlaybackState::SEEKING);
-
-    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
-
-    // Check that new haveData is handled after changing state to SEEK_DONE
-    setPlaybackState(PlaybackState::SEEK_DONE);
-
-    // haveData should return success but will not be forwarded to media ipc
-    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
-}
-
-/**
- * Test that a have data is ignored and the needDataRequest discarded when source is flushing.
- * haveData should return success as this is a valid scenario.
- */
-TEST_F(RialtoClientMediaPipelineDataTest, HaveDataFlushing)
-{
-    needDataGeneric();
-
-    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-    addFrames(MediaSourceType::AUDIO, m_numFrames, data);
-
-    bool isAsync{false};
-    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime, _)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime, isAsync), true);
-
-    // haveData should return success but will not be forwarded to media ipc
-    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
-}
-
-/**
- * Test that a have data is handled when flush is finished.
- */
-TEST_F(RialtoClientMediaPipelineDataTest, HaveDataFlushCompleted)
-{
-    needDataGeneric();
-
-    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-    addFrames(MediaSourceType::AUDIO, m_numFrames, data);
-
-    bool isAsync{false};
-    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime, _)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime, isAsync), true);
-
-    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
-
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifySourceFlushed(m_sourceId));
-    m_mediaPipelineCallback->notifySourceFlushed(m_sourceId);
-
-    // haveData should return success but will not be forwarded to media ipc
-    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
-}
-
-/**
- * Test that a have data fails and the needDataRequest discarded in the invalid states.
- */
-TEST_F(RialtoClientMediaPipelineDataTest, HaveDataInvalidStates)
-{
-    std::vector<PlaybackState> invalidStates = {PlaybackState::STOPPED, PlaybackState::END_OF_STREAM,
-                                                PlaybackState::FAILURE};
-
-    for (auto it = invalidStates.begin(); it != invalidStates.end(); it++)
+protected:
+    /**
+     * @brief The need data request data.
+     */
+    struct NeedDataRequest
     {
-        needDataGeneric();
-        std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-        addFrames(MediaSourceType::AUDIO, m_numFrames, data);
+        int32_t sourceId;                                       /**< The source id. */
+        std::shared_ptr<MediaPlayerShmInfo> shmInfo;            /**< The shared memory information. */
+        std::unique_ptr<common::IMediaFrameWriter> frameWriter; /**< The frame writer used to add segments. */
+    };
 
-        setPlaybackState(*it);
+    struct PendingNeedMediaData
+    {
+        int32_t sourceId;
+        size_t frameCount;
+        uint32_t requestId;
+        std::shared_ptr<MediaPlayerShmInfo> shmInfo;
+    };
 
-        EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), false);
+    /**
+     * @brief The media player client.
+     */
+    std::weak_ptr<IMediaPipelineClient> m_mediaPipelineClient;
 
-        // Should not trigger any expect calls in all invalid states
-        m_mediaPipelineCallback->notifyNeedMediaData(m_sourceId, m_frameCount, m_requestId, m_shmInfo);
+    /**
+     * @brief The media player ipc object.
+     */
+    std::unique_ptr<IMediaPipelineIpc> m_mediaPipelineIpc;
 
-        // Check that the needDataRequest has been discarded by initiating another haveData
-        setPlaybackState(PlaybackState::PLAYING);
+    /**
+     * @brief The rialto shared memory manager object.
+     */
+    IClientController &m_clientController;
 
-        // haveData should return success but will not be forwarded to media ipc
-        EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
-    }
-}
+    /**
+     * @brief The Need data request map.
+     * Key: requestId
+     * Value: NeedDataRequest
+     */
+    std::map<uint32_t, std::shared_ptr<NeedDataRequest>> m_needDataRequestMap;
 
-/**
- * Test a notification buffer terminating waits for the frame writing to finish before returning.
- * This test validates that there are no deadlocks.
- */
-TEST_F(RialtoClientMediaPipelineDataTest, TermSharedMemoryDuringWrite)
-{
-    needDataGeneric();
+    /**
+     * @brief The current application state. Protected by m_needDataRequestMapMutex
+     */
+    ApplicationState m_currentAppState;
 
-    // The thread will call have data and signal when it is processing the frames
-    startAddSegmentThread();
+    /**
+     * @brief The need data request map mutex.
+     */
+    std::mutex m_needDataRequestMapMutex;
 
-    // Wait for frame processing to start
-    std::unique_lock<std::mutex> haveDataLock(m_haveDataMutex);
-    m_haveDataCond.wait(haveDataLock);
+    /**
+     * @brief The media frame writer factory.
+     */
+    std::shared_ptr<common::IMediaFrameWriterFactory> m_mediaFrameWriterFactory;
 
-    // When notifyBufferTerm called, it shall wait for haveData to finish before returning
-    m_mediaPipeline->notifyApplicationState(ApplicationState::INACTIVE);
+    /**
+     * @brief The shared memory mutex. Guards m_shmHandle.
+     */
+    std::mutex m_shmMutex;
 
-    m_haveDataThread.join();
-}
+    /**
+     * @brief Cached shared memory handle, refreshed by the subscribeSharedMemoryHandle() observer.
+     */
+    std::shared_ptr<ISharedMemoryHandle> m_shmHandle;
 
-/**
- * Test that a need data notification in app state != RUNNING is ignored.
- */
-TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventInactiveState)
-{
-    m_mediaPipeline->notifyApplicationState(ApplicationState::INACTIVE);
+    /**
+     * @brief Token for the shared memory handle observer subscription.
+     */
+    int m_shmHandleObserverId{-1};
 
-    // Should not trigger any expect calls in all invalid states
-    m_mediaPipelineCallback->notifyNeedMediaData(m_sourceId, m_frameCount, m_requestId, m_shmInfo);
-}
+    /**
+     * @brief The current state of the MediaPipeline.
+     */
+    std::atomic<State> m_currentState;
 
-/**
- * Test that a need data notification is skipped for uknown source
- */
-TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventSkipForUnknownSource)
-{
-    // Should not trigger any expect calls when source is not present
-    m_mediaPipelineCallback->notifyNeedMediaData(m_sourceId + 1, m_frameCount, m_requestId, m_shmInfo);
-}
+    /**
+     * @brief The flush request mutex.
+     */
+    std::mutex m_flushMutex;
+
+    /**
+     * @brief The attach source mutex.
+     */
+    std::mutex m_attachSourceMutex;
+
+    /**
+     * @brief Number of source attachments currently in progress.
+     */
+    std::size_t m_attachSourceCount{0};
+
+    /**
+     * @brief Whether pending NeedMediaData events are being drained.
+     */
+    bool m_drainingNeedMediaData{false};
+
+    /**
+     * @brief NeedMediaData events deferred until source attachment completes.
+     */
+    std::deque<PendingNeedMediaData> m_pendingNeedMediaData;
+
+    /**
+     * @brief The container with attached source id <-> MediaSourceType mapping
+     */
+    AttachedSources m_attachedSources;
+
+    /**
+     * @brief Sets the new internal MediaPipeline state based on the NetworkState.
+     *
+     * @param[in] state : The new NeworkState.
+     */
+    void updateState(NetworkState state);
+
+    /**
+     * @brief Sets the new internal MediaPipeline state based on the PlaybackState.
+     *
+     * @param[in] state : The new PlaybackState.
+     */
+    void updateState(PlaybackState state);
+
+    /**
+     * @brief Processes a NeedMediaData event after source attachment coordination.
+     */
+    void processNeedMediaData(int32_t sourceId, size_t frameCount, uint32_t requestId,
+                              const std::shared_ptr<MediaPlayerShmInfo> &shmInfo);
+
+    /**
+     * @brief Processes queued NeedMediaData events once source attachments complete.
+     */
+    void drainPendingNeedMediaData();
+
+    /**
+     * @brief Handles a have data request.
+     *
+     * @param[in] status  : The status
+     * @param[in] needDataRequestId : Need data request id
+     *
+     * @retval true on success.
+     */
+    bool handleHaveData(MediaSourceStatus status, uint32_t needDataRequestId);
+
+    /**
+     * @brief Handles a set position request.
+     *
+     * @param[in] position : The playback position in nanoseconds.
+     *
+     * @retval true on success.
+     */
+    bool handleSetPosition(int64_t position);
+
+    /**
+     * @brief Discards the need data request with id.
+     *
+     * @param[in] needDataRequestId : Need data request id
+     */
+    void discardNeedDataRequest(uint32_t needDataRequestId);
+};
+
+}; // namespace firebolt::rialto::client
+
+#endif // FIREBOLT_RIALTO_MEDIA_PIPELINE_H_
