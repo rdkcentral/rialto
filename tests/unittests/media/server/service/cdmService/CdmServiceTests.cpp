@@ -67,11 +67,31 @@ TEST_F(CdmServiceTests, shouldDestroyMediaKeys)
     destroyMediaKeysShouldSucceed();
 }
 
+TEST_F(CdmServiceTests, shouldNotDeleteMediaKeysWhenOcdmCallIsBlocked)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    destroyMediaKeysShouldLeakMediaKeysWhenOcdmCallIsBlocked();
+    destroyMediaKeysShouldFail();
+}
+
+TEST_F(CdmServiceTests, shouldNotDeleteMediaKeysWhenSwitchedToInactiveWhileOcdmCallIsBlocked)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfOcdmCallIsBlocked(true);
+    triggerSwitchToInactiveShouldLeakMediaKeys();
+    destroyMediaKeysShouldFail();
+}
+
 TEST_F(CdmServiceTests, shouldDestroyMediaKeysWhenSwitchedToInactive)
 {
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfOcdmCallIsBlocked(false);
     triggerSwitchToInactive();
     destroyMediaKeysShouldFail();
 }
@@ -723,6 +743,7 @@ TEST_F(CdmServiceTests, shouldFailToReleaseKeySessionAfterSwitchToInactive)
     createMediaKeysShouldSucceed();
     mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     createKeySessionShouldSucceed();
+    mediaKeysWillCheckIfOcdmCallIsBlocked(false);
     triggerSwitchToInactive();
     releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
 }

@@ -38,12 +38,19 @@ class MediaKeySessionFactory : public IMediaKeySessionFactory
 {
 public:
     MediaKeySessionFactory() = default;
+    explicit MediaKeySessionFactory(const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
+        : m_mainThreadFactory{mainThreadFactory}
+    {
+    }
     ~MediaKeySessionFactory() override = default;
 
     std::unique_ptr<IMediaKeySession> createMediaKeySession(const std::string &keySystem, int32_t keySessionId,
                                                             const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem,
                                                             KeySessionType sessionType,
                                                             std::weak_ptr<IMediaKeysClient> client) const override;
+
+private:
+    const std::shared_ptr<IMainThreadFactory> m_mainThreadFactory;
 };
 
 /**

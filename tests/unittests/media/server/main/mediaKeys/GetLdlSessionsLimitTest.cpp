@@ -19,6 +19,9 @@
 
 #include "MediaKeysTestBase.h"
 
+using ::testing::DoAll;
+using ::testing::SetArgPointee;
+
 class RialtoServerMediaKeysGetLdlSessionsLimitTest : public MediaKeysTestBase
 {
 protected:
@@ -37,9 +40,11 @@ protected:
 TEST_F(RialtoServerMediaKeysGetLdlSessionsLimitTest, Success)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_ocdmSystemMock, getLdlSessionsLimit(&m_ldlSessionsLimit)).WillOnce(Return(MediaKeyErrorStatus::OK));
+    EXPECT_CALL(*m_ocdmSystemMock, getLdlSessionsLimit(_))
+        .WillOnce(DoAll(SetArgPointee<0>(7), Return(MediaKeyErrorStatus::OK)));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->getLdlSessionsLimit(m_ldlSessionsLimit));
+    EXPECT_EQ(7u, m_ldlSessionsLimit);
 }
 
 /**
@@ -48,8 +53,7 @@ TEST_F(RialtoServerMediaKeysGetLdlSessionsLimitTest, Success)
 TEST_F(RialtoServerMediaKeysGetLdlSessionsLimitTest, Failure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_ocdmSystemMock, getLdlSessionsLimit(&m_ldlSessionsLimit))
-        .WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
+    EXPECT_CALL(*m_ocdmSystemMock, getLdlSessionsLimit(_)).WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
 
     EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeys->getLdlSessionsLimit(m_ldlSessionsLimit));
 }

@@ -74,6 +74,7 @@ add_gtests (
         mediaKeys/PingTest.cpp
         mediaKeys/ReleaseKeySessionTest.cpp
         mediaKeys/GetMetricSystemDataTest.cpp
+        mediaKeys/OcdmCallTimeoutTest.cpp
 
         mediaKeysCapabilities/CreateTest.cpp
         mediaKeysCapabilities/KeySystemsTest.cpp

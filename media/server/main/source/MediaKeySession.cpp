@@ -51,7 +51,9 @@ MediaKeySessionFactory::createMediaKeySession(const std::string &keySystem, int3
     try
     {
         mediaKeys = std::make_unique<server::MediaKeySession>(keySystem, keySessionId, ocdmSystem, sessionType, client,
-                                                              server::IMainThreadFactory::createFactory());
+                                                              m_mainThreadFactory
+                                                                  ? m_mainThreadFactory
+                                                                  : server::IMainThreadFactory::createFactory());
     }
     catch (const std::exception &e)
     {
@@ -165,7 +167,7 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
 void MediaKeySession::getChallenge(const LimitedDurationLicense &ldlState)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    auto task = [&]()
+    auto task = [this, ldlState]()
     {
         const bool kIsLdl{LimitedDurationLicense::ENABLED == ldlState};
         uint32_t challengeSize = 0;

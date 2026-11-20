@@ -65,6 +65,23 @@ std::shared_ptr<IMainThread> MainThreadFactory::getMainThread() const
     return mainThread;
 }
 
+std::shared_ptr<IMainThread> DedicatedMainThreadFactory::getMainThread() const
+{
+    std::lock_guard<std::mutex> lock{m_creationMutex};
+    if (!m_mainThread)
+    {
+        try
+        {
+            m_mainThread = std::make_shared<MainThread>();
+        }
+        catch (const std::exception &e)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to create the dedicated main thread, reason: %s", e.what());
+        }
+    }
+    return m_mainThread;
+}
+
 MainThread::MainThread() : m_isMainThreadRunning{true}, m_mainThreadClientId{0}, m_nextClientId{1}
 {
     RIALTO_SERVER_LOG_DEBUG("MainThread is constructed");

@@ -1214,3 +1214,14 @@
    fun:pthread_create*
    ...
 }
+{
+   ignore_main_thread_retained_while_ocdm_call_is_blocked
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:pthread_create*
+   ...
+   fun:*MainThread*MainThread*
+   ...
+   fun:*DedicatedMainThreadFactory*getMainThread*
+}

@@ -96,6 +96,15 @@ public:
      *
      */
     virtual void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) = 0;
+
+    /**
+     * @brief Checks, if an OCDM call is still blocked after exceeding the OCDM call timeout.
+     *
+     * When true, the object must not be destroyed, because the blocked call may still access it.
+     *
+     * @retval true if an OCDM call is blocked.
+     */
+    virtual bool isOcdmCallBlocked() const = 0;
 };
 } // namespace firebolt::rialto::server
 

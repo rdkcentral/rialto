@@ -78,12 +78,15 @@ public:
 
     void triggerSwitchToActiveSuccess();
     void triggerSwitchToInactive();
+    void triggerSwitchToInactiveShouldLeakMediaKeys();
+    void mediaKeysWillCheckIfOcdmCallIsBlocked(bool isBlocked);
     void triggerPing();
 
     void createMediaKeysShouldSucceed();
     void createMediaKeysShouldFail();
     void destroyMediaKeysShouldSucceed();
     void destroyMediaKeysShouldFail();
+    void destroyMediaKeysShouldLeakMediaKeysWhenOcdmCallIsBlocked();
     void createKeySessionShouldSucceed();
     void createKeySessionShouldFailWithReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void generateRequestShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);

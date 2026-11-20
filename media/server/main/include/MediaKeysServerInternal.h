@@ -24,6 +24,7 @@
 #include "IMediaKeySession.h"
 #include "IMediaKeysServerInternal.h"
 #include "IOcdmSystem.h"
+#include <chrono>
 #include <map>
 #include <memory>
 #include <string>
@@ -65,7 +66,8 @@ public:
      */
     MediaKeysServerInternal(const std::string &keySystem, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
                             const std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> &ocdmSystemFactory,
-                            const std::shared_ptr<IMediaKeySessionFactory> &mediaKeySessionFactory);
+                            const std::shared_ptr<IMediaKeySessionFactory> &mediaKeySessionFactory,
+                            std::chrono::milliseconds ocdmCallTimeout = std::chrono::milliseconds{0});
 
     /**
      * @brief Virtual destructor.
@@ -117,7 +119,45 @@ public:
 
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 
+    bool isOcdmCallBlocked() const override;
+
+    /**
+     * @brief Reads the OCDM call timeout from the RIALTO_OCDM_CALL_TIMEOUT_MS environment variable.
+     *
+     * @retval the timeout, 0 if not set or invalid (OCDM calls are not bounded).
+     */
+    static std::chrono::milliseconds getOcdmCallTimeoutFromEnv();
+
 private:
+    /**
+     * @brief State of OCDM calls shared with the tasks, which may outlive a timed out caller.
+     */
+    struct OcdmCallState;
+
+    /**
+     * @brief Runs the task on the main thread and waits for it.
+     *
+     * If the OCDM call timeout is set, the wait is bounded. The task must not capture references to the caller's
+     * stack, because it may still run after this method returns false.
+     *
+     * @param[in] operation                : Name of the operation, used in logs.
+     * @param[in] task                     : The task to run.
+     * @param[in] canAbandonRunningTask    : If false, a task that has already started is always waited for.
+     *
+     * @retval true if the task has completed, false if it timed out or was skipped.
+     */
+    bool runTask(const char *operation, const IMainThread::Task &task, bool canAbandonRunningTask = true);
+
+    /**
+     * @brief The timeout for OCDM calls, 0 means no timeout.
+     */
+    const std::chrono::milliseconds m_kOcdmCallTimeout;
+
+    /**
+     * @brief State of OCDM calls, used when m_kOcdmCallTimeout is set.
+     */
+    std::shared_ptr<OcdmCallState> m_ocdmCallState;
+
     /**
      * @brief The mainThread object.
      */
