@@ -108,7 +108,7 @@ public:
         task->interval = delay;
         task->callback = std::move(callback);
         task->repeat = timerType == firebolt::rialto::common::TimerType::PERIODIC;
-
+        [[maybe_unused]] const auto scheduledDeadline = task->nextExecution;
         {
             std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -118,22 +118,43 @@ public:
 
         m_cv.notify_one();
 
+        if (delay == Duration{5})
+        {
+            RIALTO_COMMON_LOG_DEBUG(
+                "NMD_TIMER stage=loop_scheduled timer_id=%llu timeout_ms=%lld periodic=%d due_mono_us=%lld",
+                static_cast<unsigned long long>(task->id), static_cast<long long>(delay.count()), task->repeat,
+                static_cast<long long>(std::chrono::duration_cast<std::chrono::microseconds>(
+                                           scheduledDeadline.time_since_epoch()).count()));
+        }
         return task->id;
     }
 
     void cancel(std::uint64_t id)
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
-
-        auto it = m_activeTasks.find(id);
-
-        if (it != m_activeTasks.end())
+        [[maybe_unused]] const auto cancelStartedAt = Clock::now();
+        bool trace = false;
         {
-            it->second->cancelled = true;
-            m_activeTasks.erase(it);
-        }
+            std::lock_guard<std::mutex> lock(m_mutex);
 
-        m_cv.notify_one();
+            auto it = m_activeTasks.find(id);
+
+            if (it != m_activeTasks.end())
+            {
+                trace = it->second->interval == Duration{5};
+                it->second->cancelled = true;
+                m_activeTasks.erase(it);
+            }
+
+            m_cv.notify_one();
+        }
+        if (trace)
+        {
+            RIALTO_COMMON_LOG_DEBUG(
+                "NMD_TIMER stage=cancel_complete timer_id=%llu cleanup_us=%lld",
+                static_cast<unsigned long long>(id),
+                static_cast<long long>(std::chrono::duration_cast<std::chrono::microseconds>(
+                                           Clock::now() - cancelStartedAt).count()));
+        }
     }
 
     bool isActive(std::uint64_t id)
@@ -180,6 +201,22 @@ private:
 
             lock.unlock();
 
+            [[maybe_unused]] const auto callbackStartedAt = Clock::now();
+            const bool trace = task->interval == Duration{5};
+            if (trace)
+            {
+                RIALTO_COMMON_LOG_DEBUG(
+                    "NMD_TIMER stage=callback_begin timer_id=%llu timeout_ms=%lld periodic=%d "
+                    "due_mono_us=%lld callback_mono_us=%lld lateness_us=%lld",
+                    static_cast<unsigned long long>(task->id), static_cast<long long>(task->interval.count()),
+                    task->repeat,
+                    static_cast<long long>(std::chrono::duration_cast<std::chrono::microseconds>(
+                                               task->nextExecution.time_since_epoch()).count()),
+                    static_cast<long long>(std::chrono::duration_cast<std::chrono::microseconds>(
+                                               callbackStartedAt.time_since_epoch()).count()),
+                    static_cast<long long>(std::chrono::duration_cast<std::chrono::microseconds>(
+                                               callbackStartedAt - task->nextExecution).count()));
+            }
             try
             {
                 task->callback();
@@ -187,6 +224,14 @@ private:
             catch (...)
             {
                 RIALTO_COMMON_LOG_ERROR("Exception occurred while executing timer callback");
+            }
+            if (trace)
+            {
+                RIALTO_COMMON_LOG_DEBUG(
+                    "NMD_TIMER stage=callback_end timer_id=%llu callback_us=%lld",
+                    static_cast<unsigned long long>(task->id),
+                    static_cast<long long>(std::chrono::duration_cast<std::chrono::microseconds>(
+                                               Clock::now() - callbackStartedAt).count()));
             }
 
             lock.lock();
@@ -238,17 +283,37 @@ std::shared_ptr<ITimerFactory> ITimerFactory::getFactory()
 std::unique_ptr<ITimer> TimerFactory::createTimer(const std::chrono::milliseconds &timeout,
                                                   const std::function<void()> &callback, TimerType timerType) const
 {
-    return std::make_unique<Timer>(timeout, callback, timerType);
+    auto timer = std::make_unique<Timer>(timeout, callback, timerType);
+    if (timeout == std::chrono::milliseconds{5})
+    {
+        RIALTO_COMMON_LOG_DEBUG("NMD_TIMER stage=factory_created timer=%p timeout_ms=%lld periodic=%d",
+                               static_cast<void *>(timer.get()), static_cast<long long>(timeout.count()),
+                               timerType == TimerType::PERIODIC);
+    }
+    return timer;
 }
 
 Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback, TimerType timerType)
 {
+    [[maybe_unused]] const auto constructedAt = std::chrono::steady_clock::now();
     if (!callback)
     {
         RIALTO_COMMON_LOG_ERROR("Timer callback is not set");
         return;
     }
     m_id = CommonTimerLoop::instance().add(timeout, callback, timerType);
+    if (timeout == std::chrono::milliseconds{5})
+    {
+        RIALTO_COMMON_LOG_DEBUG(
+            "NMD_TIMER stage=construct timer=%p timer_id=%llu timeout_ms=%lld periodic=%d "
+            "mono_us=%lld registration_us=%lld",
+            static_cast<void *>(this), static_cast<unsigned long long>(m_id),
+            static_cast<long long>(timeout.count()), timerType == TimerType::PERIODIC,
+            static_cast<long long>(std::chrono::duration_cast<std::chrono::microseconds>(
+                                       constructedAt.time_since_epoch()).count()),
+            static_cast<long long>(std::chrono::duration_cast<std::chrono::microseconds>(
+                                       std::chrono::steady_clock::now() - constructedAt).count()));
+    }
 }
 
 Timer::~Timer()
