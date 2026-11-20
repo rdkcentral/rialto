@@ -124,13 +124,24 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     }
     m_mainThreadClientId = m_mainThread->registerClient();
 
-    bool result = false;
-    auto task = [&]() { result = initWebAudioPlayerInternal(audioMimeType, webAudioConfig, gstPlayerFactory); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    if (!result)
+    try
     {
-        throw std::runtime_error("WebAudioPlayerServerInternal construction failed");
+        bool result = false;
+        auto task = [&]() { result = initWebAudioPlayerInternal(audioMimeType, webAudioConfig, gstPlayerFactory); };
+
+        if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
+        {
+            throw std::runtime_error("WebAudioPlayerServerInternal construction failed: timeout");
+        }
+        if (!result)
+        {
+            throw std::runtime_error("WebAudioPlayerServerInternal construction failed");
+        }
+    }
+    catch (...)
+    {
+        m_mainThread->unregisterClient(m_mainThreadClientId);
+        throw;
     }
 }
 
@@ -597,6 +608,10 @@ void WebAudioPlayerServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&hea
     if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
     {
         RIALTO_SERVER_LOG_ERROR("Failed to enqueue ping task");
+        if (heartbeatHandler)
+        {
+            heartbeatHandler->error();
+        }
     }
 }
 }; // namespace firebolt::rialto::server

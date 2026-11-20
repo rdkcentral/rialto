@@ -118,29 +118,42 @@ MediaKeysServerInternal::MediaKeysServerInternal(
     }
     m_mainThreadClientId = m_mainThread->registerClient();
 
-    if (!ocdmSystemFactory)
+    try
     {
-        throw std::runtime_error("No ocdmSystemFactory");
+        if (!ocdmSystemFactory)
+        {
+            throw std::runtime_error("No ocdmSystemFactory");
+        }
+
+        bool result = false;
+        auto task = [&]()
+        {
+            m_ocdmSystem = ocdmSystemFactory->createOcdmSystem(keySystem);
+            if (!m_ocdmSystem)
+            {
+                RIALTO_SERVER_LOG_ERROR("Ocdm system could not be created");
+            }
+            else
+            {
+                result = true;
+            }
+        };
+
+        if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
+        {
+            RIALTO_SERVER_LOG_ERROR("MediaKeysServerInternal constructor: main-thread task failed or timed out");
+            throw std::runtime_error("MediaKeys construction failed: main thread timeout");
+        }
+
+        if (!result)
+        {
+            throw std::runtime_error("MediaKeys construction failed");
+        }
     }
-
-    bool result = false;
-    auto task = [&]()
+    catch (...)
     {
-        m_ocdmSystem = ocdmSystemFactory->createOcdmSystem(keySystem);
-        if (!m_ocdmSystem)
-        {
-            RIALTO_SERVER_LOG_ERROR("Ocdm system could not be created");
-        }
-        else
-        {
-            result = true;
-        }
-    };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    if (!result)
-    {
-        throw std::runtime_error("MediaKeys construction failed");
+        m_mainThread->unregisterClient(m_mainThreadClientId);
+        throw;
     }
 }
 
@@ -697,13 +710,17 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 
     uint32_t bufferLength{1024};
     const uint32_t kMaxBufferLength{65536};
-    MediaKeyErrorStatus status;
+    MediaKeyErrorStatus status = MediaKeyErrorStatus::FAIL;
     buffer.resize(bufferLength);
 
     for (int attempts = 0; bufferLength <= kMaxBufferLength; ++attempts)
     {
         auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(bufferLength, buffer); };
-        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+        if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
+        {
+            RIALTO_SERVER_LOG_ERROR("getMetricSystemData: main-thread task failed or timed out");
+            return status;
+        }
 
         if (status != MediaKeyErrorStatus::BUFFER_TOO_SMALL)
         {

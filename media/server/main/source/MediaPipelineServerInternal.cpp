@@ -150,26 +150,34 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
     }
     m_mainThreadClientId = m_mainThread->registerClient();
 
-    bool result = false;
-    auto task = [&]()
+    try
     {
-        if (!m_shmBuffer->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId))
+        bool result = false;
+        auto task = [&]()
         {
-            RIALTO_SERVER_LOG_ERROR("Unable to map shm partition");
-        }
-        else
-        {
-            result = true;
-        }
-    };
+            if (!m_shmBuffer->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId))
+            {
+                RIALTO_SERVER_LOG_ERROR("Unable to map shm partition");
+            }
+            else
+            {
+                result = true;
+            }
+        };
 
-    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
-    {
-        throw std::runtime_error("MediaPipelineServerInternal construction failed: timeout");
+        if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
+        {
+            throw std::runtime_error("MediaPipelineServerInternal construction failed: timeout");
+        }
+        if (!result)
+        {
+            throw std::runtime_error("MediaPipelineServerInternal construction failed");
+        }
     }
-    if (!result)
+    catch (...)
     {
-        throw std::runtime_error("MediaPipelineServerInternal construction failed");
+        m_mainThread->unregisterClient(m_mainThreadClientId);
+        throw;
     }
 }
 

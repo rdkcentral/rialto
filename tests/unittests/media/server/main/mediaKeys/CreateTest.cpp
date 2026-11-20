@@ -93,6 +93,7 @@ TEST_F(RialtoServerCreateMediaKeysTest, CreateOcdmSystemFailure)
     EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
     EXPECT_CALL(*m_ocdmSystemFactoryMock, createOcdmSystem(kWidevineKeySystem)).WillOnce(Return(ByMove(std::move(nullptr))));
     mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_mainThreadMock, unregisterClient(m_kMainThreadClientId));
 
     EXPECT_THROW(m_mediaKeys = std::make_unique<MediaKeysServerInternal>(kWidevineKeySystem, m_mainThreadFactoryMock,
                                                                          m_ocdmSystemFactoryMock,
