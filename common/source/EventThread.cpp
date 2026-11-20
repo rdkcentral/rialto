@@ -78,7 +78,7 @@ void EventThread::threadExecutor()
         while (!m_shutdown && m_funcs.empty())
             m_cond.wait(locker);
 
-        if (m_shutdown)
+        if (m_shutdown && m_funcs.empty())
             break;
 
         std::function<void()> func = std::move(m_funcs.front());
