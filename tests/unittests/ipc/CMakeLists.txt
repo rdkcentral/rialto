@@ -35,6 +35,7 @@ add_gtests (
 
         main.cpp
         FdFieldWalkerTest.cpp
+        FdMismatchTest.cpp
         IpcTest.cpp
         NamedSocketTest.cpp
         )
