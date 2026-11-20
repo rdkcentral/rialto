@@ -22,6 +22,7 @@
 
 #include "IIpcController.h"
 #include "IpcClientImpl.h"
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -66,6 +67,8 @@ public:
     bool IsCanceled() const final;
     void NotifyOnCancel(google::protobuf::Closure *callback) final;
     std::shared_ptr<IClient> getClient() const final;
+    void setReplyFdsOwned(bool owned) final;
+    void setDeliveryCallback(std::function<void(bool delivered)> callback) final;
 
 protected:
     friend class ServerImpl;
@@ -77,6 +80,10 @@ protected:
 
     bool m_failed = false;
     std::string m_failureReason;
+
+    // set by the service handler, used by ServerImpl when the reply is sent
+    bool m_replyFdsOwned = false;
+    std::function<void(bool delivered)> m_deliveryCallback;
 };
 
 } // namespace firebolt::rialto::ipc

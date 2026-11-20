@@ -53,4 +53,14 @@ std::shared_ptr<IClient> ServerControllerImpl::getClient() const
     return m_kClient;
 }
 
+void ServerControllerImpl::setReplyFdsOwned(bool owned)
+{
+    m_replyFdsOwned = owned;
+}
+
+void ServerControllerImpl::setDeliveryCallback(std::function<void(bool delivered)> callback)
+{
+    m_deliveryCallback = std::move(callback);
+}
+
 } // namespace firebolt::rialto::ipc
