@@ -69,8 +69,8 @@ std::shared_ptr<IMainThread> MainThreadFactory::getMainThread() const
 }
 
 MainThread::MainThread(std::chrono::milliseconds taskTimeout)
-    : m_taskTimeout(taskTimeout), m_isMainThreadRunning{true}, m_shutdown{false}, m_mainThreadClientId{0},
-      m_nextClientId{1}
+    : m_taskTimeout(taskTimeout), m_isMainThreadRunning(std::make_shared<std::atomic<bool>>(true)), m_shutdown{false},
+      m_mainThreadClientId{0}, m_nextClientId{1}
 {
     RIALTO_SERVER_LOG_DEBUG("MainThread is constructed with timeout %" PRId64 " ms",
                             static_cast<int64_t>(taskTimeout.count()));
@@ -87,11 +87,16 @@ MainThread::~MainThread()
 {
     RIALTO_SERVER_LOG_DEBUG("MainThread is destructed");
 
+    // Set the flag to false (safe regardless of thread context)
+    if (m_isMainThreadRunning)
+    {
+        m_isMainThreadRunning->store(false);
+    }
+
     // Check if we're being destroyed on the main thread itself
     if (std::this_thread::get_id() == m_threadId)
     {
         RIALTO_SERVER_LOG_DEBUG("MainThread destructor called on main thread, detaching");
-        m_isMainThreadRunning = false;
         m_thread.detach();
     }
     else
@@ -115,12 +120,13 @@ MainThread::~MainThread()
             // Fail all pending tasks
             for (auto &taskInfo : pendingTasks)
             {
-                std::unique_lock<std::mutex> taskLock(taskInfo->mutex);
-                if (taskInfo->status == TaskStatus::Pending)
                 {
-                    taskInfo->status = TaskStatus::Cancelled;
-                }
-                taskLock.unlock();
+                    std::unique_lock<std::mutex> taskLock(taskInfo->mutex);
+                    if (taskInfo->status == TaskStatus::Pending)
+                    {
+                        taskInfo->status = TaskStatus::Cancelled;
+                    }
+                } // Lock released here via destructor
                 taskInfo->cv.notify_all();
             }
 
@@ -138,7 +144,7 @@ void MainThread::mainThreadLoop()
     // Store this thread's id
     m_threadId = std::this_thread::get_id();
 
-    while (m_isMainThreadRunning)
+    while (m_isMainThreadRunning->load())
     {
         const std::shared_ptr<TaskInfo> kTaskInfo = waitForTask();
         if (!kTaskInfo)
@@ -157,9 +163,10 @@ void MainThread::mainThreadLoop()
         if (!clientRegistered)
         {
             RIALTO_SERVER_LOG_WARN("Task ignored, client '%u' not registered", kTaskInfo->clientId);
-            std::unique_lock<std::mutex> taskLock(kTaskInfo->mutex);
-            kTaskInfo->status = TaskStatus::Failed;
-            taskLock.unlock();
+            {
+                std::unique_lock<std::mutex> taskLock(kTaskInfo->mutex);
+                kTaskInfo->status = TaskStatus::Failed;
+            }
             kTaskInfo->cv.notify_all();
             continue;
         }

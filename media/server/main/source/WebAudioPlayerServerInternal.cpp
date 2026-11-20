@@ -201,7 +201,13 @@ WebAudioPlayerServerInternal::~WebAudioPlayerServerInternal()
         m_shmBuffer.reset();
         m_mainThread->unregisterClient(m_mainThreadClientId);
     };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+
+    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
+    {
+        RIALTO_SERVER_LOG_ERROR("~WebAudioPlayerServerInternal: cleanup task failed or timed out");
+        // Still need to unregister the client to prevent ID leaks
+        m_mainThread->unregisterClient(m_mainThreadClientId);
+    }
 }
 
 bool WebAudioPlayerServerInternal::play()
@@ -267,7 +273,11 @@ bool WebAudioPlayerServerInternal::getBufferAvailable(uint32_t &availableFrames,
         m_expectWriteBuffer = true;
     };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to enqueue getBufferAvailable task");
+        return false;
+    }
 
     return true;
 }
@@ -292,7 +302,11 @@ bool WebAudioPlayerServerInternal::getBufferDelay(uint32_t &delayFrames)
         }
     };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to enqueue getBufferDelay task");
+        return false;
+    }
     return status;
 }
 
@@ -307,7 +321,11 @@ bool WebAudioPlayerServerInternal::writeBuffer(const uint32_t numberOfFrames, vo
         result = writeBufferInternal(numberOfFrames);
     };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to enqueue writeBuffer task");
+        return false;
+    }
 
     return result;
 }
@@ -499,7 +517,11 @@ bool WebAudioPlayerServerInternal::getVolume(double &volume)
     bool result = false;
     auto task = [&]() { result = m_gstPlayer->getVolume(volume); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to enqueue getVolume task");
+        return false;
+    }
 
     return result;
 }
@@ -572,6 +594,9 @@ void WebAudioPlayerServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&hea
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     auto task = [&]() { m_gstPlayer->ping(std::move(heartbeatHandler)); };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    if (!m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to enqueue ping task");
+    }
 }
 }; // namespace firebolt::rialto::server

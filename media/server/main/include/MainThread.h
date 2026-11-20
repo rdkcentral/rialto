@@ -128,8 +128,10 @@ private:
 
     /**
      * @brief Whether the main thread is running.
+     * Uses shared_ptr to prevent use-after-free: if destructor is called from
+     * the main thread itself (via detach), the flag survives via reference counting.
      */
-    bool m_isMainThreadRunning;
+    std::shared_ptr<std::atomic<bool>> m_isMainThreadRunning;
 
     /**
      * @brief The main thread.
