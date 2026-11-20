@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_ACTIVE_REQUESTS_H_
 
 #include "IActiveRequests.h"
+#include <functional>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -28,38 +29,39 @@
 
 namespace firebolt::rialto::server
 {
+class ActiveRequestsData
+{
+public:
+    ActiveRequestsData(MediaSourceType type, std::uint32_t maxMediaBytes, std::uint32_t maxFrames)
+        : m_type(type), m_bytesWritten(0), m_maxMediaBytes(maxMediaBytes), m_maxFrames(maxFrames)
+    {
+    }
+    ~ActiveRequestsData();
+    ActiveRequestsData(ActiveRequestsData &&) = delete;
+    ActiveRequestsData &operator=(ActiveRequestsData &&) = delete;
+
+    ActiveRequestsData(const ActiveRequestsData &) = delete;
+    ActiveRequestsData &operator=(const ActiveRequestsData &) = delete;
+
+    AddSegmentStatus addSegment(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment);
+    void withSegments(const std::function<void(const IMediaPipeline::MediaSegmentVector &)> &func);
+
+    MediaSourceType getType() const { return m_type; }
+    std::uint32_t getMaxFrames() const { return m_maxFrames; }
+
+private:
+    MediaSourceType m_type;
+    std::uint32_t m_bytesWritten;
+    std::uint32_t m_maxMediaBytes;
+    std::uint32_t m_maxFrames;
+    IMediaPipeline::MediaSegmentVector m_segments;
+    std::vector<std::vector<uint8_t>> m_segmentBuffers;
+    std::mutex m_dataMutex;
+};
+
 class ActiveRequests : public IActiveRequests
 {
 public:
-    class ActiveRequestsData
-    {
-    public:
-        ActiveRequestsData(MediaSourceType type, std::uint32_t maxMediaBytes, std::uint32_t maxFrames)
-            : m_type(type), m_bytesWritten(0), m_maxMediaBytes(maxMediaBytes), m_maxFrames(maxFrames)
-        {
-        }
-        ~ActiveRequestsData();
-        ActiveRequestsData(ActiveRequestsData &&) = default;
-        ActiveRequestsData &operator=(ActiveRequestsData &&) = default;
-
-        ActiveRequestsData(const ActiveRequestsData &) = delete;
-        ActiveRequestsData &operator=(const ActiveRequestsData &) = delete;
-
-        AddSegmentStatus addSegment(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment);
-
-        MediaSourceType getType() const { return m_type; }
-        std::uint32_t getMaxFrames() const { return m_maxFrames; }
-        const IMediaPipeline::MediaSegmentVector &getSegments() const { return m_segments; }
-
-    private:
-        MediaSourceType m_type;
-        std::uint32_t m_bytesWritten;
-        std::uint32_t m_maxMediaBytes;
-        std::uint32_t m_maxFrames;
-        IMediaPipeline::MediaSegmentVector m_segments;
-        std::vector<std::vector<uint8_t>> m_segmentBuffers;
-    };
-
     ActiveRequests();
     ~ActiveRequests() override = default;
     ActiveRequests(const ActiveRequests &) = delete;
@@ -76,12 +78,12 @@ public:
     void clear() override;
     AddSegmentStatus addSegment(std::uint32_t requestId,
                                 const std::unique_ptr<IMediaPipeline::MediaSegment> &segment) override;
-    const IMediaPipeline::MediaSegmentVector &getSegments(std::uint32_t requestId) const override;
+    std::shared_ptr<ActiveRequestsData> getRequest(std::uint32_t requestId) const override;
 
 private:
     mutable std::mutex m_mutex;
     std::uint32_t m_currentId;
-    std::map<std::uint32_t, ActiveRequestsData> m_requestMap;
+    std::map<std::uint32_t, std::shared_ptr<ActiveRequestsData>> m_requestMap;
     // only used in server-only mode
     std::map<std::uint32_t, std::unique_ptr<IMediaPipeline::IMediaPipeline::MediaSegment>> m_addedSegments;
 };

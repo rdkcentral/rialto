@@ -730,17 +730,16 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         counter = 0;
     }
 
-    try
+    std::shared_ptr<ActiveRequestsData> requestData = m_activeRequests->getRequest(needDataRequestId);
+    if (!requestData)
     {
-        const IMediaPipeline::MediaSegmentVector &kSegments = m_activeRequests->getSegments(needDataRequestId);
-        m_gstPlayer->attachSamples(kSegments);
-    }
-    catch (const std::runtime_error &e)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to get segments %s", e.what());
+        RIALTO_SERVER_LOG_ERROR("Failed to get segments - invalid request id %u", needDataRequestId);
         m_activeRequests->erase(needDataRequestId);
         return false;
     }
+
+    requestData->withSegments(
+        [this](const IMediaPipeline::MediaSegmentVector &segments) { m_gstPlayer->attachSamples(segments); });
 
     m_activeRequests->erase(needDataRequestId);
     if (status == MediaSourceStatus::EOS)

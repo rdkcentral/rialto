@@ -118,11 +118,11 @@ void MediaPipelineTestBase::setEos(MediaSourceType sourceType)
 {
     const uint32_t kNeedDataRequestId{0};
     auto status = firebolt::rialto::MediaSourceStatus::EOS;
-    IMediaPipeline::MediaSegmentVector dataVec;
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(kNeedDataRequestId)).WillOnce(Return(sourceType));
-    EXPECT_CALL(*m_activeRequestsMock, getSegments(kNeedDataRequestId)).WillOnce(ReturnRef(dataVec));
+    EXPECT_CALL(*m_activeRequestsMock, getRequest(kNeedDataRequestId))
+        .WillOnce(Return(std::make_shared<ActiveRequestsData>(sourceType, 0, 0)));
     EXPECT_CALL(*m_activeRequestsMock, erase(kNeedDataRequestId));
     EXPECT_CALL(*m_gstPlayerMock, attachSamples(A<const IMediaPipeline::MediaSegmentVector &>()));
     EXPECT_CALL(*m_gstPlayerMock, setEos(sourceType));
