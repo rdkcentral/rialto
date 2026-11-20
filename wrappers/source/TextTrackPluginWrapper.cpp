@@ -17,9 +17,16 @@
  * limitations under the License.
  */
 
+#define MODULE_NAME TextTrackClosedCaptionsStyleClient
+
+#include <com/com.h>
+#include <core/core.h>
+
 #include "TextTrackPluginWrapper.h"
 #include "TextTrackPluginWrapperFactory.h"
 #include "TextTrackWrapper.h"
+
+MODULE_NAME_ARCHIVE_DECLARATION
 
 namespace firebolt::rialto::wrappers
 {
