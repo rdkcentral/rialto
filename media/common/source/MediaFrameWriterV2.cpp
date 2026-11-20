@@ -154,7 +154,7 @@ MediaSegmentMetadata MediaFrameWriterV2::buildMetadata(const std::unique_ptr<IMe
     }
     if (MediaSourceType::AUDIO == data->getType())
     {
-        IMediaPipeline::MediaSegmentAudio &audioSegment = dynamic_cast<IMediaPipeline::MediaSegmentAudio &>(*data);
+        IMediaPipeline::MediaSegmentAudio &audioSegment = static_cast<IMediaPipeline::MediaSegmentAudio &>(*data);
         metadata.set_sample_rate(static_cast<uint32_t>(audioSegment.getSampleRate()));
         metadata.set_channels_num(static_cast<uint32_t>(audioSegment.getNumberOfChannels()));
         metadata.set_clipping_start(audioSegment.getClippingStart());
@@ -162,7 +162,7 @@ MediaSegmentMetadata MediaFrameWriterV2::buildMetadata(const std::unique_ptr<IMe
     }
     else if (MediaSourceType::VIDEO == data->getType())
     {
-        IMediaPipeline::MediaSegmentVideo &videoSegment = dynamic_cast<IMediaPipeline::MediaSegmentVideo &>(*data);
+        IMediaPipeline::MediaSegmentVideo &videoSegment = static_cast<IMediaPipeline::MediaSegmentVideo &>(*data);
         metadata.set_width(videoSegment.getWidth());
         metadata.set_height(videoSegment.getHeight());
         metadata.mutable_frame_rate()->set_numerator(videoSegment.getFrameRate().numerator);
