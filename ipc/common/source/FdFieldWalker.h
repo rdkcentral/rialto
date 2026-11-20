@@ -65,8 +65,8 @@ using FdFieldVisitor =
 /**
  * @brief Read-only variant of FdFieldVisitor.
  */
-using ConstFdFieldVisitor = std::function<bool(const google::protobuf::Message &message,
-                                               const google::protobuf::FieldDescriptor &field, int index)>;
+using ConstFdFieldVisitor =
+    std::function<bool(const google::protobuf::Message &message, const google::protobuf::FieldDescriptor &field, int index)>;
 
 /**
  * @brief Visits every present FD field of \a message, at any depth, in walk order.

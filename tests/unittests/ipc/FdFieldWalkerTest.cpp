@@ -236,8 +236,8 @@ TEST(FdFieldWalkerTest, ShouldRewriteValuesThroughMutableWalk)
     repeated.add_fds(4);
     repeated.add_fds(5);
 
-    auto replaceWithMinusOne = [](google::protobuf::Message &holder, const google::protobuf::FieldDescriptor &field,
-                                  int index)
+    auto replaceWithMinusOne =
+        [](google::protobuf::Message &holder, const google::protobuf::FieldDescriptor &field, int index)
     {
         writeFdField(holder, field, index, -1);
         return true;

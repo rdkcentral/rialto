@@ -32,9 +32,9 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#include "IpcChannelImpl.h"
 #include "FdFieldWalker.h"
 #include "FdLimits.h"
+#include "IpcChannelImpl.h"
 #include "IpcLogging.h"
 #include "rialtoipc.pb.h"
 
@@ -937,21 +937,21 @@ bool ChannelImpl::addReplyFileDescriptors(google::protobuf::Message *reply,
 {
     auto fdIterator = fds->begin();
 
-    const bool kWalked = walkFdFields(*reply,
-                                      [&](google::protobuf::Message &message,
-                                          const google::protobuf::FieldDescriptor &field, int index)
-                                      {
-                                          if (fdIterator == fds->end())
-                                          {
-                                              RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but none or "
-                                                                   "too few were supplied");
-                                              return false;
-                                          }
+    const bool kWalked =
+        walkFdFields(*reply,
+                     [&](google::protobuf::Message &message, const google::protobuf::FieldDescriptor &field, int index)
+                     {
+                         if (fdIterator == fds->end())
+                         {
+                             RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but none or "
+                                                  "too few were supplied");
+                             return false;
+                         }
 
-                                          writeFdField(message, field, index, fdIterator->fd());
-                                          ++fdIterator;
-                                          return true;
-                                      });
+                         writeFdField(message, field, index, fdIterator->fd());
+                         ++fdIterator;
+                         return true;
+                     });
     if (!kWalked)
     {
         return false;

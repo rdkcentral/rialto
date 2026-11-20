@@ -21,7 +21,6 @@
 #include "IpcLogging.h"
 #include "rialtoipc.pb.h"
 
-
 namespace
 {
 using google::protobuf::FieldDescriptor;
@@ -132,8 +131,7 @@ int readFdField(const google::protobuf::Message &message, const google::protobuf
     return (index < 0) ? reflection->GetInt32(message, &field) : reflection->GetRepeatedInt32(message, &field, index);
 }
 
-void writeFdField(google::protobuf::Message &message, const google::protobuf::FieldDescriptor &field, int index,
-                  int value)
+void writeFdField(google::protobuf::Message &message, const google::protobuf::FieldDescriptor &field, int index, int value)
 {
     const Reflection *reflection = message.GetReflection();
     if (index < 0)

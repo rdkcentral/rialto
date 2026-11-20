@@ -84,10 +84,15 @@ TestFdMixed makeFourFdMessage()
 // Writes one SOCK_SEQPACKET message with \a fds attached as SCM_RIGHTS.
 bool sendRaw(int sock, const std::string &data, const std::vector<int> &fds)
 {
-    struct iovec iov{const_cast<char *>(data.data()), data.size()};
+    struct iovec iov
+    {
+        const_cast<char *>(data.data()), data.size()
+    };
     std::vector<uint8_t> control(CMSG_SPACE(sizeof(int) * fds.size()));
 
-    struct msghdr header{};
+    struct msghdr header
+    {
+    };
     header.msg_iov = &iov;
     header.msg_iovlen = 1;
     if (!fds.empty())
@@ -196,8 +201,8 @@ protected:
         ASSERT_TRUE(channel);
         m_sockets[0] = -1; // owned by the channel now
         bool handled{false};
-        const int kTag = channel->subscribe<TestFdMixed>([&handled](const std::shared_ptr<TestFdMixed> &)
-                                                         { handled = true; });
+        const int kTag =
+            channel->subscribe<TestFdMixed>([&handled](const std::shared_ptr<TestFdMixed> &) { handled = true; });
 
         transport::MessageFromServer message;
         auto *event = message.mutable_event();

@@ -284,8 +284,12 @@ void closeAll(const std::vector<int> &fds)
 
 bool refersToSameFile(int first, int second)
 {
-    struct stat firstStat{};
-    struct stat secondStat{};
+    struct stat firstStat
+    {
+    };
+    struct stat secondStat
+    {
+    };
     if (fstat(first, &firstStat) != 0 || fstat(second, &secondStat) != 0)
         return false;
     return firstStat.st_dev == secondStat.st_dev && firstStat.st_ino == secondStat.st_ino;
@@ -369,8 +373,8 @@ protected:
                      const std::vector<int> &sent, const Message &sentMessage)
     {
         bool handled{false};
-        auto handler = [&](google::protobuf::RpcController *, const Message *request, TestNoVar *,
-                           google::protobuf::Closure *done)
+        auto handler =
+            [&](google::protobuf::RpcController *, const Message *request, TestNoVar *, google::protobuf::Closure *done)
         {
             expectSameFilesInOrder(sent, fdsOf(*request));
             handled = true;
@@ -400,8 +404,11 @@ protected:
     // Sends \a sentMessage as an event and returns the received descriptors, which the caller owns.
     template <typename Message> std::vector<int> testEvent(const Message &sentMessage)
     {
-        auto event = m_clientStub->receiveEvent<Message>(
-            [&]() { EXPECT_TRUE(m_serverStub->sendEvent(std::make_shared<Message>(sentMessage))); }, kEventTimeoutMs);
+        auto event =
+            m_clientStub
+                ->receiveEvent<Message>([&]()
+                                        { EXPECT_TRUE(m_serverStub->sendEvent(std::make_shared<Message>(sentMessage))); },
+                                        kEventTimeoutMs);
         EXPECT_NE(event, nullptr);
         return event ? fdsOf(*event) : std::vector<int>{};
     }

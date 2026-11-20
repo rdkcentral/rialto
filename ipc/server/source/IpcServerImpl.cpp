@@ -853,21 +853,21 @@ static bool addRequestFileDescriptors(google::protobuf::Message *request, const 
 {
     auto fdIterator = requestFds.begin();
 
-    const bool kWalked = walkFdFields(*request,
-                                      [&](google::protobuf::Message &message,
-                                          const google::protobuf::FieldDescriptor &field, int index)
-                                      {
-                                          if (fdIterator == requestFds.end())
-                                          {
-                                              RIALTO_IPC_LOG_ERROR(
-                                                  "field is marked as containing an fd but none or too few were supplied");
-                                              return false;
-                                          }
+    const bool kWalked =
+        walkFdFields(*request,
+                     [&](google::protobuf::Message &message, const google::protobuf::FieldDescriptor &field, int index)
+                     {
+                         if (fdIterator == requestFds.end())
+                         {
+                             RIALTO_IPC_LOG_ERROR(
+                                 "field is marked as containing an fd but none or too few were supplied");
+                             return false;
+                         }
 
-                                          writeFdField(message, field, index, fdIterator->fd());
-                                          ++fdIterator;
-                                          return true;
-                                      });
+                         writeFdField(message, field, index, fdIterator->fd());
+                         ++fdIterator;
+                         return true;
+                     });
     if (!kWalked)
     {
         return false;
@@ -1104,14 +1104,14 @@ static std::vector<int> getResponseFileDescriptors(google::protobuf::Message *re
     std::vector<int> fds;
 
     // process any file descriptors from the response message, at any depth
-    const bool kWalked = walkFdFields(*response,
-                                      [&](google::protobuf::Message &message,
-                                          const google::protobuf::FieldDescriptor &field, int index)
-                                      {
-                                          fds.push_back(readFdField(message, field, index));
-                                          writeFdField(message, field, index, -1);
-                                          return true;
-                                      });
+    const bool kWalked =
+        walkFdFields(*response,
+                     [&](google::protobuf::Message &message, const google::protobuf::FieldDescriptor &field, int index)
+                     {
+                         fds.push_back(readFdField(message, field, index));
+                         writeFdField(message, field, index, -1);
+                         return true;
+                     });
     if (!kWalked)
     {
         return {};
