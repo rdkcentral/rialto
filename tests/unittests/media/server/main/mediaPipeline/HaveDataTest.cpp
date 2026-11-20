@@ -287,6 +287,7 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithR
     ASSERT_TRUE(resendCallback);
     ASSERT_TRUE(m_sharedMemoryBufferMock);
     ASSERT_TRUE(m_activeRequestsMock);
+    EXPECT_CALL(*m_activeRequestsMock, hasRequest(mediaSourceType)).WillOnce(Return(false));
     EXPECT_CALL(*m_sharedMemoryBufferMock,
                 clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
         .WillOnce(Return(true));

@@ -58,6 +58,19 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, NotifyPlaybackState)
 }
 
 /**
+ * Test that active requests are cleared before the SEEK_DONE notification is forwarded to the registered client.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, NotifyPlaybackStateSeekDoneClearsActiveRequests)
+{
+    ::testing::InSequence s;
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_activeRequestsMock, clear());
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::SEEK_DONE));
+
+    m_gstPlayerCallback->notifyPlaybackState(PlaybackState::SEEK_DONE);
+}
+
+/**
  * Test a notification of the position is forwarded to the registered client.
  */
 TEST_F(RialtoServerMediaPipelineCallbackTest, notifyPosition)
@@ -112,6 +125,20 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataInPlayingState)
 }
 
 /**
+ * Test a notification of the need media data is not forwarded when a request for the source is already pending.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataNotSentWhenRequestPending)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    attachSource(mediaSourceType, "video/h264");
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_activeRequestsMock, hasRequest(mediaSourceType)).WillOnce(Return(true));
+
+    EXPECT_TRUE(m_gstPlayerCallback->notifyNeedMediaData(mediaSourceType));
+}
+
+/**
  * Test a notification of the need media data is scheduled
  */
 TEST_F(RialtoServerMediaPipelineCallbackTest, notifyDelayedNeedMediaData)
@@ -122,6 +149,7 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyDelayedNeedMediaData)
     setPlaybackStatePlaying();
 
     mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_activeRequestsMock, hasRequest(mediaSourceType)).WillOnce(Return(false));
     EXPECT_CALL(*m_sharedMemoryBufferMock,
                 clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
         .WillOnce(Return(true));
@@ -135,6 +163,21 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyDelayedNeedMediaData)
 }
 
 /**
+ * Test a delayed notification of the need media data is not scheduled when a request for the source is already
+ * pending.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyDelayedNeedMediaDataNotScheduledWhenRequestPending)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    attachSource(mediaSourceType, "video/h264");
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_activeRequestsMock, hasRequest(mediaSourceType)).WillOnce(Return(true));
+
+    EXPECT_TRUE(m_gstPlayerCallback->notifyNeedMediaDataWithDelay(mediaSourceType));
+}
+
+/**
  * Test a notification of the need media data is not forwarded when source id is not present
  */
 TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataFailureDueToSourceIdNotPresent)
@@ -143,6 +186,7 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataFailureDueToSou
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_sharedMemoryBufferMock);
     ASSERT_TRUE(m_activeRequestsMock);
+    EXPECT_CALL(*m_activeRequestsMock, hasRequest(mediaSourceType)).WillOnce(Return(false));
     EXPECT_CALL(*m_sharedMemoryBufferMock,
                 clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
         .WillOnce(Return(true));
@@ -159,6 +203,7 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyDelayedNeedMediaDataFailureD
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_sharedMemoryBufferMock);
     ASSERT_TRUE(m_activeRequestsMock);
+    EXPECT_CALL(*m_activeRequestsMock, hasRequest(mediaSourceType)).WillOnce(Return(false));
     EXPECT_CALL(*m_sharedMemoryBufferMock,
                 clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
         .WillOnce(Return(true));
@@ -300,14 +345,17 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, clearActiveRequestsCache)
 }
 
 /**
- * Test a notification of source flushed is forwarded to the registered client.
+ * Test that active requests of the source are erased before the notification of source flushed is forwarded to the
+ * registered client.
  */
 TEST_F(RialtoServerMediaPipelineCallbackTest, notifySourceFlushed)
 {
     auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
     int sourceId = attachSource(mediaSourceType, "video/mp4");
 
+    ::testing::InSequence s;
     mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_activeRequestsMock, erase(mediaSourceType));
     EXPECT_CALL(*m_mediaPipelineClientMock, notifySourceFlushed(sourceId));
 
     m_gstPlayerCallback->notifySourceFlushed(mediaSourceType);

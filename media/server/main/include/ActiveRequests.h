@@ -70,6 +70,7 @@ public:
     std::uint32_t insert(const MediaSourceType &mediaSourceType, std::uint32_t maxMediaBytes,
                          std::uint32_t maxFrames) override;
     MediaSourceType getType(std::uint32_t requestId) const override;
+    bool hasRequest(const MediaSourceType &mediaSourceType) const override;
     std::uint32_t getMaxFrames(std::uint32_t requestId) const override;
     void erase(std::uint32_t requestId) override;
     void erase(const MediaSourceType &mediaSourceType) override;

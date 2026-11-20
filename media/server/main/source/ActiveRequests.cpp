@@ -19,6 +19,7 @@
 
 #include "ActiveRequests.h"
 #include "RialtoServerLogging.h"
+#include <algorithm>
 #include <cstring>
 #include <limits>
 #include <stdexcept>
@@ -80,6 +81,13 @@ MediaSourceType ActiveRequests::getType(std::uint32_t requestId) const
         return requestIter->second.getType();
     }
     return MediaSourceType::UNKNOWN;
+}
+
+bool ActiveRequests::hasRequest(const MediaSourceType &mediaSourceType) const
+{
+    std::unique_lock<std::mutex> lock{m_mutex};
+    return std::any_of(m_requestMap.begin(), m_requestMap.end(),
+                       [&mediaSourceType](const auto &request) { return request.second.getType() == mediaSourceType; });
 }
 
 std::uint32_t ActiveRequests::getMaxFrames(std::uint32_t requestId) const

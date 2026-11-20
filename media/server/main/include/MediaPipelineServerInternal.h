@@ -511,12 +511,18 @@ protected:
     /**
      * @brief Notify need media data internally, only to be called on the main thread.
      *
+     * Nothing is sent if a request for the source is already outstanding.
+     *
      * @param[in] mediaSourceType    : The media source type.
+     *
+     * @retval true if a request has been sent or is already outstanding.
      */
     bool notifyNeedMediaDataInternal(MediaSourceType mediaSourceType);
 
     /**
      * @brief Notify need media data with delay internally, only to be called on the main thread.
+     *
+     * Nothing is scheduled if a request for the source is already outstanding.
      *
      * @param[in] mediaSourceType    : The media source type.
      */

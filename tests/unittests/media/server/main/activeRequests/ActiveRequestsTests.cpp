@@ -116,6 +116,17 @@ TEST_F(ActiveRequestsTests, shouldClearIds)
     EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(1));
 }
 
+TEST_F(ActiveRequestsTests, hasRequestShouldReturnTrueOnlyForSourceWithRequest)
+{
+    EXPECT_FALSE(m_sut.hasRequest(firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, std::numeric_limits<std::uint32_t>::max(),
+                              kMaxFrames));
+    EXPECT_TRUE(m_sut.hasRequest(firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_FALSE(m_sut.hasRequest(firebolt::rialto::MediaSourceType::AUDIO));
+    m_sut.erase(0);
+    EXPECT_FALSE(m_sut.hasRequest(firebolt::rialto::MediaSourceType::VIDEO));
+}
+
 TEST_F(ActiveRequestsTests, shouldEraseAudioIds)
 {
     EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(0));
