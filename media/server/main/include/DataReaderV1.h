@@ -56,7 +56,7 @@ class DataReaderV1 : public IDataReader
 
 public:
     DataReaderV1(const MediaSourceType &mediaSourceType, std::uint8_t *buffer, std::uint32_t metadataOffset,
-                 std::uint32_t numFrames, bool isBufferFull);
+                 std::uint32_t numFrames, bool isBufferFull, std::uint32_t regionStart, std::uint64_t regionEnd);
     ~DataReaderV1() override = default;
 
     IMediaPipeline::MediaSegmentVector readData() const override;
@@ -71,15 +71,26 @@ private:
     std::uint32_t m_metadataOffset;
     std::uint32_t m_numFrames;
     bool m_isBufferFull;
+    std::uint32_t m_regionStart;
+    std::uint64_t m_regionEnd;
 
     template <typename SegmentType> std::unique_ptr<SegmentType> createSegment(const MetadataV1 &metadata) const
     {
+        // All sizes and offsets below are read from shared memory written by the
+        // client - bound-check them against the region before use.
+        if (metadata.offset < m_regionStart || metadata.offset > m_regionEnd ||
+            metadata.length > m_regionEnd - metadata.offset)
+        {
+            return nullptr;
+        }
         std::unique_ptr<SegmentType> mediaSegment{std::make_unique<SegmentType>(0, metadata.timePosition,
                                                                                 metadata.sampleDuration,
                                                                                 metadata.extra1, metadata.extra2)};
         mediaSegment->setData(metadata.length, m_buffer + metadata.offset);
+        const std::uint32_t kExtraDataSize{std::min<std::uint32_t>(metadata.extraDataSize,
+                                                                 sizeof(metadata.extraData))};
         std::vector<std::uint8_t> extraDataVec;
-        std::copy(&metadata.extraData[0], &metadata.extraData[metadata.extraDataSize], std::back_inserter(extraDataVec));
+        std::copy(&metadata.extraData[0], &metadata.extraData[kExtraDataSize], std::back_inserter(extraDataVec));
         mediaSegment->setExtraData(extraDataVec);
         mediaSegment->setEncrypted(false); // temporary, only clear content playback should be supported now
         return mediaSegment;

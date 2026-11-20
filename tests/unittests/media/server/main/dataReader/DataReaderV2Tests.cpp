@@ -297,7 +297,7 @@ protected:
 
     std::unique_ptr<IMediaPipeline::MediaSegment> readData(const firebolt::rialto::MediaSourceType &sourceType)
     {
-        m_sut = std::make_unique<DataReaderV2>(sourceType, m_shm, kMetaDataSize, kNumFrames, kIsBufferFull);
+        m_sut = std::make_unique<DataReaderV2>(sourceType, m_shm, kMetaDataSize, kNumFrames, kIsBufferFull, UINT64_MAX);
         EXPECT_EQ(m_sut->isBufferFull(), kIsBufferFull);
         auto result = m_sut->readData();
         if (result.size() != 1)

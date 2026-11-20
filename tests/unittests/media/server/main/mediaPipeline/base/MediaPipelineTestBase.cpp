@@ -37,6 +37,10 @@ MediaPipelineTestBase::MediaPipelineTestBase()
       m_timerFactoryMock{std::make_shared<StrictMock<TimerFactoryMock>>()},
       m_timerMock{std::make_unique<StrictMock<TimerMock>>()}, m_gstPlayerCallback{nullptr}
 {
+    // haveData() queries the partition length for shm bounds checking; allow it by default.
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getMaxDataLen(_, _, _))
+        .Times(testing::AnyNumber())
+        .WillRepeatedly(Return(0));
 }
 
 MediaPipelineTestBase::~MediaPipelineTestBase() {}
