@@ -33,6 +33,7 @@
 #include <unistd.h>
 
 #include "IpcChannelImpl.h"
+#include "FdFieldWalker.h"
 #include "IpcLogging.h"
 #include "rialtoipc.pb.h"
 
@@ -925,9 +926,9 @@ std::vector<FileDescriptor> ChannelImpl::readMessageFds(const struct msghdr *msg
 
     Places the received file descriptors into the protobuf message.
 
-    It works by iterating over the fields in the message, finding ones that are
-    marked as 'field_is_fd' and then replacing the received integer value with
-    an actual file descriptor.
+    It walks every field marked as 'field_is_fd', at any depth and in the order
+    defined by FdFieldWalker, and replaces the received placeholder value with
+    the matching received file descriptor.
 
  */
 bool ChannelImpl::addReplyFileDescriptors(google::protobuf::Message *reply,
@@ -935,39 +936,24 @@ bool ChannelImpl::addReplyFileDescriptors(google::protobuf::Message *reply,
 {
     auto fdIterator = fds->begin();
 
-    const google::protobuf::Descriptor *kDescriptor = reply->GetDescriptor();
-    const google::protobuf::Reflection *kReflection = nullptr;
+    const bool kWalked = walkFdFields(*reply,
+                                      [&](google::protobuf::Message &message,
+                                          const google::protobuf::FieldDescriptor &field, int index)
+                                      {
+                                          if (fdIterator == fds->end())
+                                          {
+                                              RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but none or "
+                                                                   "too few were supplied");
+                                              return false;
+                                          }
 
-    const int n = kDescriptor->field_count();
-    for (int i = 0; i < n; i++)
+                                          writeFdField(message, field, index, fdIterator->fd());
+                                          ++fdIterator;
+                                          return true;
+                                      });
+    if (!kWalked)
     {
-        auto fieldDescriptor = kDescriptor->field(i);
-        if (fieldDescriptor->options().HasExtension(::firebolt::rialto::ipc::field_is_fd) &&
-            fieldDescriptor->options().GetExtension(::firebolt::rialto::ipc::field_is_fd))
-        {
-            if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_INT32)
-            {
-                RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but not an int32 type");
-                return false;
-            }
-
-            if (!kReflection)
-            {
-                kReflection = reply->GetReflection();
-            }
-
-            if (kReflection->HasField(*reply, fieldDescriptor))
-            {
-                if (fdIterator == fds->end())
-                {
-                    RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but none or too few were supplied");
-                    return false;
-                }
-
-                kReflection->SetInt32(reply, fieldDescriptor, fdIterator->fd());
-                ++fdIterator;
-            }
-        }
+        return false;
     }
 
     if (fdIterator != fds->end())
@@ -1032,39 +1018,26 @@ void ChannelImpl::completeWithError(MethodCall *call, std::string reason)
 /*!
     \static
 
-    Iterates through the message and finds any file descriptor type fields, if
-    found it adds the fds to the returned vector.
+    Walks the message, at any depth and in the order defined by FdFieldWalker,
+    and adds the value of every present file descriptor field to the returned
+    vector.
 
  */
 std::vector<int> ChannelImpl::getMessageFds(const google::protobuf::Message &message)
 {
     std::vector<int> fds;
 
-    auto descriptor = message.GetDescriptor();
-    auto reflection = message.GetReflection();
-    const int n = descriptor->field_count();
-    for (int i = 0; i < n; i++)
+    const bool kWalked = walkFdFields(message,
+                                      [&](const google::protobuf::Message &holder,
+                                          const google::protobuf::FieldDescriptor &field, int index)
+                                      {
+                                          fds.emplace_back(readFdField(holder, field, index));
+                                          return true;
+                                      });
+    if (!kWalked)
     {
-        auto fieldDescriptor = descriptor->field(i);
-        if (fieldDescriptor->options().HasExtension(::firebolt::rialto::ipc::field_is_fd) &&
-            fieldDescriptor->options().GetExtension(::firebolt::rialto::ipc::field_is_fd))
-        {
-            if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_INT32)
-            {
-                RIALTO_IPC_LOG_ERROR("field '%s' is marked as containing an fd but not an int32 type",
-                                     fieldDescriptor->full_name().c_str());
-            }
-            else if (!reflection->HasField(message, fieldDescriptor))
-            {
-                RIALTO_IPC_LOG_DEBUG("field '%s' is marked as containing an fd but is not present",
-                                     fieldDescriptor->full_name().c_str());
-            }
-            else
-            {
-                int fileDescriptor = reflection->GetInt32(message, fieldDescriptor);
-                fds.emplace_back(fileDescriptor);
-            }
-        }
+        // the receiver rejects a message with a non-int32 fd field, so send no descriptors for it
+        return {};
     }
 
     return fds;
