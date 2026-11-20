@@ -28,6 +28,7 @@ add_compile_options(
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
+add_subdirectory(capture)
 add_subdirectory(common)
 add_subdirectory(gstplayer)
 add_subdirectory(main)

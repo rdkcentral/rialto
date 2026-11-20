@@ -4,7 +4,7 @@ Unit tests run with `./build_ut.py -s <suite>`. "Spec" means `specs/capture-hal-
 
 ## 1. HAL header (D1)
 
-- [ ] 1.1 Add `media/server/capture/include/ICaptureSession.h` with every type from SoC spec §3 and §5.1, including `CAPABILITIES_NOT_AVAILABLE_YET` and the deleted copy/move operations on `CapturedFrame`. Install it and add a pkg-config file for vendor builds. Verify the server builds and the header installs to the staging directory.
+- [x] 1.1 Add `media/server/capture/include/ICaptureSession.h` with every type from SoC spec §3 and §5.1, including `CAPABILITIES_NOT_AVAILABLE_YET` and the deleted copy/move operations on `CapturedFrame`. Install it and add a pkg-config file for vendor builds. Verify the server builds and the header installs to the staging directory.
 - [ ] 1.2 Add Rialto-private helpers `isEmpty(const CapturedFrame &)` and `resetReleased(CapturedFrame &)`. Verify with unit tests: a default record is empty; a record with one FD not `-1` is not empty; a released, FD-free, flushed record resets to empty with the flag and metadata cleared.
 - [ ] 1.3 Add a compile-time test file with `static_assert`s that `CapturedFrame` is not copy- or move-constructible or assignable. Verify it compiles in the unit-test build.
 
