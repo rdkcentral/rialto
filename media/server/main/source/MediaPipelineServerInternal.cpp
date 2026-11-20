@@ -27,6 +27,7 @@
 #include "ISharedMemoryBuffer.h"
 #include "MediaPipelineServerInternal.h"
 #include "NeedMediaData.h"
+#include "IRialtoMetrics.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
 
@@ -56,6 +57,23 @@ std::int32_t generateSourceId()
 {
     static std::int32_t sourceId{1};
     return sourceId++;
+}
+
+using firebolt::rialto::MetricType;
+
+// Set to false to make metric subscription empty by default; clients then opt in via setMetricSubscription().
+constexpr bool kSubscribeAllMetricsByDefault = true;
+
+std::set<MetricType> defaultMetricSubscription()
+{
+    std::set<MetricType> types;
+    if (kSubscribeAllMetricsByDefault)
+    {
+        types = {MetricType::VIDEO_FRAME_DROP, MetricType::AUDIO_FRAME_DROP, MetricType::VIDEO_DECODE_ERROR,
+                 MetricType::AUDIO_DECODE_ERROR, MetricType::VIDEO_FRAME_REPEAT, MetricType::AUDIO_GAP,
+                 MetricType::BUFFER_UNDERFLOW};
+    }
+    return types;
 }
 } // namespace
 
@@ -143,6 +161,7 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
+    m_metricSubscription = defaultMetricSubscription();
     m_mainThread = mainThreadFactory->getMainThread();
     if (!m_mainThread)
     {
@@ -225,6 +244,18 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
         return false;
     }
 
+    const auto metrics = m_gstPlayer->getRialtoMetrics();
+    if (metrics)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Assigning playback metrics sessionId: %d", m_sessionId);
+        metrics->setSessionId(m_sessionId);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("Playback metrics unavailable for sessionId: %d", m_sessionId);
+    }
+    m_gstPlayer->setMetricSessionId(m_sessionId);
+
     notifyNetworkState(NetworkState::BUFFERING);
 
     return true;
@@ -257,12 +288,11 @@ bool MediaPipelineServerInternal::attachSourceInternal(const std::unique_ptr<Med
         return false;
     }
 
-    m_gstPlayer->attachSource(source);
-
     const auto kSourceIter = m_attachedSources.find(source->getType());
     if (m_attachedSources.cend() == kSourceIter)
     {
         source->setId(generateSourceId());
+        m_gstPlayer->attachSource(source);
         RIALTO_SERVER_LOG_DEBUG("New ID generated for MediaSourceType: %s: %d",
                                 common::convertMediaSourceType(source->getType()), source->getId());
         m_attachedSources.emplace(source->getType(), source->getId());
@@ -529,6 +559,94 @@ bool MediaPipelineServerInternal::getStatsInternal(int32_t sourceId, uint64_t &r
     return m_gstPlayer->getStats(sourceIter->first, renderedFrames, droppedFrames);
 }
 
+bool MediaPipelineServerInternal::getFrameCounters(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
+                                                    uint64_t &corruptedFrames, uint64_t &timestamp)
+{
+    return getFrameCounters(m_sessionId, sourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp);
+}
+
+bool MediaPipelineServerInternal::getFrameCounters(int32_t sessionId, int32_t sourceId, uint64_t &renderedFrames,
+                                                    uint64_t &droppedFrames, uint64_t &corruptedFrames,
+                                                    uint64_t &timestamp)
+{
+    RIALTO_SERVER_LOG_DEBUG("Querying playback metrics sessionId: %d, sourceId: %d", sessionId, sourceId);
+
+    bool result;
+    auto task = [&]()
+    { result = getFrameCountersInternal(sessionId, sourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    RIALTO_SERVER_LOG_DEBUG("Playback metrics query %s for sessionId: %d, sourceId: %d", result ? "succeeded" : "failed",
+                            sessionId, sourceId);
+    return result;
+}
+
+bool MediaPipelineServerInternal::getFrameCountersInternal(int32_t sessionId, int32_t sourceId,
+                                                           uint64_t &renderedFrames, uint64_t &droppedFrames,
+                                                           uint64_t &corruptedFrames, uint64_t &timestamp)
+{
+    RIALTO_SERVER_LOG_DEBUG("Reading cached playback metrics sessionId: %d, sourceId: %d", sessionId, sourceId);
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - Gstreamer player has not been loaded");
+        return false;
+    }
+
+    if (sessionId != m_sessionId)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - sessionId: %d does not match pipeline sessionId: %d",
+                                sessionId, m_sessionId);
+        return false;
+    }
+
+    const auto sourceIter =
+        std::find_if(m_attachedSources.begin(), m_attachedSources.end(), [sourceId](const auto &source)
+                     { return source.first == MediaSourceType::VIDEO && source.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - video sourceId: %d is not attached", sourceId);
+        return false;
+    }
+
+    const auto metrics = m_gstPlayer->getRialtoMetrics();
+    if (!metrics)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - RialtoMetrics is unavailable");
+        return false;
+    }
+
+    CounterSnapshot counters;
+    bool hasCounters = metrics->getFrameCounters(sessionId, sourceId, counters);
+    uint64_t currentRenderedFrames{0};
+    uint64_t currentDroppedFrames{0};
+    if (m_gstPlayer->getStats(MediaSourceType::VIDEO, currentRenderedFrames, currentDroppedFrames))
+    {
+        metrics->updateSinkStats(sessionId, sourceId, currentRenderedFrames, currentDroppedFrames);
+        hasCounters = metrics->getFrameCounters(sessionId, sourceId, counters);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("Playback metric sink stats unavailable - retaining cached rendered and dropped counts");
+    }
+    if (!hasCounters)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - no cached metrics for sessionId: %d, sourceId: %d",
+                                sessionId, sourceId);
+        return false;
+    }
+
+    renderedFrames = counters.counters.renderedFrames;
+    droppedFrames = counters.counters.droppedFrames;
+    corruptedFrames = counters.counters.corruptedFrames;
+    timestamp = counters.timestamp;
+    RIALTO_SERVER_LOG_DEBUG(
+        "Returning playback metrics sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, timestamp: %llu",
+        sessionId, sourceId, static_cast<unsigned long long>(renderedFrames),
+        static_cast<unsigned long long>(droppedFrames), static_cast<unsigned long long>(corruptedFrames),
+        static_cast<unsigned long long>(timestamp));
+    return true;
+}
+
 bool MediaPipelineServerInternal::setImmediateOutput(int32_t sourceId, bool immediateOutput)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -593,6 +711,25 @@ bool MediaPipelineServerInternal::setReportDecodeErrorsInternal(int32_t sourceId
     }
 
     return m_gstPlayer->setReportDecodeErrors(sourceIter->first, reportDecodeErrors);
+}
+
+bool MediaPipelineServerInternal::setMetricSubscription(const std::vector<MetricType> &types)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setMetricSubscriptionInternal(types); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setMetricSubscriptionInternal(const std::vector<MetricType> &types)
+{
+    std::lock_guard<std::mutex> lock{m_metricSubscriptionMutex};
+    m_metricSubscription = std::set<MetricType>(types.begin(), types.end());
+    RIALTO_SERVER_LOG_DEBUG("Metric subscription replaced, number of metric types: %zu", types.size());
+    return true;
 }
 
 bool MediaPipelineServerInternal::getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
@@ -1647,6 +1784,42 @@ void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, con
                 return;
             }
             m_mediaPipelineClient->notifyQos(kSourceIter->second, qosInfo);
+        }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
+}
+
+void MediaPipelineServerInternal::notifyMetric(const MetricEvent &metric)
+{
+    {
+        std::lock_guard<std::mutex> lock{m_metricSubscriptionMutex};
+        if (m_metricSubscription.find(metric.type) == m_metricSubscription.end())
+        {
+            RIALTO_SERVER_LOG_DEBUG("Dropping unsubscribed metric type %u", static_cast<uint32_t>(metric.type));
+            return;
+        }
+    }
+
+    RIALTO_SERVER_LOG_DEBUG(
+        "Queueing playback metric event sourceId: %d, ptsNs: %llu, metric: %u, observationKind: %u, count: %llu, durationNs: %llu, observedAtMonotonicNs: %llu, observedAtUnixNs: %lld",
+        metric.sourceId, static_cast<unsigned long long>(metric.presentationTimeStampNs.value_or(0)),
+        static_cast<uint32_t>(metric.type), static_cast<uint32_t>(metric.phase),
+        static_cast<unsigned long long>(metric.count.value_or(0)),
+        static_cast<unsigned long long>(metric.durationNs.value_or(0)),
+        static_cast<unsigned long long>(metric.observedAtMonotonicNs), static_cast<long long>(metric.observedAtUnixNs));
+    auto task = [&, metric]()
+    {
+        if (m_mediaPipelineClient)
+        {
+            RIALTO_SERVER_LOG_DEBUG("Forwarding queued playback metric event for sourceId: %d, observationKind: %u",
+                                    metric.sourceId, static_cast<uint32_t>(metric.phase));
+            m_mediaPipelineClient->notifyMetric(metric);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_WARN("Dropping playback metric event for sourceId: %d - pipeline client is unavailable",
+                                   metric.sourceId);
         }
     };
 

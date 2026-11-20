@@ -28,6 +28,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 
 namespace firebolt::rialto::server::ct
 {
@@ -47,6 +48,8 @@ public:
     void sendStateChanged(GstState oldState, GstState newState, GstState pendingState, bool handleParseCall = false);
     void sendEos();
     void sendQos(GstElement *src);
+    void sendMetric(GstElement *src, guint metricType, guint observationKind, gint64 ptsNs,
+                    std::optional<guint64> count = std::nullopt, std::optional<guint64> durationNs = std::nullopt);
     void sendWarning(GstElement *src, GError *error, const gchar *debug);
 
 private:
@@ -84,9 +87,12 @@ private:
     GCallback m_setupElementFunc{};
     gpointer m_deepElementAddedUserData{nullptr};
     GCallback m_deepElementAddedFunc{};
+    gpointer m_deepElementRemovedUserData{nullptr};
+    GCallback m_deepElementRemovedFunc{};
     gulong m_setupSourceSignalId{0};
     gulong m_setupElementSignalId{1};
     gulong m_deepElementAddedSignalId{2};
+    gulong m_deepElementRemovedSignalId{3};
     std::map<GstAppSrc *, GstAppSrcCallbacks> m_appSrcCallbacks;
     std::map<GstAppSrc *, gpointer> m_appSrcCallbacksUserDatas;
 };

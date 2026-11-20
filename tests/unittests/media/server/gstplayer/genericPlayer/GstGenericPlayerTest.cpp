@@ -20,21 +20,29 @@
 #include "DataReaderMock.h"
 #include "GstGenericPlayerTestCommon.h"
 #include "HeartbeatHandlerMock.h"
+#include "IGstDispatcherThreadClient.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IMediaPipeline.h"
 #include "MatchersGenericPlayer.h"
 #include "MediaSourceUtil.h"
 #include "PlayerTaskMock.h"
 #include "TimerMock.h"
+#include <gst/gst.h>
 
 using testing::_;
+using testing::AllOf;
 using testing::ByMove;
 using testing::DoAll;
+using testing::Field;
 using testing::Invoke;
+using testing::Optional;
 using testing::Ref;
 using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrEq;
+using firebolt::rialto::MetricEvent;
+using firebolt::rialto::MetricPhase;
+using firebolt::rialto::MetricType;
 
 class GstGenericPlayerTest : public GstGenericPlayerTestCommon
 {
@@ -276,6 +284,89 @@ TEST_F(GstGenericPlayerTest, shouldSetupElement)
     EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, &element)).WillOnce(Return(ByMove(std::move(task))));
 
     triggerSetupElement(&element);
+}
+
+TEST_F(GstGenericPlayerTest, shouldSetMetricSessionIdWhenVideoSinkIsCreated)
+{
+    constexpr int32_t kSessionId{7};
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
+        .WillOnce(Invoke([](gpointer, const gchar *, void *value)
+                         { *static_cast<GstElement **>(value) = nullptr; }));
+    m_sut->setMetricSessionId(kSessionId);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_element)).WillOnce(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstElementFactoryListIsType(m_factory, GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("metrics-session-id")))
+        .WillOnce(Return(&m_prop));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetUintStub(m_element, StrEq("metrics-session-id"), guint{kSessionId}));
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element));
+    EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, m_element)).WillOnce(Return(ByMove(std::move(task))));
+
+    triggerSetupElement(m_element);
+}
+
+TEST_F(GstGenericPlayerTest, shouldSetMetricSessionIdOnAlreadyCreatedVideoSink)
+{
+    constexpr int32_t kSessionId{7};
+    expectGetAVSink(kVideoSinkStr, m_element);
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("metrics-session-id")))
+        .WillOnce(Return(&m_prop));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetUintStub(m_element, StrEq("metrics-session-id"), guint{kSessionId}));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element));
+
+    m_sut->setMetricSessionId(kSessionId);
+}
+
+TEST_F(GstGenericPlayerTest, shouldSetMetricSessionIdDirectlyOnAutoVideoSinkChildren)
+{
+    constexpr int32_t kSessionId{7};
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
+        .WillOnce(Invoke([](gpointer, const gchar *, void *value)
+                         { *static_cast<GstElement **>(value) = nullptr; }));
+    m_sut->setMetricSessionId(kSessionId);
+    auto *player = dynamic_cast<IGstGenericPlayerPrivate *>(m_sut.get());
+    ASSERT_NE(nullptr, player);
+    GST_OBJECT_FLAG_SET(m_element, GST_ELEMENT_FLAG_SINK);
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("metrics-session-id")))
+        .Times(2)
+        .WillRepeatedly(Return(&m_prop));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetUintStub(m_element, StrEq("metrics-session-id"), guint{kSessionId}));
+    player->addAutoVideoSinkChild(G_OBJECT(m_element));
+
+    GstElement *replacement = fakeElement();
+    ASSERT_NE(nullptr, replacement);
+    GST_OBJECT_FLAG_SET(replacement, GST_ELEMENT_FLAG_SINK);
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetUintStub(replacement, StrEq("metrics-session-id"), guint{kSessionId}));
+    player->addAutoVideoSinkChild(G_OBJECT(replacement));
+    player->removeAutoVideoSinkChild(G_OBJECT(replacement));
+    gst_object_unref(replacement);
+}
+
+TEST_F(GstGenericPlayerTest, shouldSkipMetricSessionIdOnUnsupportedVideoSink)
+{
+    constexpr int32_t kSessionId{7};
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
+        .WillOnce(Invoke([](gpointer, const gchar *, void *value)
+                         { *static_cast<GstElement **>(value) = nullptr; }));
+    m_sut->setMetricSessionId(kSessionId);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_element)).WillOnce(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstElementFactoryListIsType(m_factory, GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("metrics-session-id")))
+        .WillOnce(Return(nullptr));
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element));
+    EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, m_element)).WillOnce(Return(ByMove(std::move(task))));
+
+    triggerSetupElement(m_element);
 }
 
 TEST_F(GstGenericPlayerTest, shouldAddDeepElement)
@@ -1171,4 +1262,80 @@ TEST_F(GstGenericPlayerTest, shouldReturnDuration)
             }));
     EXPECT_TRUE(m_sut->getDuration(targetDuration));
     EXPECT_EQ(kExpectedDuration, targetDuration);
+}
+
+TEST_F(GstGenericPlayerTest, shouldCountAndNotifyWesterosMetricMessages)
+{
+    constexpr guint kVideoFrameDropMetric{1};
+    constexpr guint kBufferUnderflowMetric{7};
+    constexpr guint kSourceId{11};
+    constexpr guint kSessionId{7};
+    constexpr guint64 kPtsNs{9001};
+
+    const auto metrics = m_sut->getRialtoMetrics();
+    ASSERT_NE(nullptr, metrics);
+    metrics->setSessionId(kSessionId);
+    metrics->getElementToSourceMapper()->RegisterElement(m_element, kSessionId, kSourceId);
+
+    auto *dispatcherClient = dynamic_cast<IGstDispatcherThreadClient *>(m_sut.get());
+    ASSERT_NE(nullptr, dispatcherClient);
+
+    const auto makeMetricMessage = [&](guint metricType, guint observationKind)
+    {
+        GstStructure *structure =
+            gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, metricType, "observation-kind",
+                              G_TYPE_UINT, observationKind, "pts-ns", G_TYPE_INT64, static_cast<gint64>(kPtsNs),
+                              nullptr);
+        return gst_message_new_element(GST_OBJECT(m_element), structure);
+    };
+
+    const auto metricEvent = [&](MetricType metric, MetricPhase phase)
+    {
+        return AllOf(Field(&MetricEvent::sourceId, static_cast<int32_t>(kSourceId)),
+                     Field(&MetricEvent::type, metric),
+                     Field(&MetricEvent::phase, phase),
+                     Field(&MetricEvent::presentationTimeStampNs, Optional(static_cast<int64_t>(kPtsNs))));
+    };
+
+    GstStructure stats;
+    const auto expectStats = [&](guint64 renderedFrames, guint64 droppedFrames)
+    {
+        expectGetAVSink(kVideoSinkStr, m_element);
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _))
+            .WillOnce(Invoke([&](gpointer, const gchar *, void *value)
+                             { *reinterpret_cast<GstStructure **>(value) = &stats; }));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&stats, StrEq("rendered"), _))
+            .WillOnce(DoAll(SetArgumentPointee<2>(renderedFrames), Return(true)));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&stats, StrEq("dropped"), _))
+            .WillOnce(DoAll(SetArgumentPointee<2>(droppedFrames), Return(true)));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureFree(&stats)).Times(1);
+    };
+
+    expectStats(101U, 7U);
+    EXPECT_CALL(m_gstPlayerClient, notifyMetric(metricEvent(MetricType::VIDEO_FRAME_DROP, MetricPhase::OCCURRENCE)));
+    GstMessage *dropMessage = makeMetricMessage(kVideoFrameDropMetric, static_cast<guint>(MetricPhase::OCCURRENCE));
+    ASSERT_NE(nullptr, dropMessage);
+    dispatcherClient->handleMetricMessage(dropMessage);
+    gst_message_unref(dropMessage);
+
+    expectStats(102U, 9U);
+    EXPECT_CALL(m_gstPlayerClient,
+                notifyMetric(metricEvent(MetricType::BUFFER_UNDERFLOW, MetricPhase::EPISODE_STARTED)));
+    GstMessage *underflowMessage =
+        makeMetricMessage(kBufferUnderflowMetric, static_cast<guint>(MetricPhase::EPISODE_STARTED));
+    ASSERT_NE(nullptr, underflowMessage);
+    dispatcherClient->handleMetricMessage(underflowMessage);
+    gst_message_unref(underflowMessage);
+
+    expectGetAVSink(kVideoSinkStr, m_element);
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _))
+        .WillOnce(Invoke([](gpointer, const gchar *, void *value)
+                         { *reinterpret_cast<GstStructure **>(value) = nullptr; }));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
+    EXPECT_CALL(m_gstPlayerClient, notifyMetric(metricEvent(MetricType::VIDEO_FRAME_DROP, MetricPhase::OCCURRENCE)));
+    GstMessage *dropWithoutStats = makeMetricMessage(kVideoFrameDropMetric, static_cast<guint>(MetricPhase::OCCURRENCE));
+    ASSERT_NE(nullptr, dropWithoutStats);
+    dispatcherClient->handleMetricMessage(dropWithoutStats);
+    gst_message_unref(dropWithoutStats);
 }

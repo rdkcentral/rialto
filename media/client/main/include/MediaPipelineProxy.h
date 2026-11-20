@@ -72,6 +72,10 @@ public:
     {
         return m_mediaPipeline->setReportDecodeErrors(sourceId, reportDecodeErrors);
     }
+    bool setMetricSubscription(const std::vector<MetricType> &types)
+    {
+        return m_mediaPipeline->setMetricSubscription(types);
+    }
     bool getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
     {
         return m_mediaPipeline->getQueuedFrames(sourceId, queuedFrames);
@@ -84,6 +88,12 @@ public:
     bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
     {
         return m_mediaPipeline->getStats(sourceId, renderedFrames, droppedFrames);
+    }
+
+    bool getFrameCounters(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
+                          uint64_t &corruptedFrames, uint64_t &timestamp) override
+    {
+        return m_mediaPipeline->getFrameCounters(sourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp);
     }
 
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override

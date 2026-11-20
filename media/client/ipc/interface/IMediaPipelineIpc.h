@@ -24,10 +24,11 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
+#include "MediaCommon.h"
 #include "IMediaPipeline.h"
 #include "IMediaPipelineIpcClient.h"
-#include "MediaCommon.h"
 
 namespace firebolt::rialto::client
 {
@@ -202,6 +203,15 @@ public:
     virtual bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) = 0;
 
     /**
+     * @brief Replaces the set of metric types the client is notified about.
+     *
+     * @param[in] types : The metric types to subscribe to. An empty vector disables metric notifications.
+     *
+     * @retval true on success.
+     */
+    virtual bool setMetricSubscription(const std::vector<MetricType> &types) = 0;
+
+    /**
      * @brief Gets the queued frames for this source.
      *
      * This method is synchronous, it gets the queued frames property
@@ -237,6 +247,9 @@ public:
      * @retval true on success.
      */
     virtual bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
+
+    virtual bool getFrameCounters(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
+                                  uint64_t &corruptedFrames, uint64_t &timestamp) = 0;
 
     /**
      * @brief Request new playback rate.

@@ -26,6 +26,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <vector>
 
 namespace firebolt::rialto::server::ipc
 {
@@ -94,6 +95,10 @@ public:
                                const ::firebolt::rialto::SetReportDecodeErrorsRequest *request,
                                ::firebolt::rialto::SetReportDecodeErrorsResponse *response,
                                ::google::protobuf::Closure *done) override;
+    void setMetricSubscription(::google::protobuf::RpcController *controller,
+                               const ::firebolt::rialto::SetMediaMetricsRequest *request,
+                               ::firebolt::rialto::SetMediaMetricsResponse *response,
+                               ::google::protobuf::Closure *done) override;
     void getQueuedFrames(::google::protobuf::RpcController *controller,
                          const ::firebolt::rialto::GetQueuedFramesRequest *request,
                          ::firebolt::rialto::GetQueuedFramesResponse *response,
@@ -104,6 +109,10 @@ public:
                             ::google::protobuf::Closure *done) override;
     void getStats(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetStatsRequest *request,
                   ::firebolt::rialto::GetStatsResponse *response, ::google::protobuf::Closure *done) override;
+    void getFrameCounters(::google::protobuf::RpcController *controller,
+                          const ::firebolt::rialto::GetFrameCountersRequest *request,
+                          ::firebolt::rialto::GetFrameCountersResponse *response,
+                          ::google::protobuf::Closure *done) override;
     void renderFrame(::google::protobuf::RpcController *controller, const ::firebolt::rialto::RenderFrameRequest *request,
                      ::firebolt::rialto::RenderFrameResponse *response, ::google::protobuf::Closure *done) override;
     void setVolume(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SetVolumeRequest *request,

@@ -76,6 +76,15 @@ void GstreamerStub::setupPipeline()
                 m_deepElementAddedUserData = data;
                 return m_deepElementAddedSignalId;
             }));
+    EXPECT_CALL(*m_glibWrapperMock,
+                gSignalConnect(m_pipeline, StrEq("deep-element-removed"), NotNullMatcher(), NotNullMatcher()))
+        .WillOnce(Invoke(
+            [this](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
+            {
+                m_deepElementRemovedFunc = c_handler;
+                m_deepElementRemovedUserData = data;
+                return m_deepElementRemovedSignalId;
+            }));
     setupMessages(false);
 }
 
@@ -239,6 +248,25 @@ void GstreamerStub::sendQos(GstElement *src)
     std::unique_lock lock(m_mutex);
     m_message =
         gst_message_new_qos(GST_OBJECT(src), kLive, kRunningTime, kStreamTime, kQosInfo.processed, kQosInfo.dropped);
+    m_cv.notify_one();
+}
+
+void GstreamerStub::sendMetric(GstElement *src, guint metricType, guint observationKind, gint64 ptsNs,
+                               std::optional<guint64> count, std::optional<guint64> durationNs)
+{
+    std::unique_lock lock(m_mutex);
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, metricType,
+                                                "observation-kind", G_TYPE_UINT, observationKind, "pts-ns",
+                                                G_TYPE_INT64, ptsNs, nullptr);
+    if (count)
+    {
+        gst_structure_set(structure, "count", G_TYPE_UINT64, *count, nullptr);
+    }
+    if (durationNs)
+    {
+        gst_structure_set(structure, "duration-ns", G_TYPE_UINT64, *durationNs, nullptr);
+    }
+    m_message = gst_message_new_element(GST_OBJECT(src), structure);
     m_cv.notify_one();
 }
 

@@ -44,6 +44,7 @@ add_gtests (
         # MediaPipelineModuleService unittests
         mediaPipelineModuleService/MediaPipelineModuleServiceTestsFixture.cpp
         mediaPipelineModuleService/MediaPipelineModuleServiceTests.cpp
+        mediaPipelineClient/MediaPipelineClientTests.cpp
 
         # ControlModuleService unittests
         controlModuleService/ControlModuleServiceTestsFixture.cpp
@@ -77,11 +78,15 @@ add_gtests (
         privateMetricsModuleService/PrivateMetricsModuleServiceTests.cpp
         )
 
+find_package( PkgConfig REQUIRED )
+pkg_check_modules( RialtoServerIpcTestGStreamer REQUIRED IMPORTED_TARGET gstreamer-1.0 )
+
 target_include_directories(
         RialtoServerIpcUnitTests
 
         PRIVATE
         $<TARGET_PROPERTY:RialtoServerIpc,INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoMetrics,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcServer,INTERFACE_INCLUDE_DIRECTORIES>
@@ -108,6 +113,7 @@ target_link_libraries(
         RialtoIpcCommon
         RialtoCommonMisc
         RialtoProtobuf
+        PkgConfig::RialtoServerIpcTestGStreamer
         )
 
 set_target_properties(

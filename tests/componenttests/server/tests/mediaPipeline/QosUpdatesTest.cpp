@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+#include <optional>
+
 #include "ActionTraits.h"
 #include "ConfigureAction.h"
 #include "Constants.h"
@@ -35,6 +37,11 @@ using testing::StrEq;
 namespace
 {
 constexpr unsigned kFramesToPush{1};
+constexpr guint kVideoDecodeErrorMetric{3};
+constexpr guint kMetricPhaseOccurrence{1};
+constexpr gint64 kMetricPtsNs{1234567890};
+constexpr guint64 kEpisodeCount{4};
+constexpr guint64 kEpisodeDurationNs{1000};
 const std::string kAudioSourceName{"Audio"};
 const std::string kVideoSourceName{"Video"};
 const std::string kElementTypeName{"GenericSink"};
@@ -75,6 +82,30 @@ public:
         EXPECT_EQ(receivedQos->source_id(), sourceId);
         EXPECT_EQ(receivedQos->qos_info().processed(), kQosInfo.processed);
         EXPECT_EQ(receivedQos->qos_info().dropped(), kQosInfo.dropped);
+    }
+
+    void sendVideoDecodeErrorMetric()
+    {
+        m_gstreamerStub.sendMetric(&m_src, kVideoDecodeErrorMetric, kMetricPhaseOccurrence, kMetricPtsNs);
+    }
+
+    void expectVideoSinkMetricsLookups()
+    {
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
+            .Times(testing::AtLeast(0))
+            .WillRepeatedly(Invoke(
+                [&](gpointer, const gchar *, void *element)
+                { *reinterpret_cast<GstElement **>(element) = m_videoSink; }));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink)))
+            .Times(testing::AtLeast(0))
+            .WillRepeatedly(Return(kElementTypeName.c_str()));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("metrics-session-id")))
+            .Times(testing::AtLeast(0))
+            .WillRepeatedly(Return(nullptr));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("metrics-source-id")))
+            .Times(testing::AtLeast(0))
+            .WillRepeatedly(Return(nullptr));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink)).Times(testing::AtLeast(0));
     }
 
     void willGetStats()
@@ -277,6 +308,8 @@ private:
  */
 TEST_F(QosUpdatesTest, QosUpdates)
 {
+    expectVideoSinkMetricsLookups();
+
     // Step 1: Create a new media session
     createSession();
 
@@ -332,6 +365,20 @@ TEST_F(QosUpdatesTest, QosUpdates)
     // Step 11: Get Stats
     willGetStats();
     getStats();
+
+    // Playback metric message should be parsed and forwarded to the client.
+    willGetStats();
+    ExpectMessage<firebolt::rialto::MediaPipelineMetricEvent> expectedMetricEvent{m_clientStub};
+    sendVideoDecodeErrorMetric();
+
+    // The source element is not registered with the ElementToSourceMapper in this test, so ids default to 0.
+    const auto receivedMetricEvent{expectedMetricEvent.getMessage()};
+    ASSERT_TRUE(receivedMetricEvent);
+    EXPECT_EQ(receivedMetricEvent->session_id(), 0u);
+    EXPECT_EQ(receivedMetricEvent->source_id(), 0u);
+    EXPECT_EQ(receivedMetricEvent->type(), firebolt::rialto::MediaPipelineMetricEvent::VIDEO_DECODE_ERROR);
+    EXPECT_EQ(receivedMetricEvent->pts_ns(), kMetricPtsNs);
+    EXPECT_EQ(receivedMetricEvent->phase(), firebolt::rialto::MediaPipelineMetricEvent::OCCURRENCE);
 
     // Step 12: End of audio stream
     // Step 13: End of video stream
@@ -535,6 +582,73 @@ TEST_F(QosUpdatesTest, StatsFailure)
     stop();
 
     // Step 15: Destroy media session
+    gstPlayerWillBeDestructed();
+    destroySession();
+}
+
+/**
+ * Feeds every valid 0.7 metric/observation-kind pair through the stub, the parser and the IPC.
+ *
+ * Expected Results:
+ *  Each message is parsed, forwarded to the client with its fields intact, and carries observed-at timestamps.
+ *  Absent count and duration are not serialized.
+ */
+TEST_F(QosUpdatesTest, PlaybackMetricMatrixIsParsedAndForwardedThroughIpc)
+{
+    expectVideoSinkMetricsLookups();
+
+    // Step 1: Create a new media session
+    createSession();
+
+    // Step 2: Load content
+    gstPlayerWillBeCreated();
+    load();
+
+    constexpr guint kFirstMetric{1};
+    constexpr guint kLastMetric{7};
+    constexpr guint kOccurrence{1};
+    constexpr guint kEpisodeStarted{2};
+    constexpr guint kEpisodeResolved{3};
+    constexpr guint kBufferUnderflowMetric{7};
+
+    // Step 3: Send each valid metric/observation-kind pair and verify the client receives it
+    for (guint metric = kFirstMetric; metric <= kLastMetric; ++metric)
+    {
+        for (guint observationKind : {kOccurrence, kEpisodeStarted, kEpisodeResolved})
+        {
+            // EPISODE_RESOLVED carries a duration, and a count unless it is BUFFER_UNDERFLOW.
+            std::optional<guint64> count;
+            std::optional<guint64> durationNs;
+            if (observationKind == kEpisodeResolved)
+            {
+                durationNs = kEpisodeDurationNs;
+                if (metric != kBufferUnderflowMetric)
+                {
+                    count = kEpisodeCount;
+                }
+            }
+
+            willGetStats();
+            ExpectMessage<firebolt::rialto::MediaPipelineMetricEvent> expectedMetricEvent{m_clientStub};
+            m_gstreamerStub.sendMetric(&m_src, metric, observationKind, kMetricPtsNs, count, durationNs);
+
+            const auto receivedMetricEvent{expectedMetricEvent.getMessage()};
+            ASSERT_TRUE(receivedMetricEvent) << "metric " << metric << " observation-kind " << observationKind;
+            EXPECT_EQ(receivedMetricEvent->type(),
+                      static_cast<firebolt::rialto::MediaPipelineMetricEvent::MetricType>(metric));
+            EXPECT_EQ(receivedMetricEvent->phase(),
+                      static_cast<firebolt::rialto::MediaPipelineMetricEvent::MetricPhase>(observationKind));
+            EXPECT_EQ(receivedMetricEvent->pts_ns(), kMetricPtsNs);
+            EXPECT_EQ(receivedMetricEvent->has_count(), count.has_value());
+            EXPECT_EQ(receivedMetricEvent->count(), count.value_or(0));
+            EXPECT_EQ(receivedMetricEvent->has_duration_ns(), durationNs.has_value());
+            EXPECT_EQ(receivedMetricEvent->duration_ns(), durationNs.value_or(0));
+            EXPECT_GT(receivedMetricEvent->observed_at_monotonic_ns(), 0u);
+            EXPECT_GT(receivedMetricEvent->observed_at_unix_ns(), 0u);
+        }
+    }
+
+    // Step 4: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }

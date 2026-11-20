@@ -119,6 +119,48 @@ TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyQos)
 }
 
 /**
+ * Test that a MediaPipelineMetricEvent serialized by the server is parsed and every field is forwarded to the client.
+ */
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyMetricEventRoundTripsSerializedProto)
+{
+    firebolt::rialto::MediaPipelineMetricEvent sent;
+    sent.set_session_id(m_sessionId);
+    sent.set_source_id(m_sourceId);
+    sent.set_type(firebolt::rialto::MediaPipelineMetricEvent::VIDEO_FRAME_REPEAT);
+    sent.set_phase(firebolt::rialto::MediaPipelineMetricEvent::EPISODE_RESOLVED);
+    sent.set_pts_ns(9001);
+    sent.set_count(4);
+    sent.set_duration_ns(8000000);
+    sent.set_observed_at_monotonic_ns(42);
+    sent.set_observed_at_unix_ns(1700000000);
+
+    std::string payload;
+    ASSERT_TRUE(sent.SerializeToString(&payload));
+    auto received = std::make_shared<firebolt::rialto::MediaPipelineMetricEvent>();
+    ASSERT_TRUE(received->ParseFromString(payload));
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+    EXPECT_CALL(*m_clientMock, notifyMetric(_))
+        .WillOnce(Invoke(
+            [this](const MetricEvent &metric)
+            {
+                EXPECT_EQ(metric.type, MetricType::VIDEO_FRAME_REPEAT);
+                EXPECT_EQ(metric.phase, MetricPhase::EPISODE_RESOLVED);
+                EXPECT_EQ(metric.sourceId, m_sourceId);
+                ASSERT_TRUE(metric.presentationTimeStampNs.has_value());
+                EXPECT_EQ(*metric.presentationTimeStampNs, 9001);
+                ASSERT_TRUE(metric.count.has_value());
+                EXPECT_EQ(*metric.count, 4u);
+                ASSERT_TRUE(metric.durationNs.has_value());
+                EXPECT_EQ(*metric.durationNs, 8000000u);
+                EXPECT_EQ(metric.observedAtMonotonicNs, 42u);
+                EXPECT_EQ(metric.observedAtUnixNs, 1700000000);
+            }));
+
+    m_metricEventCb(received);
+}
+
+/**
  * Test that if the session id of the event is not the same as the playback session the event will be ignored.
  */
 TEST_F(RialtoClientMediaPipelineIpcCallbackTest, InvalidSessionIdQos)

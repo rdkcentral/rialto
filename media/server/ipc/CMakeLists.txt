@@ -26,6 +26,9 @@ add_compile_options(
   "-Wno-deprecated-declarations"
 )
 
+find_package( PkgConfig REQUIRED )
+pkg_check_modules( RialtoServerIpcGStreamer REQUIRED IMPORTED_TARGET gstreamer-1.0 )
+
 add_library (
         RialtoServerIpc
         STATIC
@@ -73,6 +76,7 @@ target_include_directories (
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoPlayerCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoMetrics,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 target_link_libraries (
@@ -88,4 +92,5 @@ target_link_libraries (
         RialtoWrappers
         RialtoProtobuf
         Threads::Threads
+        PkgConfig::RialtoServerIpcGStreamer
 )

@@ -326,6 +326,11 @@ bool MediaPipeline::setReportDecodeErrors(int32_t sourceId, bool reportDecodeErr
     return m_mediaPipelineIpc->setReportDecodeErrors(sourceId, reportDecodeErrors);
 }
 
+bool MediaPipeline::setMetricSubscription(const std::vector<MetricType> &types)
+{
+    return m_mediaPipelineIpc->setMetricSubscription(types);
+}
+
 bool MediaPipeline::getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
 {
     return m_mediaPipelineIpc->getQueuedFrames(sourceId, queuedFrames);
@@ -339,6 +344,12 @@ bool MediaPipeline::getImmediateOutput(int32_t sourceId, bool &immediateOutput)
 bool MediaPipeline::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
 {
     return m_mediaPipelineIpc->getStats(sourceId, renderedFrames, droppedFrames);
+}
+
+bool MediaPipeline::getFrameCounters(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
+                                      uint64_t &corruptedFrames, uint64_t &timestamp)
+{
+    return m_mediaPipelineIpc->getFrameCounters(sourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp);
 }
 
 bool MediaPipeline::handleSetPosition(int64_t position)
@@ -886,6 +897,27 @@ void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
     if (client)
     {
         client->notifyQos(sourceId, qosInfo);
+    }
+}
+
+void MediaPipeline::notifyMetric(const MetricEvent &metric)
+{
+    RIALTO_CLIENT_LOG_DEBUG(
+        "Forwarding playback metric event sourceId: %d, ptsNs: %llu, metric: %u, observationKind: %u, count: %llu, durationNs: %llu",
+        metric.sourceId, static_cast<unsigned long long>(metric.presentationTimeStampNs.value_or(0)),
+        static_cast<uint32_t>(metric.type), static_cast<uint32_t>(metric.phase),
+        static_cast<unsigned long long>(metric.count.value_or(0)),
+        static_cast<unsigned long long>(metric.durationNs.value_or(0)));
+
+    std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
+    if (client)
+    {
+        client->notifyMetric(metric);
+    }
+    else
+    {
+        RIALTO_CLIENT_LOG_DEBUG("Dropping playback metric event for sourceId: %d - client is unavailable",
+                                metric.sourceId);
     }
 }
 

@@ -29,6 +29,7 @@
 #include <optional>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 namespace
 {
@@ -887,6 +888,57 @@ void MediaPipelineModuleService::setReportDecodeErrors(::google::protobuf::RpcCo
     done->Run();
 }
 
+void MediaPipelineModuleService::setMetricSubscription(::google::protobuf::RpcController *controller,
+                                                       const ::firebolt::rialto::SetMediaMetricsRequest *request,
+                                                       ::firebolt::rialto::SetMediaMetricsResponse *response,
+                                                       ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+    if (!ipcController)
+    {
+        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        controller->SetFailed("ipc library provided incompatible controller object");
+        done->Run();
+        return;
+    }
+
+    const auto clientSessionsIter = m_clientSessions.find(ipcController->getClient());
+    if (clientSessionsIter == m_clientSessions.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Set metric subscription requested by unknown client");
+        controller->SetFailed("Operation failed");
+        done->Run();
+        return;
+    }
+
+    const auto ownedSessionIter = clientSessionsIter->second.find(request->session_id());
+    if (ownedSessionIter == clientSessionsIter->second.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Set metric subscription requested for session not owned by client");
+        controller->SetFailed("Operation failed");
+        done->Run();
+        return;
+    }
+
+    std::vector<MetricType> types;
+    types.reserve(request->types_size());
+    for (const auto &type : request->types())
+    {
+        types.push_back(static_cast<MetricType>(static_cast<uint32_t>(type)));
+    }
+
+    const bool result = m_mediaPipelineService.setMetricSubscription(request->session_id(), types);
+    response->set_result(result);
+    if (!result)
+    {
+        RIALTO_SERVER_LOG_ERROR("Set Metric Subscription failed");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
 void MediaPipelineModuleService::getQueuedFrames(::google::protobuf::RpcController *controller,
                                                  const ::firebolt::rialto::GetQueuedFramesRequest *request,
                                                  ::firebolt::rialto::GetQueuedFramesResponse *response,
@@ -942,6 +994,67 @@ void MediaPipelineModuleService::getStats(::google::protobuf::RpcController *con
     {
         response->set_rendered_frames(renderedFrames);
         response->set_dropped_frames(droppedFrames);
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::getFrameCounters(::google::protobuf::RpcController *controller,
+                                                  const ::firebolt::rialto::GetFrameCountersRequest *request,
+                                                  ::firebolt::rialto::GetFrameCountersResponse *response,
+                                                  ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("GetFrameCounters request sessionId: %d, sourceId: %d", request->session_id(),
+                            request->source_id());
+
+    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+    if (!ipcController)
+    {
+        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        controller->SetFailed("ipc library provided incompatible controller object");
+        done->Run();
+        return;
+    }
+
+    const auto clientSessionsIter = m_clientSessions.find(ipcController->getClient());
+    if (clientSessionsIter == m_clientSessions.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("GetFrameCounters requested by unknown client");
+        controller->SetFailed("Operation failed");
+        done->Run();
+        return;
+    }
+
+    const auto ownedSessionIter = clientSessionsIter->second.find(request->session_id());
+    if (ownedSessionIter == clientSessionsIter->second.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("GetFrameCounters requested for session not owned by client");
+        controller->SetFailed("Operation failed");
+        done->Run();
+        return;
+    }
+
+    uint64_t renderedFrames;
+    uint64_t droppedFrames;
+    uint64_t corruptedFrames;
+    uint64_t timestamp;
+    if (!m_mediaPipelineService.getFrameCounters(request->session_id(), request->source_id(), renderedFrames,
+                                                 droppedFrames, corruptedFrames, timestamp))
+    {
+        RIALTO_SERVER_LOG_ERROR("GetFrameCounters failed for sessionId: %d, sourceId: %d", request->session_id(),
+                                request->source_id());
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_rendered_frames(renderedFrames);
+        response->set_dropped_frames(droppedFrames);
+        response->set_corrupted_frames(corruptedFrames);
+        response->set_timestamp(timestamp);
+        RIALTO_SERVER_LOG_DEBUG(
+            "GetFrameCounters response sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, timestamp: %llu",
+            request->session_id(), request->source_id(), static_cast<unsigned long long>(renderedFrames),
+            static_cast<unsigned long long>(droppedFrames), static_cast<unsigned long long>(corruptedFrames),
+            static_cast<unsigned long long>(timestamp));
     }
     done->Run();
 }
