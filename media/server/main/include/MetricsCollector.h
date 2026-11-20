@@ -25,6 +25,7 @@
 #include "ITimer.h"
 #include "MetricsThresholdChecker.h"
 #include "StateMetricsAggregator.h"
+#include <chrono>
 #include <cstdint>
 #include <map>
 #include <memory>
@@ -104,6 +105,13 @@ private:
 
     std::mutex m_mutex;
     std::optional<PreviousSample> m_previousSample;
+
+    // smaps_rollup is expensive to read (the kernel walks every VMA); the shm
+    // footprint changes slowly, so the value is cached and re-read at most once
+    // per kShmSampleInterval.
+    mutable std::chrono::steady_clock::time_point m_lastShmSampleTime{};
+    mutable std::uint64_t m_cachedShmMemoryKb{0};
+    static constexpr std::chrono::seconds kShmSampleInterval{60};
 
     // Per-player state tracking (typed context -> state)
     std::map<std::string, SessionMetricsState> m_sessionStates;

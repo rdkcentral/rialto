@@ -470,8 +470,13 @@ MetricsCollector::ProcessMetricsSample MetricsCollector::getServerMetrics() cons
         cgroupMemoryLimitKb = limitBytes / 1024;
     }
 
-    std::uint64_t shmMemoryKb{0};
+    // Cache the smaps_rollup read: it is the most expensive procfs file here
+    // (the kernel walks every VMA) while the shm footprint changes slowly.
+    const auto kNow{steady_clock::now()};
+    if (kNow - m_lastShmSampleTime >= kShmSampleInterval)
     {
+        m_lastShmSampleTime = kNow;
+        std::uint64_t shmMemoryKb{0};
         std::ifstream smaps{"/proc/self/smaps_rollup"};
         std::string sline;
         while (std::getline(smaps, sline))
@@ -482,7 +487,9 @@ MetricsCollector::ProcessMetricsSample MetricsCollector::getServerMetrics() cons
                 break;
             }
         }
+        m_cachedShmMemoryKb = shmMemoryKb;
     }
+    const std::uint64_t shmMemoryKb{m_cachedShmMemoryKb};
 
     return ProcessMetricsSample{static_cast<std::uint64_t>(
                                     duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count()),
