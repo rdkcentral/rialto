@@ -102,7 +102,7 @@ private:
     std::shared_ptr<ClientImpl> addClientSocket(int socketFd, const std::string &listeningSocketPath,
                                                 std::function<void(const std::shared_ptr<IClient> &)> disconnectedCb);
 
-    void sendReply(uint64_t clientId, const std::shared_ptr<msghdr> &msg);
+    bool sendReply(uint64_t clientId, const std::shared_ptr<msghdr> &msg);
 
     void sendErrorReply(const std::shared_ptr<ClientImpl> &client, uint64_t serialId, const char *format, ...)
         __attribute__((format(printf, 4, 5)));
@@ -110,7 +110,8 @@ private:
     void handleResponse(ServerControllerImpl *controller, google::protobuf::Message *response);
 
     std::shared_ptr<msghdr> populateReply(const std::shared_ptr<const ClientImpl> &client, uint64_t serialId,
-                                          google::protobuf::Message *response);
+                                          google::protobuf::Message *response, const std::vector<int> &fds,
+                                          bool &replacedByError);
     std::shared_ptr<msghdr> populateErrorReply(const std::shared_ptr<const ClientImpl> &client, uint64_t serialId,
                                                const std::string &reason);
 

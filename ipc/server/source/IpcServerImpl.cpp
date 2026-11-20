@@ -32,6 +32,8 @@
 #include <algorithm>
 #include <cinttypes>
 #include <cstdarg>
+#include <functional>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -994,12 +996,75 @@ void ServerImpl::processMethodCall(const std::shared_ptr<ClientImpl> &client, co
 // -----------------------------------------------------------------------------
 /*!
     \internal
+
+    Gets all the file descriptors that are stored in the \a response message
+    and appends them to \a fds.  Returns false, with \a fds cleared, if a field
+    marked 'field_is_fd' is not an int32 field.
+
+    It walks every field marked as 'field_is_fd', at any depth and in the order
+    defined by FdFieldWalker, and collects the fd values to be sent in the control
+    part of the message.  The actual integer sent in the data part of the message
+    is set to -1.
+
+ */
+static bool getResponseFileDescriptors(google::protobuf::Message *response, std::vector<int> &fds)
+{
+    // process any file descriptors from the response message, at any depth
+    const bool kWalked =
+        walkFdFields(*response,
+                     [&](google::protobuf::Message &message, const google::protobuf::FieldDescriptor &field, int index)
+                     {
+                         fds.push_back(readFdField(message, field, index));
+                         writeFdField(message, field, index, -1);
+                         return true;
+                     });
+    if (!kWalked)
+    {
+        fds.clear();
+        return false;
+    }
+
+    return true;
+}
+
+// -----------------------------------------------------------------------------
+/*!
+    \internal
+
+    Closes the file descriptors of an owned reply exactly once each, skipping
+    -1 placeholders and descriptors listed more than once.
+
+ */
+static void closeReplyFileDescriptors(const std::vector<int> &fds)
+{
+    std::set<int> closed;
+    for (int fd : fds)
+    {
+        if (fd < 0)
+        {
+            continue;
+        }
+        if (!closed.insert(fd).second)
+        {
+            RIALTO_IPC_LOG_DEBUG("owned reply lists fd %d more than once, closing it once", fd);
+            continue;
+        }
+        if (close(fd) != 0)
+        {
+            RIALTO_IPC_LOG_SYS_WARN(errno, "failed to close owned reply fd %d", fd);
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+/*!
+    \internal
     \threadsafe
 
     Sends a message to the given client if still connected.
 
  */
-void ServerImpl::sendReply(uint64_t clientId, const std::shared_ptr<msghdr> &msg)
+bool ServerImpl::sendReply(uint64_t clientId, const std::shared_ptr<msghdr> &msg)
 {
     // now take the lock (so the socket is not closed beneath us) and send the reply
     std::lock_guard<std::mutex> locker(m_clientsLock);
@@ -1007,11 +1072,11 @@ void ServerImpl::sendReply(uint64_t clientId, const std::shared_ptr<msghdr> &msg
     auto it = m_clients.find(clientId);
     if (it == m_clients.end())
     {
-        RIALTO_IPC_LOG_WARN("socket removed before error reply could be sent");
+        RIALTO_IPC_LOG_WARN("socket removed before reply could be sent");
     }
     else if (it->second.sock < 0)
     {
-        RIALTO_IPC_LOG_WARN("socket closed before error reply could be sent");
+        RIALTO_IPC_LOG_WARN("socket closed before reply could be sent");
     }
     else if (!msg)
     {
@@ -1020,8 +1085,14 @@ void ServerImpl::sendReply(uint64_t clientId, const std::shared_ptr<msghdr> &msg
     else if (TEMP_FAILURE_RETRY(sendmsg(it->second.sock, msg.get(), MSG_NOSIGNAL)) !=
              static_cast<ssize_t>(msg->msg_iov->iov_len))
     {
-        RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to send the complete error reply message");
+        RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to send the complete reply message");
     }
+    else
+    {
+        return true;
+    }
+
+    return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -1068,56 +1139,47 @@ void ServerImpl::handleResponse(ServerControllerImpl *controller, google::protob
     const std::shared_ptr<const ClientImpl> kClient = controller->m_kClient;
     const uint64_t kClientId = kClient->id();
 
+    // collect the reply's file descriptors before deciding what to send, so that owned descriptors are known
+    // even when an error reply is sent instead (the fields are replaced with -1 on the wire)
+    std::vector<int> fds;
+    const bool kFdsValid = getResponseFileDescriptors(response, fds);
+
+    bool replacedByError = false;
     std::shared_ptr<msghdr> message;
-    if (!controller->m_failed)
-    {
-        message = populateReply(kClient, controller->m_kSerialId, response);
-    }
-    else
+    if (controller->m_failed)
     {
         message = populateErrorReply(kClient, controller->m_kSerialId, controller->m_failureReason);
     }
+    else if (!kFdsValid)
+    {
+        message = populateErrorReply(kClient, controller->m_kSerialId, "Internal error - invalid file descriptor field");
+        replacedByError = true;
+    }
+    else
+    {
+        message = populateReply(kClient, controller->m_kSerialId, response, fds, replacedByError);
+    }
+
+    const bool kSuccessReply = !controller->m_failed && !replacedByError;
+    const bool kFdsOwned = controller->m_replyFdsOwned;
+    std::function<void(bool)> deliveryCallback = std::move(controller->m_deliveryCallback);
 
     // no longer need the controller or the response objects
     delete response;
     delete controller;
 
-    // send the reply message to the given client
-    sendReply(kClientId, message);
-}
+    // send the reply message to the given client; the client lock is released when this returns
+    const bool kSent = sendReply(kClientId, message);
 
-// -----------------------------------------------------------------------------
-/*!
-    \internal
-
-    Gets all the file descriptors that are stored in the \a response message
-    and returns them as a vector of ints.
-
-    It walks every field marked as 'field_is_fd', at any depth and in the order
-    defined by FdFieldWalker, and collects the fd values to be sent in the control
-    part of the message.  The actual integer sent in the data part of the message
-    is set to -1.
-
- */
-static std::vector<int> getResponseFileDescriptors(google::protobuf::Message *response)
-{
-    std::vector<int> fds;
-
-    // process any file descriptors from the response message, at any depth
-    const bool kWalked =
-        walkFdFields(*response,
-                     [&](google::protobuf::Message &message, const google::protobuf::FieldDescriptor &field, int index)
-                     {
-                         fds.push_back(readFdField(message, field, index));
-                         writeFdField(message, field, index, -1);
-                         return true;
-                     });
-    if (!kWalked)
+    if (kFdsOwned)
     {
-        return {};
+        closeReplyFileDescriptors(fds);
     }
 
-    return fds;
+    if (deliveryCallback)
+    {
+        deliveryCallback(kSent && kSuccessReply);
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -1129,7 +1191,8 @@ static std::vector<int> getResponseFileDescriptors(google::protobuf::Message *re
 
  */
 std::shared_ptr<msghdr> ServerImpl::populateReply(const std::shared_ptr<const ClientImpl> &client, uint64_t serialId,
-                                                  google::protobuf::Message *response)
+                                                  google::protobuf::Message *response, const std::vector<int> &fds,
+                                                  bool &replacedByError)
 {
     // create the base reply
     transport::MessageFromServer message;
@@ -1147,17 +1210,16 @@ std::shared_ptr<msghdr> ServerImpl::populateReply(const std::shared_ptr<const Cl
     reply->set_reply_id(serialId);
     reply->set_reply_message(std::move(respString));
 
-    // next need to check if the response message has any file descriptors in
-    // it that need to be attached
-    const std::vector<int> kFds = getResponseFileDescriptors(response);
-    if (kFds.size() > kMaxFdsServerToClient)
+    // the file descriptors were collected by the caller, which also replaced them with -1 in the response
+    if (fds.size() > kMaxFdsServerToClient)
     {
-        RIALTO_IPC_LOG_ERROR("reply has too many file descriptors (%zu, max %zu)", kFds.size(), kMaxFdsServerToClient);
+        RIALTO_IPC_LOG_ERROR("reply has too many file descriptors (%zu, max %zu)", fds.size(), kMaxFdsServerToClient);
 
         // the client would drop the extra descriptors, so send an error instead
+        replacedByError = true;
         return populateErrorReply(client, serialId, "Internal error - too many file descriptors in reply");
     }
-    const size_t kRequiredCtrlLen = kFds.empty() ? 0 : CMSG_SPACE(sizeof(int) * kFds.size());
+    const size_t kRequiredCtrlLen = fds.empty() ? 0 : CMSG_SPACE(sizeof(int) * fds.size());
 
     // calculate the size of the reply
     const size_t kRequiredDataLen = message.ByteSizeLong();
@@ -1166,6 +1228,7 @@ std::shared_ptr<msghdr> ServerImpl::populateReply(const std::shared_ptr<const Cl
         RIALTO_IPC_LOG_ERROR("reply exceeds maximum message limit (%zu, max %zu)", kRequiredDataLen, m_kMaxMessageLen);
 
         // error message is too big, replace with a generic error
+        replacedByError = true;
         return populateErrorReply(client, serialId, "Internal error - reply message to large");
     }
 
@@ -1192,7 +1255,7 @@ std::shared_ptr<msghdr> ServerImpl::populateReply(const std::shared_ptr<const Cl
     message.SerializeWithCachedSizesToArray(data);
 
     // add the fds
-    if (!kFds.empty())
+    if (!fds.empty())
     {
         struct cmsghdr *cmsg = CMSG_FIRSTHDR(header);
         if (!cmsg)
@@ -1203,8 +1266,8 @@ std::shared_ptr<msghdr> ServerImpl::populateReply(const std::shared_ptr<const Cl
 
         cmsg->cmsg_level = SOL_SOCKET;
         cmsg->cmsg_type = SCM_RIGHTS;
-        cmsg->cmsg_len = CMSG_LEN(sizeof(int) * kFds.size());
-        memcpy(CMSG_DATA(cmsg), kFds.data(), sizeof(int) * kFds.size());
+        cmsg->cmsg_len = CMSG_LEN(sizeof(int) * fds.size());
+        memcpy(CMSG_DATA(cmsg), fds.data(), sizeof(int) * fds.size());
         header->msg_controllen = cmsg->cmsg_len;
     }
 
@@ -1313,13 +1376,18 @@ void ServerImpl::disconnectClient(uint64_t clientId)
 bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::protobuf::Message> &eventMessage)
 {
     // gets the file descriptors from the event message
-    const std::vector<int> kFds = getResponseFileDescriptors(eventMessage.get());
-    if (kFds.size() > kMaxFdsServerToClient)
+    std::vector<int> fds;
+    if (!getResponseFileDescriptors(eventMessage.get(), fds))
     {
-        RIALTO_IPC_LOG_ERROR("event has too many file descriptors (%zu, max %zu)", kFds.size(), kMaxFdsServerToClient);
+        RIALTO_IPC_LOG_ERROR("event has an invalid file descriptor field, not sending it");
         return false;
     }
-    const size_t kRequiredCtrlLen = kFds.empty() ? 0 : CMSG_SPACE(sizeof(int) * kFds.size());
+    if (fds.size() > kMaxFdsServerToClient)
+    {
+        RIALTO_IPC_LOG_ERROR("event has too many file descriptors (%zu, max %zu)", fds.size(), kMaxFdsServerToClient);
+        return false;
+    }
+    const size_t kRequiredCtrlLen = fds.empty() ? 0 : CMSG_SPACE(sizeof(int) * fds.size());
 
     // create the base reply
     transport::MessageFromServer message;
@@ -1370,7 +1438,7 @@ bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::prot
     message.SerializeWithCachedSizesToArray(data);
 
     // add the fds
-    if (!kFds.empty())
+    if (!fds.empty())
     {
         struct cmsghdr *cmsg = CMSG_FIRSTHDR(header);
         if (!cmsg)
@@ -1381,8 +1449,8 @@ bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::prot
 
         cmsg->cmsg_level = SOL_SOCKET;
         cmsg->cmsg_type = SCM_RIGHTS;
-        cmsg->cmsg_len = CMSG_LEN(sizeof(int) * kFds.size());
-        memcpy(CMSG_DATA(cmsg), kFds.data(), sizeof(int) * kFds.size());
+        cmsg->cmsg_len = CMSG_LEN(sizeof(int) * fds.size());
+        memcpy(CMSG_DATA(cmsg), fds.data(), sizeof(int) * fds.size());
         header->msg_controllen = cmsg->cmsg_len;
     }
 
