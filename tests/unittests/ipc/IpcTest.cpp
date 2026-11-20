@@ -18,16 +18,25 @@
  */
 
 #include "ClientStub.h"
+#include "IIpcController.h"
+#include "IIpcServer.h"
+#include "IIpcServerFactory.h"
 #include "ServerStub.h"
 #include "TestClientMock.h"
 #include "TestModuleMock.h"
+#include "rialtoipc-transport.pb.h"
 #include <gtest/gtest.h>
 
+#include <dirent.h>
 #include <sys/mman.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <chrono>
 #include <functional>
+#include <string>
+#include <thread>
 #include <vector>
 
 using namespace firebolt::rialto;
@@ -261,12 +270,12 @@ namespace
 {
 constexpr int kEventTimeoutMs{1000};
 
-std::vector<int> createFiles(size_t count)
+std::vector<int> createFiles(size_t count, const char *name = "rialto-ipc-test")
 {
     std::vector<int> fds;
     for (size_t i = 0; i < count; ++i)
     {
-        const int kFd = memfd_create("rialto-ipc-test", MFD_CLOEXEC);
+        const int kFd = memfd_create(name, MFD_CLOEXEC);
         EXPECT_GE(kFd, 0);
         fds.push_back(kFd);
     }
@@ -590,4 +599,243 @@ TEST_F(RialtoIpcFdTest, ShouldNotSendEventOverFdLimit)
     EXPECT_FALSE(sent);
     EXPECT_EQ(event, nullptr);
     closeAll(kSent);
+}
+
+// -----------------------------------------------------------------------------
+// Owned reply FDs (vfc-ipc-nested-fd-transfer, task 4.4)
+// -----------------------------------------------------------------------------
+
+namespace
+{
+constexpr char kOwnedFileName[]{"rialto-owned-reply"};
+
+// Number of descriptors in this process that refer to a memfd created with \a name.
+size_t countFilesNamed(const char *name)
+{
+    const std::string kTarget = std::string("/memfd:") + name;
+    size_t count{0};
+    DIR *dir = opendir("/proc/self/fd");
+    if (!dir)
+        return 0;
+    while (struct dirent *entry = readdir(dir))
+    {
+        char link[256]{};
+        const std::string kPath = std::string("/proc/self/fd/") + entry->d_name;
+        if (readlink(kPath.c_str(), link, sizeof(link) - 1) > 0 && std::string(link).rfind(kTarget, 0) == 0)
+            ++count;
+    }
+    closedir(dir);
+    return count;
+}
+
+// The server closes owned descriptors just after the reply is sent, so allow it a moment.
+bool waitForFilesNamed(const char *name, size_t expected)
+{
+    for (int i = 0; i < 500 && countFilesNamed(name) != expected; ++i)
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    return countFilesNamed(name) == expected;
+}
+
+struct FileId
+{
+    dev_t dev;
+    ino_t ino;
+};
+
+std::vector<FileId> fileIdsOf(const std::vector<int> &fds)
+{
+    std::vector<FileId> ids;
+    for (int fd : fds)
+    {
+        struct stat st
+        {
+        };
+        EXPECT_EQ(fstat(fd, &st), 0);
+        ids.push_back({st.st_dev, st.st_ino});
+    }
+    return ids;
+}
+
+void expectFileIds(const std::vector<FileId> &expected, const std::vector<int> &fds)
+{
+    const auto kActual = fileIdsOf(fds);
+    ASSERT_EQ(expected.size(), kActual.size());
+    for (size_t i = 0; i < expected.size(); ++i)
+    {
+        EXPECT_EQ(expected[i].dev, kActual[i].dev) << "position " << i;
+        EXPECT_EQ(expected[i].ino, kActual[i].ino) << "position " << i;
+    }
+}
+
+IController &ipcController(google::protobuf::RpcController *controller)
+{
+    return *dynamic_cast<IController *>(controller);
+}
+} // namespace
+
+class RialtoIpcOwnedFdTest : public RialtoIpcFdTest
+{
+protected:
+    // Replies with \a sent in a repeated FD field; \a configure runs in the handler before done->Run().
+    bool replyWith(const std::vector<int> &sent, const std::function<void(IController &)> &configure,
+                   std::vector<int> &received)
+    {
+        EXPECT_CALL(*m_testModuleMock, TestFdRepeatedFieldResponse(_, _, _, _))
+            .WillOnce(Invoke(
+                [&](google::protobuf::RpcController *controller, const TestNoVar *, TestFdRepeatedField *response,
+                    google::protobuf::Closure *done)
+                {
+                    *response = makeRepeatedField(sent);
+                    configure(ipcController(controller));
+                    done->Run();
+                }));
+
+        TestNoVar request;
+        TestFdRepeatedField response;
+        const bool kResult = m_clientStub->call(&TestModule_Stub::TestFdRepeatedFieldResponse, request, response);
+        received = fdsOf(response);
+        return kResult;
+    }
+};
+
+TEST_F(RialtoIpcOwnedFdTest, ShouldCloseOwnedFdsAfterSuccessfulReply)
+{
+    const auto kSent = createFiles(2, kOwnedFileName);
+    const auto kSentIds = fileIdsOf(kSent);
+    std::vector<int> received;
+
+    EXPECT_TRUE(replyWith(kSent, [](IController &controller) { controller.setReplyFdsOwned(true); }, received));
+    expectFileIds(kSentIds, received);
+
+    EXPECT_TRUE(waitForFilesNamed(kOwnedFileName, received.size())); // only the client's copies remain
+    closeAll(received);
+    EXPECT_EQ(countFilesNamed(kOwnedFileName), 0U);
+}
+
+TEST_F(RialtoIpcOwnedFdTest, ShouldCloseOwnedFdsWhenCallFailsAfterFillingThem)
+{
+    const auto kSent = createFiles(2, kOwnedFileName);
+    std::vector<int> received;
+
+    EXPECT_FALSE(replyWith(
+        kSent,
+        [](IController &controller)
+        {
+            controller.setReplyFdsOwned(true);
+            controller.SetFailed("failed after filling the reply");
+        },
+        received));
+    EXPECT_TRUE(received.empty());
+
+    EXPECT_TRUE(waitForFilesNamed(kOwnedFileName, 0));
+}
+
+TEST_F(RialtoIpcOwnedFdTest, ShouldCloseOwnedFdsWhenReplyIsOverTheLimit)
+{
+    const auto kSent = createFiles(33, kOwnedFileName); // client accepts 32
+    std::vector<int> received;
+
+    EXPECT_FALSE(replyWith(kSent, [](IController &controller) { controller.setReplyFdsOwned(true); }, received));
+    EXPECT_TRUE(received.empty());
+
+    EXPECT_TRUE(waitForFilesNamed(kOwnedFileName, 0));
+}
+
+TEST_F(RialtoIpcOwnedFdTest, ShouldLeaveUnownedFdsOpen)
+{
+    const auto kSent = createFiles(1, kOwnedFileName);
+    std::vector<int> received;
+
+    EXPECT_TRUE(replyWith(kSent, [](IController &) {}, received));
+    expectSameFilesInOrder(kSent, received); // kSent is still open, so this can fstat it
+
+    closeAll(received);
+    EXPECT_EQ(countFilesNamed(kOwnedFileName), kSent.size());
+    closeAll(kSent);
+}
+
+/**
+ * A real server driven from the test thread, with the client end of a socket pair written directly,
+ * so a test can complete a call after the client has gone.
+ */
+class RialtoIpcRawServerTest : public ::testing::Test
+{
+protected:
+    void SetUp() override
+    {
+        ASSERT_EQ(socketpair(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC, 0, m_sockets), 0);
+        m_server = IServerFactory::createFactory()->create();
+        ASSERT_TRUE(m_server);
+        m_client = m_server->addClient(m_sockets[0]);
+        ASSERT_TRUE(m_client);
+        m_client->exportService(m_moduleMock);
+    }
+
+    void TearDown() override
+    {
+        for (int sock : m_sockets)
+        {
+            if (sock >= 0)
+                close(sock);
+        }
+    }
+
+    // Sends a TestFdRepeatedFieldResponse call from the raw client end.
+    void sendCall()
+    {
+        transport::MessageToServer message;
+        auto *call = message.mutable_call();
+        call->set_serial_id(1);
+        call->set_service_name(TestModule::descriptor()->full_name());
+        call->set_method_name("TestFdRepeatedFieldResponse");
+        call->set_request_message(TestNoVar().SerializeAsString());
+        const std::string kData = message.SerializeAsString();
+        ASSERT_EQ(send(m_sockets[1], kData.data(), kData.size(), MSG_NOSIGNAL), static_cast<ssize_t>(kData.size()));
+    }
+
+    void processServerUntil(const std::function<bool()> &condition)
+    {
+        for (int i = 0; i < 500 && !condition(); ++i)
+        {
+            m_server->process();
+            m_server->wait(1);
+        }
+        EXPECT_TRUE(condition());
+    }
+
+    // Closes the client end and lets the server notice.
+    void disconnectClient()
+    {
+        close(m_sockets[1]);
+        m_sockets[1] = -1;
+        processServerUntil([this]() { return !m_client->isConnected(); });
+    }
+
+    std::shared_ptr<StrictMock<TestModuleMock>> m_moduleMock{std::make_shared<StrictMock<TestModuleMock>>()};
+    std::shared_ptr<IServer> m_server;
+    std::shared_ptr<IClient> m_client;
+    int m_sockets[2]{-1, -1};
+};
+
+TEST_F(RialtoIpcRawServerTest, ShouldCloseOwnedFdsWhenClientIsGone)
+{
+    const auto kSent = createFiles(2, kOwnedFileName);
+    google::protobuf::Closure *pendingDone{nullptr};
+    EXPECT_CALL(*m_moduleMock, TestFdRepeatedFieldResponse(_, _, _, _))
+        .WillOnce(Invoke(
+            [&](google::protobuf::RpcController *controller, const TestNoVar *, TestFdRepeatedField *response,
+                google::protobuf::Closure *done)
+            {
+                *response = makeRepeatedField(kSent);
+                ipcController(controller).setReplyFdsOwned(true);
+                pendingDone = done; // completed after the client has gone
+            }));
+
+    sendCall();
+    processServerUntil([&]() { return pendingDone != nullptr; });
+    disconnectClient();
+
+    ASSERT_NE(pendingDone, nullptr);
+    pendingDone->Run();
+    EXPECT_EQ(countFilesNamed(kOwnedFileName), 0U);
 }
