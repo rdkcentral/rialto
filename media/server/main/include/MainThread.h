@@ -140,6 +140,11 @@ private:
     std::atomic<uint32_t> m_nextClientId;
 
     /**
+     * @brief A mutex protecting access to the registered client ids.
+     */
+    std::mutex m_registeredClientsMutex;
+
+    /**
      * @brief Clients registered on this thread.
      */
     std::set<uint32_t> m_registeredClients;
