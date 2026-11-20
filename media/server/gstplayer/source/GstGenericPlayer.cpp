@@ -457,6 +457,7 @@ void GstGenericPlayer::termPipeline()
     }
 
     m_finishSourceSetupTimer.reset();
+    stopNotifyPlaybackInfoTimer();
 
     clearAudioFirstFrameFallbackProbe();
     stopNotifyPlaybackInfoTimer();
