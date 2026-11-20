@@ -34,6 +34,7 @@ add_gtests (
         ${PROTO_HEADERS}
 
         main.cpp
+        FdFieldWalkerTest.cpp
         IpcTest.cpp
         NamedSocketTest.cpp
         )
@@ -49,6 +50,7 @@ target_include_directories(
         ${PROTO_DIR}
         $<TARGET_PROPERTY:RialtoIpcClient,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoIpcCommon,INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcServer,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcStub,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcMocks,INTERFACE_INCLUDE_DIRECTORIES>
