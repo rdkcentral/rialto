@@ -114,3 +114,21 @@ TEST_F(EosTest, shouldNotSendEosWhenAlreadySetEos)
     shouldCancelUnderflow(firebolt::rialto::MediaSourceType::AUDIO);
     triggerEosAudio();
 }
+
+TEST_F(EosTest, shouldSetEosForSubtitle)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::SUBTITLE);
+    shouldGstAppSrcEndOfStreamSuccess();
+    shouldCancelUnderflow(firebolt::rialto::MediaSourceType::SUBTITLE);
+    triggerEosSubtitle();
+    shouldSetEos(firebolt::rialto::MediaSourceType::SUBTITLE);
+}
+
+TEST_F(EosTest, shouldSetEosPendingWhenSubtitleBuffersAreQueued)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::SUBTITLE);
+    setContextSubtitleBuffer();
+    shouldCancelUnderflow(firebolt::rialto::MediaSourceType::SUBTITLE);
+    triggerEosSubtitle();
+    shouldSetEosPending(firebolt::rialto::MediaSourceType::SUBTITLE);
+}
