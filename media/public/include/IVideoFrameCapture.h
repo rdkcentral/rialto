@@ -41,8 +41,9 @@
 #include <memory>
 #include <vector>
 
-// Opaque EGL handles, matching <EGL/egl.h> where EGLDisplay and EGLContext are void *.
+/** Opaque EGL display handle, matching <EGL/egl.h> where EGLDisplay is void *. */
 using EGLDisplay = void *;
+/** Opaque EGL context handle, matching <EGL/egl.h> where EGLContext is void *. */
 using EGLContext = void *;
 
 namespace firebolt::rialto
@@ -82,13 +83,18 @@ enum class GraphicsTextureLayout
 class IVideoFrame
 {
 public:
-    /** Releases this frame's lock on final shared ownership; compatible imports may remain cached. */
+    /**
+     * Releases this frame's lock on final shared ownership; compatible imports may remain cached.
+     *
+     * The frame reference is the lease on its capture slot: while any reference exists the slot is not reused, and
+     * dropping the last one releases it. The release may happen on any thread and makes no graphics calls.
+     */
     virtual ~IVideoFrame() = default;
     /** Returns the reusable capture-pool slot index; it is not a globally unique frame ID. */
     virtual uint32_t frameIndex() const = 0;
     /** Returns the number of texture or image resources exposed by this frame. */
     virtual uint32_t numResources() const = 0;
-    /** Describes how the frame's resources compose the visible image. */
+    /** Describes how the frame's resources compose the visible image. In V1.1 this is always RGBA with one resource. */
     virtual GraphicsTextureLayout layout() const = 0;
     /** Returns the selected frame's presentation timestamp in nanoseconds. */
     virtual int64_t presentationTimeStampNs() const = 0;
@@ -96,7 +102,10 @@ public:
     virtual uint32_t textureWidth() const = 0;
     /** Returns the padded backing height in pixels. */
     virtual uint32_t textureHeight() const = 0;
-    /** Returns the visible content width in pixels. */
+    /**
+     * Returns the visible content width in pixels. The visible region starts at the texture origin (0, 0) and covers
+     * visibleWidth() x visibleHeight() of the textureWidth() x textureHeight() backing.
+     */
     virtual uint32_t visibleWidth() const = 0;
     /** Returns the visible content height in pixels. */
     virtual uint32_t visibleHeight() const = 0;

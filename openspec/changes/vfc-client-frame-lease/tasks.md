@@ -21,7 +21,7 @@ Unit tests run with `./build_ut.py -s client` (mock IPC and mock importer). "Spe
 
 ## 4. Header documentation
 
-- [ ] 4.1 Document in `IVideoFrameCapture.h` that the visible region starts at the texture origin, that `layout()` is `RGBA` with one resource in V1.1, and that the frame reference is the lease. Verify the Doxygen build has no warnings for the file.
+- [x] 4.1 Document in `IVideoFrameCapture.h` that the visible region starts at the texture origin, that `layout()` is `RGBA` with one resource in V1.1, and that the frame reference is the lease. Verify the Doxygen build has no warnings for the file.
 
 ## 5. End-to-end (after R9)
 
