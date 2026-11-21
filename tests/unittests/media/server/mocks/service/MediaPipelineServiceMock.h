@@ -57,6 +57,7 @@ public:
     MOCK_METHOD(bool, setVideoWindow, (int, std::uint32_t, std::uint32_t, std::uint32_t, std::uint32_t), (override));
     MOCK_METHOD(bool, attachVideoFrameCapture, (int, std::uint64_t, std::uint32_t), (override));
     MOCK_METHOD(bool, detachVideoFrameCapture, (int), (override));
+    MOCK_METHOD(void, dropVideoFrameCapture, (int, std::uint32_t), (override));
     MOCK_METHOD(bool, haveData, (int, MediaSourceStatus, std::uint32_t, std::uint32_t), (override));
     MOCK_METHOD(bool, renderFrame, (int), (override));
     MOCK_METHOD(bool, setVolume, (int sessionId, double targetVolume, uint32_t volumeDuration, EaseType easeType),

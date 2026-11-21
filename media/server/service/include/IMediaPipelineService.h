@@ -75,6 +75,10 @@ public:
      * @brief Detaches the session's video frame capture (proposal 3.2).
      */
     virtual bool detachVideoFrameCapture(int sessionId) = 0;
+    /**
+     * @brief Removes a capture from a session in any state, after its registration was destroyed (implicit detach).
+     */
+    virtual void dropVideoFrameCapture(int sessionId, std::uint32_t captureId) = 0;
     virtual bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
                           std::uint32_t needDataRequestId) = 0;
     virtual bool renderFrame(int sessionId) = 0;

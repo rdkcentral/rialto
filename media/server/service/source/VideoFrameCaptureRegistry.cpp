@@ -51,6 +51,17 @@ bool VideoFrameCaptureRegistry::unbind(std::uint32_t captureId)
     return true;
 }
 
+std::map<std::uint32_t, int> VideoFrameCaptureRegistry::boundCaptures() const
+{
+    std::map<std::uint32_t, int> bound;
+    for (const auto &[kId, kEntry] : m_entries)
+    {
+        if (kEntry.attachedSessionId)
+            bound.emplace(kId, *kEntry.attachedSessionId);
+    }
+    return bound;
+}
+
 const VideoFrameCaptureEntry *VideoFrameCaptureRegistry::find(std::uint32_t captureId) const
 {
     auto it = m_entries.find(captureId);

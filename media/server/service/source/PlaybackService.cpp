@@ -50,6 +50,10 @@ PlaybackService::PlaybackService(
       m_videoFrameCaptureService{
           std::make_unique<VideoFrameCaptureService>(wrappers::ICaptureHalLibraryFactory::createFactory())}
 {
+    // destroying a bound capture's registration, or its client going, detaches it from its session
+    m_videoFrameCaptureService->setBoundCaptureRemovedHandler(
+        [this](int sessionId, std::uint32_t captureId)
+        { m_mediaPipelineService->dropVideoFrameCapture(sessionId, captureId); });
     RIALTO_SERVER_LOG_DEBUG("PlaybackService is constructed");
 }
 

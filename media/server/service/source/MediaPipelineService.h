@@ -80,6 +80,7 @@ public:
                         std::uint32_t height) override;
     bool attachVideoFrameCapture(int sessionId, std::uint64_t captureClientId, std::uint32_t captureId) override;
     bool detachVideoFrameCapture(int sessionId) override;
+    void dropVideoFrameCapture(int sessionId, std::uint32_t captureId) override;
     bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
                   std::uint32_t needDataRequestId) override;
     bool renderFrame(int sessionId) override;
@@ -128,7 +129,17 @@ private:
     IPrivateMetricsService &m_metricsService;
     std::map<int, std::unique_ptr<IMediaPipelineServerInternal>> m_mediaPipelines;
     std::mutex m_mediaPipelineMutex;
-    std::map<int, std::uint64_t> m_captureClientIds; /**< The client of each session's attached capture. */
+    /**
+     * @brief Unbinds a session's attached capture, if any. Must be called with m_mediaPipelineMutex held.
+     */
+    void unbindSessionCaptureLocked(int sessionId);
+
+    struct AttachedCapture
+    {
+        std::uint64_t clientId;
+        std::uint32_t captureId;
+    };
+    std::map<int, AttachedCapture> m_attachedCaptures; /**< Each session's attached capture. */
 };
 } // namespace firebolt::rialto::server::service
 

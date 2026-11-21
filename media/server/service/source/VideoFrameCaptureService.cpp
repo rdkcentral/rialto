@@ -20,6 +20,9 @@
 #include "VideoFrameCaptureService.h"
 #include "RialtoServerLogging.h"
 
+#include <map>
+#include <optional>
+
 namespace firebolt::rialto::server::service
 {
 VideoFrameCaptureService::VideoFrameCaptureService(
@@ -61,13 +64,25 @@ VideoFrameCaptureServiceStatus VideoFrameCaptureService::createCapture(VideoFram
 
 bool VideoFrameCaptureService::destroyCapture(VideoFrameCaptureClientId clientId, std::uint32_t captureId)
 {
-    std::lock_guard<std::mutex> lock{m_mutex};
-    auto it = m_registries.find(clientId);
-    if (it == m_registries.end() || !it->second.remove(captureId))
+    std::optional<int> boundSession;
+    BoundCaptureRemovedHandler handler;
     {
-        RIALTO_SERVER_LOG_WARN("Client %llu has no video frame capture %u", static_cast<unsigned long long>(clientId),
-                               captureId);
-        return false;
+        std::lock_guard<std::mutex> lock{m_mutex};
+        auto it = m_registries.find(clientId);
+        const VideoFrameCaptureEntry *kEntry{it == m_registries.end() ? nullptr : it->second.find(captureId)};
+        if (!kEntry)
+        {
+            RIALTO_SERVER_LOG_WARN("Client %llu has no video frame capture %u",
+                                   static_cast<unsigned long long>(clientId), captureId);
+            return false;
+        }
+        boundSession = kEntry->attachedSessionId;
+        it->second.remove(captureId);
+        handler = m_boundCaptureRemovedHandler;
+    }
+    if (boundSession && handler)
+    {
+        handler(*boundSession, captureId); // destroying a bound capture detaches it
     }
     return true;
 }
@@ -81,8 +96,22 @@ bool VideoFrameCaptureService::hasCapture(VideoFrameCaptureClientId clientId, st
 
 void VideoFrameCaptureService::removeClient(VideoFrameCaptureClientId clientId)
 {
-    std::lock_guard<std::mutex> lock{m_mutex};
-    m_registries.erase(clientId);
+    std::map<std::uint32_t, int> bound;
+    BoundCaptureRemovedHandler handler;
+    {
+        std::lock_guard<std::mutex> lock{m_mutex};
+        auto it = m_registries.find(clientId);
+        if (it == m_registries.end())
+            return;
+        bound = it->second.boundCaptures();
+        m_registries.erase(it);
+        handler = m_boundCaptureRemovedHandler;
+    }
+    for (const auto &[kCaptureId, kSessionId] : bound)
+    {
+        if (handler)
+            handler(kSessionId, kCaptureId);
+    }
 }
 
 bool VideoFrameCaptureService::bindCapture(VideoFrameCaptureClientId clientId, std::uint32_t captureId, int sessionId)
@@ -106,5 +135,11 @@ void VideoFrameCaptureService::unbindCapture(VideoFrameCaptureClientId clientId,
     {
         it->second.unbind(captureId);
     }
+}
+
+void VideoFrameCaptureService::setBoundCaptureRemovedHandler(const BoundCaptureRemovedHandler &handler)
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+    m_boundCaptureRemovedHandler = handler;
 }
 } // namespace firebolt::rialto::server::service

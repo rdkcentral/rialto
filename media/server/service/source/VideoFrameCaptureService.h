@@ -46,6 +46,7 @@ public:
     void removeClient(VideoFrameCaptureClientId clientId) override;
     bool bindCapture(VideoFrameCaptureClientId clientId, std::uint32_t captureId, int sessionId) override;
     void unbindCapture(VideoFrameCaptureClientId clientId, std::uint32_t captureId) override;
+    void setBoundCaptureRemovedHandler(const BoundCaptureRemovedHandler &handler) override;
 
 private:
     /** Must be called with m_mutex held. */
@@ -55,6 +56,7 @@ private:
     std::shared_ptr<wrappers::ICaptureHalLibrary> m_captureHalLibrary;
     mutable std::mutex m_mutex;
     std::map<VideoFrameCaptureClientId, VideoFrameCaptureRegistry> m_registries;
+    BoundCaptureRemovedHandler m_boundCaptureRemovedHandler;
 };
 } // namespace firebolt::rialto::server::service
 

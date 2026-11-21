@@ -62,6 +62,9 @@ public:
     /** Unbinds a capture. @retval false if unknown or not bound. */
     bool unbind(std::uint32_t captureId);
 
+    /** @retval the IDs and sessions of every bound capture. */
+    std::map<std::uint32_t, int> boundCaptures() const;
+
     /** Number of registered captures. */
     std::size_t size() const { return m_entries.size(); }
 

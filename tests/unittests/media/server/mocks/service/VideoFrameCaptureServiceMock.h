@@ -37,6 +37,7 @@ public:
     MOCK_METHOD(bool, bindCapture, (VideoFrameCaptureClientId clientId, std::uint32_t captureId, int sessionId),
                 (override));
     MOCK_METHOD(void, unbindCapture, (VideoFrameCaptureClientId clientId, std::uint32_t captureId), (override));
+    MOCK_METHOD(void, setBoundCaptureRemovedHandler, (const BoundCaptureRemovedHandler &handler), (override));
 };
 } // namespace firebolt::rialto::server::service
 

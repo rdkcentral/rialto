@@ -59,6 +59,10 @@ MediaPipelineService::~MediaPipelineService()
 void MediaPipelineService::clearMediaPipelines()
 {
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    while (!m_attachedCaptures.empty())
+    {
+        unbindSessionCaptureLocked(m_attachedCaptures.begin()->first);
+    }
     m_mediaPipelines.clear();
 }
 
@@ -117,6 +121,7 @@ bool MediaPipelineService::destroySession(int sessionId)
             RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
             return false;
         }
+        unbindSessionCaptureLocked(sessionId); // destroying a pipeline detaches its capture
         m_mediaPipelines.erase(mediaPipelineIter);
     }
     RIALTO_SERVER_LOG_INFO("Session with id: %d destroyed", sessionId);
@@ -386,7 +391,7 @@ bool MediaPipelineService::attachVideoFrameCapture(int sessionId, std::uint64_t 
         captureService.unbindCapture(captureClientId, captureId);
         return false;
     }
-    m_captureClientIds[sessionId] = captureClientId;
+    m_attachedCaptures[sessionId] = AttachedCapture{captureClientId, captureId};
     return true;
 }
 
@@ -406,13 +411,36 @@ bool MediaPipelineService::detachVideoFrameCapture(int sessionId)
     {
         return false;
     }
-    auto clientIter = m_captureClientIds.find(sessionId);
-    if (clientIter != m_captureClientIds.end())
-    {
-        m_playbackService.getVideoFrameCaptureService().unbindCapture(clientIter->second, captureId);
-        m_captureClientIds.erase(clientIter);
-    }
+    unbindSessionCaptureLocked(sessionId);
     return true;
+}
+
+void MediaPipelineService::dropVideoFrameCapture(int sessionId, std::uint32_t captureId)
+{
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto attachedIter = m_attachedCaptures.find(sessionId);
+    if (attachedIter == m_attachedCaptures.end() || attachedIter->second.captureId != captureId)
+    {
+        return;
+    }
+    m_attachedCaptures.erase(attachedIter); // the registration, and so its binding, is already gone
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter != m_mediaPipelines.end())
+    {
+        mediaPipelineIter->second->dropCapture(captureId);
+    }
+}
+
+void MediaPipelineService::unbindSessionCaptureLocked(int sessionId)
+{
+    auto attachedIter = m_attachedCaptures.find(sessionId);
+    if (attachedIter == m_attachedCaptures.end())
+    {
+        return;
+    }
+    m_playbackService.getVideoFrameCaptureService().unbindCapture(attachedIter->second.clientId,
+                                                                  attachedIter->second.captureId);
+    m_attachedCaptures.erase(attachedIter);
 }
 
 bool MediaPipelineService::haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,

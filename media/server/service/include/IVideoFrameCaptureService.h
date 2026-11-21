@@ -23,6 +23,7 @@
 #include "IVideoFrameCapture.h"
 
 #include <cstdint>
+#include <functional>
 #include <optional>
 
 namespace firebolt::rialto::server::service
@@ -97,6 +98,18 @@ public:
      * @brief Unbinds a client's capture from its session. Does nothing if it is not bound.
      */
     virtual void unbindCapture(VideoFrameCaptureClientId clientId, std::uint32_t captureId) = 0;
+
+    /**
+     * @brief Called with the session and capture ID when a bound capture is destroyed or its client disconnects.
+     *
+     * Runs on the calling thread with no lock of this service held.
+     */
+    using BoundCaptureRemovedHandler = std::function<void(int sessionId, std::uint32_t captureId)>;
+
+    /**
+     * @brief Sets the handler for bound captures that are removed (implicit detach).
+     */
+    virtual void setBoundCaptureRemovedHandler(const BoundCaptureRemovedHandler &handler) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

@@ -25,6 +25,8 @@
 #include <gtest/gtest.h>
 
 #include <set>
+#include <utility>
+#include <vector>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server::service;
@@ -185,4 +187,40 @@ TEST(VideoFrameCaptureServiceTest, ShouldNotBindAnotherClientsOrUnknownCapture)
     EXPECT_FALSE(service.bindCapture(kClientA, captureId + 1, 10));
     service.unbindCapture(kClientB, captureId); // harmless
     EXPECT_TRUE(service.bindCapture(kClientA, captureId, 10));
+}
+
+TEST(VideoFrameCaptureServiceTest, ShouldReportDestroyedBoundCaptureOnly)
+{
+    VideoFrameCaptureService service{halFactory(true)};
+    std::vector<std::pair<int, std::uint32_t>> removed;
+    service.setBoundCaptureRemovedHandler([&removed](int sessionId, std::uint32_t captureId)
+                                          { removed.emplace_back(sessionId, captureId); });
+    std::uint32_t bound{0}, unbound{0};
+    ASSERT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, bound), VideoFrameCaptureServiceStatus::OK);
+    ASSERT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, unbound), VideoFrameCaptureServiceStatus::OK);
+    ASSERT_TRUE(service.bindCapture(kClientA, bound, 10));
+
+    EXPECT_TRUE(service.destroyCapture(kClientA, unbound));
+    EXPECT_TRUE(removed.empty());
+    EXPECT_TRUE(service.destroyCapture(kClientA, bound));
+    ASSERT_EQ(removed.size(), 1U);
+    EXPECT_EQ(removed[0], std::make_pair(10, bound));
+}
+
+TEST(VideoFrameCaptureServiceTest, ShouldReportBoundCapturesOfDisconnectedClient)
+{
+    VideoFrameCaptureService service{halFactory(true)};
+    std::vector<std::pair<int, std::uint32_t>> removed;
+    service.setBoundCaptureRemovedHandler([&removed](int sessionId, std::uint32_t captureId)
+                                          { removed.emplace_back(sessionId, captureId); });
+    std::uint32_t first{0}, second{0}, other{0};
+    ASSERT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, first), VideoFrameCaptureServiceStatus::OK);
+    ASSERT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, second), VideoFrameCaptureServiceStatus::OK);
+    ASSERT_EQ(service.createCapture(kClientB, GraphicsAPIType::GL, other), VideoFrameCaptureServiceStatus::OK);
+    ASSERT_TRUE(service.bindCapture(kClientA, first, 10));
+    ASSERT_TRUE(service.bindCapture(kClientB, other, 11));
+
+    service.removeClient(kClientA);
+    ASSERT_EQ(removed.size(), 1U); // only client A's bound capture
+    EXPECT_EQ(removed[0], std::make_pair(10, first));
 }
