@@ -20,12 +20,22 @@
 add_gtests (
         RialtoServerCaptureUnitTests
 
+        CaptureSessionGuardTests.cpp
         CapturedFrameTraitsTests.cpp
         CapturedFrameUtilsTests.cpp
+        )
+
+target_include_directories(
+        RialtoServerCaptureUnitTests
+
+        PRIVATE
+        $<TARGET_PROPERTY:ExternalLibraryMocks,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
         )
 
 target_link_libraries(
         RialtoServerCaptureUnitTests
 
         RialtoServerCapture
+        RialtoLogging
         )

@@ -37,6 +37,7 @@ add_library(
         RialtoServerCapture
         STATIC
 
+        source/CaptureSessionGuard.cpp
         source/CapturedFrameUtils.cpp
         )
 
@@ -55,6 +56,9 @@ target_link_libraries(
         RialtoServerCapture
         PUBLIC
         RialtoCaptureHal
+
+        PRIVATE
+        RialtoLogging
         )
 
 install (
