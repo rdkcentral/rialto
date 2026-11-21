@@ -93,6 +93,9 @@ public:
     MOCK_METHOD(bool, getUseBuffering, (bool &useBuffering), (override));
     MOCK_METHOD(bool, switchSource, (const std::unique_ptr<MediaSource> &source), (override));
     MOCK_METHOD(bool, getDuration, (int64_t & duration), (override));
+    MOCK_METHOD(bool, attachVideoFrameCapture, (const std::shared_ptr<IVideoFrameCapture> &videoFrameCapture),
+                (override));
+    MOCK_METHOD(bool, detachVideoFrameCapture, (), (override));
 };
 } // namespace firebolt::rialto::client
 

@@ -344,4 +344,14 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     EXPECT_CALL(*mediaPipelineMock, switchSource(_)).WillOnce(Return(true));
     EXPECT_TRUE(proxy->switchSource(kMediaSource));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, attachVideoFrameCapture(_)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->attachVideoFrameCapture(nullptr));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, detachVideoFrameCapture()).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->detachVideoFrameCapture());
 }
