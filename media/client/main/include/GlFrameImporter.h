@@ -78,7 +78,14 @@ public:
      * @param[in] context : The application's EGL context; the capture's share group.
      */
     GlFrameImporter(const std::shared_ptr<IEglGl> &gl, egl::EGLDisplay display, egl::EGLContext context);
-    ~GlFrameImporter() override = default;
+    /**
+     * @brief Final teardown: deletes every remaining import (design D4).
+     *
+     * Runs when the capture and all its frames are gone. If the creation context is current on this thread the
+     * imports are deleted here; otherwise a short-lived thread makes a temporary context sharing it current and
+     * deletes them there.
+     */
+    ~GlFrameImporter() override;
 
     std::shared_ptr<IImportedImage> importFrame(const CaptureFrameDescription &description,
                                                 const std::vector<CaptureObjectFd> &fds, bool &fdsConsumed) override;
@@ -95,6 +102,9 @@ public:
 
 private:
     bool hasRequiredExtensions();
+
+    /** Deletes the retired imports on a temporary shared context on a new thread. @retval false on failure. */
+    bool drainOnTemporaryContext();
 
     /** Deletes the texture, then the image (SoC spec 6.4 step 5). Needs a context of the share group current. */
     void destroyImport(egl::GLuint texture, egl::EGLImage image);

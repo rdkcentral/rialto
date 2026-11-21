@@ -26,6 +26,7 @@
 #include <limits>
 #include <sstream>
 #include <string>
+#include <thread>
 
 namespace firebolt::rialto::client
 {
@@ -300,6 +301,80 @@ void GlFrameImporter::destroyImport(GLuint texture, EGLImage image)
     {
         m_gl->eglDestroyImageKHR(m_display, image);
     }
+}
+
+GlFrameImporter::~GlFrameImporter()
+{
+    bool empty{true};
+    {
+        std::lock_guard<std::mutex> lock{m_retiredMutex};
+        empty = m_retired.empty();
+    }
+    if (empty || !m_gl)
+    {
+        return;
+    }
+    if (m_gl->eglGetCurrentContext() == m_context)
+    {
+        drain();
+        return;
+    }
+    if (!drainOnTemporaryContext())
+    {
+        // the share group keeps the objects; they are freed when the application destroys it
+        RIALTO_CLIENT_LOG_ERROR("Could not delete the GL objects of a video frame capture: no temporary context");
+    }
+}
+
+bool GlFrameImporter::drainOnTemporaryContext()
+{
+    bool done{false};
+    std::thread cleaner{
+        [this, &done]()
+        {
+            if (!m_gl->eglBindAPI(EGL_OPENGL_ES_API))
+                return;
+            EGLint configId{0};
+            EGLint clientVersion{0};
+            if (!m_gl->eglQueryContext(m_display, m_context, EGL_CONFIG_ID, &configId) ||
+                !m_gl->eglQueryContext(m_display, m_context, EGL_CONTEXT_CLIENT_VERSION, &clientVersion))
+                return;
+            const EGLint kConfigAttributes[]{EGL_CONFIG_ID, configId, EGL_NONE};
+            EGLConfig config{nullptr};
+            EGLint configCount{0};
+            if (!m_gl->eglChooseConfig(m_display, kConfigAttributes, &config, 1, &configCount) || configCount < 1)
+                return;
+            const EGLint kContextAttributes[]{EGL_CONTEXT_CLIENT_VERSION, clientVersion, EGL_NONE};
+            EGLContext context = m_gl->eglCreateContext(m_display, config, m_context, kContextAttributes);
+            if (context == EGL_NO_CONTEXT)
+                return;
+
+            // surfaceless where supported, else a 1x1 pbuffer
+            const bool kSurfaceless{
+                hasExtension(m_gl->eglQueryString(m_display, EGL_EXTENSIONS), "EGL_KHR_surfaceless_context")};
+            EGLSurface surface{EGL_NO_SURFACE};
+            if (!kSurfaceless)
+            {
+                const EGLint kPbufferAttributes[]{EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
+                surface = m_gl->eglCreatePbufferSurface(m_display, config, kPbufferAttributes);
+            }
+            if ((kSurfaceless || surface != EGL_NO_SURFACE) && m_gl->eglMakeCurrent(m_display, surface, surface, context))
+            {
+                drain();
+                m_gl->eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+                done = true;
+            }
+            if (surface != EGL_NO_SURFACE)
+                m_gl->eglDestroySurface(m_display, surface);
+            m_gl->eglDestroyContext(m_display, context);
+            m_gl->eglReleaseThread();
+        }};
+    cleaner.join();
+    if (done)
+    {
+        RIALTO_CLIENT_LOG_INFO("Deleted the GL objects of a video frame capture on a temporary shared context");
+    }
+    return done;
 }
 
 void GlFrameImporter::retire(const std::shared_ptr<IImportedImage> &image)

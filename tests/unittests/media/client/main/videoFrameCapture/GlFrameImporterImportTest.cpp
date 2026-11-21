@@ -23,6 +23,7 @@
 
 #include <fcntl.h>
 #include <set>
+#include <thread>
 
 /**
  * The EGL/GL mock keeps live images and textures, so a test can check that nothing from a failed attempt remains.
@@ -207,4 +208,132 @@ TEST_F(GlFrameImporterImportTest, GlFramesExposeOneExternalTextureWithRgbaLayout
     EXPECT_EQ(m_textures.count(kFrame->textureIds()[0]), 1U);
     EXPECT_EQ(kFrame->layout(), GraphicsTextureLayout::RGBA);
     EXPECT_EQ(kFrame->numResources(), 1U);
+}
+
+class GlFrameImporterTeardownTest : public GlFrameImporterImportTest
+{
+protected:
+    // An importer with one import retired, as it is when the capture and its last frame are gone.
+    std::unique_ptr<GlFrameImporter> importerWithRetiredImport()
+    {
+        auto importer = std::make_unique<GlFrameImporter>(m_gl, m_display, m_context);
+        bool fdsConsumed{false};
+        auto image = importer->importFrame(exampleB(), {{101, 10}}, fdsConsumed);
+        EXPECT_NE(image, nullptr);
+        importer->retire(image);
+        return importer;
+    }
+
+    void deletionsHappenOn(std::thread::id &thread)
+    {
+        ON_CALL(*m_gl, glDeleteTextures(1, _))
+            .WillByDefault(Invoke(
+                [this, &thread](GLsizei, const GLuint *textures)
+                {
+                    thread = std::this_thread::get_id();
+                    m_textures.erase(*textures);
+                }));
+    }
+
+    void contextCreationWorks()
+    {
+        ON_CALL(*m_gl, eglBindAPI(EGL_OPENGL_ES_API)).WillByDefault(Return(EGL_TRUE));
+        ON_CALL(*m_gl, eglQueryContext(m_display, m_context, _, _))
+            .WillByDefault(DoAll(SetArgPointee<3>(2), Return(EGL_TRUE)));
+        ON_CALL(*m_gl, eglChooseConfig(m_display, _, _, 1, _))
+            .WillByDefault(Invoke(
+                [](EGLDisplay, const EGLint *, EGLConfig *configs, EGLint, EGLint *count)
+                {
+                    configs[0] = reinterpret_cast<EGLConfig>(0xCF);
+                    *count = 1;
+                    return EGL_TRUE;
+                }));
+        ON_CALL(*m_gl, eglMakeCurrent(m_display, _, _, _)).WillByDefault(Return(EGL_TRUE));
+    }
+
+    EGLContext m_temporary{reinterpret_cast<EGLContext>(0xC2)};
+};
+
+TEST_F(GlFrameImporterTeardownTest, DeletesOnThisThreadWhenTheCreationContextIsCurrent)
+{
+    auto importer = importerWithRetiredImport();
+    std::thread::id deletingThread;
+    deletionsHappenOn(deletingThread);
+    EXPECT_CALL(*m_gl, eglGetCurrentContext()).WillOnce(Return(m_context));
+    EXPECT_CALL(*m_gl, eglCreateContext(_, _, _, _)).Times(0);
+
+    importer.reset();
+    EXPECT_EQ(deletingThread, std::this_thread::get_id());
+    EXPECT_TRUE(m_textures.empty());
+    EXPECT_TRUE(m_images.empty());
+}
+
+TEST_F(GlFrameImporterTeardownTest, DeletesOnATemporarySurfacelessContextFromAnotherThread)
+{
+    displayHasExtensions("EGL_EXT_image_dma_buf_import EGL_EXT_image_dma_buf_import_modifiers "
+                         "EGL_KHR_surfaceless_context");
+    auto importer = importerWithRetiredImport();
+    std::thread::id deletingThread;
+    deletionsHappenOn(deletingThread);
+    contextCreationWorks();
+    EXPECT_CALL(*m_gl, eglGetCurrentContext()).WillOnce(Return(EGL_NO_CONTEXT));
+    EXPECT_CALL(*m_gl, eglCreateContext(m_display, reinterpret_cast<EGLConfig>(0xCF), m_context, _))
+        .WillOnce(Return(m_temporary));
+    EXPECT_CALL(*m_gl, eglCreatePbufferSurface(_, _, _)).Times(0);
+    EXPECT_CALL(*m_gl, eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, m_temporary)).WillOnce(Return(EGL_TRUE));
+    EXPECT_CALL(*m_gl, eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)).WillOnce(Return(EGL_TRUE));
+    EXPECT_CALL(*m_gl, eglDestroyContext(m_display, m_temporary)).WillOnce(Return(EGL_TRUE));
+    EXPECT_CALL(*m_gl, eglReleaseThread()).WillOnce(Return(EGL_TRUE));
+
+    importer.reset(); // returns only after the thread has finished
+    EXPECT_NE(deletingThread, std::thread::id{});
+    EXPECT_NE(deletingThread, std::this_thread::get_id());
+    EXPECT_TRUE(m_textures.empty());
+    EXPECT_TRUE(m_images.empty());
+}
+
+TEST_F(GlFrameImporterTeardownTest, UsesAOnePixelPbufferWithoutSurfacelessContexts)
+{
+    auto importer = importerWithRetiredImport(); // the default extensions have no surfaceless contexts
+    contextCreationWorks();
+    const EGLSurface kPbuffer{reinterpret_cast<EGLSurface>(0x5F)};
+    EXPECT_CALL(*m_gl, eglGetCurrentContext()).WillOnce(Return(EGL_NO_CONTEXT));
+    EXPECT_CALL(*m_gl, eglCreateContext(m_display, _, m_context, _)).WillOnce(Return(m_temporary));
+    EXPECT_CALL(*m_gl, eglCreatePbufferSurface(m_display, reinterpret_cast<EGLConfig>(0xCF), _))
+        .WillOnce(Invoke(
+            [kPbuffer](EGLDisplay, EGLConfig, const EGLint *attributes)
+            {
+                EXPECT_EQ(attributes[0], EGL_WIDTH);
+                EXPECT_EQ(attributes[1], 1);
+                EXPECT_EQ(attributes[2], EGL_HEIGHT);
+                EXPECT_EQ(attributes[3], 1);
+                return kPbuffer;
+            }));
+    EXPECT_CALL(*m_gl, eglMakeCurrent(m_display, kPbuffer, kPbuffer, m_temporary)).WillOnce(Return(EGL_TRUE));
+    EXPECT_CALL(*m_gl, eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)).WillOnce(Return(EGL_TRUE));
+    EXPECT_CALL(*m_gl, eglDestroySurface(m_display, kPbuffer)).WillOnce(Return(EGL_TRUE));
+    EXPECT_CALL(*m_gl, eglDestroyContext(m_display, m_temporary)).WillOnce(Return(EGL_TRUE));
+
+    importer.reset();
+    EXPECT_TRUE(m_textures.empty());
+    EXPECT_TRUE(m_images.empty());
+}
+
+TEST_F(GlFrameImporterTeardownTest, LogsAndKeepsObjectsWhenNoTemporaryContextCanBeCreated)
+{
+    auto importer = importerWithRetiredImport();
+    contextCreationWorks();
+    EXPECT_CALL(*m_gl, eglGetCurrentContext()).WillOnce(Return(EGL_NO_CONTEXT));
+    EXPECT_CALL(*m_gl, eglCreateContext(_, _, _, _)).WillOnce(Return(EGL_NO_CONTEXT));
+    ClientErrorLog log;
+    importer.reset();
+    EXPECT_EQ(log.count("no temporary context"), 1U);
+    EXPECT_EQ(m_textures.size(), 1U); // left to the share group
+}
+
+TEST_F(GlFrameImporterTeardownTest, NothingToDeleteMakesNoCalls)
+{
+    auto importer = std::make_unique<GlFrameImporter>(m_gl, m_display, m_context);
+    EXPECT_CALL(*m_gl, eglGetCurrentContext()).Times(0);
+    importer.reset();
 }
