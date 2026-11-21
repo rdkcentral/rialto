@@ -48,10 +48,18 @@ public:
     /** The server's ID for this capture. */
     std::uint32_t captureId() const { return m_captureId; }
 
-    /** Acquires the current frame (proposal 3.4). */
+    /**
+     * @brief Acquires the current frame (proposal 3.4).
+     *
+     * A new selection returns changed = true and becomes the current frame. NO_NEW_FRAME, NO_RESOURCES and an IPC
+     * failure return the current frame unchanged. NO_FRAME, FATAL_ERROR, UNSUPPORTED and INVALID_ARGUMENT clear it.
+     */
     GLFrameAcquisition acquireCurrentFrame();
 
 private:
+    /** Imports a new frame. Must be called with m_acquireMutex held. @retval null if it could not be imported. */
+    std::shared_ptr<IGLVideoFrame> importNewFrame(CaptureAcquireResult &result);
+
     std::shared_ptr<IVideoFrameCaptureIpc> m_ipc;
     const std::uint32_t m_captureId;
     std::shared_ptr<IFrameImporter> m_importer;

@@ -112,6 +112,9 @@ TEST_F(RialtoClientVideoFrameCaptureTest, CreateAndDestroyGlCapture)
     EXPECT_EQ(capture->apiType(), GraphicsAPIType::GL);
     EXPECT_EQ(std::dynamic_pointer_cast<GLVideoFrameCapture>(capture)->captureId(), kCaptureId);
 
+    firebolt::rialto::client::CaptureAcquireResult noFrame;
+    noFrame.status = firebolt::rialto::client::CaptureAcquireStatus::NO_FRAME;
+    EXPECT_CALL(*m_ipcMock, acquireCurrentFrame(kCaptureId)).WillOnce(Return(noFrame));
     const auto kAcquisition = capture->acquireCurrentFrame();
     EXPECT_FALSE(kAcquisition.changed);
     EXPECT_EQ(kAcquisition.frame, nullptr);

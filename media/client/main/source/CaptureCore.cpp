@@ -19,6 +19,9 @@
 
 #include "CaptureCore.h"
 #include "RialtoClientLogging.h"
+#include "VideoFrame.h"
+
+#include <unistd.h>
 
 namespace firebolt::rialto::client
 {
@@ -30,9 +33,63 @@ CaptureCore::CaptureCore(const std::shared_ptr<IVideoFrameCaptureIpc> &ipc, std:
 
 CaptureCore::~CaptureCore() = default;
 
+namespace
+{
+void closeFds(const std::vector<CaptureObjectFd> &fds)
+{
+    for (const CaptureObjectFd &kFd : fds)
+    {
+        if (kFd.fd >= 0)
+            close(kFd.fd);
+    }
+}
+} // namespace
+
 GLFrameAcquisition CaptureCore::acquireCurrentFrame()
 {
     std::lock_guard<std::mutex> lock{m_acquireMutex};
-    return GLFrameAcquisition{false, m_currentFrame};
+    CaptureAcquireResult result = m_ipc->acquireCurrentFrame(m_captureId);
+
+    switch (result.status)
+    {
+    case CaptureAcquireStatus::OK:
+    {
+        std::shared_ptr<IGLVideoFrame> frame = importNewFrame(result);
+        if (!frame)
+        {
+            return GLFrameAcquisition{false, m_currentFrame};
+        }
+        m_currentFrame = frame;
+        return GLFrameAcquisition{true, m_currentFrame};
+    }
+    case CaptureAcquireStatus::NO_NEW_FRAME:
+    case CaptureAcquireStatus::NO_RESOURCES:
+    case CaptureAcquireStatus::IPC_FAILURE:
+        return GLFrameAcquisition{false, m_currentFrame};
+    case CaptureAcquireStatus::NO_FRAME:
+    case CaptureAcquireStatus::UNSUPPORTED:
+    case CaptureAcquireStatus::INVALID_ARGUMENT:
+    case CaptureAcquireStatus::FATAL_ERROR:
+        break;
+    }
+    m_currentFrame.reset();
+    return GLFrameAcquisition{false, nullptr};
+}
+
+std::shared_ptr<IGLVideoFrame> CaptureCore::importNewFrame(CaptureAcquireResult &result)
+{
+    bool fdsConsumed{false};
+    std::shared_ptr<IImportedImage> image =
+        m_importer ? m_importer->importFrame(result.description, result.fds, fdsConsumed) : nullptr;
+    if (!fdsConsumed)
+    {
+        closeFds(result.fds);
+    }
+    if (!image)
+    {
+        RIALTO_CLIENT_LOG_ERROR("Failed to import video frame in slot %u", result.description.slotIndex);
+        return nullptr;
+    }
+    return std::make_shared<VideoFrame>(result.description, image);
 }
 } // namespace firebolt::rialto::client

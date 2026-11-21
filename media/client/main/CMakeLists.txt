@@ -39,6 +39,7 @@ set(LIB_RIALTO_CLIENT_SOURCES
         source/EglLibrary.cpp
         source/GLVideoFrameCapture.cpp
         source/SharedMemoryHandle.cpp
+        source/VideoFrame.cpp
         source/VideoFrameCaptureFactory.cpp
         source/WebAudioPlayer.cpp
         )
