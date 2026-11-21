@@ -20,7 +20,7 @@ Unit tests run with `./build_ut.py -s servercapture` (the suite added in 1.1). "
 
 ## 4. Visible origin (D5)
 
-- [ ] 4.1 Return `ok` with a warning for a non-zero visible origin, and add the per-session "logged once" flag helper that R9 will own. Verify: a (0, 8) origin passes with a warning; two such frames produce one log line through a mocked logger.
+- [x] 4.1 Return `ok` with a warning for a non-zero visible origin, and add the per-session "logged once" flag helper that R9 will own. Verify: a (0, 8) origin passes with a warning; two such frames produce one log line through a mocked logger.
 
 ## 5. Integration check
 

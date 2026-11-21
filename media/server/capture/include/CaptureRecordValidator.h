@@ -41,11 +41,12 @@ namespace firebolt::rialto::capture
  */
 struct ValidationResult
 {
-    bool ok{true};      /**< True if every rule passed. */
-    std::string rule{}; /**< Name of the first failing rule, empty when ok. */
+    bool ok{true};         /**< True if every rule passed. */
+    std::string rule{};    /**< Name of the first failing rule, empty when ok. */
+    std::string warning{}; /**< Set when the record passed but breaks a rule Rialto tolerates. */
 
     static ValidationResult pass() { return {}; }
-    static ValidationResult fail(const std::string &failedRule) { return {false, failedRule}; }
+    static ValidationResult fail(const std::string &failedRule) { return {false, failedRule, {}}; }
 };
 
 /**
@@ -83,6 +84,9 @@ ValidationResult validatePool(const CapturePool &pool, const CaptureCapabilities
  *
  * Colour rule: a frame whose DRM format is not a known RGB format must have a known matrix, range and both chroma
  * sitings (SoC capture spec 6.2). Unknown formats are treated as YUV.
+ *
+ * A visible region with a non-zero origin is a vendor contract violation that Rialto tolerates (roadmap A21
+ * proposal): the frame passes with a warning, and only its width and height are used.
  *
  * If \a lockedRanges is given, a plane must not overlap a plane of a different locked slot in the same object.
  */
@@ -123,6 +127,22 @@ private:
 
     uint64_t m_generation{0};
     std::vector<Range> m_ranges;
+};
+
+/**
+ * @brief Logs a session's validation warnings, each kind at most once per session.
+ *
+ * A session owns one, so a vendor that always sends, for example, a non-zero visible origin produces one error line
+ * per session instead of one per frame.
+ */
+class ValidationWarningLog
+{
+public:
+    /** Logs \a result's warning as an error the first time that warning is seen; does nothing otherwise. */
+    void report(const ValidationResult &result);
+
+private:
+    std::vector<std::string> m_logged;
 };
 
 } // namespace firebolt::rialto::capture

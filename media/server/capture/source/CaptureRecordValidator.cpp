@@ -18,6 +18,7 @@
  */
 
 #include "CaptureRecordValidator.h"
+#include "RialtoLogging.h"
 
 #include <algorithm>
 #include <map>
@@ -178,7 +179,17 @@ ValidationResult validateFrame(const CapturedFrame &frame, uint32_t admittedSlot
         result = validateColour(frame);
     if (result.ok && lockedRanges && lockedRanges->overlaps(frame))
         result = ValidationResult::fail("frame.slotOverlap: plane overlaps a plane of another locked slot");
+    if (result.ok && (frame.visibleRegion.x != 0 || frame.visibleRegion.y != 0))
+        result.warning = "frame.visibleOrigin: visible region does not start at (0,0); only its size is used";
     return result;
+}
+
+void ValidationWarningLog::report(const ValidationResult &result)
+{
+    if (result.warning.empty() || std::find(m_logged.begin(), m_logged.end(), result.warning) != m_logged.end())
+        return;
+    m_logged.push_back(result.warning);
+    RIALTO_LOG_ERROR(RIALTO_COMPONENT_SERVER, "Capture HAL record: %s", result.warning.c_str());
 }
 
 void LockedRanges::add(const CapturedFrame &frame)

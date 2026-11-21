@@ -19,6 +19,7 @@
 
 #include "CaptureRecordFixtures.h"
 #include "CaptureRecordValidator.h"
+#include "RialtoLogging.h"
 
 #include <gtest/gtest.h>
 
@@ -318,4 +319,54 @@ TEST(CaptureRecordValidatorTest, ShouldRequireCompleteColourForYuv)
          [](CapturedFrame &f, CaptureRecordFixtures &) { f.capabilities.drmFormat = 0x31313131; },
          "frame.colorDescription"},
     });
+}
+
+TEST(CaptureRecordValidatorTest, ShouldPassNonZeroVisibleOriginWithWarning)
+{
+    CaptureRecordFixtures fixtures;
+    CapturedFrame frame;
+    fixtures.makeExampleB(frame, 0, 1);
+    frame.visibleRegion = Rectangle{0, 8, Size{kWidth, kVisibleHeight}};
+
+    const ValidationResult kResult = validateFrame(frame, kAdmittedSlots);
+    EXPECT_TRUE(kResult.ok) << kResult.rule;
+    EXPECT_EQ(kResult.warning.rfind("frame.visibleOrigin", 0), 0U) << kResult.warning;
+
+    CapturedFrame atOrigin;
+    fixtures.makeExampleB(atOrigin, 1, 2);
+    EXPECT_TRUE(validateFrame(atOrigin, kAdmittedSlots).warning.empty());
+}
+
+TEST(CaptureRecordValidatorTest, ShouldLogEachWarningOncePerSession)
+{
+    int errorLines{0};
+    firebolt::rialto::logging::setLogHandler(
+        RIALTO_COMPONENT_SERVER,
+        [&errorLines](RIALTO_DEBUG_LEVEL level, const char *, int, const char *, const char *message, std::size_t)
+        {
+            if (level == RIALTO_DEBUG_LEVEL_ERROR && std::string(message).find("frame.visibleOrigin") != std::string::npos)
+                ++errorLines;
+        },
+        true);
+
+    CaptureRecordFixtures fixtures;
+    ValidationWarningLog sessionLog;
+    for (uint32_t slot = 0; slot < 2; ++slot)
+    {
+        CapturedFrame frame;
+        fixtures.makeExampleB(frame, slot, slot + 1);
+        frame.visibleRegion.y = 8;
+        frame.visibleRegion.size.height = kVisibleHeight;
+        sessionLog.report(validateFrame(frame, kAdmittedSlots));
+    }
+    EXPECT_EQ(errorLines, 1);
+
+    ValidationWarningLog nextSession;
+    CapturedFrame frame;
+    fixtures.makeExampleB(frame, 0, 9);
+    frame.visibleRegion.y = 8;
+    nextSession.report(validateFrame(frame, kAdmittedSlots));
+    EXPECT_EQ(errorLines, 2); // a new session logs again
+
+    firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_SERVER, nullptr, false);
 }
