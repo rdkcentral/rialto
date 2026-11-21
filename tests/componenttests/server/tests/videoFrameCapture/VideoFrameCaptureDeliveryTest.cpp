@@ -439,4 +439,49 @@ TEST_F(VideoFrameCaptureTeardownTest, shouldDeleteTheSessionAfterTheLastReleaseF
     destroyCapture(m_captureId);
 }
 
+/*
+ * Component Test: Client killed while holding frames (4.3)
+ * Expected Results:
+ *  The fake HAL sees one release per held frame, then the session deletion, and the vendor library is unloaded
+ *  after that, when the server stops.
+ */
+TEST_F(VideoFrameCaptureTeardownTest, shouldReleaseDeleteAndUnloadInOrderWhenTheClientIsKilled)
+{
+    char logPath[] = "/tmp/rialto-fake-hal-events-XXXXXX";
+    const int kLogFd{mkstemp(logPath)};
+    ASSERT_GE(kLogFd, 0);
+    close(kLogFd);
+    setenv("FAKE_CAPTURE_HAL_EVENT_LOG", logPath, 1);
+
+    commitWithCapture();
+    constexpr int kHeldFrames{2};
+    for (int i = 0; i < kHeldFrames; ++i)
+        ASSERT_EQ(acquire().status(), VIDEO_FRAME_CAPTURE_STATUS_OK);
+    closeClientFds();
+    std::FILE *truncated = std::fopen(logPath, "w"); // only the teardown's events count
+    ASSERT_NE(truncated, nullptr);
+    std::fclose(truncated);
+
+    // the client dies: its pipeline and captures go with it
+    captureSinkWillBeDropped();
+    gstPlayerWillBeDestructed();
+    m_clientStub.disconnect();
+    waitForLiveSessions(0);
+    EXPECT_EQ(liveSessions(), 0);
+
+    // the server stops: the last reference to the vendor library goes
+    m_sut.reset();
+
+    std::vector<std::string> events;
+    if (std::FILE *file = std::fopen(logPath, "r"))
+    {
+        char line[64];
+        while (std::fgets(line, sizeof(line), file))
+            events.emplace_back(line, std::strcspn(line, "\n"));
+        std::fclose(file);
+    }
+    unsetenv("FAKE_CAPTURE_HAL_EVENT_LOG");
+    std::remove(logPath);
+    EXPECT_EQ(events, (std::vector<std::string>{"release", "release", "session-deleted", "unloaded"}));
+}
 } // namespace firebolt::rialto::server::ct

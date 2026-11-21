@@ -27,6 +27,8 @@
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
+#include <cstdio>
+#include <cstdlib>
 #include <deque>
 #include <mutex>
 #include <optional>
@@ -86,6 +88,25 @@ void waitAtGateIfRequested()
     gate().blocked = false;
 }
 
+// FAKE_CAPTURE_HAL_EVENT_LOG names a file that receives one line per release, session deletion and the library
+// unload, so a test can check their order even after the library is gone.
+void logEvent(const char *event)
+{
+    const char *kPath = std::getenv("FAKE_CAPTURE_HAL_EVENT_LOG");
+    if (!kPath || !*kPath)
+        return;
+    if (FILE *file = std::fopen(kPath, "a"))
+    {
+        std::fprintf(file, "%s\n", event);
+        std::fclose(file);
+    }
+}
+
+__attribute__((destructor)) void logUnload()
+{
+    logEvent("unloaded");
+}
+
 FakeState &state()
 {
     static FakeState fakeState;
@@ -136,6 +157,7 @@ public:
         std::lock_guard<std::mutex> lock{state().mutex};
         --state().liveSessions;
         ++state().destroyedSessions;
+        logEvent("session-deleted");
     }
 
     CaptureStatus getCapabilities(CaptureCapabilities &out) const override
@@ -235,6 +257,7 @@ public:
         }
 
         m_lockedTokens[frame.slotIndex] = kInvalidAcquisitionToken;
+        logEvent("release");
         frame.slotIndex = kInvalidCaptureSlotIndex;
         frame.acquisitionToken = kInvalidAcquisitionToken;
         return CaptureStatus::OK;
