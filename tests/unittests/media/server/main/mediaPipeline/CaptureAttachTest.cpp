@@ -169,3 +169,21 @@ TEST_F(RialtoServerMediaPipelineCaptureAttachTest, DropDuringPlaybackDetaches)
     setState(PlaybackState::STOPPED);
     EXPECT_FALSE(detach()); // nothing left to detach
 }
+
+TEST_F(RialtoServerMediaPipelineCaptureAttachTest, SetVideoWindowFailsOnlyWhileCaptureIsAttached)
+{
+    loadGstPlayer();
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setVideoGeometry(1, 2, 3, 4));
+    EXPECT_TRUE(m_mediaPipeline->setVideoWindow(1, 2, 3, 4)); // before attach
+
+    EXPECT_TRUE(attach());
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_FALSE(m_mediaPipeline->setVideoWindow(1, 2, 3, 4)); // the player is not touched
+
+    EXPECT_TRUE(detach());
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setVideoGeometry(5, 6, 7, 8));
+    EXPECT_TRUE(m_mediaPipeline->setVideoWindow(5, 6, 7, 8)); // as before after detach
+}

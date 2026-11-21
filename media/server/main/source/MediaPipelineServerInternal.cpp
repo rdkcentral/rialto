@@ -739,6 +739,12 @@ bool MediaPipelineServerInternal::setVideoWindowInternal(uint32_t x, uint32_t y,
         RIALTO_SERVER_LOG_ERROR("Failed to set video window - Gstreamer player has not been loaded");
         return false;
     }
+    if (m_attachedCaptureId)
+    {
+        // video goes to the capture, not to a plane (proposal 3.2)
+        RIALTO_SERVER_LOG_WARN("Failed to set video window - video frame capture %u is attached", *m_attachedCaptureId);
+        return false;
+    }
 
     m_gstPlayer->setVideoGeometry(x, y, width, height);
     return true;
