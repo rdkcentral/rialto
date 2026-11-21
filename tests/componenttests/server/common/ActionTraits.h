@@ -728,6 +728,22 @@ struct DestroyVideoFrameCapture
     static constexpr auto m_kFunction{&Stub::destroyVideoFrameCapture};
 };
 
+struct AttachVideoFrameCapture
+{
+    using RequestType = ::firebolt::rialto::AttachVideoFrameCaptureRequest;
+    using ResponseType = ::firebolt::rialto::AttachVideoFrameCaptureResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::attachVideoFrameCapture};
+};
+
+struct DetachVideoFrameCapture
+{
+    using RequestType = ::firebolt::rialto::DetachVideoFrameCaptureRequest;
+    using ResponseType = ::firebolt::rialto::DetachVideoFrameCaptureResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::detachVideoFrameCapture};
+};
+
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_ACTION_TRAITS_H_

@@ -77,6 +77,7 @@ add_gtests (
         webAudio/WebAudioTest.cpp
         webAudio/WebAudioTestMethods.cpp
         videoFrameCapture/VideoFrameCaptureRegistryTest.cpp
+        videoFrameCapture/VideoFrameCaptureAttachTest.cpp
         )
 
 target_include_directories(
