@@ -24,6 +24,8 @@
 #include <unistd.h>
 
 #include <array>
+#include <chrono>
+#include <condition_variable>
 #include <deque>
 #include <mutex>
 #include <optional>
@@ -51,6 +53,35 @@ struct FakeState
     int destroyedSessions{0};
     bool nextFrameInvalid{false};
 };
+
+// Lets a test hold the next acquisition inside the HAL, outside the state mutex.
+struct AcquireGate
+{
+    std::mutex mutex;
+    std::condition_variable cv;
+    bool blockNext{false};
+    bool blocked{false};
+    bool released{false};
+};
+
+AcquireGate &gate()
+{
+    static AcquireGate acquireGate;
+    return acquireGate;
+}
+
+void waitAtGateIfRequested()
+{
+    std::unique_lock<std::mutex> lock{gate().mutex};
+    if (!gate().blockNext)
+        return;
+    gate().blockNext = false;
+    gate().blocked = true;
+    gate().released = false;
+    gate().cv.notify_all();
+    gate().cv.wait(lock, [] { return gate().released; });
+    gate().blocked = false;
+}
 
 FakeState &state()
 {
@@ -117,6 +148,7 @@ public:
 
     CaptureStatus acquireCurrentFrame(CapturedFrame &outFrame) override
     {
+        waitAtGateIfRequested();
         std::lock_guard<std::mutex> lock{state().mutex};
         if (auto scripted = takeScripted(FAKE_CAPTURE_HAL_ACQUIRE_CURRENT_FRAME))
             return *scripted;
@@ -239,6 +271,25 @@ extern "C"
         std::lock_guard<std::mutex> lock{state().mutex};
         state().minimumSlots = minimumSlots;
         state().maximumSlots = maximumSlots;
+    }
+
+    void fakeCaptureHalBlockNextAcquire()
+    {
+        std::lock_guard<std::mutex> lock{gate().mutex};
+        gate().blockNext = true;
+    }
+
+    bool fakeCaptureHalWaitUntilAcquireBlocked(int timeoutMs)
+    {
+        std::unique_lock<std::mutex> lock{gate().mutex};
+        return gate().cv.wait_for(lock, std::chrono::milliseconds{timeoutMs}, [] { return gate().blocked; });
+    }
+
+    void fakeCaptureHalUnblockAcquire()
+    {
+        std::lock_guard<std::mutex> lock{gate().mutex};
+        gate().released = true;
+        gate().cv.notify_all();
     }
 
     void fakeCaptureHalSetNextFrameInvalid(bool invalid)

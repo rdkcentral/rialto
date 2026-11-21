@@ -62,6 +62,15 @@ extern "C"
     /** Queues a CaptureStatus value to be returned by the next call of \a operation instead of the default. */
     void fakeCaptureHalPushResult(int operation, uint32_t status);
 
+    /** Makes the next acquireCurrentFrame() wait inside the HAL until fakeCaptureHalUnblockAcquire(). */
+    void fakeCaptureHalBlockNextAcquire();
+
+    /** Waits until an acquisition is held by the gate. @retval false on timeout. */
+    bool fakeCaptureHalWaitUntilAcquireBlocked(int timeoutMs);
+
+    /** Lets the held acquisition continue. */
+    void fakeCaptureHalUnblockAcquire();
+
     /** Makes the next successfully acquired frame invalid (a plane past the end of its object). */
     void fakeCaptureHalSetNextFrameInvalid(bool invalid);
 
@@ -82,6 +91,9 @@ extern "C"
     typedef int (*FakeCaptureHalCallCountFunction)(int);
     typedef int (*FakeCaptureHalCountFunction)();
     typedef void (*FakeCaptureHalSetNextFrameInvalidFunction)(bool);
+    typedef void (*FakeCaptureHalBlockNextAcquireFunction)();
+    typedef bool (*FakeCaptureHalWaitUntilAcquireBlockedFunction)(int);
+    typedef void (*FakeCaptureHalUnblockAcquireFunction)();
 }
 
 #endif // FIREBOLT_RIALTO_CAPTURE_FAKE_CAPTURE_HAL_CONTROL_H_

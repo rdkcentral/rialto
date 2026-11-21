@@ -24,7 +24,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <chrono>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace firebolt::rialto::server::ct
@@ -202,5 +204,56 @@ TEST_F(VideoFrameCaptureDeliveryTest, shouldAcquireAndReleaseFramesWithOwnedDesc
     EXPECT_EQ(openFrameFiles(), kBaseline);
 
     tearDownCommittedPipeline();
+}
+
+/*
+ * Component Test: A reply that cannot be delivered
+ * Test Objective:
+ *  Check that a frame whose reply cannot be sent is released to the HAL exactly once and leaks no descriptor.
+ *
+ * Test Steps:
+ *  Step 1: The client sends an acquisition; the fake HAL holds it.
+ *  Step 2: The client disconnects; the HAL continues, so the server's reply cannot be written.
+ *   Expect one HAL release for the frame and no open descriptor of it.
+ *
+ * Code:
+ */
+TEST_F(VideoFrameCaptureDeliveryTest, shouldReleaseAFrameWhoseReplyCannotBeSent)
+{
+    commitWithCapture();
+    void *hal = dlopen(FAKE_CAPTURE_HAL_PATH, RTLD_NOW | RTLD_NOLOAD);
+    ASSERT_NE(hal, nullptr);
+    auto blockNext =
+        reinterpret_cast<FakeCaptureHalBlockNextAcquireFunction>(dlsym(hal, "fakeCaptureHalBlockNextAcquire"));
+    auto waitBlocked = reinterpret_cast<FakeCaptureHalWaitUntilAcquireBlockedFunction>(
+        dlsym(hal, "fakeCaptureHalWaitUntilAcquireBlocked"));
+    auto unblock = reinterpret_cast<FakeCaptureHalUnblockAcquireFunction>(dlsym(hal, "fakeCaptureHalUnblockAcquire"));
+    dlclose(hal);
+    ASSERT_TRUE(blockNext && waitBlocked && unblock);
+    const int kBaseline{openFrameFiles()};
+
+    // Step 1: the acquisition is held inside the HAL
+    blockNext();
+    std::thread requester{[this]()
+                          {
+                              AcquireCurrentVideoFrameRequest request;
+                              request.set_capture_id(m_captureId);
+                              ConfigureAction<AcquireVideoFrame>(m_clientStub).send(request); // fails: disconnected
+                          }};
+    ASSERT_TRUE(waitBlocked(2000));
+
+    // Step 2: the client goes before the reply; disconnecting destroys its pipeline
+    captureSinkWillBeDropped();
+    gstPlayerWillBeDestructed();
+    m_clientStub.disconnect();
+    unblock();
+    requester.join();
+
+    for (int i = 0; i < 200 && m_callCount(FAKE_CAPTURE_HAL_RELEASE_FRAME) < 1; ++i)
+        std::this_thread::sleep_for(std::chrono::milliseconds{10});
+    EXPECT_EQ(m_callCount(FAKE_CAPTURE_HAL_RELEASE_FRAME), 1); // released once, when the send failed
+    for (int i = 0; i < 200 && openFrameFiles() != kBaseline; ++i)
+        std::this_thread::sleep_for(std::chrono::milliseconds{10});
+    EXPECT_EQ(openFrameFiles(), kBaseline); // the server closed its copy; the client got none
 }
 } // namespace firebolt::rialto::server::ct
