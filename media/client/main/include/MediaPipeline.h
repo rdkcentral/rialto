@@ -141,6 +141,10 @@ public:
     bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
+    bool attachVideoFrameCapture(const std::shared_ptr<IVideoFrameCapture> &videoFrameCapture) override;
+
+    bool detachVideoFrameCapture() override;
+
     bool haveData(MediaSourceStatus status, uint32_t needDataRequestId) override;
 
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
@@ -237,6 +241,16 @@ protected:
      * @brief The media player ipc object.
      */
     std::unique_ptr<IMediaPipelineIpc> m_mediaPipelineIpc;
+
+    /**
+     * @brief The attached video frame capture, held until detach or destruction.
+     */
+    std::shared_ptr<IVideoFrameCapture> m_attachedCapture;
+
+    /**
+     * @brief Serializes attach, detach and destruction.
+     */
+    std::mutex m_captureMutex;
 
     /**
      * @brief The rialto shared memory manager object.

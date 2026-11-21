@@ -21,10 +21,12 @@
 #define FIREBOLT_RIALTO_CLIENT_GL_VIDEO_FRAME_CAPTURE_H_
 
 #include "CaptureCore.h"
+#include "IAttachableVideoFrameCapture.h"
 #include "IFrameImporter.h"
 #include "IVideoFrameCapture.h"
 #include "IVideoFrameCaptureIpc.h"
 
+#include <atomic>
 #include <cstdint>
 #include <memory>
 
@@ -35,7 +37,7 @@ namespace firebolt::rialto::client
  *
  * Acquisition, the frame lease and the import cache are in CaptureCore; the importer does the GL import.
  */
-class GLVideoFrameCapture : public IGLVideoFrameCapture
+class GLVideoFrameCapture : public IGLVideoFrameCapture, public IAttachableVideoFrameCapture
 {
 public:
     GLVideoFrameCapture(const std::shared_ptr<IVideoFrameCaptureIpc> &videoFrameCaptureIpc, std::uint32_t captureId,
@@ -46,8 +48,9 @@ public:
     GraphicsAPIType apiType() const override { return GraphicsAPIType::GL; }
     GLFrameAcquisition acquireCurrentFrame() override;
 
-    /** The server's ID for this capture. */
-    std::uint32_t captureId() const { return m_captureId; }
+    std::uint32_t captureId() const override { return m_captureId; }
+    bool markAttached() override { return !m_attached.exchange(true); }
+    void clearAttached() override { m_attached = false; }
 
 private:
     std::shared_ptr<CaptureCore> m_core;
@@ -55,6 +58,7 @@ private:
     const std::uint32_t m_captureId;
     EGLDisplay m_eglDisplay;
     EGLContext m_eglContext;
+    std::atomic<bool> m_attached{false}; /**< Attached to a pipeline; the pipeline holds the capture meanwhile. */
 };
 } // namespace firebolt::rialto::client
 

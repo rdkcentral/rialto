@@ -21,6 +21,8 @@
 #include <stdexcept>
 #include <stdint.h>
 
+#include "IAttachableVideoFrameCapture.h"
+#include "IVideoFrameCapture.h"
 #include "KeyIdMap.h"
 #include "MediaPipeline.h"
 #include "MediaPipelineProxy.h"
@@ -208,7 +210,14 @@ MediaPipeline::~MediaPipeline()
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     m_clientController.unsubscribeSharedMemoryHandle(m_shmHandleObserverId);
-    m_mediaPipelineIpc.reset();
+    m_mediaPipelineIpc.reset(); // destroying the server session detaches the capture there
+
+    std::lock_guard<std::mutex> lock{m_captureMutex};
+    if (auto *attachable = dynamic_cast<IAttachableVideoFrameCapture *>(m_attachedCapture.get()))
+    {
+        attachable->clearAttached();
+    }
+    m_attachedCapture.reset();
 }
 
 bool MediaPipeline::load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive)
@@ -349,6 +358,60 @@ bool MediaPipeline::handleSetPosition(int64_t position)
         m_needDataRequestMap.clear();
     }
     return m_mediaPipelineIpc->setPosition(position);
+}
+
+bool MediaPipeline::attachVideoFrameCapture(const std::shared_ptr<IVideoFrameCapture> &videoFrameCapture)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    // only captures from Rialto's factory can be attached
+    auto *attachable = dynamic_cast<IAttachableVideoFrameCapture *>(videoFrameCapture.get());
+    if (!attachable)
+    {
+        RIALTO_CLIENT_LOG_ERROR("Cannot attach a null or foreign video frame capture");
+        return false;
+    }
+
+    std::lock_guard<std::mutex> lock{m_captureMutex};
+    if (m_attachedCapture)
+    {
+        RIALTO_CLIENT_LOG_ERROR("A video frame capture is already attached to this pipeline");
+        return false;
+    }
+    if (!attachable->markAttached())
+    {
+        RIALTO_CLIENT_LOG_ERROR("The video frame capture is already attached to another pipeline");
+        return false;
+    }
+    if (!m_mediaPipelineIpc->attachVideoFrameCapture(attachable->captureId()))
+    {
+        attachable->clearAttached();
+        return false;
+    }
+    m_attachedCapture = videoFrameCapture; // held only after the server accepted
+    return true;
+}
+
+bool MediaPipeline::detachVideoFrameCapture()
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    std::lock_guard<std::mutex> lock{m_captureMutex};
+    if (!m_attachedCapture)
+    {
+        RIALTO_CLIENT_LOG_WARN("No video frame capture is attached to this pipeline");
+        return false;
+    }
+    if (!m_mediaPipelineIpc->detachVideoFrameCapture())
+    {
+        return false;
+    }
+    if (auto *attachable = dynamic_cast<IAttachableVideoFrameCapture *>(m_attachedCapture.get()))
+    {
+        attachable->clearAttached();
+    }
+    m_attachedCapture.reset();
+    return true;
 }
 
 bool MediaPipeline::setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
