@@ -17,7 +17,7 @@ Unit tests run with `./build_ut.py -s client` (mock IPC and mock importer). "Spe
 
 - [x] 3.1 Implement the cache key, hit/miss, LRU eviction of unused entries bounded by N, and FD closing on hits and borrowed imports. Verify: a hit closes N FDs; a colour-only change misses; the cache never exceeds N.
 - [x] 3.2 Implement invalidation before lookup, retired entries passed to `retire()` after their last frame, and no restore after a failed import. Verify: a flushed frame with the same IDs re-imports; a retired entry is retired only after release; failed import leaves the invalidation applied.
-- [ ] 3.3 Implement failed-import handling: close FDs, release the slot, keep the previous frame. Verify with a failing mock importer.
+- [x] 3.3 Implement failed-import handling: close FDs, release the slot, keep the previous frame. Verify with a failing mock importer.
 
 ## 4. Header documentation
 

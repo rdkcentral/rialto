@@ -19,6 +19,8 @@
 
 #include "CaptureCoreTestBase.h"
 
+#include <fcntl.h>
+
 #include <atomic>
 #include <chrono>
 #include <thread>
@@ -88,4 +90,31 @@ TEST_F(CaptureCoreLeaseTest, ShouldReleaseFrameThatOutlivesTheCapture)
 
     EXPECT_CALL(*m_ipc, releaseFrame(kCaptureId, kPoolId, 2, 7)).WillOnce(Return(true));
     frame.reset();
+}
+
+TEST_F(CaptureCoreLeaseTest, FailedImportClosesFdsReleasesSlotAndKeepsPreviousFrame)
+{
+    CaptureAcquireResult failing = okResult(1, 12, 102);
+    const int kFailingFd = failing.fds[0].fd;
+    EXPECT_CALL(*m_ipc, acquireCurrentFrame(kCaptureId)).WillOnce(Return(okResult(0, 11, 101))).WillOnce(Return(failing));
+    EXPECT_CALL(*m_importer, importFrame(_, _, _))
+        .WillOnce(Invoke(
+            [](const CaptureFrameDescription &, const std::vector<CaptureObjectFd> &, bool &fdsConsumed)
+            {
+                fdsConsumed = false;
+                return std::make_shared<NiceMock<ImportedImageMock>>();
+            }))
+        .WillOnce(Return(nullptr));
+
+    const GLFrameAcquisition kFirst = m_core->acquireCurrentFrame();
+    EXPECT_CALL(*m_ipc, releaseFrame(kCaptureId, kPoolId, 1, 12)).WillOnce(Return(true)); // the failed frame's slot
+    const GLFrameAcquisition kAfterFailure = m_core->acquireCurrentFrame();
+    ::testing::Mock::VerifyAndClearExpectations(m_ipc.get());
+
+    EXPECT_FALSE(kAfterFailure.changed);
+    EXPECT_EQ(kAfterFailure.frame, kFirst.frame);
+    EXPECT_EQ(fcntl(kFailingFd, F_GETFD), -1); // closed
+
+    EXPECT_CALL(*m_ipc, releaseFrame(kCaptureId, kPoolId, 0, 11)).WillOnce(Return(true));
+    m_core.reset();
 }
