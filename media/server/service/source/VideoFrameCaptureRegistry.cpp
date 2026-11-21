@@ -47,6 +47,12 @@ bool VideoFrameCaptureRegistry::setRuntime(std::uint32_t captureId, const std::s
     auto it = m_entries.find(captureId);
     if (it == m_entries.end())
         return false;
+    if (it->second.runtime)
+    {
+        // a new commit: the previous session stays reachable for its releases
+        it->second.runtime->retire();
+        it->second.retiredSessions.push_back(it->second.runtime);
+    }
     it->second.runtime = runtime;
     return true;
 }

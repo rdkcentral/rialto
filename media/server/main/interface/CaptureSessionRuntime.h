@@ -142,6 +142,15 @@ public:
      */
     capture::CaptureStatus release(std::uint32_t slotIndex, std::uint64_t acquisitionToken);
 
+    /**
+     * @brief Retires the session (R10 design D1): it takes no new acquisitions, which answer NO_FRAME without a
+     *        HAL call (the final acquisition is abandoned, D2), but still accepts releases.
+     */
+    void retire();
+
+    /** Whether the session was retired. */
+    bool isRetired() const;
+
     /** Whether the slot holds a frame lock owed a release. */
     bool isSlotLocked(std::uint32_t slotIndex) const;
 
@@ -162,6 +171,7 @@ private:
     std::uint64_t m_flushGeneration{0}; /**< Counts invalidations seen, so a delivery clears only what it carried. */
     std::optional<CaptureFrameDescription> m_lastSentDescription;
     bool m_fatal{false};
+    bool m_retired{false};
     capture::LockedRanges m_lockedRanges;
     capture::ValidationWarningLog m_warnings;
 };

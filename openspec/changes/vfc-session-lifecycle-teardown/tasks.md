@@ -4,7 +4,7 @@
 
 ## 1. Retirement (D1, D2)
 
-- [ ] 1.1 Add `retire()` to `CaptureSessionRuntime` and `retiredSessions` to `CaptureEntry`; acquisitions on a retired or missing session answer `NO_FRAME` without a HAL call. Verify with `./build_ut.py -s servermain` tests.
+- [x] 1.1 Add `retire()` to `CaptureSessionRuntime` and `retiredSessions` to `CaptureEntry`; acquisitions on a retired or missing session answer `NO_FRAME` without a HAL call. Verify with `./build_ut.py -s servermain` tests.
 - [ ] 1.2 Call `retire()` from stop, FAILURE, detach in STOPPED, pipeline destruction and capture destruction. Verify with unit tests, one per trigger.
 - [ ] 1.3 Route releases to retired runtimes by `capture_id`, `pool_id` and slot. Verify: release after stop, after destruction and on a capture-fatal session return `OK`.
 

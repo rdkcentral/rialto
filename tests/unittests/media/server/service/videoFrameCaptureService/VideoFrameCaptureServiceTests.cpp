@@ -245,3 +245,27 @@ TEST(VideoFrameCaptureServiceTest, ShouldGiveTheRuntimeOnlyToItsOwnClient)
     EXPECT_TRUE(service.destroyCapture(kClientA, captureId));
     EXPECT_EQ(service.captureRuntime(kClientA, captureId), nullptr);
 }
+
+TEST(VideoFrameCaptureServiceTest, ShouldGiveNoActiveRuntimeOnceRetired)
+{
+    VideoFrameCaptureService service{halFactory(true)};
+    std::uint32_t captureId{0};
+    ASSERT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, captureId), VideoFrameCaptureServiceStatus::OK);
+    auto makeRuntime = []()
+    {
+        return std::make_shared<firebolt::rialto::server::CaptureSessionRuntime>(
+            firebolt::rialto::wrappers::CaptureSessionPtr{new ::testing::NiceMock<
+                                                              firebolt::rialto::capture::CaptureSessionMock>(),
+                                                          [](firebolt::rialto::capture::ICaptureSession *session)
+                                                          { delete session; }},
+            1, firebolt::rialto::capture::CapturePool{});
+    };
+    auto first = makeRuntime();
+    service.setCaptureRuntime(kClientA, captureId, first);
+    first->retire();
+    EXPECT_EQ(service.captureRuntime(kClientA, captureId), nullptr); // acquisitions then answer NO_FRAME
+
+    auto second = makeRuntime(); // a new commit
+    service.setCaptureRuntime(kClientA, captureId, second);
+    EXPECT_EQ(service.captureRuntime(kClientA, captureId), second);
+}

@@ -178,3 +178,18 @@ TEST_F(CaptureSessionRuntimeDeliveryTest, DescriptionChangeIsReportedUntilDelive
     EXPECT_TRUE(acquireReportingChange(2, 4, 1080, resizedAgain));
     m_runtime->onDelivery(resizedAgain, true);
 }
+
+TEST_F(CaptureSessionRuntimeDeliveryTest, RetiredSessionAnswersNoFrameWithoutAskingTheHal)
+{
+    CaptureSessionRuntime::DeliveryTicket held;
+    acquire(0, 1, false, held);
+    m_runtime->onDelivery(held, true);
+
+    m_runtime->retire();
+    EXPECT_TRUE(m_runtime->isRetired());
+    EXPECT_CALL(*m_session, acquireCurrentFrame(_)).Times(0);
+    CaptureSessionRuntime::DeliveryTicket ticket;
+    EXPECT_EQ(m_runtime->acquire([](const capture::CapturedFrame &, bool, bool) {}, ticket),
+              capture::CaptureStatus::NO_FRAME);
+    EXPECT_TRUE(m_runtime->isSlotLocked(0)); // the frame the client holds stays locked
+}

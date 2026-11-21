@@ -119,7 +119,8 @@ public:
                                    const std::shared_ptr<CaptureSessionRuntime> &runtime) = 0;
 
     /**
-     * @brief The runtime of a client's committed capture, or null if it is not committed or not the client's.
+     * @brief The active runtime of a client's committed capture, or null if it is not committed, its session is
+     *        retired, or it is not the client's.
      */
     virtual std::shared_ptr<CaptureSessionRuntime> captureRuntime(VideoFrameCaptureClientId clientId,
                                                                   std::uint32_t captureId) const = 0;

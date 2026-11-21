@@ -27,6 +27,7 @@
 #include <cstdint>
 #include <map>
 #include <optional>
+#include <vector>
 
 namespace firebolt::rialto::server::service
 {
@@ -37,7 +38,8 @@ struct VideoFrameCaptureEntry
 {
     GraphicsAPIType api;
     std::optional<int> attachedSessionId;           /**< The pipeline session the capture is attached to, if any. */
-    std::shared_ptr<CaptureSessionRuntime> runtime; /**< The committed session's runtime, once committed. */
+    std::shared_ptr<CaptureSessionRuntime> runtime; /**< The active committed session's runtime, if any. */
+    std::vector<std::shared_ptr<CaptureSessionRuntime>> retiredSessions; /**< Retired sessions still kept. */
 };
 
 /**

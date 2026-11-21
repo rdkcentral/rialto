@@ -88,6 +88,10 @@ capture::CaptureStatus CaptureSessionRuntime::acquire(const FrameReplyFiller &fi
 capture::CaptureStatus CaptureSessionRuntime::acquire(const FrameReplyFiller &fillReply, DeliveryTicket &ticket)
 {
     std::lock_guard<std::mutex> lock{m_mutex};
+    if (m_retired)
+    {
+        return capture::CaptureStatus::NO_FRAME; // abandoned: no acquisition on a retired session
+    }
     if (m_fatal)
     {
         return capture::CaptureStatus::FATAL_ERROR;
@@ -179,6 +183,22 @@ capture::CaptureStatus CaptureSessionRuntime::release(std::uint32_t slotIndex, s
     m_lockedRanges.remove(slotIndex);
     m_slots[slotIndex].reset();
     return capture::CaptureStatus::OK;
+}
+
+void CaptureSessionRuntime::retire()
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+    if (!m_retired)
+    {
+        RIALTO_SERVER_LOG_INFO("Video frame capture session of pool %u retired", m_poolId);
+        m_retired = true;
+    }
+}
+
+bool CaptureSessionRuntime::isRetired() const
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+    return m_retired;
 }
 
 bool CaptureSessionRuntime::isSlotLocked(std::uint32_t slotIndex) const
