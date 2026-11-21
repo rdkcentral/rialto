@@ -20,7 +20,7 @@
 
 ## 4. Component tests
 
-- [ ] 4.1 Scripted fake-HAL component tests: `OK`/`NO_NEW_FRAME`/`NO_FRAME`; FD count equals distinct objects; client FDs refer to the same files (`fstat` inode) and stay valid after the server closes its copies; server open-FD count returns to baseline. Verify with `./build_ct.py`.
+- [x] 4.1 Scripted fake-HAL component tests: `OK`/`NO_NEW_FRAME`/`NO_FRAME`; FD count equals distinct objects; client FDs refer to the same files (`fstat` inode) and stay valid after the server closes its copies; server open-FD count returns to baseline. Verify with `./build_ct.py`.
 - [ ] 4.2 Failure-path component tests: an injected send failure calls HAL release once, and the next delivery carries the flush flag although the HAL flag is false; client disconnect before the reply leaks no FD. Verify with `./build_ct.py`.
 - [ ] 4.3 Concurrency stress test: several threads acquiring and releasing on one session; the fake HAL asserts it never sees overlapping calls; every acquisition released once. Verify with `./build_ct.py` and once under valgrind (`-val`).
 - [ ] 4.4 Q7 test: frames still delivered with the application state not RUNNING. Verify with `./build_ct.py`.

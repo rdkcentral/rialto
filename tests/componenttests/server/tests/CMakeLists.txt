@@ -78,6 +78,7 @@ add_gtests (
         webAudio/WebAudioTestMethods.cpp
         videoFrameCapture/VideoFrameCaptureRegistryTest.cpp
         videoFrameCapture/VideoFrameCaptureAttachTest.cpp
+        videoFrameCapture/VideoFrameCaptureDeliveryTest.cpp
         )
 
 target_include_directories(
@@ -110,3 +111,4 @@ target_compile_definitions(
         PRIVATE
         FAKE_CAPTURE_HAL_PATH="$<TARGET_FILE:fake_capture_hal>"
 )
+target_link_libraries( RialtoServerComponentTests FakeCaptureHalControl )
