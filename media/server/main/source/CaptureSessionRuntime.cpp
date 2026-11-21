@@ -61,6 +61,24 @@ void closeDescriptors(capture::CapturedFrame &frame)
 }
 } // namespace
 
+CaptureFrameDescription CaptureFrameDescription::of(const capture::CapturedFrame &frame)
+{
+    CaptureFrameDescription description;
+    description.drmFormat = frame.capabilities.drmFormat;
+    description.drmModifier = frame.capabilities.drmModifier;
+    description.backingWidth = frame.backingSize.width;
+    description.backingHeight = frame.backingSize.height;
+    description.colour = {static_cast<std::uint32_t>(frame.colorDescription.matrix),
+                          static_cast<std::uint32_t>(frame.colorDescription.range),
+                          static_cast<std::uint32_t>(frame.colorDescription.horizontalSiting),
+                          static_cast<std::uint32_t>(frame.colorDescription.verticalSiting)};
+    for (const auto &kPlane : frame.planes)
+    {
+        description.planes.emplace_back(kPlane.planeIndex, kPlane.offsetBytes, kPlane.lengthBytes, kPlane.strideBytes);
+    }
+    return description;
+}
+
 capture::CaptureStatus CaptureSessionRuntime::acquire(const FrameReplyFiller &fillReply)
 {
     DeliveryTicket ticket;
@@ -103,12 +121,14 @@ capture::CaptureStatus CaptureSessionRuntime::acquire(const FrameReplyFiller &fi
         return capture::CaptureStatus::FATAL_ERROR;
     }
 
-    fillReply(*record, m_pendingFlush);
+    CaptureFrameDescription description{CaptureFrameDescription::of(*record)};
+    const bool kDescriptionChanged{!m_lastSentDescription || *m_lastSentDescription != description};
+    fillReply(*record, m_pendingFlush, kDescriptionChanged);
     for (auto &exported : record->exportedDmaBufs)
     {
         exported.fd = -1; // the reply owns them now
     }
-    ticket = DeliveryTicket{record->slotIndex, record->acquisitionToken, m_flushGeneration};
+    ticket = DeliveryTicket{record->slotIndex, record->acquisitionToken, m_flushGeneration, std::move(description)};
     const std::uint32_t kSlot{record->slotIndex};
     m_slots[kSlot] = std::move(record);
     return capture::CaptureStatus::OK;
@@ -127,6 +147,7 @@ void CaptureSessionRuntime::onDelivery(const DeliveryTicket &ticket, bool delive
     {
         // the client holds the frame now: its bytes are locked until it releases it
         m_lockedRanges.add(record);
+        m_lastSentDescription = ticket.description; // the client knows this layout now
         if (ticket.flushGeneration == m_flushGeneration)
         {
             m_pendingFlush = false; // consumed only by a delivery that carried every invalidation seen

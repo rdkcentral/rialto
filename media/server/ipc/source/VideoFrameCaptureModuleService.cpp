@@ -28,6 +28,43 @@
 namespace
 {
 // The reply for an acquired frame (proposal 3.4): identity, timing, layout, colour and the descriptors.
+// The pool description sent when the frame description changes: identity, format, size, colour and the slot
+// layouts. Layouts carry no object IDs and no descriptors.
+void fillPoolMetadata(const firebolt::rialto::server::CaptureSessionRuntime &runtime,
+                      const firebolt::rialto::capture::CapturedFrame &frame,
+                      firebolt::rialto::GetVideoFrameCapturePoolResponse &metadata)
+{
+    metadata.set_status(firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_OK);
+    metadata.set_pool_id(runtime.poolId());
+    metadata.set_drm_fourcc(frame.capabilities.drmFormat);
+    metadata.set_drm_modifier(frame.capabilities.drmModifier);
+    metadata.set_texture_width(frame.backingSize.width);
+    metadata.set_texture_height(frame.backingSize.height);
+    metadata.set_minimum_slots(frame.capabilities.minimumSlots);
+    metadata.set_maximum_slots(frame.capabilities.maximumSlots);
+    for (const auto &kLayout : runtime.pool().slotLayouts)
+    {
+        auto *slot = metadata.add_slots();
+        slot->set_slot_index(kLayout.slotIndex);
+        for (const auto &kPlane : kLayout.planes)
+        {
+            auto *plane = slot->add_planes();
+            plane->set_plane_index(kPlane.planeIndex);
+            plane->set_offset_bytes(kPlane.offsetBytes);
+            plane->set_length_bytes(kPlane.lengthBytes);
+            plane->set_stride_bytes(kPlane.strideBytes);
+        }
+    }
+    auto *colour = metadata.mutable_color_description();
+    colour->set_ycbcr_color_space(
+        static_cast<firebolt::rialto::VideoFrameCaptureYcbcrColorSpace>(frame.colorDescription.matrix));
+    colour->set_sample_range(static_cast<firebolt::rialto::VideoFrameCaptureSampleRange>(frame.colorDescription.range));
+    colour->set_horizontal_chroma_siting(
+        static_cast<firebolt::rialto::VideoFrameCaptureChromaSiting>(frame.colorDescription.horizontalSiting));
+    colour->set_vertical_chroma_siting(
+        static_cast<firebolt::rialto::VideoFrameCaptureChromaSiting>(frame.colorDescription.verticalSiting));
+}
+
 void fillFrameReply(const firebolt::rialto::capture::CapturedFrame &frame, bool flushed,
                     firebolt::rialto::AcquireCurrentVideoFrameResponse &response)
 {
@@ -273,8 +310,16 @@ void VideoFrameCaptureModuleService::acquireCurrentFrame(::google::protobuf::Rpc
     }
 
     CaptureSessionRuntime::DeliveryTicket ticket;
-    const capture::CaptureStatus kStatus{runtime->acquire([response](const capture::CapturedFrame &frame, bool flushed)
-                                                          { fillFrameReply(frame, flushed, *response); }, ticket)};
+    const capture::CaptureStatus kStatus{runtime->acquire(
+        [&runtime, response](const capture::CapturedFrame &frame, bool flushed, bool descriptionChanged)
+        {
+            fillFrameReply(frame, flushed, *response);
+            if (descriptionChanged)
+            {
+                fillPoolMetadata(*runtime, frame, *response->mutable_pool_metadata());
+            }
+        },
+        ticket)};
     response->set_status(toWireStatus(kStatus));
     if (kStatus == capture::CaptureStatus::OK)
     {

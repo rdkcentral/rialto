@@ -29,10 +29,35 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <optional>
+#include <tuple>
 #include <vector>
 
 namespace firebolt::rialto::server
 {
+/**
+ * @brief What a frame looks like to the importer: format, modifier, backing size, colour and plane layout. Object
+ *        IDs are not part of it, since frames in different slots differ only by them.
+ */
+struct CaptureFrameDescription
+{
+    std::uint32_t drmFormat{0};
+    std::uint64_t drmModifier{0};
+    std::uint32_t backingWidth{0};
+    std::uint32_t backingHeight{0};
+    std::tuple<std::uint32_t, std::uint32_t, std::uint32_t, std::uint32_t> colour{};
+    std::vector<std::tuple<std::uint32_t, std::uint64_t, std::uint64_t, std::uint32_t>> planes; /**< index, offset,
+                                                                                                    length, stride */
+
+    static CaptureFrameDescription of(const capture::CapturedFrame &frame);
+    bool operator==(const CaptureFrameDescription &other) const
+    {
+        return drmFormat == other.drmFormat && drmModifier == other.drmModifier && backingWidth == other.backingWidth &&
+               backingHeight == other.backingHeight && colour == other.colour && planes == other.planes;
+    }
+    bool operator!=(const CaptureFrameDescription &other) const { return !(*this == other); }
+};
+
 /**
  * @brief Everything that happens to a committed capture session's frames (R9 design D1): the HAL session and the
  *        lock serializing its calls, one record per pool slot, the pending invalidation, the last description sent,
@@ -65,8 +90,11 @@ public:
      * @param[in] frame   : The frame. Its descriptors pass to the reply, whose sender closes them (owned FDs); the
      *                      runtime forgets them after this call.
      * @param[in] flushed : The invalidation flag to deliver: set if this or an undelivered earlier frame flushed.
+     * @param[in] descriptionChanged : The frame description differs from the last one delivered (or none was), so
+     *                                 the reply carries the pool metadata.
      */
-    using FrameReplyFiller = std::function<void(const capture::CapturedFrame &frame, bool flushed)>;
+    using FrameReplyFiller =
+        std::function<void(const capture::CapturedFrame &frame, bool flushed, bool descriptionChanged)>;
 
     /**
      * @brief Acquires the current frame (design D2). Runs on the IPC thread and never waits on media.
@@ -86,7 +114,8 @@ public:
     {
         std::uint32_t slotIndex{0};
         std::uint64_t acquisitionToken{0};
-        std::uint64_t flushGeneration{0}; /**< The invalidations the reply covered. */
+        std::uint64_t flushGeneration{0};    /**< The invalidations the reply covered. */
+        CaptureFrameDescription description; /**< Becomes the last delivered description on delivery. */
     };
 
     /**
@@ -122,6 +151,7 @@ private:
     std::vector<std::unique_ptr<capture::CapturedFrame>> m_slots; /**< Records are not movable: one per slot. */
     bool m_pendingFlush{false};
     std::uint64_t m_flushGeneration{0}; /**< Counts invalidations seen, so a delivery clears only what it carried. */
+    std::optional<CaptureFrameDescription> m_lastSentDescription;
     bool m_fatal{false};
     capture::LockedRanges m_lockedRanges;
     capture::ValidationWarningLog m_warnings;

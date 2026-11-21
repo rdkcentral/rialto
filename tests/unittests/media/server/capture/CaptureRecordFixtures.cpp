@@ -63,6 +63,16 @@ void CaptureRecordFixtures::makeNv12Pool(CapturePool &pool, uint32_t slots)
     }
 }
 
+void CaptureRecordFixtures::setSingleObjectId(CapturedFrame &frame, uint64_t objectId)
+{
+    for (auto &object : frame.dmaBufObjects)
+        object.objectId = objectId;
+    for (auto &plane : frame.planes)
+        plane.dmaBufObjectId = objectId;
+    for (auto &exported : frame.exportedDmaBufs)
+        exported.dmaBufObjectId = objectId;
+}
+
 int CaptureRecordFixtures::createFile(uint64_t sizeBytes)
 {
     const int kFd = memfd_create("capture-record-fixture", MFD_CLOEXEC);

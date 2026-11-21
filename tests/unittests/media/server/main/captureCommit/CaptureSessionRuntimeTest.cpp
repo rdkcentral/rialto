@@ -97,7 +97,8 @@ protected:
                 }))
             .RetiresOnSaturation();
         bool replyFlushed{false};
-        EXPECT_EQ(m_runtime->acquire([&](const capture::CapturedFrame &, bool flag) { replyFlushed = flag; }, ticket),
+        EXPECT_EQ(m_runtime->acquire([&](const capture::CapturedFrame &, bool flag, bool) { replyFlushed = flag; },
+                                     ticket),
                   capture::CaptureStatus::OK);
         return replyFlushed;
     }
@@ -145,4 +146,35 @@ TEST_F(CaptureSessionRuntimeDeliveryTest, NewerInvalidationIsNotLostWhenAnOlderR
     EXPECT_TRUE(m_runtime->isFlushPending()); // the older reply did not carry it
     m_runtime->onDelivery(newer, true);
     EXPECT_FALSE(m_runtime->isFlushPending());
+}
+
+TEST_F(CaptureSessionRuntimeDeliveryTest, DescriptionChangeIsReportedUntilDelivered)
+{
+    auto acquireReportingChange = [this](std::uint32_t slot, std::uint64_t token, std::uint32_t backingHeight,
+                                         CaptureSessionRuntime::DeliveryTicket &ticket)
+    {
+        EXPECT_CALL(*m_session, acquireCurrentFrame(_))
+            .WillOnce(Invoke(
+                [&, slot, token, backingHeight](capture::CapturedFrame &frame)
+                {
+                    m_records.makeExampleB(frame, slot, token);
+                    CaptureRecordFixtures::setSingleObjectId(frame, 100 + slot); // each slot has its own memory
+                    frame.backingSize.height = backingHeight;
+                    return capture::CaptureStatus::OK;
+                }))
+            .RetiresOnSaturation();
+        bool changed{false};
+        EXPECT_EQ(m_runtime->acquire([&](const capture::CapturedFrame &, bool, bool flag) { changed = flag; }, ticket),
+                  capture::CaptureStatus::OK);
+        return changed;
+    };
+    CaptureSessionRuntime::DeliveryTicket first, second, resized, resizedAgain;
+    EXPECT_TRUE(acquireReportingChange(0, 1, 1088, first)); // nothing delivered yet
+    m_runtime->onDelivery(first, true);
+    EXPECT_FALSE(acquireReportingChange(1, 2, 1088, second)); // unchanged (only the object differs)
+    m_runtime->onDelivery(second, true);
+    EXPECT_TRUE(acquireReportingChange(2, 3, 1080, resized)); // backing size changed
+    m_runtime->onDelivery(resized, false);                    // not delivered: the client still has the old one
+    EXPECT_TRUE(acquireReportingChange(2, 4, 1080, resizedAgain));
+    m_runtime->onDelivery(resizedAgain, true);
 }

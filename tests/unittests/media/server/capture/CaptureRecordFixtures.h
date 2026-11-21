@@ -72,6 +72,9 @@ public:
     /** Example D: YUV420, planes 0 and 1 sharing one object and plane 2 in another, two descriptors. */
     void makeExampleD(CapturedFrame &frame, uint32_t slot = 0, uint64_t token = 1);
 
+    /** Gives every object reference of a one-object frame (example A or B) the ID \a objectId. */
+    static void setSingleObjectId(CapturedFrame &frame, uint64_t objectId);
+
     /** Creates a memfd of \a sizeBytes owned by the fixture. */
     int createFile(uint64_t sizeBytes);
 

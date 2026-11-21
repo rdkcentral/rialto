@@ -12,7 +12,7 @@
 - [x] 2.1 Implement the acquire handler in `VideoFrameCaptureModuleService` and the runtime's acquire flow: `NO_FRAME` without a session, HAL call under the lock, validation, reply filling, owned FDs and delivery callback. Verify with server IPC unit tests for `OK`, `NO_NEW_FRAME`, `NO_FRAME` and `NO_RESOURCES`.
 - [x] 2.2 Implement the delivery callback (D3). Verify with unit tests: delivered clears the latch and records the description; not delivered releases once and keeps the latch.
 - [x] 2.3 Implement invalid-frame handling: release, close, set `fatal`, later acquisitions `FATAL_ERROR`, earlier releases still `OK`. Verify with a scripted fake-HAL test.
-- [ ] 2.4 Implement pool-metadata updates on description change. Verify: a backing-size change adds metadata once; an unchanged frame adds none; no FDs in the metadata.
+- [x] 2.4 Implement pool-metadata updates on description change. Verify: a backing-size change adds metadata once; an unchanged frame adds none; no FDs in the metadata.
 
 ## 3. Release (D5)
 

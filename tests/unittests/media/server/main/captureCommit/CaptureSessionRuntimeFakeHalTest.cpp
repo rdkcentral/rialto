@@ -96,7 +96,7 @@ protected:
     capture::CaptureStatus acquire(CaptureSessionRuntime::DeliveryTicket &ticket)
     {
         return m_runtime->acquire(
-            [this](const capture::CapturedFrame &frame, bool)
+            [this](const capture::CapturedFrame &frame, bool, bool)
             {
                 for (const auto &kExported : frame.exportedDmaBufs)
                     m_replyFds.push_back(kExported.fd);

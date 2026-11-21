@@ -193,3 +193,53 @@ TEST_F(VideoFrameCaptureAcquireTests, DeliveryCallbackResolvesTheFrame)
     EXPECT_TRUE(m_runtime->isFlushPending());
     callback(false); // resolved already: no second release
 }
+
+TEST_F(VideoFrameCaptureAcquireTests, PoolMetadataIsSentOncePerDescriptionWithoutDescriptors)
+{
+    captureIsCommitted();
+    std::vector<std::function<void(bool)>> callbacks;
+    EXPECT_CALL(m_controller, setReplyFdsOwned(true)).Times(3);
+    EXPECT_CALL(m_controller, setDeliveryCallback(_))
+        .Times(3)
+        .WillRepeatedly(Invoke([&](std::function<void(bool)> registered) { callbacks.push_back(registered); }));
+    EXPECT_CALL(*m_session, acquireCurrentFrame(_))
+        .WillOnce(Invoke(
+            [&](CapturedFrame &frame)
+            {
+                m_records.makeExampleB(frame, 0, 1);
+                CaptureRecordFixtures::setSingleObjectId(frame, 100); // its own memory
+                return CaptureStatus::OK;
+            }))
+        .WillOnce(Invoke(
+            [&](CapturedFrame &frame)
+            {
+                m_records.makeExampleB(frame, 1, 2);
+                CaptureRecordFixtures::setSingleObjectId(frame, 101); // its own memory
+                return CaptureStatus::OK;
+            }))
+        .WillOnce(Invoke(
+            [&](CapturedFrame &frame)
+            {
+                m_records.makeExampleB(frame, 2, 3);
+                CaptureRecordFixtures::setSingleObjectId(frame, 102); // its own memory
+                frame.backingSize.width = 1280; // a new backing size, with a visible region to match
+                frame.visibleRegion.size.width = 1280;
+                return CaptureStatus::OK;
+            }));
+
+    const auto kFirst = acquire();
+    ASSERT_TRUE(kFirst.has_pool_metadata());
+    EXPECT_EQ(kFirst.pool_metadata().pool_id(), kPoolId);
+    EXPECT_EQ(kFirst.pool_metadata().slots_size(), 3);
+    EXPECT_EQ(kFirst.pool_metadata().texture_width(), capture::test::kWidth);
+    EXPECT_EQ(kFirst.exported_dma_bufs_size(), 1); // the only descriptors are the frame's own
+    callbacks[0](true);
+
+    EXPECT_FALSE(acquire().has_pool_metadata()); // unchanged
+    callbacks[1](true);
+
+    const auto kResized = acquire();
+    ASSERT_TRUE(kResized.has_pool_metadata());
+    EXPECT_EQ(kResized.pool_metadata().texture_width(), 1280U);
+    callbacks[2](true);
+}
