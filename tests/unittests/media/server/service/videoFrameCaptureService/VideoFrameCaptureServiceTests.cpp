@@ -269,3 +269,18 @@ TEST(VideoFrameCaptureServiceTest, ShouldGiveNoActiveRuntimeOnceRetired)
     service.setCaptureRuntime(kClientA, captureId, second);
     EXPECT_EQ(service.captureRuntime(kClientA, captureId), second);
 }
+
+TEST(VideoFrameCaptureServiceTest, ShouldRetireTheSessionWhenTheCaptureIsDestroyed)
+{
+    VideoFrameCaptureService service{halFactory(true)};
+    std::uint32_t captureId{0};
+    ASSERT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, captureId), VideoFrameCaptureServiceStatus::OK);
+    auto runtime = std::make_shared<firebolt::rialto::server::CaptureSessionRuntime>(
+        firebolt::rialto::wrappers::CaptureSessionPtr{new ::testing::NiceMock<firebolt::rialto::capture::CaptureSessionMock>(),
+                                                      [](firebolt::rialto::capture::ICaptureSession *session)
+                                                      { delete session; }},
+        1, firebolt::rialto::capture::CapturePool{});
+    service.setCaptureRuntime(kClientA, captureId, runtime);
+    EXPECT_TRUE(service.destroyCapture(kClientA, captureId));
+    EXPECT_TRUE(runtime->isRetired());
+}

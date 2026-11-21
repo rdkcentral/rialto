@@ -327,6 +327,11 @@ protected:
     std::shared_ptr<CaptureSessionRuntime> m_captureRuntime;
 
     /**
+     * @brief Retires the committed capture session, if any. Main thread only.
+     */
+    void retireCapture(const char *reason);
+
+    /**
      * @brief Flag used to check if low latency is set for video source
      */
     bool m_IsLowLatencyVideoPlayer{false};

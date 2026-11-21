@@ -77,6 +77,9 @@ bool VideoFrameCaptureService::destroyCapture(VideoFrameCaptureClientId clientId
             return false;
         }
         boundSession = kEntry->attachedSessionId;
+        // the capture goes: its sessions stop delivering; they are deleted once their sink is at NULL
+        if (kEntry->runtime)
+            kEntry->runtime->retire();
         it->second.remove(captureId);
         handler = m_boundCaptureRemovedHandler;
     }

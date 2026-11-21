@@ -183,6 +183,7 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
     if (m_captureRuntime)
     {
         // the sink borrows the HAL session, so the player goes first
+        m_captureRuntime->retire();
         m_gstPlayer.reset();
         m_captureRuntime.reset();
     }
@@ -426,11 +427,22 @@ bool MediaPipelineServerInternal::detachCapture(uint32_t &captureId)
         }
         captureId = *m_attachedCaptureId;
         m_attachedCaptureId.reset();
+        retireCapture("detach"); // a committed session ends with its capture's detach
+        m_captureRuntime.reset();
         result = true;
     };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
+}
+
+void MediaPipelineServerInternal::retireCapture(const char *reason)
+{
+    if (m_captureRuntime && !m_captureRuntime->isRetired())
+    {
+        RIALTO_SERVER_LOG_INFO("Retiring the video frame capture session of session %d: %s", m_sessionId, reason);
+        m_captureRuntime->retire();
+    }
 }
 
 std::shared_ptr<CaptureSessionRuntime> MediaPipelineServerInternal::captureRuntime()
@@ -520,6 +532,7 @@ bool MediaPipelineServerInternal::stopInternal()
     }
 
     m_gstPlayer->stop();
+    retireCapture("stop"); // frames are NO_FRAME after stop (proposal 3.5); held frames can still be released
     return true;
 }
 
@@ -1594,6 +1607,10 @@ void MediaPipelineServerInternal::notifyPlaybackState(PlaybackState state)
     auto task = [&, state]()
     {
         m_currentPlaybackState = state;
+        if (state == PlaybackState::FAILURE)
+        {
+            retireCapture("playback failure");
+        }
         if (m_mediaPipelineClient)
         {
             m_mediaPipelineClient->notifyPlaybackState(state);
