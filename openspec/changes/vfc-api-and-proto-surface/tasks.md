@@ -4,7 +4,7 @@
 
 ## 1. Public headers (D1, D2)
 
-- [ ] 1.1 Add `media/public/include/IVideoFrameCapture.h` from the interim header, keeping only the GL and common types listed in the spec (no `getCapabilities`, no `*Caps`, no Vulkan types). Install it. Verify a test translation unit that includes it compiles without `<EGL/egl.h>`.
+- [x] 1.1 Add `media/public/include/IVideoFrameCapture.h` from the interim header, keeping only the GL and common types listed in the spec (no `getCapabilities`, no `*Caps`, no Vulkan types). Install it. Verify a test translation unit that includes it compiles without `<EGL/egl.h>`.
 - [ ] 1.2 Add non-pure `attachVideoFrameCapture()` and `detachVideoFrameCapture()` returning `false`, and the `setVideoWindow()` capture note, to `media/public/include/IMediaPipeline.h`. Verify existing mocks (`tests/unittests/media/client/mocks` and any other `IMediaPipeline` mocks) compile unchanged.
 - [ ] 1.3 Implement `IVideoFrameCaptureFactory::createFactory()` in `media/client/main` with `createGLVideoFrameCapture()` returning null, and forward the new pipeline methods through `MediaPipelineProxy`. Verify `readelf -d libRialtoClient.so` shows no `libEGL` dependency.
 

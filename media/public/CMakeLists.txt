@@ -48,6 +48,7 @@ set (
         include/IMediaPipeline.h
         include/IMediaPipelineCapabilities.h
         include/IMediaPipelineClient.h
+        include/IVideoFrameCapture.h
         include/IWebAudioPlayer.h
         include/IWebAudioPlayerClient.h
         include/MediaCommon.h
