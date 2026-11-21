@@ -28,6 +28,7 @@
 #include "mediapipelinecapabilitiesmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
 #include "servermanagermodule.pb.h"
+#include "videoframecapturemodule.pb.h"
 #include "webaudioplayermodule.pb.h"
 
 namespace firebolt::rialto::server::ct
@@ -709,6 +710,22 @@ struct GetMetricSystemData
     using ResponseType = ::firebolt::rialto::GetMetricSystemDataResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
     static constexpr auto m_kFunction{&Stub::getMetricSystemData};
+};
+
+struct CreateVideoFrameCapture
+{
+    using RequestType = ::firebolt::rialto::CreateVideoFrameCaptureRequest;
+    using ResponseType = ::firebolt::rialto::CreateVideoFrameCaptureResponse;
+    using Stub = ::firebolt::rialto::VideoFrameCaptureModule_Stub;
+    static constexpr auto m_kFunction{&Stub::createVideoFrameCapture};
+};
+
+struct DestroyVideoFrameCapture
+{
+    using RequestType = ::firebolt::rialto::DestroyVideoFrameCaptureRequest;
+    using ResponseType = ::firebolt::rialto::DestroyVideoFrameCaptureResponse;
+    using Stub = ::firebolt::rialto::VideoFrameCaptureModule_Stub;
+    static constexpr auto m_kFunction{&Stub::destroyVideoFrameCapture};
 };
 
 } // namespace firebolt::rialto::server::ct

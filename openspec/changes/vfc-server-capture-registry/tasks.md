@@ -18,7 +18,7 @@
 
 ## 4. Component tests
 
-- [ ] 4.1 Add server component tests with the R2 fake HAL: create and destroy; two captures get different IDs; a foreign ID is rejected; disconnect with two captures empties the registry; HAL absent gives `UNSUPPORTED`. Verify with `./build_ct.py`.
+- [x] 4.1 Add server component tests with the R2 fake HAL: create and destroy; two captures get different IDs; a foreign ID is rejected; disconnect with two captures empties the registry; HAL absent gives `UNSUPPORTED`. Verify with `./build_ct.py`.
 - [ ] 4.2 Add a client component test: creation returns a capture whose `apiType()` is `GL`; dropping it sends destroy; with the server's capture module disabled, creation returns null. Verify with `./build_ct.py`.
 
 ## Workflow follow-up
