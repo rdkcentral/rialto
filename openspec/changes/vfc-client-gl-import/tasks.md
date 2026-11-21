@@ -21,7 +21,7 @@ Unit tests run with `./build_ut.py -s client` using EGL/GL mocks. "Spec" means `
 
 ## 4. Integration
 
-- [ ] 4.1 Add a client component test with the fake HAL and mocked EGL: acquire, invalidate, release on another thread, acquire again, destroy from a non-context thread; the open-FD count returns to its starting value. Verify with `./build_ct.py`.
+- [x] 4.1 Add a client component test with the fake HAL and mocked EGL: acquire, invalidate, release on another thread, acquire again, destroy from a non-context thread; the open-FD count returns to its starting value. Verify with `./build_ct.py`.
 - [ ] 4.2 Optional on-target test: import a udmabuf-backed NV12 frame into a real EGL context and sample one pixel. Run manually on a reference board and record the result in the PR.
 
 ## Workflow follow-up
