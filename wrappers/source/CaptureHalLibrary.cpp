@@ -76,8 +76,13 @@ CaptureSessionPtr CaptureHalLibrary::createSession()
     }
 
     // The deleter owns a reference to the library handle, so the library stays loaded until after the vendor
-    // destructor has run, even if this loader is destroyed first.
-    return CaptureSessionPtr{session, [handle](capture::ICaptureSession *toDelete) { delete toDelete; }};
+    // destructor has run, even if this loader is destroyed first. It drops that reference straight after the
+    // delete: unique_ptr::reset() runs the deleter but keeps the deleter object itself alive.
+    return CaptureSessionPtr{session, [handle](capture::ICaptureSession *toDelete) mutable
+                             {
+                                 delete toDelete;
+                                 handle.reset();
+                             }};
 }
 
 bool CaptureHalLibrary::loadLocked()

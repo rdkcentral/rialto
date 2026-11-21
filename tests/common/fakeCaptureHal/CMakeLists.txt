@@ -45,3 +45,11 @@ target_include_directories(
         INTERFACE
         .
         )
+
+# The same, without the createCaptureSession() factory.
+add_library(
+        fake_capture_hal_without_factory
+        SHARED
+
+        FakeCaptureHalWithoutFactory.cpp
+        )

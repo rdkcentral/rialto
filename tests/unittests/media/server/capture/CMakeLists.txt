@@ -20,6 +20,7 @@
 add_gtests (
         RialtoServerCaptureUnitTests
 
+        CaptureHalLibraryTests.cpp
         CaptureSessionGuardTests.cpp
         CapturedFrameTraitsTests.cpp
         CapturedFrameUtilsTests.cpp
@@ -31,11 +32,26 @@ target_include_directories(
         PRIVATE
         $<TARGET_PROPERTY:ExternalLibraryMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:FakeCaptureHalControl,INTERFACE_INCLUDE_DIRECTORIES>
+        ../../../../../wrappers/include
         )
 
 target_link_libraries(
         RialtoServerCaptureUnitTests
 
         RialtoServerCapture
+        RialtoWrappers
         RialtoLogging
+        ${CMAKE_DL_LIBS}
+        )
+
+# the loader tests dlopen these at run time
+add_dependencies( RialtoServerCaptureUnitTests fake_capture_hal fake_capture_hal_without_factory )
+target_compile_definitions(
+        RialtoServerCaptureUnitTests
+
+        PRIVATE
+        FAKE_CAPTURE_HAL_PATH="$<TARGET_FILE:fake_capture_hal>"
+        FAKE_CAPTURE_HAL_WITHOUT_FACTORY_PATH="$<TARGET_FILE:fake_capture_hal_without_factory>"
         )
