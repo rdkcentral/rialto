@@ -352,9 +352,10 @@ void VideoFrameCaptureModuleService::releaseFrame(::google::protobuf::RpcControl
         done->Run();
         return;
     }
+    // the frame's session may be retired, or its capture destroyed, by now: releases still reach it (R10 1.3)
     std::shared_ptr<CaptureSessionRuntime> runtime{
-        m_videoFrameCaptureService.captureRuntime(clientId, request->capture_id())};
-    if (!runtime || runtime->poolId() != request->pool_id())
+        m_videoFrameCaptureService.sessionForRelease(clientId, request->capture_id(), request->pool_id())};
+    if (!runtime)
     {
         response->set_status(VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT);
         done->Run();

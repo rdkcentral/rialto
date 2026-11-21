@@ -30,7 +30,45 @@ std::uint32_t VideoFrameCaptureRegistry::add(GraphicsAPIType api)
 
 bool VideoFrameCaptureRegistry::remove(std::uint32_t captureId)
 {
-    return m_entries.erase(captureId) != 0;
+    auto it = m_entries.find(captureId);
+    if (it == m_entries.end())
+        return false;
+    auto &orphans = m_orphans[captureId];
+    if (it->second.runtime)
+        orphans.push_back(it->second.runtime);
+    orphans.insert(orphans.end(), it->second.retiredSessions.begin(), it->second.retiredSessions.end());
+    if (orphans.empty())
+        m_orphans.erase(captureId);
+    m_entries.erase(it);
+    return true;
+}
+
+std::shared_ptr<CaptureSessionRuntime> VideoFrameCaptureRegistry::sessionForRelease(std::uint32_t captureId,
+                                                                                    std::uint32_t poolId) const
+{
+    auto matches = [poolId](const std::shared_ptr<CaptureSessionRuntime> &runtime)
+    { return runtime && runtime->poolId() == poolId; };
+    auto entryIt = m_entries.find(captureId);
+    if (entryIt != m_entries.end())
+    {
+        if (matches(entryIt->second.runtime))
+            return entryIt->second.runtime;
+        for (const auto &kRetired : entryIt->second.retiredSessions)
+        {
+            if (matches(kRetired))
+                return kRetired;
+        }
+    }
+    auto orphanIt = m_orphans.find(captureId);
+    if (orphanIt != m_orphans.end())
+    {
+        for (const auto &kOrphan : orphanIt->second)
+        {
+            if (matches(kOrphan))
+                return kOrphan;
+        }
+    }
+    return nullptr;
 }
 
 bool VideoFrameCaptureRegistry::bind(std::uint32_t captureId, int sessionId)

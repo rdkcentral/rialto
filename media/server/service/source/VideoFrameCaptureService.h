@@ -51,6 +51,8 @@ public:
                            const std::shared_ptr<CaptureSessionRuntime> &runtime) override;
     std::shared_ptr<CaptureSessionRuntime> captureRuntime(VideoFrameCaptureClientId clientId,
                                                           std::uint32_t captureId) const override;
+    std::shared_ptr<CaptureSessionRuntime> sessionForRelease(VideoFrameCaptureClientId clientId, std::uint32_t captureId,
+                                                             std::uint32_t poolId) const override;
 
 private:
     /** Must be called with m_mutex held. */

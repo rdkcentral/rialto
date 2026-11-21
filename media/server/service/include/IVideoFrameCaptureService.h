@@ -124,6 +124,13 @@ public:
      */
     virtual std::shared_ptr<CaptureSessionRuntime> captureRuntime(VideoFrameCaptureClientId clientId,
                                                                   std::uint32_t captureId) const = 0;
+
+    /**
+     * @brief The session, active or retired, that a client's release names by capture and pool, including the
+     *        sessions of a capture already destroyed (R10 1.3). Null if there is none.
+     */
+    virtual std::shared_ptr<CaptureSessionRuntime>
+    sessionForRelease(VideoFrameCaptureClientId clientId, std::uint32_t captureId, std::uint32_t poolId) const = 0;
 };
 } // namespace firebolt::rialto::server::service
 

@@ -72,12 +72,22 @@ public:
     /** Gives a capture its committed session's runtime. @retval false if there is no such capture. */
     bool setRuntime(std::uint32_t captureId, const std::shared_ptr<CaptureSessionRuntime> &runtime);
 
+    /**
+     * @brief The session, active or retired, of a capture that has the pool \a poolId, for a release. A destroyed
+     *        capture's retired sessions are kept for this until their frames are released.
+     *
+     * @retval null if there is none.
+     */
+    std::shared_ptr<CaptureSessionRuntime> sessionForRelease(std::uint32_t captureId, std::uint32_t poolId) const;
+
     /** Number of registered captures. */
     std::size_t size() const { return m_entries.size(); }
 
 private:
     std::uint32_t m_nextId{1};
     std::map<std::uint32_t, VideoFrameCaptureEntry> m_entries;
+    /** Sessions of destroyed captures, kept for the releases of frames that outlive their capture. */
+    std::map<std::uint32_t, std::vector<std::shared_ptr<CaptureSessionRuntime>>> m_orphans;
 };
 } // namespace firebolt::rialto::server::service
 

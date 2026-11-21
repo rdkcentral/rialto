@@ -167,4 +167,13 @@ std::shared_ptr<CaptureSessionRuntime> VideoFrameCaptureService::captureRuntime(
     // a retired session takes no acquisitions: the capture has no active session then
     return (kEntry && kEntry->runtime && !kEntry->runtime->isRetired()) ? kEntry->runtime : nullptr;
 }
+
+std::shared_ptr<CaptureSessionRuntime> VideoFrameCaptureService::sessionForRelease(VideoFrameCaptureClientId clientId,
+                                                                                   std::uint32_t captureId,
+                                                                                   std::uint32_t poolId) const
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+    auto it = m_registries.find(clientId);
+    return it == m_registries.end() ? nullptr : it->second.sessionForRelease(captureId, poolId);
+}
 } // namespace firebolt::rialto::server::service

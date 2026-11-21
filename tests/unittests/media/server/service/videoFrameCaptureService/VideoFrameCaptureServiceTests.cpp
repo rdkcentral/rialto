@@ -284,3 +284,36 @@ TEST(VideoFrameCaptureServiceTest, ShouldRetireTheSessionWhenTheCaptureIsDestroy
     EXPECT_TRUE(service.destroyCapture(kClientA, captureId));
     EXPECT_TRUE(runtime->isRetired());
 }
+
+TEST(VideoFrameCaptureServiceTest, ShouldFindSessionsForReleaseAfterRetirementAndCaptureDestruction)
+{
+    VideoFrameCaptureService service{halFactory(true)};
+    std::uint32_t captureId{0};
+    ASSERT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, captureId), VideoFrameCaptureServiceStatus::OK);
+    auto makeRuntime = [](std::uint32_t poolId)
+    {
+        return std::make_shared<firebolt::rialto::server::CaptureSessionRuntime>(
+            firebolt::rialto::wrappers::CaptureSessionPtr{new ::testing::NiceMock<
+                                                              firebolt::rialto::capture::CaptureSessionMock>(),
+                                                          [](firebolt::rialto::capture::ICaptureSession *session)
+                                                          { delete session; }},
+            poolId, firebolt::rialto::capture::CapturePool{});
+    };
+    auto first = makeRuntime(1);
+    service.setCaptureRuntime(kClientA, captureId, first);
+    first->retire(); // after stop or pipeline destruction
+    EXPECT_EQ(service.sessionForRelease(kClientA, captureId, 1), first);
+
+    auto second = makeRuntime(2); // a later commit: the first is kept among the retired sessions
+    service.setCaptureRuntime(kClientA, captureId, second);
+    EXPECT_EQ(service.sessionForRelease(kClientA, captureId, 1), first);
+    EXPECT_EQ(service.sessionForRelease(kClientA, captureId, 2), second);
+    EXPECT_EQ(service.sessionForRelease(kClientA, captureId, 3), nullptr);
+    EXPECT_EQ(service.sessionForRelease(kClientB, captureId, 1), nullptr);
+
+    // the capture is destroyed while frames are held: both sessions still take releases
+    EXPECT_TRUE(service.destroyCapture(kClientA, captureId));
+    EXPECT_EQ(service.sessionForRelease(kClientA, captureId, 1), first);
+    EXPECT_EQ(service.sessionForRelease(kClientA, captureId, 2), second);
+    EXPECT_TRUE(second->isRetired());
+}

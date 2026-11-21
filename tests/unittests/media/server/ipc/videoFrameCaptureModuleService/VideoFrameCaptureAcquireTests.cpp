@@ -82,6 +82,9 @@ protected:
     {
         EXPECT_CALL(m_service, hasCapture(1, kCaptureId)).WillRepeatedly(Return(true));
         EXPECT_CALL(m_service, captureRuntime(1, kCaptureId)).WillRepeatedly(Return(m_runtime));
+        EXPECT_CALL(m_service, sessionForRelease(1, kCaptureId, _))
+            .WillRepeatedly(Invoke([this](std::uint64_t, std::uint32_t, std::uint32_t poolId)
+                                   { return poolId == kPoolId ? m_runtime : nullptr; }));
     }
 
     CaptureRecordFixtures m_records;
@@ -317,6 +320,14 @@ TEST_F(VideoFrameCaptureReleaseTests, HalReleaseFailureKeepsTheRecord)
 
 TEST_F(VideoFrameCaptureReleaseTests, ReleaseWithoutACommittedSessionIsInvalid)
 {
-    EXPECT_CALL(m_service, captureRuntime(1, kCaptureId)).WillOnce(Return(nullptr));
+    EXPECT_CALL(m_service, sessionForRelease(1, kCaptureId, kPoolId)).WillOnce(Return(nullptr));
     EXPECT_EQ(release(kPoolId, 1, 42).status(), VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT);
+}
+
+TEST_F(VideoFrameCaptureReleaseTests, ReleaseReachesARetiredSession)
+{
+    frameIsHeld();
+    m_runtime->retire(); // stop, FAILURE, pipeline or capture destruction
+    EXPECT_CALL(*m_session, releaseFrame(_)).WillOnce(Return(CaptureStatus::OK));
+    EXPECT_EQ(release(kPoolId, 1, 42).status(), VIDEO_FRAME_CAPTURE_STATUS_OK);
 }
