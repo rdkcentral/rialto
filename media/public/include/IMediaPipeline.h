@@ -42,6 +42,7 @@
 namespace firebolt::rialto
 {
 class IMediaPipeline;
+class IVideoFrameCapture; // V1.1: defined in IVideoFrameCapture.h
 
 /**
  * @brief IMediaPipeline factory class, returns a concrete implementation of IMediaPipeline
@@ -1272,6 +1273,8 @@ public:
      * @param[in] width  : The width in pixels.
      * @param[in] height : The height in pixels.
      *
+     * V1.1: returns false while a Video Frame Capture is attached (no video-plane output).
+     *
      * @retval true on success.
      */
     virtual bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
@@ -1570,6 +1573,42 @@ public:
      * @retval true on success.
      */
     virtual bool getDuration(int64_t &duration) = 0;
+
+    /**
+     * @brief Directs this pipeline's video output to a Video Frame Capture.
+     *
+     * This method is synchronous and validates the request locally and with the server; it
+     * allocates no capture buffers. Valid after load() and before allSourcesAttached().
+     * Buffers are allocated by allSourcesAttached(), which returns false when the capture cannot
+     * be configured. At most one capture is attached to a pipeline.
+     *
+     * The pipeline retains a reference to the capture until detachVideoFrameCapture() or pipeline
+     * destruction. Frames already acquired remain valid after detachment or destruction until
+     * their last reference is released.
+     *
+     * @param[in] videoFrameCapture : A capture created by IVideoFrameCaptureFactory.
+     *
+     * @retval true on success.
+     *
+     * @since V1.1
+     */
+    virtual bool attachVideoFrameCapture(const std::shared_ptr<IVideoFrameCapture> &videoFrameCapture)
+    {
+        (void)videoFrameCapture;
+        return false;
+    }
+
+    /**
+     * @brief Detaches the Video Frame Capture attached to this pipeline.
+     *
+     * This method is synchronous. Valid before allSourcesAttached() and after stop().
+     * Detaching during playback is not supported in V1.1 and returns false.
+     *
+     * @retval true on success.
+     *
+     * @since V1.1
+     */
+    virtual bool detachVideoFrameCapture() { return false; }
 };
 
 }; // namespace firebolt::rialto
