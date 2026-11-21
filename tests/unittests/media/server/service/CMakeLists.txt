@@ -41,6 +41,8 @@ add_gtests (
 
         metrics/MetricsClientsTests.cpp
         metrics/PrivateMetricsServiceTests.cpp
+
+        videoFrameCaptureService/VideoFrameCaptureServiceTests.cpp
         )
 
 target_include_directories(

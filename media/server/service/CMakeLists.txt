@@ -40,6 +40,8 @@ add_library (
         source/WebAudioPlayerMetricsClient.cpp
         source/PrivateMetricsService.cpp
         source/ConsoleLogForwarding.cpp
+        source/VideoFrameCaptureRegistry.cpp
+        source/VideoFrameCaptureService.cpp
 )
 set_target_properties (
         RialtoServerService
