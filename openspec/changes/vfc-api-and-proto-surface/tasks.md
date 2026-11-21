@@ -18,7 +18,7 @@
 
 - [x] 3.1 Add client unit tests: the factory returns null; attach/detach on a pipeline return `false`. Verify with `./build_ut.py -s client`.
 - [x] 3.2 Add a component test that pairs a V1.1 client with a server that has no capture module: create returns null, attach returns `false`, and normal playback in the same test still works. Verify with `./build_ct.py`.
-- [ ] 3.3 Run the full unit and component suites and confirm no regressions for shipping-only clients.
+- [x] 3.3 Run the full unit and component suites and confirm no regressions for shipping-only clients.
 
 ## Workflow follow-up
 
