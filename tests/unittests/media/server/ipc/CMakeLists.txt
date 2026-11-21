@@ -79,6 +79,8 @@ add_gtests (
         # VideoFrameCaptureModuleService unittests
         videoFrameCaptureModuleService/VideoFrameCaptureModuleServiceTests.cpp
         videoFrameCaptureModuleService/VideoFrameCaptureStatusTests.cpp
+        videoFrameCaptureModuleService/VideoFrameCaptureAcquireTests.cpp
+        ${CMAKE_SOURCE_DIR}/tests/unittests/media/server/capture/CaptureRecordFixtures.cpp
         )
 
 target_include_directories(
@@ -98,6 +100,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoTestCommonProtoUtils,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:ExternalLibraryMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
+        ${CMAKE_SOURCE_DIR}/tests/unittests/media/server/capture
 
         stubs
         )

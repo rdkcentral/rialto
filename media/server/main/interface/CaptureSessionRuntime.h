@@ -26,6 +26,7 @@
 #include "ICaptureSession.h"
 
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <vector>
@@ -57,6 +58,26 @@ public:
     std::uint32_t poolId() const { return m_poolId; }
     std::uint32_t slotCount() const { return static_cast<std::uint32_t>(m_slots.size()); }
     const capture::CapturePool &pool() const { return m_pool; }
+
+    /**
+     * @brief Called under the session lock with an acquired, validated frame, to fill the reply.
+     *
+     * @param[in] frame   : The frame. Its descriptors pass to the reply, whose sender closes them (owned FDs); the
+     *                      runtime forgets them after this call.
+     * @param[in] flushed : The invalidation flag to deliver: set if this or an undelivered earlier frame flushed.
+     */
+    using FrameReplyFiller = std::function<void(const capture::CapturedFrame &frame, bool flushed)>;
+
+    /**
+     * @brief Acquires the current frame (design D2). Runs on the IPC thread and never waits on media.
+     *
+     * Under the session lock: a capture-fatal session answers FATAL_ERROR; otherwise the HAL is asked for a frame.
+     * A non-OK result is returned as is. An OK frame is validated; an invalid one is released and its descriptors
+     * closed, and the session becomes capture-fatal. A valid one is passed to fillReply and kept in its slot.
+     *
+     * @retval the HAL status, or FATAL_ERROR for a fatal session or an invalid frame.
+     */
+    capture::CaptureStatus acquire(const FrameReplyFiller &fillReply);
 
     /** Whether the slot holds a frame lock owed a release. */
     bool isSlotLocked(std::uint32_t slotIndex) const;

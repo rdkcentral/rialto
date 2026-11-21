@@ -19,6 +19,7 @@
 
 #include "VideoFrameCaptureModuleService.h"
 #include "RialtoServerLogging.h"
+#include "VideoFrameCaptureStatus.h"
 #include <IIpcController.h>
 
 #include <exception>
@@ -26,6 +27,57 @@
 
 namespace
 {
+// The reply for an acquired frame (proposal 3.4): identity, timing, layout, colour and the descriptors.
+void fillFrameReply(const firebolt::rialto::capture::CapturedFrame &frame, bool flushed,
+                    firebolt::rialto::AcquireCurrentVideoFrameResponse &response)
+{
+    response.set_slot_index(frame.slotIndex);
+    response.set_acquisition_token(frame.acquisitionToken);
+    response.set_presentation_time_ns(frame.presentationTimeNs);
+    auto *region = response.mutable_visible_region();
+    region->set_x(frame.visibleRegion.x);
+    region->set_y(frame.visibleRegion.y);
+    region->set_width(frame.visibleRegion.size.width);
+    region->set_height(frame.visibleRegion.size.height);
+    response.set_dma_buf_objects_flushed(flushed);
+
+    auto *metadata = response.mutable_frame_metadata();
+    metadata->set_drm_format(frame.capabilities.drmFormat);
+    metadata->set_drm_modifier(frame.capabilities.drmModifier);
+    metadata->set_backing_width(frame.backingSize.width);
+    metadata->set_backing_height(frame.backingSize.height);
+    for (const auto &kObject : frame.dmaBufObjects)
+    {
+        auto *object = metadata->add_dma_buf_objects();
+        object->set_object_id(kObject.objectId);
+        object->set_size_bytes(kObject.sizeBytes);
+    }
+    for (const auto &kPlane : frame.planes)
+    {
+        auto *plane = metadata->add_planes();
+        plane->set_plane_index(kPlane.planeIndex);
+        plane->set_dma_buf_object_id(kPlane.dmaBufObjectId);
+        plane->set_offset_bytes(kPlane.offsetBytes);
+        plane->set_length_bytes(kPlane.lengthBytes);
+        plane->set_stride_bytes(kPlane.strideBytes);
+    }
+    auto *colour = metadata->mutable_color_description();
+    colour->set_ycbcr_color_space(
+        static_cast<firebolt::rialto::VideoFrameCaptureYcbcrColorSpace>(frame.colorDescription.matrix));
+    colour->set_sample_range(static_cast<firebolt::rialto::VideoFrameCaptureSampleRange>(frame.colorDescription.range));
+    colour->set_horizontal_chroma_siting(
+        static_cast<firebolt::rialto::VideoFrameCaptureChromaSiting>(frame.colorDescription.horizontalSiting));
+    colour->set_vertical_chroma_siting(
+        static_cast<firebolt::rialto::VideoFrameCaptureChromaSiting>(frame.colorDescription.verticalSiting));
+
+    for (const auto &kExported : frame.exportedDmaBufs)
+    {
+        auto *exported = response.add_exported_dma_bufs();
+        exported->set_dma_buf_object_id(kExported.dmaBufObjectId);
+        exported->set_fd(kExported.fd);
+    }
+}
+
 std::optional<firebolt::rialto::GraphicsAPIType> toGraphicsApi(firebolt::rialto::VideoFrameCaptureGraphicsAPIType api)
 {
     switch (api)
@@ -189,6 +241,48 @@ void VideoFrameCaptureModuleService::destroyVideoFrameCapture(
     else if (!m_videoFrameCaptureService.destroyCapture(clientId, request->capture_id()))
     {
         controller->SetFailed("Unknown capture");
+    }
+    done->Run();
+}
+
+void VideoFrameCaptureModuleService::acquireCurrentFrame(::google::protobuf::RpcController *controller,
+                                                         const ::firebolt::rialto::AcquireCurrentVideoFrameRequest *request,
+                                                         ::firebolt::rialto::AcquireCurrentVideoFrameResponse *response,
+                                                         ::google::protobuf::Closure *done)
+{
+    service::VideoFrameCaptureClientId clientId{0};
+    if (!clientIdOf(controller, clientId))
+    {
+        controller->SetFailed("Unknown client");
+        done->Run();
+        return;
+    }
+    if (!m_videoFrameCaptureService.hasCapture(clientId, request->capture_id()))
+    {
+        response->set_status(VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT);
+        done->Run();
+        return;
+    }
+    std::shared_ptr<CaptureSessionRuntime> runtime{
+        m_videoFrameCaptureService.captureRuntime(clientId, request->capture_id())};
+    if (!runtime)
+    {
+        response->set_status(VIDEO_FRAME_CAPTURE_STATUS_NO_FRAME); // not committed: no session yet
+        done->Run();
+        return;
+    }
+
+    const capture::CaptureStatus kStatus{runtime->acquire([response](const capture::CapturedFrame &frame, bool flushed)
+                                                          { fillFrameReply(frame, flushed, *response); })};
+    response->set_status(toWireStatus(kStatus));
+    if (kStatus == capture::CaptureStatus::OK)
+    {
+        response->set_pool_id(runtime->poolId());
+        // the IPC closes the exported descriptors once the reply is sent, whatever happens (R1)
+        if (auto *ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller))
+        {
+            ipcController->setReplyFdsOwned(true);
+        }
     }
     done->Run();
 }

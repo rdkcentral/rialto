@@ -55,6 +55,11 @@ public:
                                   ::firebolt::rialto::DestroyVideoFrameCaptureResponse *response,
                                   ::google::protobuf::Closure *done) override;
 
+    void acquireCurrentFrame(::google::protobuf::RpcController *controller,
+                             const ::firebolt::rialto::AcquireCurrentVideoFrameRequest *request,
+                             ::firebolt::rialto::AcquireCurrentVideoFrameResponse *response,
+                             ::google::protobuf::Closure *done) override;
+
 private:
     /** @retval false if the call did not come from a known client connection. */
     bool clientIdOf(::google::protobuf::RpcController *controller, service::VideoFrameCaptureClientId &clientId);

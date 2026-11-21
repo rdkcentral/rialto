@@ -20,6 +20,8 @@
 #include "CaptureSessionRuntime.h"
 #include "RialtoServerLogging.h"
 
+#include <unistd.h>
+
 #include <utility>
 
 namespace firebolt::rialto::server
@@ -42,6 +44,63 @@ CaptureSessionRuntime::~CaptureSessionRuntime()
                                    m_poolId);
         }
     }
+}
+
+namespace
+{
+void closeDescriptors(capture::CapturedFrame &frame)
+{
+    for (auto &exported : frame.exportedDmaBufs)
+    {
+        if (exported.fd >= 0)
+        {
+            close(exported.fd);
+            exported.fd = -1;
+        }
+    }
+}
+} // namespace
+
+capture::CaptureStatus CaptureSessionRuntime::acquire(const FrameReplyFiller &fillReply)
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+    if (m_fatal)
+    {
+        return capture::CaptureStatus::FATAL_ERROR;
+    }
+
+    auto record = std::make_unique<capture::CapturedFrame>(); // a fresh, empty record for every call
+    const capture::CaptureStatus kStatus{m_guard.acquireCurrentFrame(*record)};
+    if (kStatus != capture::CaptureStatus::OK)
+    {
+        return kStatus;
+    }
+
+    // an invalidation is kept until a frame carrying it is delivered (SoC spec 7.3)
+    m_pendingFlush = m_pendingFlush || record->dmaBufObjectsFlushed;
+
+    const capture::ValidationResult kValidation{capture::validateFrame(*record, slotCount(), &m_lockedRanges)};
+    m_warnings.report(kValidation);
+    // validation checks the slot index is in the pool; a slot already locked is just as invalid
+    const bool kSlotTaken{kValidation.ok && m_slots[record->slotIndex] != nullptr};
+    if (!kValidation.ok || kSlotTaken)
+    {
+        RIALTO_SERVER_LOG_ERROR("Invalid captured frame (%s): video frame capture of pool %u is now unavailable",
+                                kSlotTaken ? "slot already locked" : kValidation.rule.c_str(), m_poolId);
+        m_guard.releaseFrame(*record); // the lock this acquisition created is ended exactly once
+        closeDescriptors(*record);
+        m_fatal = true;
+        return capture::CaptureStatus::FATAL_ERROR;
+    }
+
+    fillReply(*record, m_pendingFlush);
+    for (auto &exported : record->exportedDmaBufs)
+    {
+        exported.fd = -1; // the reply owns them now
+    }
+    const std::uint32_t kSlot{record->slotIndex};
+    m_slots[kSlot] = std::move(record);
+    return capture::CaptureStatus::OK;
 }
 
 bool CaptureSessionRuntime::isSlotLocked(std::uint32_t slotIndex) const
