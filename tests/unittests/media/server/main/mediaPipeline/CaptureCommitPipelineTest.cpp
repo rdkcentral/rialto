@@ -97,3 +97,29 @@ TEST_F(RialtoServerMediaPipelineCaptureCommitTest, CommitGetsTheAttachedVideoSou
             }));
     EXPECT_FALSE(allSourcesAttached());
 }
+
+TEST_F(RialtoServerMediaPipelineCaptureCommitTest, RetryWithTheCaptureRunsTheWholeStepAgain)
+{
+    loadGstPlayer();
+    attachCapture();
+    EXPECT_CALL(*m_captureCommitMock, run(_, m_kSessionId, kCaptureId, _, _)).WillOnce(Return(false)).WillOnce(Return(true));
+    EXPECT_FALSE(allSourcesAttached());
+
+    EXPECT_CALL(*m_gstPlayerMock, allSourcesAttached());
+    EXPECT_TRUE(allSourcesAttached());
+}
+
+TEST_F(RialtoServerMediaPipelineCaptureCommitTest, RetryAfterDetachCommitsWithoutCapture)
+{
+    loadGstPlayer();
+    attachCapture();
+    EXPECT_CALL(*m_captureCommitMock, run(_, _, _, _, _)).WillOnce(Return(false));
+    EXPECT_FALSE(allSourcesAttached());
+
+    mainThreadWillEnqueueTaskAndWait();
+    uint32_t detached{0};
+    ASSERT_TRUE(m_mediaPipeline->detachCapture(detached));
+
+    EXPECT_CALL(*m_gstPlayerMock, allSourcesAttached()); // and no second commit run
+    EXPECT_TRUE(allSourcesAttached());
+}

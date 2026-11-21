@@ -165,3 +165,20 @@ TEST_F(CaptureCommitTest, SuccessHandsTheSessionToTheCaller)
     EXPECT_TRUE(m_events.empty());
     m_committed.session.reset();
 }
+
+TEST_F(CaptureCommitTest, RetryUsesANewSessionAndANewSink)
+{
+    // first attempt: the sink fails and the session is deleted
+    halWillCreateSession();
+    EXPECT_CALL(m_player, configureCaptureSink(_, _)).WillOnce(Return(false)).WillOnce(Return(true));
+    EXPECT_FALSE(run());
+    EXPECT_EQ(m_events, std::vector<std::string>{"session deleted"});
+
+    // second attempt: a new session; the player creates a new sink for every configureCaptureSink() call
+    halWillCreateSession();
+    EXPECT_CALL(*m_admission, admit(_)).WillOnce(Return(true));
+    EXPECT_TRUE(run());
+    EXPECT_NE(m_committed.session, nullptr);
+    EXPECT_EQ(m_events.size(), 1U); // the new session is alive
+    m_committed.session.reset();
+}
