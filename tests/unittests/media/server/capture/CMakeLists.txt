@@ -23,6 +23,7 @@ add_gtests (
         CaptureHalLibraryTests.cpp
         CaptureRecordFixtures.cpp
         CaptureRecordFixturesTests.cpp
+        CaptureRecordValidatorTests.cpp
         CaptureSessionGuardTests.cpp
         CapturedFrameTraitsTests.cpp
         CapturedFrameUtilsTests.cpp

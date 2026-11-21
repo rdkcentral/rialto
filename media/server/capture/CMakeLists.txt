@@ -37,6 +37,7 @@ add_library(
         RialtoServerCapture
         STATIC
 
+        source/CaptureRecordValidator.cpp
         source/CaptureSessionGuard.cpp
         source/CapturedFrameUtils.cpp
         )

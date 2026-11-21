@@ -9,7 +9,7 @@ Unit tests run with `./build_ut.py -s servercapture` (the suite added in 1.1). "
 
 ## 2. Capabilities and pools (D1, D2)
 
-- [ ] 2.1 Implement `validateCapabilities` and `validatePool` returning `ValidationResult` with a rule name. Verify with table-driven tests: valid and equal limits pass; `min = 0`, `min > max`, zero maximum size and a short `size` fail; a pool with the wrong count, an out-of-position index, a non-zero template ID or an oversized backing fails.
+- [x] 2.1 Implement `validateCapabilities` and `validatePool` returning `ValidationResult` with a rule name. Verify with table-driven tests: valid and equal limits pass; `min = 0`, `min > max`, zero maximum size and a short `size` fail; a pool with the wrong count, an out-of-position index, a non-zero template ID or an oversized backing fails.
 
 ## 3. Frames (D1–D4)
 
