@@ -34,6 +34,18 @@
 namespace firebolt::rialto::client
 {
 /**
+ * @brief Builds the EGL_LINUX_DMA_BUF_EXT attribute list for a frame (SoC spec 6.3, design D3).
+ *
+ * The image is the backing size. Each plane uses its object's descriptor (repeated when planes share an object),
+ * its own offset and pitch, and the frame's modifier as LO/HI. Colour hints come from the colour description and
+ * are left out where it is UNKNOWN (RGB formats). The list ends with EGL_NONE.
+ *
+ * @retval nothing if a plane has no descriptor, a plane index is repeated or above 3, or a value does not fit.
+ */
+std::optional<std::vector<egl::EGLint>> buildEglAttributes(const CaptureFrameDescription &description,
+                                                           const std::vector<CaptureObjectFd> &fds);
+
+/**
  * @brief Imports captured frames as EGL images bound to GL_TEXTURE_EXTERNAL_OES textures (SoC spec 6.3, 6.4).
  */
 class GlFrameImporter : public IFrameImporter

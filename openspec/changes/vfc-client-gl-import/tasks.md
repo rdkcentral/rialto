@@ -9,7 +9,7 @@ Unit tests run with `./build_ut.py -s client` using EGL/GL mocks. "Spec" means `
 
 ## 2. Import (D3, D5)
 
-- [ ] 2.1 Implement `buildEglAttributes`. Verify against SoC examples B (shared object, repeated FD) and C (two objects), modifier LO/HI on every plane, and colour-hint mapping for BT601/BT709/BT2020, full/narrow and both siting values.
+- [x] 2.1 Implement `buildEglAttributes`. Verify against SoC examples B (shared object, repeated FD) and C (two objects), modifier LO/HI on every plane, and colour-hint mapping for BT601/BT709/BT2020, full/narrow and both siting values.
 - [ ] 2.2 Implement `GlFrameImporter::importFrame`: create the EGL image, generate and bind a `GL_TEXTURE_EXTERNAL_OES` texture, call `glEGLImageTargetTexture2DOES`; report FDs as borrowed; unwind on failure. Verify: success returns one texture ID; image failure and texture failure each leave no image or texture (mock counters) and all FDs closed.
 - [ ] 2.3 Make GL frames report `GL_TEXTURE_EXTERNAL_OES`, one texture ID, `RGBA` and one resource. Verify with a unit test.
 

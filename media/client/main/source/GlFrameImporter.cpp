@@ -22,6 +22,8 @@
 
 #include <algorithm>
 #include <cstring>
+#include <iterator>
+#include <limits>
 #include <sstream>
 #include <string>
 
@@ -45,7 +47,126 @@ bool hasExtension(const char *extensions, const char *name)
     }
     return false;
 }
+struct PlaneAttributes
+{
+    EGLint fd;
+    EGLint offset;
+    EGLint pitch;
+    EGLint modifierLo;
+    EGLint modifierHi;
+};
+
+constexpr PlaneAttributes kPlaneAttributes[]{
+    {EGL_DMA_BUF_PLANE0_FD_EXT, EGL_DMA_BUF_PLANE0_OFFSET_EXT, EGL_DMA_BUF_PLANE0_PITCH_EXT,
+     EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT, EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT},
+    {EGL_DMA_BUF_PLANE1_FD_EXT, EGL_DMA_BUF_PLANE1_OFFSET_EXT, EGL_DMA_BUF_PLANE1_PITCH_EXT,
+     EGL_DMA_BUF_PLANE1_MODIFIER_LO_EXT, EGL_DMA_BUF_PLANE1_MODIFIER_HI_EXT},
+    {EGL_DMA_BUF_PLANE2_FD_EXT, EGL_DMA_BUF_PLANE2_OFFSET_EXT, EGL_DMA_BUF_PLANE2_PITCH_EXT,
+     EGL_DMA_BUF_PLANE2_MODIFIER_LO_EXT, EGL_DMA_BUF_PLANE2_MODIFIER_HI_EXT},
+    {EGL_DMA_BUF_PLANE3_FD_EXT, EGL_DMA_BUF_PLANE3_OFFSET_EXT, EGL_DMA_BUF_PLANE3_PITCH_EXT,
+     EGL_DMA_BUF_PLANE3_MODIFIER_LO_EXT, EGL_DMA_BUF_PLANE3_MODIFIER_HI_EXT},
+};
+
+// Wire values (proto VideoFrameCapture*): 0 is UNKNOWN in each enum.
+std::optional<EGLint> colourSpaceHint(std::uint32_t matrix)
+{
+    switch (matrix)
+    {
+    case 1:
+        return EGL_ITU_REC601_EXT;
+    case 2:
+        return EGL_ITU_REC709_EXT;
+    case 3:
+        return EGL_ITU_REC2020_EXT;
+    default:
+        return std::nullopt;
+    }
+}
+
+std::optional<EGLint> rangeHint(std::uint32_t range)
+{
+    switch (range)
+    {
+    case 1:
+        return EGL_YUV_FULL_RANGE_EXT;
+    case 2:
+        return EGL_YUV_NARROW_RANGE_EXT;
+    default:
+        return std::nullopt;
+    }
+}
+
+std::optional<EGLint> sitingHint(std::uint32_t siting)
+{
+    switch (siting)
+    {
+    case 1:
+        return EGL_YUV_CHROMA_SITING_0_EXT; // co-sited
+    case 2:
+        return EGL_YUV_CHROMA_SITING_0_5_EXT; // midpoint
+    default:
+        return std::nullopt;
+    }
+}
+
+bool fitsEglInt(std::uint64_t value)
+{
+    return value <= static_cast<std::uint64_t>(std::numeric_limits<EGLint>::max());
+}
 } // namespace
+
+std::optional<std::vector<EGLint>> buildEglAttributes(const CaptureFrameDescription &description,
+                                                      const std::vector<CaptureObjectFd> &fds)
+{
+    if (description.planes.empty() || !fitsEglInt(description.backingWidth) || !fitsEglInt(description.backingHeight) ||
+        !fitsEglInt(description.drmFormat))
+    {
+        return std::nullopt;
+    }
+    std::vector<EGLint> attributes{EGL_WIDTH,
+                                   static_cast<EGLint>(description.backingWidth),
+                                   EGL_HEIGHT,
+                                   static_cast<EGLint>(description.backingHeight),
+                                   EGL_LINUX_DRM_FOURCC_EXT,
+                                   static_cast<EGLint>(description.drmFormat)};
+    const EGLint kModifierLo{static_cast<EGLint>(description.drmModifier & 0xffffffffU)};
+    const EGLint kModifierHi{static_cast<EGLint>(description.drmModifier >> 32)};
+
+    bool planeSeen[std::size(kPlaneAttributes)]{};
+    for (const CapturePlane &kPlane : description.planes)
+    {
+        if (kPlane.planeIndex >= std::size(kPlaneAttributes) || planeSeen[kPlane.planeIndex] ||
+            !fitsEglInt(kPlane.offsetBytes) || !fitsEglInt(kPlane.strideBytes))
+        {
+            return std::nullopt;
+        }
+        planeSeen[kPlane.planeIndex] = true;
+        auto fdIt = std::find_if(fds.begin(), fds.end(),
+                                 [&kPlane](const CaptureObjectFd &kFd) { return kFd.objectId == kPlane.objectId; });
+        if (fdIt == fds.end() || fdIt->fd < 0)
+        {
+            return std::nullopt;
+        }
+        const PlaneAttributes &kNames{kPlaneAttributes[kPlane.planeIndex]};
+        attributes.insert(attributes.end(), {kNames.fd, fdIt->fd, kNames.offset, static_cast<EGLint>(kPlane.offsetBytes),
+                                             kNames.pitch, static_cast<EGLint>(kPlane.strideBytes), kNames.modifierLo,
+                                             kModifierLo, kNames.modifierHi, kModifierHi});
+    }
+
+    const std::pair<EGLint, std::optional<EGLint>> kHints[]{
+        {EGL_YUV_COLOR_SPACE_HINT_EXT, colourSpaceHint(description.colour.matrix)},
+        {EGL_SAMPLE_RANGE_HINT_EXT, rangeHint(description.colour.range)},
+        {EGL_YUV_CHROMA_HORIZONTAL_SITING_HINT_EXT, sitingHint(description.colour.horizontalSiting)},
+        {EGL_YUV_CHROMA_VERTICAL_SITING_HINT_EXT, sitingHint(description.colour.verticalSiting)},
+    };
+    for (const auto &[kName, kValue] : kHints)
+    {
+        if (kValue)
+            attributes.insert(attributes.end(), {kName, *kValue});
+    }
+    attributes.push_back(EGL_NONE);
+    return attributes;
+}
 
 GlFrameImporter::GlFrameImporter(const std::shared_ptr<IEglGl> &gl, EGLDisplay display, EGLContext context)
     : m_gl{gl}, m_display{display}, m_context{context}
