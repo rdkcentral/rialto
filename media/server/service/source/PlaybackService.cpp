@@ -23,6 +23,7 @@
 #include "IWebAudioPlayerServerInternal.h"
 #include "PrivateMetricsService.h"
 #include "RialtoServerLogging.h"
+#include "VideoFrameCaptureService.h"
 #include <exception>
 #include <future>
 #include <malloc.h>
@@ -45,7 +46,9 @@ PlaybackService::PlaybackService(
                                                                     decryptionService, *m_privateMetricsService,
                                                                     std::move(mediaCapabilitiesFactory))},
       m_webAudioPlayerService{
-          std::make_unique<WebAudioPlayerService>(*this, std::move(webAudioPlayerFactory), *m_privateMetricsService)}
+          std::make_unique<WebAudioPlayerService>(*this, std::move(webAudioPlayerFactory), *m_privateMetricsService)},
+      m_videoFrameCaptureService{
+          std::make_unique<VideoFrameCaptureService>(wrappers::ICaptureHalLibraryFactory::createFactory())}
 {
     RIALTO_SERVER_LOG_DEBUG("PlaybackService is constructed");
 }
@@ -160,6 +163,11 @@ IWebAudioPlayerService &PlaybackService::getWebAudioPlayerService() const
 IPrivateMetricsService &PlaybackService::getPrivateMetricsService() const
 {
     return *m_privateMetricsService;
+}
+
+IVideoFrameCaptureService &PlaybackService::getVideoFrameCaptureService() const
+{
+    return *m_videoFrameCaptureService;
 }
 
 void PlaybackService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) const

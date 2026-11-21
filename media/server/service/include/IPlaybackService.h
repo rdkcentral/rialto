@@ -23,6 +23,7 @@
 #include "IMediaPipelineService.h"
 #include "IPrivateMetricsService.h"
 #include "ISharedMemoryBuffer.h"
+#include "IVideoFrameCaptureService.h"
 #include "IWebAudioPlayerService.h"
 #include "MediaCommon.h"
 #include <cstdint>
@@ -58,6 +59,7 @@ public:
     virtual IMediaPipelineService &getMediaPipelineService() const = 0;
     virtual IWebAudioPlayerService &getWebAudioPlayerService() const = 0;
     virtual IPrivateMetricsService &getPrivateMetricsService() const = 0;
+    virtual IVideoFrameCaptureService &getVideoFrameCaptureService() const = 0;
     virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) const = 0;
 };
 } // namespace firebolt::rialto::server::service

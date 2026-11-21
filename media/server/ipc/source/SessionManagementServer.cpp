@@ -50,6 +50,7 @@ SessionManagementServer::SessionManagementServer(
     const std::shared_ptr<IMediaKeysCapabilitiesModuleServiceFactory> &mediaKeysCapabilitiesModuleFactory,
     const std::shared_ptr<IWebAudioPlayerModuleServiceFactory> &webAudioPlayerModuleFactory,
     const std::shared_ptr<IPrivateMetricsModuleServiceFactory> &privateMetricsModuleFactory,
+    const std::shared_ptr<IVideoFrameCaptureModuleServiceFactory> &videoFrameCaptureModuleFactory,
     const std::shared_ptr<IControlModuleServiceFactory> &controlModuleFactory, service::IPlaybackService &playbackService,
     service::ICdmService &cdmService, service::IControlService &controlService)
     : m_linuxWrapper{linuxWrapper}, m_isRunning{false},
@@ -61,6 +62,7 @@ SessionManagementServer::SessionManagementServer(
       m_mediaKeysCapabilitiesModule{mediaKeysCapabilitiesModuleFactory->create(cdmService)},
       m_webAudioPlayerModule{webAudioPlayerModuleFactory->create(playbackService.getWebAudioPlayerService())},
       m_privateMetricsModule{privateMetricsModuleFactory->create(playbackService.getPrivateMetricsService())},
+      m_videoFrameCaptureModule{videoFrameCaptureModuleFactory->create(playbackService.getVideoFrameCaptureService())},
       m_controlModule{controlModuleFactory->create(playbackService, controlService)}
 {
     m_ipcServer = ipcFactory->create();
@@ -199,6 +201,7 @@ void SessionManagementServer::onClientConnected(const std::shared_ptr<::firebolt
     m_mediaKeysCapabilitiesModule->clientConnected(client);
     m_webAudioPlayerModule->clientConnected(client);
     m_privateMetricsModule->clientConnected(client);
+    m_videoFrameCaptureModule->clientConnected(client);
     m_setLogLevelsService.clientConnected(client);
 }
 
@@ -212,6 +215,7 @@ void SessionManagementServer::onClientDisconnected(const std::shared_ptr<::fireb
     m_mediaPipelineCapabilitiesModule->clientDisconnected(client);
     m_mediaPipelineModule->clientDisconnected(client);
     m_webAudioPlayerModule->clientDisconnected(client);
+    m_videoFrameCaptureModule->clientDisconnected(client);
     m_privateMetricsModule->clientDisconnected(client);
     m_controlModule->clientDisconnected(client);
 }

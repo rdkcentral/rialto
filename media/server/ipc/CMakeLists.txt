@@ -43,6 +43,7 @@ add_library (
         source/ControlClientServerInternal.cpp
         source/ControlModuleService.cpp
         source/PrivateMetricsModuleService.cpp
+        source/VideoFrameCaptureModuleService.cpp
         source/ServerManagerModuleService.cpp
         source/SessionManagementServer.cpp
         source/SetLogLevelsService.cpp

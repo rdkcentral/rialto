@@ -31,6 +31,7 @@
 #include "IPlaybackService.h"
 #include "IPrivateMetricsModuleService.h"
 #include "ISessionManagementServer.h"
+#include "IVideoFrameCaptureModuleService.h"
 #include "IWebAudioPlayerModuleService.h"
 #include "SetLogLevelsService.h"
 #include <IIpcServer.h>
@@ -55,6 +56,7 @@ public:
         const std::shared_ptr<IMediaKeysCapabilitiesModuleServiceFactory> &mediaKeysCapabilitiesModuleFactory,
         const std::shared_ptr<IWebAudioPlayerModuleServiceFactory> &webAudioPlayerModuleFactory,
         const std::shared_ptr<IPrivateMetricsModuleServiceFactory> &privateMetricsModuleFactory,
+        const std::shared_ptr<IVideoFrameCaptureModuleServiceFactory> &videoFrameCaptureModuleFactory,
         const std::shared_ptr<IControlModuleServiceFactory> &controlModuleFactory,
         service::IPlaybackService &playbackService, service::ICdmService &cdmService,
         service::IControlService &controlService);
@@ -90,6 +92,7 @@ private:
     std::shared_ptr<IMediaKeysCapabilitiesModuleService> m_mediaKeysCapabilitiesModule;
     std::shared_ptr<IWebAudioPlayerModuleService> m_webAudioPlayerModule;
     std::shared_ptr<IPrivateMetricsModuleService> m_privateMetricsModule;
+    std::shared_ptr<IVideoFrameCaptureModuleService> m_videoFrameCaptureModule;
     std::shared_ptr<IControlModuleService> m_controlModule;
     SetLogLevelsService m_setLogLevelsService;
     int m_socketFd{-1};

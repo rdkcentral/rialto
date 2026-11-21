@@ -9,7 +9,7 @@
 
 ## 2. Server IPC module
 
-- [ ] 2.1 Add `VideoFrameCaptureModuleService` in `media/server/ipc` implementing `createVideoFrameCapture` and `destroyVideoFrameCapture`, with `clientConnected`/`clientDisconnected`, and wire it into `SessionManagementServer` and `IpcFactory`. Verify with `./build_ut.py -s serveripc` tests for both RPCs, a foreign ID, and disconnect cleanup.
+- [x] 2.1 Add `VideoFrameCaptureModuleService` in `media/server/ipc` implementing `createVideoFrameCapture` and `destroyVideoFrameCapture`, with `clientConnected`/`clientDisconnected`, and wire it into `SessionManagementServer` and `IpcFactory`. Verify with `./build_ut.py -s serveripc` tests for both RPCs, a foreign ID, and disconnect cleanup.
 
 ## 3. Client (D4)
 

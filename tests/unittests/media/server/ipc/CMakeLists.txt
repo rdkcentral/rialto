@@ -75,6 +75,9 @@ add_gtests (
 
         # PrivateMetricsModuleService unittests
         privateMetricsModuleService/PrivateMetricsModuleServiceTests.cpp
+
+        # VideoFrameCaptureModuleService unittests
+        videoFrameCaptureModuleService/VideoFrameCaptureModuleServiceTests.cpp
         )
 
 target_include_directories(

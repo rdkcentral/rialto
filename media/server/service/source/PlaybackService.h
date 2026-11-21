@@ -74,6 +74,7 @@ public:
     IMediaPipelineService &getMediaPipelineService() const override;
     IWebAudioPlayerService &getWebAudioPlayerService() const override;
     IPrivateMetricsService &getPrivateMetricsService() const override;
+    IVideoFrameCaptureService &getVideoFrameCaptureService() const override;
     void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) const override;
 
 private:
@@ -85,6 +86,7 @@ private:
     std::unique_ptr<IPrivateMetricsService> m_privateMetricsService;
     std::unique_ptr<MediaPipelineService> m_mediaPipelineService;
     std::unique_ptr<WebAudioPlayerService> m_webAudioPlayerService;
+    std::unique_ptr<IVideoFrameCaptureService> m_videoFrameCaptureService;
 };
 } // namespace firebolt::rialto::server::service
 
