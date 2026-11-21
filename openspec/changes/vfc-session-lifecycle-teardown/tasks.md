@@ -23,7 +23,7 @@
 - [x] 4.2 Destroy the pipeline while holding two frames; both releases succeed; deletion follows the second. Verify with `./build_ct.py`.
 - [x] 4.3 Kill the client while holding N locks: the fake HAL sees N releases, then deletion, then library unload last (fake HAL logs destructor and an `atexit`/unload marker). Verify with `./build_ct.py`.
 - [x] 4.4 A capture-fatal session still accepts releases and is deleted afterwards. Verify with `./build_ct.py`.
-- [ ] 4.5 Run the capture component tests under valgrind (`-val`) and confirm no leaked sessions, FDs or memory.
+- [x] 4.5 Run the capture component tests under valgrind (`-val`) and confirm no leaked sessions, FDs or memory.
 
 ## Workflow follow-up
 

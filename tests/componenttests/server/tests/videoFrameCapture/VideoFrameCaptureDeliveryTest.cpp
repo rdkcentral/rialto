@@ -137,6 +137,25 @@ public:
         m_clientFds.clear();
     }
 
+    int halCount(const char *function)
+    {
+        void *hal = dlopen(FAKE_CAPTURE_HAL_PATH, RTLD_NOW | RTLD_NOLOAD);
+        if (!hal)
+            return -1;
+        auto count = reinterpret_cast<FakeCaptureHalCountFunction>(dlsym(hal, function));
+        const int kCount{count ? count() : -1};
+        dlclose(hal);
+        return kCount;
+    }
+    int liveSessions() { return halCount("fakeCaptureHalLiveSessions"); }
+
+    // Waits for the server to finish cleaning up after a disconnect or destruction.
+    void waitForLiveSessions(int expected)
+    {
+        for (int i = 0; i < 200 && liveSessions() != expected; ++i)
+            std::this_thread::sleep_for(std::chrono::milliseconds{10});
+    }
+
     std::vector<int> m_clientFds;
     FakeCaptureHalPushResultFunction m_pushResult{nullptr};
     FakeCaptureHalCallCountFunction m_callCount{nullptr};
@@ -259,6 +278,9 @@ TEST_F(VideoFrameCaptureDeliveryTest, shouldReleaseAFrameWhoseReplyCannotBeSent)
     for (int i = 0; i < 200 && openFrameFiles() != kBaseline; ++i)
         std::this_thread::sleep_for(std::chrono::milliseconds{10});
     EXPECT_EQ(openFrameFiles(), kBaseline); // the server closed its copy; the client got none
+    // the server destroys the client's pipeline asynchronously; its session goes only after that
+    waitForLiveSessions(0);
+    EXPECT_EQ(liveSessions(), 0);
 }
 
 /*
@@ -371,24 +393,6 @@ TEST_F(VideoFrameCaptureDeliveryTest, shouldDeliverFramesWhateverTheApplicationS
 class VideoFrameCaptureTeardownTest : public VideoFrameCaptureDeliveryTest
 {
 public:
-    int halCount(const char *function)
-    {
-        void *hal = dlopen(FAKE_CAPTURE_HAL_PATH, RTLD_NOW | RTLD_NOLOAD);
-        if (!hal)
-            return -1;
-        auto count = reinterpret_cast<FakeCaptureHalCountFunction>(dlsym(hal, function));
-        const int kCount{count ? count() : -1};
-        dlclose(hal);
-        return kCount;
-    }
-    int liveSessions() { return halCount("fakeCaptureHalLiveSessions"); }
-
-    // Waits for the server to finish cleaning up after a disconnect or destruction.
-    void waitForLiveSessions(int expected)
-    {
-        for (int i = 0; i < 200 && liveSessions() != expected; ++i)
-            std::this_thread::sleep_for(std::chrono::milliseconds{10});
-    }
 };
 
 /*
