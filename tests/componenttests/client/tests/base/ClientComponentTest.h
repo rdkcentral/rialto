@@ -27,6 +27,7 @@
 #include "MediaPipelineTestMethods.h"
 #include "PrivateMetricsModuleMock.h"
 #include "ServerStub.h"
+#include "VideoFrameCaptureModuleMock.h"
 #include "WebAudioPlayerTestMethods.h"
 #include <cstdint>
 #include <gtest/gtest.h>
@@ -65,8 +66,11 @@ protected:
     void startApplicationRunning();
     void stopApplication();
     void sendMetricsSampleRequestEvent(std::uint64_t sampleId, ::firebolt::rialto::MetricsSampleReason reason);
+    void enableVideoFrameCaptureModule();
 
     std::shared_ptr<NiceMock<PrivateMetricsModuleMock>> m_privateMetricsModuleMock;
+    std::shared_ptr<StrictMock<VideoFrameCaptureModuleMock>> m_videoFrameCaptureModuleMock{
+        std::make_shared<StrictMock<VideoFrameCaptureModuleMock>>()};
 
 private:
     // Derived class helpers

@@ -65,6 +65,11 @@ void ServerStub::clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::
         client->exportService(m_webAudioPlayerModuleMock);
     if (m_privateMetricsModuleMock)
         client->exportService(m_privateMetricsModuleMock);
+    {
+        std::lock_guard<std::mutex> lock{m_clientConnectMutex};
+        if (m_videoFrameCaptureModule)
+            client->exportService(m_videoFrameCaptureModule);
+    }
 
     // Notify listening thread
     m_clientConnectCond.notify_one();
@@ -86,6 +91,12 @@ ServerStub::ServerStub(
       WebAudioPlayerModuleStub{webAudioPlayerModuleMock}, m_privateMetricsModuleMock{privateMetricsModuleMock}
 {
     init();
+}
+
+void ServerStub::setVideoFrameCaptureModule(const std::shared_ptr<::firebolt::rialto::VideoFrameCaptureModule> &module)
+{
+    std::lock_guard<std::mutex> lock{m_clientConnectMutex};
+    m_videoFrameCaptureModule = module;
 }
 
 void ServerStub::notifyMetricsSampleRequestEvent(std::uint64_t sampleId, ::firebolt::rialto::MetricsSampleReason reason)

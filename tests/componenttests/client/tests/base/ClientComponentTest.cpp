@@ -162,6 +162,11 @@ void ClientComponentTest::disconnectServer()
     m_serverStub.reset();
 }
 
+void ClientComponentTest::enableVideoFrameCaptureModule()
+{
+    m_serverStub->setVideoFrameCaptureModule(m_videoFrameCaptureModuleMock);
+}
+
 void ClientComponentTest::sendMetricsSampleRequestEvent(std::uint64_t sampleId,
                                                         ::firebolt::rialto::MetricsSampleReason reason)
 {

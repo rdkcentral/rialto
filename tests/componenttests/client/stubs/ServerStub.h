@@ -29,6 +29,7 @@
 #include "MediaPipelineModuleStub.h"
 #include "WebAudioPlayerModuleStub.h"
 #include "privatemetricsmodule.pb.h"
+#include "videoframecapturemodule.pb.h"
 #include <atomic>
 #include <condition_variable>
 #include <cstdint>
@@ -61,10 +62,17 @@ public:
     void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
     void notifyMetricsSampleRequestEvent(std::uint64_t sampleId, ::firebolt::rialto::MetricsSampleReason reason);
 
+    /**
+     * @brief Exports a VideoFrameCaptureModule to clients that connect from now on. Without it, the stub server has
+     *        no capture module, like an older server.
+     */
+    void setVideoFrameCaptureModule(const std::shared_ptr<::firebolt::rialto::VideoFrameCaptureModule> &module);
+
 private:
     std::shared_ptr<::firebolt::rialto::ipc::IServer> m_server;
     std::shared_ptr<::firebolt::rialto::ipc::IClient> m_client;
     std::shared_ptr<::firebolt::rialto::PrivateMetricsModule> m_privateMetricsModuleMock;
+    std::shared_ptr<::firebolt::rialto::VideoFrameCaptureModule> m_videoFrameCaptureModule;
     std::thread m_serverThread;
     std::atomic<bool> m_running;
     std::atomic<bool> m_clientConnected;
