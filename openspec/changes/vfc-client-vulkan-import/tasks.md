@@ -9,7 +9,7 @@ Unit tests run with `./build_ut.py -s client` using a Vulkan wrapper mock. "Spec
 ## 2. Loading and creation (D1)
 
 - [x] 2.1 Add `VulkanLibrary` (dlopen, core 1.1 trampolines, `vkGetDeviceProcAddr` table) and a mock table. Verify: missing library, a 1.0 device, missing `samplerYcbcrConversion` and a null `vkGetMemoryFdPropertiesKHR` each make creation return null with nothing registered.
-- [ ] 2.2 Add the Vulkan capture class registering with API type VULKAN through R5's IPC, creating the command pool and fence ring on `queueFamilyIndex`. Verify `apiType()` is `VULKAN` and the pool uses the given family.
+- [x] 2.2 Add the Vulkan capture class registering with API type VULKAN through R5's IPC, creating the command pool and fence ring on `queueFamilyIndex`. Verify `apiType()` is `VULKAN` and the pool uses the given family.
 
 ## 3. Import (D2, D3)
 

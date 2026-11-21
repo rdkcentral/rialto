@@ -26,9 +26,9 @@
 namespace firebolt::rialto::client
 {
 CaptureCore::CaptureCore(const std::shared_ptr<IVideoFrameCaptureIpc> &ipc, std::uint32_t captureId,
-                         const std::shared_ptr<IFrameImporter> &importer)
+                         const std::shared_ptr<IFrameImporter> &importer, const FrameMaker &frameMaker)
     : m_ipc{ipc}, m_captureId{captureId}, m_importer{importer},
-      m_leaseState{std::make_shared<CaptureLeaseState>(ipc, captureId)}
+      m_leaseState{std::make_shared<CaptureLeaseState>(ipc, captureId)}, m_frameMaker{frameMaker}
 {
 }
 
@@ -48,6 +48,12 @@ void closeFds(const std::vector<CaptureObjectFd> &fds)
 
 GLFrameAcquisition CaptureCore::acquireCurrentFrame()
 {
+    CaptureFrameAcquisition acquisition{acquireFrame()};
+    return GLFrameAcquisition{acquisition.changed, std::dynamic_pointer_cast<IGLVideoFrame>(acquisition.frame)};
+}
+
+CaptureFrameAcquisition CaptureCore::acquireFrame()
+{
     std::lock_guard<std::mutex> lock{m_acquireMutex};
     // the application's context is current here: delete imports retired since the last acquisition, then, once
     // this acquisition is done, the ones it invalidated or evicted
@@ -55,7 +61,7 @@ GLFrameAcquisition CaptureCore::acquireCurrentFrame()
     {
         m_importer->drain();
     }
-    GLFrameAcquisition acquisition{acquireLocked()};
+    CaptureFrameAcquisition acquisition{acquireLocked()};
     if (m_importer)
     {
         m_importer->drain();
@@ -63,7 +69,7 @@ GLFrameAcquisition CaptureCore::acquireCurrentFrame()
     return acquisition;
 }
 
-GLFrameAcquisition CaptureCore::acquireLocked()
+CaptureFrameAcquisition CaptureCore::acquireLocked()
 {
     CaptureAcquireResult result = m_ipc->acquireCurrentFrame(m_captureId);
 
@@ -71,18 +77,18 @@ GLFrameAcquisition CaptureCore::acquireLocked()
     {
     case CaptureAcquireStatus::OK:
     {
-        std::shared_ptr<IGLVideoFrame> frame = importNewFrame(result);
+        std::shared_ptr<IVideoFrame> frame = importNewFrame(result);
         if (!frame)
         {
-            return GLFrameAcquisition{false, m_currentFrame};
+            return CaptureFrameAcquisition{false, m_currentFrame};
         }
         m_currentFrame = frame;
-        return GLFrameAcquisition{true, m_currentFrame};
+        return CaptureFrameAcquisition{true, m_currentFrame};
     }
     case CaptureAcquireStatus::NO_NEW_FRAME:
     case CaptureAcquireStatus::NO_RESOURCES:
     case CaptureAcquireStatus::IPC_FAILURE:
-        return GLFrameAcquisition{false, m_currentFrame};
+        return CaptureFrameAcquisition{false, m_currentFrame};
     case CaptureAcquireStatus::NO_FRAME:
     case CaptureAcquireStatus::UNSUPPORTED:
     case CaptureAcquireStatus::INVALID_ARGUMENT:
@@ -90,7 +96,7 @@ GLFrameAcquisition CaptureCore::acquireLocked()
         break;
     }
     m_currentFrame.reset();
-    return GLFrameAcquisition{false, nullptr};
+    return CaptureFrameAcquisition{false, nullptr};
 }
 
 std::size_t CaptureCore::cacheSize()
@@ -99,7 +105,7 @@ std::size_t CaptureCore::cacheSize()
     return m_cache.size();
 }
 
-std::shared_ptr<IGLVideoFrame> CaptureCore::importNewFrame(CaptureAcquireResult &result)
+std::shared_ptr<IVideoFrame> CaptureCore::importNewFrame(CaptureAcquireResult &result)
 {
     auto lease = std::make_unique<FrameLease>(m_leaseState, result.description.poolId, result.description.slotIndex,
                                               result.description.acquisitionToken);
@@ -146,6 +152,10 @@ std::shared_ptr<IGLVideoFrame> CaptureCore::importNewFrame(CaptureAcquireResult 
         }
         entry = std::make_shared<ImportCacheEntry>(kKey, image, m_importer);
         m_cache.insert(entry);
+    }
+    if (m_frameMaker)
+    {
+        return m_frameMaker(result.description, entry, std::move(lease));
     }
     return std::make_shared<VideoFrame>(result.description, entry, std::move(lease));
 }

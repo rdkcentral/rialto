@@ -27,6 +27,7 @@
 #include "ImportCache.h"
 
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <mutex>
 
@@ -37,11 +38,30 @@ namespace firebolt::rialto::client
  *
  * A GL or Vulkan capture object owns one CaptureCore and an IFrameImporter for its graphics API.
  */
+/**
+ * @brief A frame of any graphics API and whether its selection changed.
+ */
+struct CaptureFrameAcquisition
+{
+    bool changed{false};
+    std::shared_ptr<IVideoFrame> frame;
+};
+
 class CaptureCore : public std::enable_shared_from_this<CaptureCore>
 {
 public:
+    /**
+     * @brief Makes the application's frame object from a description, its import and its lease.
+     */
+    using FrameMaker = std::function<std::shared_ptr<IVideoFrame>(const CaptureFrameDescription &description,
+                                                                  const std::shared_ptr<ImportCacheEntry> &import,
+                                                                  std::unique_ptr<FrameLease> lease)>;
+
+    /**
+     * @param[in] frameMaker : Makes the frames; null makes GL frames (VideoFrame).
+     */
     CaptureCore(const std::shared_ptr<IVideoFrameCaptureIpc> &ipc, std::uint32_t captureId,
-                const std::shared_ptr<IFrameImporter> &importer);
+                const std::shared_ptr<IFrameImporter> &importer, const FrameMaker &frameMaker = nullptr);
     ~CaptureCore();
 
     CaptureCore(const CaptureCore &) = delete;
@@ -58,15 +78,20 @@ public:
      */
     GLFrameAcquisition acquireCurrentFrame();
 
+    /**
+     * @brief As acquireCurrentFrame(), for frames of any graphics API.
+     */
+    CaptureFrameAcquisition acquireFrame();
+
     /** Number of reusable imports kept, for tests and diagnostics. */
     std::size_t cacheSize();
 
 private:
     /** The acquisition itself. Must be called with m_acquireMutex held. */
-    GLFrameAcquisition acquireLocked();
+    CaptureFrameAcquisition acquireLocked();
 
     /** Imports a new frame. Must be called with m_acquireMutex held. @retval null if it could not be imported. */
-    std::shared_ptr<IGLVideoFrame> importNewFrame(CaptureAcquireResult &result);
+    std::shared_ptr<IVideoFrame> importNewFrame(CaptureAcquireResult &result);
 
     std::shared_ptr<IVideoFrameCaptureIpc> m_ipc;
     const std::uint32_t m_captureId;
@@ -74,7 +99,8 @@ private:
 
     std::mutex m_acquireMutex;                       /**< Serializes acquisitions, the current frame and the cache. */
     std::shared_ptr<CaptureLeaseState> m_leaseState; /**< Shared with frames, which may outlive the capture. */
-    std::shared_ptr<IGLVideoFrame> m_currentFrame;
+    FrameMaker m_frameMaker;
+    std::shared_ptr<IVideoFrame> m_currentFrame;
     ImportCache m_cache;
     std::uint64_t m_period{0}; /**< Invalidation period; part of every cache key. */
     bool m_poolRequested{false};

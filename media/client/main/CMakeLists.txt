@@ -109,7 +109,8 @@ install( TARGETS RialtoClient LIBRARY
 find_path(RIALTO_VULKAN_INCLUDE_DIR vulkan/vulkan_core.h)
 if(RIALTO_VULKAN_INCLUDE_DIR)
     message(STATUS "Vulkan video frame capture is enabled")
-    target_sources(RialtoClient PRIVATE source/VulkanLibrary.cpp)
+    target_sources(RialtoClient PRIVATE source/VulkanLibrary.cpp source/VulkanDeviceContext.cpp
+                                        source/VulkanVideoFrameCapture.cpp)
     target_include_directories(RialtoClient PUBLIC ${RIALTO_VULKAN_INCLUDE_DIR})
     target_compile_definitions(RialtoClient PUBLIC RIALTO_ENABLE_VULKAN_CAPTURE=1)
 else()
