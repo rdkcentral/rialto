@@ -34,6 +34,7 @@ add_gtests (
         videoFrameCapture/CaptureCoreLeaseTest.cpp
         videoFrameCapture/VideoFrameTest.cpp
         videoFrameCapture/EglLibraryTest.cpp
+        videoFrameCapture/GlFrameImporterSupportTest.cpp
         mediaPipeline/SourceTest.cpp
         mediaPipeline/LoadTest.cpp
         mediaPipeline/CallbackTest.cpp

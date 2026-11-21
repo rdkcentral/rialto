@@ -38,6 +38,7 @@ set(LIB_RIALTO_CLIENT_SOURCES
         source/CaptureCore.cpp
         source/EglLibrary.cpp
         source/FrameLease.cpp
+        source/GlFrameImporter.cpp
         source/ImportCache.cpp
         source/GLVideoFrameCapture.cpp
         source/SharedMemoryHandle.cpp

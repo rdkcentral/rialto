@@ -1,0 +1,74 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2026 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#ifndef FIREBOLT_RIALTO_CLIENT_GL_FRAME_IMPORTER_H_
+#define FIREBOLT_RIALTO_CLIENT_GL_FRAME_IMPORTER_H_
+
+#include "IEglGl.h"
+#include "IFrameImporter.h"
+
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <utility>
+#include <vector>
+
+namespace firebolt::rialto::client
+{
+/**
+ * @brief Imports captured frames as EGL images bound to GL_TEXTURE_EXTERNAL_OES textures (SoC spec 6.3, 6.4).
+ */
+class GlFrameImporter : public IFrameImporter
+{
+public:
+    /**
+     * @param[in] gl      : The EGL and GL entry points.
+     * @param[in] display : The application's EGL display.
+     * @param[in] context : The application's EGL context; the capture's share group.
+     */
+    GlFrameImporter(const std::shared_ptr<IEglGl> &gl, egl::EGLDisplay display, egl::EGLContext context);
+    ~GlFrameImporter() override = default;
+
+    std::shared_ptr<IImportedImage> importFrame(const CaptureFrameDescription &description,
+                                                const std::vector<CaptureObjectFd> &fds, bool &fdsConsumed) override;
+    void retire(const std::shared_ptr<IImportedImage> &image) override;
+    void drain() override;
+
+    /**
+     * @brief Whether frames of this format and modifier can be imported on the configured display (design D2).
+     *
+     * The extensions are checked once per capture and each format/modifier pair once; a failure is logged once.
+     * Must be called with the application's context current.
+     */
+    bool isSupported(std::uint32_t drmFormat, std::uint64_t drmModifier);
+
+private:
+    bool hasRequiredExtensions();
+
+    std::shared_ptr<IEglGl> m_gl;
+    egl::EGLDisplay m_display;
+    egl::EGLContext m_context;
+    std::optional<bool> m_extensionsPresent;
+    std::map<std::pair<std::uint32_t, std::uint64_t>, bool> m_supportedPairs;
+};
+} // namespace firebolt::rialto::client
+
+#endif // FIREBOLT_RIALTO_CLIENT_GL_FRAME_IMPORTER_H_
