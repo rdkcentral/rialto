@@ -21,7 +21,7 @@ Unit tests run with `./build_ut.py -s <suite>`. "Spec" means `specs/capture-hal-
 
 ## 4. Integration check
 
-- [ ] 4.1 Run `./build_ut.py` for the touched suites with `-val` and confirm valgrind reports no leaks from loading, creating, deleting and unloading the fake HAL twice in one process.
+- [x] 4.1 Run `./build_ut.py` for the touched suites with `-val` and confirm valgrind reports no leaks from loading, creating, deleting and unloading the fake HAL twice in one process.
 
 ## Workflow follow-up
 
