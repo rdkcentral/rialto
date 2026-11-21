@@ -77,22 +77,53 @@ GLFrameAcquisition CaptureCore::acquireCurrentFrame()
     return GLFrameAcquisition{false, nullptr};
 }
 
+std::size_t CaptureCore::cacheSize()
+{
+    std::lock_guard<std::mutex> lock{m_acquireMutex};
+    return m_cache.size();
+}
+
 std::shared_ptr<IGLVideoFrame> CaptureCore::importNewFrame(CaptureAcquireResult &result)
 {
-    bool fdsConsumed{false};
-    std::shared_ptr<IImportedImage> image =
-        m_importer ? m_importer->importFrame(result.description, result.fds, fdsConsumed) : nullptr;
-    if (!fdsConsumed)
-    {
-        closeFds(result.fds);
-    }
     auto lease = std::make_unique<FrameLease>(m_leaseState, result.description.poolId, result.description.slotIndex,
                                               result.description.acquisitionToken);
-    if (!image)
+
+    // the cache holds at most the admitted slot count of reusable imports
+    if (result.pool)
     {
-        RIALTO_CLIENT_LOG_ERROR("Failed to import video frame in slot %u", result.description.slotIndex);
-        return nullptr; // the lease is dropped here, so the slot is released
+        m_cache.setBound(result.pool->slotCount);
     }
-    return std::make_shared<VideoFrame>(result.description, image, std::move(lease));
+    else if (!m_poolRequested)
+    {
+        m_poolRequested = true;
+        CapturePoolDescription pool;
+        if (m_ipc->getPool(m_captureId, pool))
+            m_cache.setBound(pool.slotCount);
+    }
+
+    const ImportCacheKey kKey = ImportCacheKey::from(result.description, m_period);
+    std::shared_ptr<ImportCacheEntry> entry = m_cache.find(kKey);
+    if (entry)
+    {
+        closeFds(result.fds); // no import consumes them
+    }
+    else
+    {
+        bool fdsConsumed{false};
+        std::shared_ptr<IImportedImage> image =
+            m_importer ? m_importer->importFrame(result.description, result.fds, fdsConsumed) : nullptr;
+        if (!fdsConsumed)
+        {
+            closeFds(result.fds);
+        }
+        if (!image)
+        {
+            RIALTO_CLIENT_LOG_ERROR("Failed to import video frame in slot %u", result.description.slotIndex);
+            return nullptr; // the lease is dropped here, so the slot is released
+        }
+        entry = std::make_shared<ImportCacheEntry>(kKey, image, m_importer);
+        m_cache.insert(entry);
+    }
+    return std::make_shared<VideoFrame>(result.description, entry, std::move(lease));
 }
 } // namespace firebolt::rialto::client

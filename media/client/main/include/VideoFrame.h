@@ -24,6 +24,7 @@
 #include "IFrameImporter.h"
 #include "IVideoFrameCapture.h"
 #include "IVideoFrameCaptureIpc.h"
+#include "ImportCache.h"
 
 #include <cstdint>
 #include <memory>
@@ -38,7 +39,7 @@ namespace firebolt::rialto::client
 class VideoFrame : public IGLVideoFrame
 {
 public:
-    VideoFrame(const CaptureFrameDescription &description, const std::shared_ptr<IImportedImage> &image,
+    VideoFrame(const CaptureFrameDescription &description, const std::shared_ptr<ImportCacheEntry> &import,
                std::unique_ptr<FrameLease> lease = nullptr);
     ~VideoFrame() override = default;
 
@@ -58,8 +59,8 @@ public:
 
 private:
     const CaptureFrameDescription m_description;
-    std::shared_ptr<IImportedImage> m_image;
-    std::unique_ptr<FrameLease> m_lease; /**< Released when the last reference to the frame goes. */
+    std::shared_ptr<ImportCacheEntry> m_import; /**< Keeps the import alive while the frame exists. */
+    std::unique_ptr<FrameLease> m_lease;        /**< Released when the last reference to the frame goes. */
 };
 } // namespace firebolt::rialto::client
 

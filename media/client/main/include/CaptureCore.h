@@ -24,6 +24,7 @@
 #include "IFrameImporter.h"
 #include "IVideoFrameCapture.h"
 #include "IVideoFrameCaptureIpc.h"
+#include "ImportCache.h"
 
 #include <cstdint>
 #include <memory>
@@ -57,6 +58,9 @@ public:
      */
     GLFrameAcquisition acquireCurrentFrame();
 
+    /** Number of reusable imports kept, for tests and diagnostics. */
+    std::size_t cacheSize();
+
 private:
     /** Imports a new frame. Must be called with m_acquireMutex held. @retval null if it could not be imported. */
     std::shared_ptr<IGLVideoFrame> importNewFrame(CaptureAcquireResult &result);
@@ -68,6 +72,9 @@ private:
     std::mutex m_acquireMutex;                       /**< Serializes acquisitions, the current frame and the cache. */
     std::shared_ptr<CaptureLeaseState> m_leaseState; /**< Shared with frames, which may outlive the capture. */
     std::shared_ptr<IGLVideoFrame> m_currentFrame;
+    ImportCache m_cache;
+    std::uint64_t m_period{0}; /**< Invalidation period; part of every cache key. */
+    bool m_poolRequested{false};
 };
 } // namespace firebolt::rialto::client
 

@@ -50,7 +50,7 @@ TEST_F(CaptureCoreLeaseTest, ShouldReleaseFromSeveralThreadsWithoutOverlap)
 {
     EXPECT_CALL(*m_ipc, acquireCurrentFrame(kCaptureId))
         .WillOnce(Return(okResult(0, 1)))
-        .WillOnce(Return(okResult(1, 2)))
+        .WillOnce(Return(okResult(1, 2, 102))) // a different object, so it is imported too
         .WillOnce(Return(noFrame()));
     expectImport(2);
 

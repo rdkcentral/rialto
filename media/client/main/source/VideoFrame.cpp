@@ -23,20 +23,20 @@
 
 namespace firebolt::rialto::client
 {
-VideoFrame::VideoFrame(const CaptureFrameDescription &description, const std::shared_ptr<IImportedImage> &image,
+VideoFrame::VideoFrame(const CaptureFrameDescription &description, const std::shared_ptr<ImportCacheEntry> &import,
                        std::unique_ptr<FrameLease> lease)
-    : m_description{description}, m_image{image}, m_lease{std::move(lease)}
+    : m_description{description}, m_import{import}, m_lease{std::move(lease)}
 {
 }
 
 std::uint32_t VideoFrame::textureTarget() const
 {
-    return m_image ? m_image->textureTarget() : 0;
+    return (m_import && m_import->image()) ? m_import->image()->textureTarget() : 0;
 }
 
 const std::vector<std::uint32_t> &VideoFrame::textureIds() const
 {
     static const std::vector<std::uint32_t> kNoTextures;
-    return m_image ? m_image->textureIds() : kNoTextures;
+    return (m_import && m_import->image()) ? m_import->image()->textureIds() : kNoTextures;
 }
 } // namespace firebolt::rialto::client

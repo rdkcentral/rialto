@@ -45,7 +45,7 @@ TEST(VideoFrameTest, ShouldReportFrameDescription)
     ON_CALL(*image, textureTarget()).WillByDefault(Return(0x8D65)); // GL_TEXTURE_EXTERNAL_OES
     ON_CALL(*image, textureIds()).WillByDefault(ReturnRef(kTextures));
 
-    const VideoFrame kFrame{description, image};
+    const VideoFrame kFrame{description, std::make_shared<ImportCacheEntry>(ImportCacheKey{}, image, nullptr)};
     EXPECT_EQ(kFrame.frameIndex(), 1u);
     EXPECT_EQ(kFrame.presentationTimeStampNs(), 123456789);
     EXPECT_EQ(kFrame.textureWidth(), 1920u);
