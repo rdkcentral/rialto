@@ -19,6 +19,7 @@
 
 #include "CaptureRecordValidator.h"
 
+#include <algorithm>
 #include <map>
 #include <set>
 
@@ -136,12 +137,51 @@ ValidationResult validateRanges(const CapturedFrame &frame)
 }
 } // namespace
 
-ValidationResult validateFrame(const CapturedFrame &frame, uint32_t admittedSlots)
+ValidationResult validateFrame(const CapturedFrame &frame, uint32_t admittedSlots, const LockedRanges *lockedRanges)
 {
     ValidationResult result = validateIdentity(frame, admittedSlots);
     if (result.ok)
         result = validateRanges(frame);
+    if (result.ok && lockedRanges && lockedRanges->overlaps(frame))
+        result = ValidationResult::fail("frame.slotOverlap: plane overlaps a plane of another locked slot");
     return result;
+}
+
+void LockedRanges::add(const CapturedFrame &frame)
+{
+    if (frame.dmaBufObjectsFlushed)
+        ++m_generation;
+    for (const FramePlane &kPlane : frame.planes)
+        m_ranges.push_back({m_generation, frame.slotIndex, kPlane.dmaBufObjectId, kPlane.offsetBytes, kPlane.lengthBytes});
+}
+
+void LockedRanges::remove(uint32_t slotIndex)
+{
+    m_ranges.erase(std::remove_if(m_ranges.begin(), m_ranges.end(),
+                                  [slotIndex](const Range &range) { return range.slotIndex == slotIndex; }),
+                   m_ranges.end());
+}
+
+bool LockedRanges::overlaps(const CapturedFrame &frame) const
+{
+    if (frame.dmaBufObjectsFlushed)
+        return false; // a new generation: nothing locked yet refers to the same allocations
+
+    for (const FramePlane &kPlane : frame.planes)
+    {
+        for (const Range &kLocked : m_ranges)
+        {
+            if (kLocked.generation != m_generation || kLocked.slotIndex == frame.slotIndex ||
+                kLocked.objectId != kPlane.dmaBufObjectId)
+                continue;
+            // both ranges were validated to fit in their object, so the ends cannot overflow
+            const uint64_t kPlaneEnd = kPlane.offsetBytes + kPlane.lengthBytes;
+            const uint64_t kLockedEnd = kLocked.offset + kLocked.length;
+            if (kPlane.offsetBytes < kLockedEnd && kLocked.offset < kPlaneEnd)
+                return true;
+        }
+    }
+    return false;
 }
 
 } // namespace firebolt::rialto::capture

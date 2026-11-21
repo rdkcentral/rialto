@@ -226,3 +226,75 @@ TEST(CaptureRecordValidatorTest, ShouldCheckRangesWithoutOverflow)
          "frame.visibleRegion"},
     });
 }
+
+TEST(CaptureRecordValidatorTest, ShouldRejectOverlapWithAnotherLockedSlot)
+{
+    CaptureRecordFixtures fixtures;
+    LockedRanges locked;
+
+    CapturedFrame first;
+    fixtures.makeExampleB(first, 0, 1);
+    ASSERT_TRUE(validateFrame(first, kAdmittedSlots, &locked).ok);
+    locked.add(first);
+
+    // a second slot bound to the same object and range, while slot 0 is still locked
+    CapturedFrame second;
+    fixtures.makeExampleB(second, 1, 2);
+    const ValidationResult kResult = validateFrame(second, kAdmittedSlots, &locked);
+    EXPECT_FALSE(kResult.ok);
+    EXPECT_EQ(kResult.rule.rfind("frame.slotOverlap", 0), 0U) << kResult.rule;
+}
+
+TEST(CaptureRecordValidatorTest, ShouldAcceptSameRangeAfterTheOtherSlotIsReleased)
+{
+    CaptureRecordFixtures fixtures;
+    LockedRanges locked;
+
+    CapturedFrame first;
+    fixtures.makeExampleB(first, 0, 1);
+    locked.add(first);
+    locked.remove(0);
+
+    CapturedFrame second;
+    fixtures.makeExampleB(second, 1, 2);
+    EXPECT_TRUE(validateFrame(second, kAdmittedSlots, &locked).ok);
+}
+
+TEST(CaptureRecordValidatorTest, ShouldAcceptAdjacentRangesInTheSameObject)
+{
+    CaptureRecordFixtures fixtures;
+    LockedRanges locked;
+
+    CapturedFrame first;
+    fixtures.makeExampleA(first, 0, 1);
+    first.dmaBufObjects[0].sizeBytes *= 2; // one allocation holding two slots back to back
+    locked.add(first);
+
+    CapturedFrame second;
+    fixtures.makeExampleA(second, 1, 2);
+    second.dmaBufObjects[0].sizeBytes = first.dmaBufObjects[0].sizeBytes;
+    second.planes[0].offsetBytes = first.planes[0].lengthBytes; // starts where slot 0 ends
+    EXPECT_TRUE(validateFrame(second, kAdmittedSlots, &locked).ok);
+}
+
+TEST(CaptureRecordValidatorTest, ShouldAcceptFlushedFrameReusingAnObjectId)
+{
+    CaptureRecordFixtures fixtures;
+    LockedRanges locked;
+
+    CapturedFrame first;
+    fixtures.makeExampleB(first, 0, 1);
+    locked.add(first);
+
+    // after invalidation, ID 101 may name a different allocation; slot 0 is still locked on the old one
+    CapturedFrame flushed;
+    fixtures.makeExampleB(flushed, 1, 2);
+    flushed.dmaBufObjectsFlushed = true;
+    EXPECT_TRUE(validateFrame(flushed, kAdmittedSlots, &locked).ok);
+    locked.add(flushed);
+
+    // later frames are compared within the new generation only
+    CapturedFrame next;
+    fixtures.makeExampleB(next, 2, 3);
+    EXPECT_FALSE(validateFrame(next, kAdmittedSlots, &locked).ok); // overlaps slot 1, same generation
+}

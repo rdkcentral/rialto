@@ -15,7 +15,7 @@ Unit tests run with `./build_ut.py -s servercapture` (the suite added in 1.1). "
 
 - [x] 3.1 Implement identity and descriptor checks in `validateFrame`: slot within the pool, non-zero token and IDs, plane-to-object matching, exactly one FD per distinct referenced object. Verify: examples A–D pass; duplicate, unrelated and missing FDs fail; zero ID and zero token fail.
 - [x] 3.2 Implement overflow-safe plane range and visible-region checks. Verify: a range ending exactly at the object end passes; overflowing and 64-bit-wrapping ranges fail; an oversized visible region fails.
-- [ ] 3.3 Implement `LockedRanges` and the cross-slot overlap check, cleared on `dmaBufObjectsFlushed`. Verify: overlap with another locked slot in the same object fails; the same range after that slot is released passes; a flushed frame reusing an ID passes.
+- [x] 3.3 Implement `LockedRanges` and the cross-slot overlap check, cleared on `dmaBufObjectsFlushed`. Verify: overlap with another locked slot in the same object fails; the same range after that slot is released passes; a flushed frame reusing an ID passes.
 - [ ] 3.4 Implement the YUV colour check with the fourcc table. Verify: NV12 with an `UNKNOWN` matrix, range or siting fails; complete NV12 passes; an RGB format with `UNKNOWN` fields passes.
 
 ## 4. Visible origin (D5)
