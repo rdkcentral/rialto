@@ -1,0 +1,301 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2026 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// [V1.1] Rialto Video Frame Capture private protocol.
+//
+// This module is private transport between libRialtoClient (rialto-graphics) and
+// RialtoServer. Applications see only IVideoFrameCapture and retained GL/Vulkan frames.
+//
+// Structural admission metadata crosses IPC without allocation IDs or file descriptors.
+// Successful acquisitions carry complete import metadata, object-ID-labelled FDs and
+// acquisition tokens. IDs are stable until invalidation; imports may remain cached after release.
+// Draft client/server peers require coordinated rollout; old object indices are not IDs.
+
+syntax = "proto2";
+
+import "google/protobuf/descriptor.proto";
+import "rialtoipc.proto";
+
+package firebolt.rialto;
+
+// You need this to generate the rpc service stubs
+option cc_generic_services = true;
+
+/**
+ * @brief Graphics API a capture is created for.
+ */
+enum GraphicsAPIType {
+    GRAPHICS_API_TYPE_UNKNOWN = 0;
+    GRAPHICS_API_TYPE_GL = 1;
+    GRAPHICS_API_TYPE_VULKAN = 2;
+}
+
+/**
+ * @brief Result of a Video Frame Capture operation.
+ */
+enum VideoFrameCaptureStatus {
+    VIDEO_FRAME_CAPTURE_STATUS_OK = 0;
+    VIDEO_FRAME_CAPTURE_STATUS_NO_NEW_FRAME = 1;
+    VIDEO_FRAME_CAPTURE_STATUS_NO_FRAME = 2;
+    VIDEO_FRAME_CAPTURE_STATUS_UNSUPPORTED = 3;
+    VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT = 4;
+    VIDEO_FRAME_CAPTURE_STATUS_NO_RESOURCES = 5;
+    VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR = 6;
+}
+
+/**
+ * @fn createVideoFrameCapture(GraphicsAPIType api)
+ * @brief Registers a capture on this IPC connection. Allocates no pool.
+ *
+ * The capture_id is valid on this connection until destroyVideoFrameCapture or disconnection.
+ */
+message CreateVideoFrameCaptureRequest {
+    optional GraphicsAPIType api = 1 [default = GRAPHICS_API_TYPE_UNKNOWN];
+}
+message CreateVideoFrameCaptureResponse {
+    optional VideoFrameCaptureStatus status = 1 [default = VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR];
+    optional uint32 capture_id = 2;
+}
+
+/**
+ * @fn destroyVideoFrameCapture(uint32 capture_id)
+ * @brief Releases the capture registration.
+ *
+ * Sent after the capture is detached and every acquired frame has been released. On
+ * disconnection the server releases any remaining frame locks and registrations itself.
+ */
+message DestroyVideoFrameCaptureRequest {
+    optional uint32 capture_id = 1;
+}
+message DestroyVideoFrameCaptureResponse {
+}
+
+/**
+ * @brief One acquired DMA-BUF allocation, with non-zero identity stable until invalidation.
+ */
+message VideoFrameCaptureDmaBufObject {
+    reserved 1;
+    reserved "dma_buf_object_index";
+    optional uint64 size_bytes = 2;
+    optional uint64 object_id = 3;
+}
+
+/**
+ * @brief One DRM plane of a capture slot, in DRM plane order.
+ */
+message VideoFrameCapturePlane {
+    optional uint32 plane_index = 1;
+    reserved 2;
+    reserved "dma_buf_object_index";
+    optional uint64 offset_bytes = 3;
+    optional uint64 length_bytes = 4;
+    optional uint32 stride_bytes = 5;
+    optional uint64 dma_buf_object_id = 6;
+}
+
+/**
+ * @brief The planes of one capture slot. Planes may share a DMA-BUF object or use separate objects.
+ */
+message VideoFrameCaptureSlotLayout {
+    optional uint32 slot_index = 1;
+    reserved 2;
+    reserved "dma_buf_objects";
+    repeated VideoFrameCapturePlane planes = 3;
+}
+
+/**
+ * @brief Effective per-frame YCbCr interpretation, using the V2 naming and values.
+ *
+ * Successful YUV acquisition requires known matrix, range and both siting axes.
+ * Matrix/range/siting are derived from the shared HAL, not numeric casts from
+ * legacy H.273 fields. COSITED maps to _0; MIDPOINT maps to _0_5. Colour changes
+ * participate in graphics-cache compatibility but need not invalidate object IDs.
+ * VideoFrameCaptureColour below retains the earlier H.273 fields unchanged.
+ */
+enum VideoFrameCaptureYcbcrColorSpace {
+    VIDEO_FRAME_CAPTURE_YCBCR_COLOR_SPACE_UNKNOWN = 0;
+    VIDEO_FRAME_CAPTURE_YCBCR_COLOR_SPACE_BT601 = 1;
+    VIDEO_FRAME_CAPTURE_YCBCR_COLOR_SPACE_BT709 = 2;
+    VIDEO_FRAME_CAPTURE_YCBCR_COLOR_SPACE_BT2020 = 3;
+}
+
+enum VideoFrameCaptureSampleRange {
+    VIDEO_FRAME_CAPTURE_SAMPLE_RANGE_UNKNOWN = 0;
+    VIDEO_FRAME_CAPTURE_SAMPLE_RANGE_FULL = 1;
+    VIDEO_FRAME_CAPTURE_SAMPLE_RANGE_NARROW = 2;
+}
+
+enum VideoFrameCaptureChromaSiting {
+    VIDEO_FRAME_CAPTURE_CHROMA_SITING_UNKNOWN = 0;
+    VIDEO_FRAME_CAPTURE_CHROMA_SITING_0 = 1;
+    VIDEO_FRAME_CAPTURE_CHROMA_SITING_0_5 = 2;
+}
+
+message VideoFrameCaptureColorDescription {
+    optional VideoFrameCaptureYcbcrColorSpace ycbcr_color_space = 1;
+    optional VideoFrameCaptureSampleRange sample_range = 2;
+    optional VideoFrameCaptureChromaSiting horizontal_chroma_siting = 3;
+    optional VideoFrameCaptureChromaSiting vertical_chroma_siting = 4;
+}
+
+/**
+ * @fn getPool(uint32 capture_id)
+ * @brief Returns structural admission metadata; plane object IDs are zero/unbound.
+ *
+ * Valid after allSourcesAttached has succeeded on the session the capture is attached to.
+ * The client library calls it once per pool, before allSourcesAttached returns to the
+ * application. Carries no file descriptors. This is one durable HAL admission,
+ * not a promise of immutable layout or colour. Refreshed frame/pool metadata
+ * cannot change the admitted total or overwrite older retained frame snapshots.
+ * Initial colour never overrides the current per-frame color_description.
+ */
+message GetVideoFrameCapturePoolRequest {
+    optional uint32 capture_id = 1;
+}
+message GetVideoFrameCapturePoolResponse {
+    optional VideoFrameCaptureStatus status = 1 [default = VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR];
+    optional uint32 pool_id = 2;
+    optional uint32 drm_fourcc = 3;
+    optional uint64 drm_modifier = 4;
+    optional uint32 texture_width = 5;
+    optional uint32 texture_height = 6;
+    repeated VideoFrameCaptureSlotLayout slots = 7;
+    optional uint32 minimum_slots = 8;
+    optional uint32 maximum_slots = 9;
+    optional VideoFrameCaptureColorDescription color_description = 10;
+}
+
+/**
+ * @brief A DMA-BUF FD transferred with an acquisition, mapped by non-zero object ID.
+ *
+ * The server closes its copy after successful transfer. EGL borrows client FDs;
+ * successful Vulkan memory import consumes them. Cache hits close unused FDs.
+ */
+message VideoFrameCaptureExportedDmaBuf {
+    reserved 1;
+    reserved "dma_buf_object_index";
+    optional int32 fd = 2 [(rialto.ipc.field_is_fd) = true, default = -1];
+    optional uint64 dma_buf_object_id = 3;
+}
+
+/**
+ * @brief Visible content region within the padded backing.
+ */
+message VideoFrameCaptureRectangle {
+    optional uint32 x = 1;
+    optional uint32 y = 2;
+    optional uint32 width = 3;
+    optional uint32 height = 4;
+}
+
+/**
+ * @fn acquireCurrentFrame(uint32 capture_id)
+ * @brief Requests the current scheduler-selected frame.
+ *
+ * OK creates exactly one slot lock and carries one FD per distinct DMA-BUF object referenced
+ * by the slot's planes. NO_NEW_FRAME (the current selection was already returned) and
+ * NO_FRAME (no selection exists) carry status only and create no lock.
+ * OK requires complete frame_metadata and a non-zero acquisition_token echoed on release.
+ * Apply dma_buf_objects_flushed before object-ID lookup. Retain pending invalidation across
+ * failed delivery/import. Retained older frames keep their own metadata and release token.
+ * Admission succeeds once per HAL session. Supported transitions preserve its
+ * total retention capacity, shared by old and new locks, without repeated
+ * createPool. Ordinary exhaustion is not fatal and never stalls playback.
+ * Unsupported transitions are session-fatal for capture; old releases stay valid.
+ * Per-frame color_description is authoritative for effective YUV interpretation.
+ */
+message AcquireCurrentVideoFrameRequest {
+    optional uint32 capture_id = 1;
+}
+message VideoFrameCaptureFrameMetadata {
+    optional uint32 drm_format = 1;
+    optional uint64 drm_modifier = 2;
+    optional uint32 backing_width = 3;
+    optional uint32 backing_height = 4;
+    repeated VideoFrameCaptureDmaBufObject dma_buf_objects = 5;
+    repeated VideoFrameCapturePlane planes = 6;
+    optional VideoFrameCaptureColorDescription color_description = 7;
+}
+
+message AcquireCurrentVideoFrameResponse {
+    optional VideoFrameCaptureStatus status = 1 [default = VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR];
+    optional uint32 pool_id = 2;
+    optional uint32 slot_index = 3;
+    optional int64 presentation_time_ns = 4;
+    optional VideoFrameCaptureRectangle visible_region = 5;
+    repeated VideoFrameCaptureExportedDmaBuf exported_dma_bufs = 6;
+    optional bool dma_buf_objects_flushed = 7 [default = false];
+    optional VideoFrameCaptureFrameMetadata frame_metadata = 8;
+    optional GetVideoFrameCapturePoolResponse pool_metadata = 9;
+    optional uint64 acquisition_token = 10;
+}
+
+/**
+ * @fn releaseFrame(uint32 capture_id, uint32 pool_id, uint32 slot_index)
+ * @brief Releases the token-identified slot lock after GPU reads finish; imports may remain cached.
+ *
+ * Valid after the producing pipeline has been stopped or destroyed (late release). Releasing
+ * a slot that is not locked returns INVALID_ARGUMENT.
+ */
+message ReleaseVideoFrameRequest {
+    optional uint32 capture_id = 1;
+    optional uint32 pool_id = 2;
+    optional uint32 slot_index = 3;
+    optional uint64 acquisition_token = 4;
+}
+message ReleaseVideoFrameResponse {
+    optional VideoFrameCaptureStatus status = 1 [default = VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR];
+}
+
+service VideoFrameCaptureModule {
+    /**
+     * @brief Registers a capture
+     * @see CreateVideoFrameCaptureRequest
+     */
+    rpc createVideoFrameCapture(CreateVideoFrameCaptureRequest) returns (CreateVideoFrameCaptureResponse) {
+    }
+
+    /**
+     * @brief Releases a capture registration
+     * @see DestroyVideoFrameCaptureRequest
+     */
+    rpc destroyVideoFrameCapture(DestroyVideoFrameCaptureRequest) returns (DestroyVideoFrameCaptureResponse) {
+    }
+
+    /**
+     * @brief Returns the capture's current pool layout
+     * @see GetVideoFrameCapturePoolRequest
+     */
+    rpc getPool(GetVideoFrameCapturePoolRequest) returns (GetVideoFrameCapturePoolResponse) {
+    }
+
+    /**
+     * @brief Acquires the current frame
+     * @see AcquireCurrentVideoFrameRequest
+     */
+    rpc acquireCurrentFrame(AcquireCurrentVideoFrameRequest) returns (AcquireCurrentVideoFrameResponse) {
+    }
+
+    /**
+     * @brief Releases one frame lock
+     * @see ReleaseVideoFrameRequest
+     */
+    rpc releaseFrame(ReleaseVideoFrameRequest) returns (ReleaseVideoFrameResponse) {
+    }
+}
