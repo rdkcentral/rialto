@@ -113,18 +113,18 @@ public:
      * @brief Sets up the video frame capture sink (proposal 3.3 steps 4 to 6). Runs on the worker thread and
      *        returns when it is done.
      *
-     * Creates a westerossink (with res-usage 0 on a secondary-video pipeline), sets rdk-capture-session, codec and
-     * resolution on it, assigns it to playbin's video-sink and drives it to READY, waiting at most readyTimeout.
+     * Creates a westerossink (with res-usage 0 on a secondary-video pipeline), sets rdk-capture-session, codec (the
+     * caps appsrc gets for the video source) and resolution ("<maxWidth>x<maxHeight>" from the player's video
+     * requirements) on it, assigns it to playbin's video-sink and drives it to READY, waiting at most the READY
+     * timeout (RIALTO_VIDEO_FRAME_CAPTURE_READY_TIMEOUT_MS, read at each call, default 5000).
      *
      * @param[in] captureSession : The HAL session (ICaptureSession *), borrowed by the sink.
-     * @param[in] codecCaps      : The caps of the attached video source; the caller keeps its reference.
-     * @param[in] resolution     : The maximum video size, "<width>x<height>".
-     * @param[in] readyTimeout   : How long to wait for READY.
+     * @param[in] videoSource    : The attached video source.
      *
      * @retval true if the sink reached READY.
      */
-    virtual bool configureCaptureSink(void *captureSession, GstCaps *codecCaps, const std::string &resolution,
-                                      std::chrono::milliseconds readyTimeout) = 0;
+    virtual bool configureCaptureSink(void *captureSession,
+                                      const std::unique_ptr<IMediaPipeline::MediaSource> &videoSource) = 0;
 
     /**
      * @brief Discards the capture sink (design D4): sets it to NULL, clears playbin's video-sink and drops the

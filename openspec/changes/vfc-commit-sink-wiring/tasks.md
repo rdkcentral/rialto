@@ -11,7 +11,7 @@
 - [x] 2.1 Refactor `setWesterossinkSecondaryVideo()` into `createWesterossink(bool secondaryVideo)` used by both paths. Verify existing `./build_ut.py -s servergstplayer` tests pass unchanged.
 - [x] 2.2 Add `GstGenericPlayer::configureCaptureSink(session, caps, resolution, timeout)` on the worker thread: create the sink, check the three properties exist, set `rdk-capture-session`, `codec` and `resolution`, assign `video-sink`, drive to READY and wait. Verify call order with mocks: properties before any state change, READY last.
 - [x] 2.3 Add rollback: sink to NULL, clear `video-sink`, unref, return failure. Verify with mocks that a failed READY, a timeout and a missing property each leave no sink reference and no `video-sink`.
-- [ ] 2.4 Build `codec` with `MediaSourceVideoCapsBuilder` and `resolution` from `VideoRequirements`; read the timeout from `RIALTO_VIDEO_FRAME_CAPTURE_READY_TIMEOUT_MS` (default 5000). Verify: H.264 caps and `"1920x1080"`; width 0 source still sets resolution; HEVC Main10 caps unchanged; a configured 2 s timeout is used.
+- [x] 2.4 Build `codec` with `MediaSourceVideoCapsBuilder` and `resolution` from `VideoRequirements`; read the timeout from `RIALTO_VIDEO_FRAME_CAPTURE_READY_TIMEOUT_MS` (default 5000). Verify: H.264 caps and `"1920x1080"`; width 0 source still sets resolution; HEVC Main10 caps unchanged; a configured 2 s timeout is used.
 
 ## 3. Commit orchestration (D1, D4)
 

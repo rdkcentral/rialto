@@ -37,9 +37,7 @@ public:
     MOCK_METHOD(void, removeSource, (const MediaSourceType &mediaSourceType), (override));
     MOCK_METHOD(void, allSourcesAttached, (), (override));
     MOCK_METHOD(bool, configureCaptureSink,
-                (void *captureSession, GstCaps *codecCaps, const std::string &resolution,
-                 std::chrono::milliseconds readyTimeout),
-                (override));
+                (void *captureSession, const std::unique_ptr<IMediaPipeline::MediaSource> &videoSource), (override));
     MOCK_METHOD(void, releaseCaptureSink, (), (override));
     MOCK_METHOD(void, play, (bool &async), (override));
     MOCK_METHOD(void, pause, (), (override));

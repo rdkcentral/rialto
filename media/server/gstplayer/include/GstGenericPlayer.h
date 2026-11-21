@@ -111,8 +111,8 @@ public:
     void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
     void removeSource(const MediaSourceType &mediaSourceType) override;
     void allSourcesAttached() override;
-    bool configureCaptureSink(void *captureSession, GstCaps *codecCaps, const std::string &resolution,
-                              std::chrono::milliseconds readyTimeout) override;
+    bool configureCaptureSink(void *captureSession,
+                              const std::unique_ptr<IMediaPipeline::MediaSource> &videoSource) override;
     void releaseCaptureSink() override;
     void play(bool &async) override;
     void pause() override;
@@ -270,8 +270,7 @@ private:
     /**
      * @brief The worker-thread part of configureCaptureSink().
      */
-    bool configureCaptureSinkInternal(void *captureSession, GstCaps *codecCaps, const std::string &resolution,
-                                      std::chrono::milliseconds readyTimeout);
+    bool configureCaptureSinkInternal(void *captureSession, GstCaps *codecCaps, std::chrono::milliseconds readyTimeout);
 
     /**
      * @brief The worker-thread part of releaseCaptureSink().
@@ -493,6 +492,11 @@ private:
      * @brief Whether the pipeline was created for a secondary video (small maximum size).
      */
     bool m_isSecondaryVideo{false};
+
+    /**
+     * @brief The capture sink's resolution property, "<maxWidth>x<maxHeight>" from the video requirements.
+     */
+    std::string m_captureResolution;
 
     /**
      * @brief Thread for handling gst bus callbacks

@@ -185,6 +185,28 @@ namespace firebolt::rialto::server
 {
 namespace
 {
+constexpr std::chrono::milliseconds kDefaultCaptureReadyTimeout{5000};
+
+/**
+ * @brief The capture sink READY timeout: RIALTO_VIDEO_FRAME_CAPTURE_READY_TIMEOUT_MS if it is a positive number of
+ *        milliseconds, else 5000. Read at each commit so it can be changed for tests.
+ */
+std::chrono::milliseconds captureReadyTimeout()
+{
+    const char *kValue = std::getenv("RIALTO_VIDEO_FRAME_CAPTURE_READY_TIMEOUT_MS");
+    if (kValue && *kValue)
+    {
+        char *end{nullptr};
+        const long long kMs = std::strtoll(kValue, &end, 10);
+        if (end && *end == '\0' && kMs > 0)
+        {
+            return std::chrono::milliseconds{kMs};
+        }
+        RIALTO_SERVER_LOG_WARN("Ignoring RIALTO_VIDEO_FRAME_CAPTURE_READY_TIMEOUT_MS='%s'", kValue);
+    }
+    return kDefaultCaptureReadyTimeout;
+}
+
 /**
  * @brief A worker thread task that runs a function.
  */
@@ -347,6 +369,8 @@ GstGenericPlayer::GstGenericPlayer(
         throw std::runtime_error("Media type not supported");
     }
     }
+
+    m_captureResolution = std::to_string(videoRequirements.maxWidth) + "x" + std::to_string(videoRequirements.maxHeight);
 
     // Check the video requirements for a limited video.
     // If the video requirements are set to anything lower than the minimum, this playback is assumed to be a secondary
@@ -601,13 +625,25 @@ void GstGenericPlayer::allSourcesAttached()
     }
 }
 
-bool GstGenericPlayer::configureCaptureSink(void *captureSession, GstCaps *codecCaps, const std::string &resolution,
-                                            std::chrono::milliseconds readyTimeout)
+bool GstGenericPlayer::configureCaptureSink(void *captureSession,
+                                            const std::unique_ptr<IMediaPipeline::MediaSource> &videoSource)
 {
     bool result{false};
+    const std::chrono::milliseconds kReadyTimeout{captureReadyTimeout()}; // read at each commit
     // GStreamer objects belong to the worker thread; the caller needs the outcome before it continues
     if (!runOnWorkerThreadAndWait(
-            [&]() { result = configureCaptureSinkInternal(captureSession, codecCaps, resolution, readyTimeout); }))
+            [&]()
+            {
+                // the same caps appsrc gets for the source (design D5)
+                GstCaps *codecCaps = createCapsFromMediaSource(m_gstWrapper, m_glibWrapper, videoSource);
+                if (!codecCaps)
+                {
+                    RIALTO_SERVER_LOG_ERROR("Cannot build the codec caps for video frame capture");
+                    return;
+                }
+                result = configureCaptureSinkInternal(captureSession, codecCaps, kReadyTimeout);
+                m_gstWrapper->gstCapsUnref(codecCaps); // the sink keeps its own reference
+            }))
     {
         RIALTO_SERVER_LOG_ERROR("Cannot configure the capture sink: no worker thread");
         return false;
@@ -656,7 +692,7 @@ bool GstGenericPlayer::runOnWorkerThreadAndWait(const std::function<void()> &fun
 }
 
 bool GstGenericPlayer::configureCaptureSinkInternal(void *captureSession, GstCaps *codecCaps,
-                                                    const std::string &resolution, std::chrono::milliseconds readyTimeout)
+                                                    std::chrono::milliseconds readyTimeout)
 {
     bool westerossinkMissing{false};
     GstElement *sink = createWesterossink(m_isSecondaryVideo, westerossinkMissing);
@@ -680,7 +716,7 @@ bool GstGenericPlayer::configureCaptureSinkInternal(void *captureSession, GstCap
     // everything is set before the sink leaves NULL (proposal 3.3 steps 4 to 6)
     m_glibWrapper->gObjectSet(sink, "rdk-capture-session", captureSession, nullptr);
     m_glibWrapper->gObjectSet(sink, "codec", codecCaps, nullptr);
-    m_glibWrapper->gObjectSet(sink, "resolution", resolution.c_str(), nullptr);
+    m_glibWrapper->gObjectSet(sink, "resolution", m_captureResolution.c_str(), nullptr);
     m_gstWrapper->gstObjectRef(sink); // the player's reference; playbin takes the floating one
     m_glibWrapper->gObjectSet(m_context.pipeline, "video-sink", sink, nullptr);
     m_context.captureSink = sink;

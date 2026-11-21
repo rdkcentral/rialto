@@ -21,6 +21,7 @@
 #include "IGstGenericPlayerPrivate.h"
 
 #include <chrono>
+#include <cstdlib>
 
 using testing::_;
 using testing::DoAll;
@@ -32,8 +33,7 @@ using testing::StrEq;
 
 namespace
 {
-constexpr std::chrono::milliseconds kReadyTimeout{5000};
-const std::string kResolution{"1920x1080"};
+const std::string kResolution{"1920x1080"}; // the default primary video requirements
 } // namespace
 
 /**
@@ -85,7 +85,18 @@ protected:
             EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq(kName))).WillOnce(Return(&m_property));
     }
 
-    bool configure() { return m_sut->configureCaptureSink(m_session, m_codecCaps, kResolution, kReadyTimeout); }
+    // The caps builder makes the source's caps, which the player releases after setting them.
+    void codecCapsWillBeBuilt(const char *mediaType = "video/x-h264")
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(StrEq(mediaType))).WillOnce(Return(m_codecCaps));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(m_codecCaps));
+    }
+
+    bool configure()
+    {
+        codecCapsWillBeBuilt();
+        return m_sut->configureCaptureSink(m_session, m_videoSource);
+    }
 
     std::unique_ptr<IGstGenericPlayer> m_sut;
     VideoRequirements m_videoReq{kMinPrimaryVideoWidth, kMinPrimaryVideoHeight};
@@ -95,6 +106,8 @@ protected:
     GstCaps *m_codecCaps{nullptr};
     GParamSpec m_property{};
     void *m_session{reinterpret_cast<void *>(0x5E55)};
+    std::unique_ptr<IMediaPipeline::MediaSource> m_videoSource{
+        std::make_unique<IMediaPipeline::MediaSourceVideo>("video/h264", false)};
 };
 
 TEST_F(GstGenericPlayerCaptureSinkTest, ShouldConfigureEverythingBeforeTheSinkLeavesNull)
@@ -207,4 +220,63 @@ TEST_F(GstGenericPlayerCaptureSinkRollbackTest, DestroyingThePlayerDropsTheCaptu
     ASSERT_TRUE(configure());
 
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(GST_OBJECT(m_sink))); // with the pipeline, in the destructor
+}
+
+class GstGenericPlayerCaptureSinkValuesTest : public GstGenericPlayerCaptureSinkTest
+{
+protected:
+    void TearDown() override { unsetenv("RIALTO_VIDEO_FRAME_CAPTURE_READY_TIMEOUT_MS"); }
+
+    // Configures, checking the codec caps, the resolution and the READY wait timeout.
+    bool configureExpecting(const std::string &resolution, GstClockTime timeout,
+                            const std::unique_ptr<IMediaPipeline::MediaSource> &source, const char *mediaType)
+    {
+        executeTaskWhenEnqueued();
+        westerossinkWillBeCreated();
+        sinkHasCaptureProperties();
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetPointerStub(m_sink, StrEq("rdk-capture-session"), m_session));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetPointerStub(m_sink, StrEq("codec"), m_codecCaps));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStrStub(m_sink, StrEq("resolution"), StrEq(resolution)));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_sink));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, StrEq("video-sink")));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(m_sink, GST_STATE_READY))
+            .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(m_sink, _, _, timeout))
+            .WillOnce(DoAll(SetArgPointee<1>(GST_STATE_READY), Return(GST_STATE_CHANGE_SUCCESS)));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(GST_OBJECT(m_sink))); // at destruction
+        codecCapsWillBeBuilt(mediaType);
+        return m_sut->configureCaptureSink(m_session, source);
+    }
+};
+
+TEST_F(GstGenericPlayerCaptureSinkValuesTest, H264CapsAndResolutionFromVideoRequirements)
+{
+    EXPECT_TRUE(configureExpecting(kResolution, 5000 * GST_MSECOND, m_videoSource, "video/x-h264"));
+}
+
+TEST_F(GstGenericPlayerCaptureSinkValuesTest, ResolutionIsSetWhenTheSourceSizeIsUnknown)
+{
+    // width and height 0 (undefined): no size in the caps, the resolution still comes from the video requirements
+    std::unique_ptr<IMediaPipeline::MediaSource> source{
+        std::make_unique<IMediaPipeline::MediaSourceVideo>("video/h264", false, 0, 0)};
+    EXPECT_TRUE(configureExpecting(kResolution, 5000 * GST_MSECOND, source, "video/x-h264"));
+}
+
+TEST_F(GstGenericPlayerCaptureSinkValuesTest, HevcCapsArePassedThroughUnchanged)
+{
+    std::unique_ptr<IMediaPipeline::MediaSource> source{
+        std::make_unique<IMediaPipeline::MediaSourceVideo>("video/h265", false)};
+    EXPECT_TRUE(configureExpecting(kResolution, 5000 * GST_MSECOND, source, "video/x-h265"));
+}
+
+TEST_F(GstGenericPlayerCaptureSinkValuesTest, ConfiguredReadyTimeoutIsUsed)
+{
+    setenv("RIALTO_VIDEO_FRAME_CAPTURE_READY_TIMEOUT_MS", "2000", 1);
+    EXPECT_TRUE(configureExpecting(kResolution, 2000 * GST_MSECOND, m_videoSource, "video/x-h264"));
+}
+
+TEST_F(GstGenericPlayerCaptureSinkValuesTest, InvalidReadyTimeoutFallsBackToTheDefault)
+{
+    setenv("RIALTO_VIDEO_FRAME_CAPTURE_READY_TIMEOUT_MS", "soon", 1);
+    EXPECT_TRUE(configureExpecting(kResolution, 5000 * GST_MSECOND, m_videoSource, "video/x-h264"));
 }
