@@ -38,6 +38,7 @@ add_library(
         ${PROTO_HEADERS}
 
         source/MediaPipelineServerInternal.cpp
+        source/CaptureAdmission.cpp
         source/MediaPipelineCapabilities.cpp
         source/ActiveRequests.cpp
         source/DataReaderFactory.cpp

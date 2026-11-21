@@ -4,7 +4,7 @@
 
 ## 1. Hand-over interface
 
-- [ ] 1.1 Add `ICaptureAdmission { bool admit(CaptureSessionHandle &) }` with a mock; R8 implements it. Verify the server builds with the mock injected.
+- [x] 1.1 Add `ICaptureAdmission { bool admit(CaptureSessionHandle &) }` with a mock; R8 implements it. Verify the server builds with the mock injected.
 
 ## 2. Sink setup in the player (D2–D5)
 

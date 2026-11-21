@@ -46,6 +46,7 @@ add_gtests (
         mediaPipeline/ProcessAudioGapTest.cpp
         mediaPipeline/TextTrackIdentifierTest.cpp
         mediaPipeline/CaptureAttachTest.cpp
+        captureCommit/CaptureAdmissionTest.cpp
 
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
 
