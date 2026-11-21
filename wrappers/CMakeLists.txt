@@ -85,6 +85,8 @@ add_library(
         RialtoWrappers
 
         STATIC
+        # built in every mode, including unit and component tests: depends only on libdl
+        source/CaptureHalLibrary.cpp
         source/CaptureHalLibraryFactoryAccessor.cpp
         source/FactoryAccessor.cpp
         source/GlibWrapperFactoryAccessor.cpp
@@ -125,7 +127,9 @@ target_link_libraries (
 
         PRIVATE
         RialtoCommon
+        RialtoLogging
         RialtoPlayerPublic
+        ${CMAKE_DL_LIBS}
         ${WRAPPER_LIBS}
         ${GStreamerApp_LIBRARIES}
         yaml-cpp

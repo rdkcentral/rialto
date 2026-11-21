@@ -18,6 +18,7 @@
  */
 
 #include "FactoryAccessor.h"
+#include "CaptureHalLibrary.h"
 
 #ifdef WRAPPERS_ENABLED
 #include "GlibWrapper.h"
@@ -41,6 +42,11 @@ IFactoryAccessor &IFactoryAccessor::instance()
 
 std::shared_ptr<ICaptureHalLibraryFactory> &FactoryAccessor::captureHalLibraryFactory()
 {
+    // built in every mode: the loader depends only on libdl
+    if (!m_captureHalLibraryFactory)
+    {
+        m_captureHalLibraryFactory = std::make_shared<CaptureHalLibraryFactory>();
+    }
     return m_captureHalLibraryFactory;
 }
 
