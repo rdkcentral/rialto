@@ -68,6 +68,16 @@ ValidationResult validateCapabilities(const CaptureCapabilities &capabilities,
  */
 ValidationResult validatePool(const CapturePool &pool, const CaptureCapabilities &capabilities, uint32_t requestedCount);
 
+/**
+ * @brief Checks a successful acquireCurrentFrame() record.
+ *
+ * Identity and descriptor rules: the slot index is below \a admittedSlots; the acquisition token is non-zero; the
+ * frame has planes; every object ID is non-zero and listed once; every plane references a listed object and every
+ * listed object is referenced; exportedDmaBufs has exactly one valid descriptor for each referenced object, with no
+ * duplicates and no unreferenced objects.
+ */
+ValidationResult validateFrame(const CapturedFrame &frame, uint32_t admittedSlots);
+
 } // namespace firebolt::rialto::capture
 
 #endif // FIREBOLT_RIALTO_CAPTURE_CAPTURE_RECORD_VALIDATOR_H_

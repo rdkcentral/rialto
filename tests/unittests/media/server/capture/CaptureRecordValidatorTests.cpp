@@ -111,3 +111,77 @@ TEST(CaptureRecordValidatorTest, ShouldCheckPools)
                      kCase.failedRule, kCase.name);
     }
 }
+
+namespace
+{
+constexpr uint32_t kAdmittedSlots{3};
+
+using FrameBuilder = void (CaptureRecordFixtures::*)(CapturedFrame &, uint32_t, uint64_t);
+
+struct FrameCase
+{
+    std::string name;
+    FrameBuilder build;
+    std::function<void(CapturedFrame &, CaptureRecordFixtures &)> change;
+    std::string failedRule;
+};
+
+void runFrameCases(const std::vector<FrameCase> &cases)
+{
+    for (const auto &kCase : cases)
+    {
+        CaptureRecordFixtures fixtures;
+        CapturedFrame frame;
+        (fixtures.*kCase.build)(frame, 1, 7);
+        kCase.change(frame, fixtures);
+        expectResult(validateFrame(frame, kAdmittedSlots), kCase.failedRule, kCase.name);
+    }
+}
+
+void noChange(CapturedFrame &, CaptureRecordFixtures &) {}
+} // namespace
+
+TEST(CaptureRecordValidatorTest, ShouldAcceptSpecExamples)
+{
+    runFrameCases({
+        {"example A", &CaptureRecordFixtures::makeExampleA, noChange, ""},
+        {"example B", &CaptureRecordFixtures::makeExampleB, noChange, ""},
+        {"example C", &CaptureRecordFixtures::makeExampleC, noChange, ""},
+        {"example D", &CaptureRecordFixtures::makeExampleD, noChange, ""},
+    });
+}
+
+TEST(CaptureRecordValidatorTest, ShouldCheckFrameIdentityAndDescriptors)
+{
+    runFrameCases({
+        {"slot outside the pool", &CaptureRecordFixtures::makeExampleB,
+         [](CapturedFrame &f, CaptureRecordFixtures &) { f.slotIndex = kAdmittedSlots; }, "frame.slotIndex"},
+        {"zero token", &CaptureRecordFixtures::makeExampleB,
+         [](CapturedFrame &f, CaptureRecordFixtures &) { f.acquisitionToken = 0; }, "frame.acquisitionToken"},
+        {"no planes", &CaptureRecordFixtures::makeExampleB,
+         [](CapturedFrame &f, CaptureRecordFixtures &) { f.planes.clear(); }, "frame.planes"},
+        {"zero object ID", &CaptureRecordFixtures::makeExampleB,
+         [](CapturedFrame &f, CaptureRecordFixtures &)
+         {
+             f.dmaBufObjects[0].objectId = 0;
+             f.planes[0].dmaBufObjectId = f.planes[1].dmaBufObjectId = 0;
+             f.exportedDmaBufs[0].dmaBufObjectId = 0;
+         },
+         "frame.objectId"},
+        {"object listed twice", &CaptureRecordFixtures::makeExampleB, [](CapturedFrame &f, CaptureRecordFixtures &)
+         { f.dmaBufObjects.push_back(f.dmaBufObjects[0]); }, "frame.duplicateObject"},
+        {"plane references unlisted object", &CaptureRecordFixtures::makeExampleB,
+         [](CapturedFrame &f, CaptureRecordFixtures &) { f.planes[1].dmaBufObjectId = 999; }, "frame.planeObject"},
+        {"listed object not referenced", &CaptureRecordFixtures::makeExampleC,
+         [](CapturedFrame &f, CaptureRecordFixtures &) { f.planes[1].dmaBufObjectId = kFirstObjectId; },
+         "frame.unreferencedObject"},
+        {"duplicate descriptor", &CaptureRecordFixtures::makeExampleB, [](CapturedFrame &f, CaptureRecordFixtures &fx)
+         { f.exportedDmaBufs.push_back({kFirstObjectId, fx.createFile(16)}); }, "frame.duplicateDescriptor"},
+        {"unrelated descriptor", &CaptureRecordFixtures::makeExampleB, [](CapturedFrame &f, CaptureRecordFixtures &fx)
+         { f.exportedDmaBufs.push_back({999, fx.createFile(16)}); }, "frame.unrelatedDescriptor"},
+        {"missing descriptor", &CaptureRecordFixtures::makeExampleC,
+         [](CapturedFrame &f, CaptureRecordFixtures &) { f.exportedDmaBufs.pop_back(); }, "frame.missingDescriptor"},
+        {"negative descriptor", &CaptureRecordFixtures::makeExampleA,
+         [](CapturedFrame &f, CaptureRecordFixtures &) { f.exportedDmaBufs[0].fd = -1; }, "frame.invalidDescriptor"},
+    });
+}
