@@ -184,6 +184,13 @@ public:
 
     bool getDuration(int64_t &duration) override { return m_mediaPipeline->getDuration(duration); }
 
+    bool attachVideoFrameCapture(const std::shared_ptr<IVideoFrameCapture> &videoFrameCapture) override
+    {
+        return m_mediaPipeline->attachVideoFrameCapture(videoFrameCapture);
+    }
+
+    bool detachVideoFrameCapture() override { return m_mediaPipeline->detachVideoFrameCapture(); }
+
     void notifyApplicationState(ApplicationState state) override { m_mediaPipeline->notifyApplicationState(state); }
 
 private:

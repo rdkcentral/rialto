@@ -36,6 +36,7 @@ set(LIB_RIALTO_CLIENT_SOURCES
         source/MediaPipeline.cpp
         source/MediaPipelineCapabilities.cpp
         source/SharedMemoryHandle.cpp
+        source/VideoFrameCaptureFactory.cpp
         source/WebAudioPlayer.cpp
         )
 
