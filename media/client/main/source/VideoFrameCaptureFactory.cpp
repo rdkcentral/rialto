@@ -22,6 +22,7 @@
 #include "GlFrameImporter.h"
 #ifdef RIALTO_ENABLE_VULKAN_CAPTURE
 #include "VulkanDeviceContext.h"
+#include "VulkanFrameImporter.h"
 #include "VulkanLibrary.h"
 #include "VulkanVideoFrameCapture.h"
 #endif
@@ -135,8 +136,8 @@ VideoFrameCaptureFactory::createVulkanVideoFrameCapture(VkPhysicalDevice physica
         RIALTO_CLIENT_LOG_WARN("Video frame capture is unavailable: the server did not register it");
         return nullptr;
     }
-    // the importer follows (vfc-client-vulkan-import 3.x)
-    return std::make_shared<VulkanVideoFrameCapture>(videoFrameCaptureIpc, captureId, context, nullptr);
+    return std::make_shared<VulkanVideoFrameCapture>(videoFrameCaptureIpc, captureId, context,
+                                                     std::make_shared<VulkanFrameImporter>(context));
 #else
     (void)physicalDevice;
     (void)device;
