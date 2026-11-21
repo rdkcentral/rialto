@@ -41,6 +41,10 @@ public:
     ~VideoFrameCaptureFactory() override = default;
 
     std::shared_ptr<IGLVideoFrameCapture> createGLVideoFrameCapture(EGLDisplay eglDisplay, EGLContext eglContext) override;
+    std::shared_ptr<IVulkanVideoFrameCapture> createVulkanVideoFrameCapture(VkPhysicalDevice physicalDevice,
+                                                                            VkDevice device, VkQueue queue,
+                                                                            uint32_t queueFamilyIndex,
+                                                                            int32_t requiredImageLayout) override;
 
 private:
     std::shared_ptr<IEglLibrary> m_eglLibrary;

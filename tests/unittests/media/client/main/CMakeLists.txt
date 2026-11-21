@@ -157,3 +157,15 @@ target_compile_definitions(
         FAKE_EGL_PATH="$<TARGET_FILE:fake_egl>"
         FAKE_NOT_EGL_PATH="$<TARGET_FILE:fake_capture_hal>"
         )
+
+# A Vulkan consumer compiles against IVideoFrameCapture.h whichever header comes first (needs Vulkan headers)
+find_path(RIALTO_TEST_VULKAN_INCLUDE_DIR vulkan/vulkan.h)
+if(RIALTO_TEST_VULKAN_INCLUDE_DIR)
+    target_sources(
+            RialtoClientUnitTests
+            PRIVATE
+            videoFrameCapture/VulkanApiBeforeTest.cpp
+            videoFrameCapture/VulkanApiAfterTest.cpp
+            )
+    target_include_directories(RialtoClientUnitTests PRIVATE ${RIALTO_TEST_VULKAN_INCLUDE_DIR})
+endif()

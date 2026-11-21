@@ -83,4 +83,18 @@ std::shared_ptr<IGLVideoFrameCapture> VideoFrameCaptureFactory::createGLVideoFra
     return std::make_shared<GLVideoFrameCapture>(videoFrameCaptureIpc, captureId, eglDisplay, eglContext,
                                                  std::make_shared<GlFrameImporter>(gl, eglDisplay, eglContext));
 }
+
+std::shared_ptr<IVulkanVideoFrameCapture>
+VideoFrameCaptureFactory::createVulkanVideoFrameCapture(VkPhysicalDevice physicalDevice, VkDevice device, VkQueue queue,
+                                                        uint32_t queueFamilyIndex, int32_t requiredImageLayout)
+{
+    (void)physicalDevice;
+    (void)device;
+    (void)queue;
+    (void)queueFamilyIndex;
+    (void)requiredImageLayout;
+    // Vulkan loading and the importer follow (vfc-client-vulkan-import 2.x)
+    RIALTO_CLIENT_LOG_WARN("Vulkan video frame capture is not available yet");
+    return nullptr;
+}
 } // namespace firebolt::rialto::client

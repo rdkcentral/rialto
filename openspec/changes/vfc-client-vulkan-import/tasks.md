@@ -4,7 +4,7 @@ Unit tests run with `./build_ut.py -s client` using a Vulkan wrapper mock. "Spec
 
 ## 1. Public API
 
-- [ ] 1.1 Add the Vulkan types to `IVideoFrameCapture.h`: `VulkanImageResource` with `sampler` and `ycbcrConversion`, `IVulkanVideoFrame`, `VulkanFrameAcquisition`, `IVulkanVideoFrameCapture`, and `createVulkanVideoFrameCapture(physicalDevice, device, queue, queueFamilyIndex, requiredImageLayout)`, with Doxygen for the required extensions, the queue-synchronization rule and the sampler contract. Verify a consumer compiles and `readelf -d libRialtoClient.so` shows no `libvulkan`.
+- [x] 1.1 Add the Vulkan types to `IVideoFrameCapture.h`: `VulkanImageResource` with `sampler` and `ycbcrConversion`, `IVulkanVideoFrame`, `VulkanFrameAcquisition`, `IVulkanVideoFrameCapture`, and `createVulkanVideoFrameCapture(physicalDevice, device, queue, queueFamilyIndex, requiredImageLayout)`, with Doxygen for the required extensions, the queue-synchronization rule and the sampler contract. Verify a consumer compiles and `readelf -d libRialtoClient.so` shows no `libvulkan`.
 
 ## 2. Loading and creation (D1)
 

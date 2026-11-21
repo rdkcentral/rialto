@@ -31,7 +31,12 @@
  *
  * EGL headers are not required: EGLDisplay and EGLContext are declared here as opaque handles.
  * libEGL is loaded at run time when a GL capture is created; applications that do not create a
- * capture do not load it. Vulkan capture types are added with Vulkan import.
+ * capture do not load it.
+ *
+ * Vulkan headers are not required either: the Vulkan handles used here are declared exactly as
+ * <vulkan/vulkan_core.h> declares them, so the two headers can be included in either order.
+ * VkFormat and VkImageLayout values travel as int32_t. libvulkan is loaded at run time when a
+ * Vulkan capture is created.
  *
  * @since V1.1
  */
@@ -45,6 +50,35 @@
 using EGLDisplay = void *;
 /** Opaque EGL context handle, matching <EGL/egl.h> where EGLContext is void *. */
 using EGLContext = void *;
+
+// Vulkan handles, declared as <vulkan/vulkan_core.h> declares them (an identical redeclaration is valid).
+/** Vulkan VkPhysicalDevice handle, as in <vulkan/vulkan_core.h>. */
+typedef struct VkPhysicalDevice_T *VkPhysicalDevice;
+/** Vulkan VkDevice handle, as in <vulkan/vulkan_core.h>. */
+typedef struct VkDevice_T *VkDevice;
+/** Vulkan VkQueue handle, as in <vulkan/vulkan_core.h>. */
+typedef struct VkQueue_T *VkQueue;
+#if defined(__LP64__) || defined(_WIN64) || (defined(__x86_64__) && !defined(__ILP32__)) || defined(_M_X64) ||         \
+    defined(__ia64) || defined(_M_IA64) || defined(__aarch64__) || defined(__powerpc64__) ||                           \
+    (defined(__riscv) && __riscv_xlen == 64)
+/** Vulkan VkImage handle, as in <vulkan/vulkan_core.h>. */
+typedef struct VkImage_T *VkImage;
+/** Vulkan VkImageView handle, as in <vulkan/vulkan_core.h>. */
+typedef struct VkImageView_T *VkImageView;
+/** Vulkan VkSampler handle, as in <vulkan/vulkan_core.h>. */
+typedef struct VkSampler_T *VkSampler;
+/** Vulkan VkSamplerYcbcrConversion handle, as in <vulkan/vulkan_core.h>. */
+typedef struct VkSamplerYcbcrConversion_T *VkSamplerYcbcrConversion;
+#else
+/** Vulkan VkImage handle, as in <vulkan/vulkan_core.h>. */
+typedef uint64_t VkImage;
+/** Vulkan VkImageView handle, as in <vulkan/vulkan_core.h>. */
+typedef uint64_t VkImageView;
+/** Vulkan VkSampler handle, as in <vulkan/vulkan_core.h>. */
+typedef uint64_t VkSampler;
+/** Vulkan VkSamplerYcbcrConversion handle, as in <vulkan/vulkan_core.h>. */
+typedef uint64_t VkSamplerYcbcrConversion;
+#endif
 
 namespace firebolt::rialto
 {
@@ -125,6 +159,55 @@ public:
 };
 
 /**
+ * @brief One sampleable image of a Vulkan frame.
+ *
+ * Sample the image through imageView with exactly this sampler: for YCbCr formats the sampler carries Rialto's
+ * VkSamplerYcbcrConversion (ycbcrConversion), and the view was created with it. All four handles belong to Rialto
+ * and stay valid while the frame is retained; do not destroy them. ycbcrConversion is VK_NULL_HANDLE for RGB
+ * formats.
+ */
+/// @since V1.1
+struct VulkanImageResource
+{
+    VkImage image;                            /**< The imported image. */
+    VkImageView imageView;                    /**< A view created with the conversion, for sampling. */
+    VkSampler sampler;                        /**< The sampler to use with imageView. */
+    VkSamplerYcbcrConversion ycbcrConversion; /**< The YCbCr conversion, or VK_NULL_HANDLE for RGB. */
+};
+
+/**
+ * @brief Represents a retained decoded video frame exposed as Vulkan images.
+ *
+ * The images are in imageLayout(), the requiredImageLayout given at creation, and owned by the queue family given
+ * at creation: Rialto recorded the queue-family-ownership transfer from VK_QUEUE_FAMILY_FOREIGN_EXT and the layout
+ * transition on the capture's queue during acquireCurrentFrame(). Submit work using a frame to that queue after
+ * acquireCurrentFrame() returned, and drop the last reference only after that work has completed.
+ */
+/// @since V1.1
+class IVulkanVideoFrame : public IVideoFrame
+{
+public:
+    /** Returns the image format, a VkFormat value. */
+    virtual int32_t imageFormat() const = 0;
+    /** Returns the layout the images are in, a VkImageLayout value: requiredImageLayout from creation. */
+    virtual int32_t imageLayout() const = 0;
+    /** Returns this frame's images. In V1.1 there is one, and layout() is RGBA. */
+    virtual const std::vector<VulkanImageResource> &images() const = 0;
+};
+
+/**
+ * @brief Contains the current retained Vulkan frame and whether the scheduler selection changed.
+ */
+/// @since V1.1
+struct VulkanFrameAcquisition
+{
+    /** True only when this call returns a newly selected scheduler frame. */
+    bool changed;
+    /** Retained frame for the current selection, as for GLFrameAcquisition. */
+    std::shared_ptr<IVulkanVideoFrame> frame;
+};
+
+/**
  * @brief Contains the current retained GL frame and whether the scheduler selection changed.
  */
 /// @since V1.1
@@ -181,6 +264,24 @@ public:
 };
 
 /**
+ * @brief Provides retained-frame acquisition for a Vulkan capture.
+ */
+/// @since V1.1
+class IVulkanVideoFrameCapture : public IVideoFrameCapture
+{
+public:
+    /**
+     * @brief Acquires the current STC-selected Vulkan frame, as IGLVideoFrameCapture does for GL.
+     *
+     * Records and submits Rialto's barriers on the capture's queue, so call it on the thread that owns that queue.
+     * Releasing a frame needs no queue: its slot is given back after Rialto's release barrier has executed, during a
+     * later acquisition or at teardown.
+     * @return The current retained frame and whether its selection changed.
+     */
+    virtual VulkanFrameAcquisition acquireCurrentFrame() = 0;
+};
+
+/**
  * @brief Creates Video Frame Capture objects bound to consumer graphics resources.
  */
 /// @since V1.1
@@ -204,6 +305,29 @@ public:
      */
     virtual std::shared_ptr<IGLVideoFrameCapture> createGLVideoFrameCapture(EGLDisplay eglDisplay,
                                                                             EGLContext eglContext) = 0;
+
+    /**
+     * @brief Creates a Vulkan capture object for a device and one of its queues.
+     *
+     * The device must be Vulkan 1.1 or later with the samplerYcbcrConversion feature and the
+     * VK_KHR_external_memory_fd, VK_EXT_external_memory_dma_buf, VK_EXT_image_drm_format_modifier and
+     * VK_EXT_queue_family_foreign extensions enabled. Rialto records its ownership-transfer and layout barriers on
+     * \a queue, so the application must not use \a queue from another thread during acquireCurrentFrame().
+     * The device and queue must outlive the capture and every frame acquired from it.
+     *
+     * @param[in] physicalDevice      The physical device of \a device.
+     * @param[in] device              The logical device the frames are imported into.
+     * @param[in] queue               The queue the application samples frames on.
+     * @param[in] queueFamilyIndex    The family of \a queue (Vulkan cannot report it).
+     * @param[in] requiredImageLayout The VkImageLayout frames are delivered in, for example
+     *                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL.
+     * @return A Vulkan capture object, or nullptr if Vulkan cannot be loaded, the device lacks a requirement, or
+     *         creation fails.
+     */
+    virtual std::shared_ptr<IVulkanVideoFrameCapture> createVulkanVideoFrameCapture(VkPhysicalDevice physicalDevice,
+                                                                                    VkDevice device, VkQueue queue,
+                                                                                    uint32_t queueFamilyIndex,
+                                                                                    int32_t requiredImageLayout) = 0;
 
 protected:
     virtual ~IVideoFrameCaptureFactory() = default;
