@@ -81,6 +81,9 @@ ValidationResult validatePool(const CapturePool &pool, const CaptureCapabilities
  * lengthBytes <= sizeBytes - offsetBytes for its object; the visible region fits inside backingSize from its
  * origin.
  *
+ * Colour rule: a frame whose DRM format is not a known RGB format must have a known matrix, range and both chroma
+ * sitings (SoC capture spec 6.2). Unknown formats are treated as YUV.
+ *
  * If \a lockedRanges is given, a plane must not overlap a plane of a different locked slot in the same object.
  */
 class LockedRanges;

@@ -110,6 +110,38 @@ ValidationResult validateIdentity(const CapturedFrame &frame, uint32_t admittedS
 
     return ValidationResult::pass();
 }
+constexpr uint32_t fourcc(char a, char b, char c, char d)
+{
+    return static_cast<uint32_t>(a) | (static_cast<uint32_t>(b) << 8) | (static_cast<uint32_t>(c) << 16) |
+           (static_cast<uint32_t>(d) << 24);
+}
+
+// DRM RGB formats, which carry no YCbCr interpretation. Any other format is treated as YUV, so an unfamiliar
+// format must supply a complete colour description.
+bool isRgbFormat(uint32_t drmFormat)
+{
+    static const std::set<uint32_t> kRgbFormats{
+        fourcc('A', 'R', '2', '4'), fourcc('X', 'R', '2', '4'), fourcc('A', 'B', '2', '4'), fourcc('X', 'B', '2', '4'),
+        fourcc('R', 'A', '2', '4'), fourcc('R', 'X', '2', '4'), fourcc('B', 'A', '2', '4'), fourcc('B', 'X', '2', '4'),
+        fourcc('R', 'G', '1', '6'), fourcc('B', 'G', '1', '6'), fourcc('R', 'G', '2', '4'), fourcc('B', 'G', '2', '4'),
+        fourcc('A', 'R', '3', '0'), fourcc('X', 'R', '3', '0'), fourcc('A', 'B', '3', '0'), fourcc('X', 'B', '3', '0'),
+    };
+    return kRgbFormats.count(drmFormat) != 0;
+}
+
+ValidationResult validateColour(const CapturedFrame &frame)
+{
+    if (isRgbFormat(frame.capabilities.drmFormat))
+        return ValidationResult::pass();
+
+    const CaptureColorDescription &kColour = frame.colorDescription;
+    if (kColour.matrix == CaptureYcbcrMatrix::UNKNOWN || kColour.range == CaptureSampleRange::UNKNOWN ||
+        kColour.horizontalSiting == CaptureChromaSiting::UNKNOWN ||
+        kColour.verticalSiting == CaptureChromaSiting::UNKNOWN)
+        return ValidationResult::fail("frame.colorDescription: YUV frame without a complete colour description");
+    return ValidationResult::pass();
+}
+
 // Overflow-safe: only subtracts values already known to be in range.
 bool fitsWithin(uint64_t offset, uint64_t length, uint64_t size)
 {
@@ -142,6 +174,8 @@ ValidationResult validateFrame(const CapturedFrame &frame, uint32_t admittedSlot
     ValidationResult result = validateIdentity(frame, admittedSlots);
     if (result.ok)
         result = validateRanges(frame);
+    if (result.ok)
+        result = validateColour(frame);
     if (result.ok && lockedRanges && lockedRanges->overlaps(frame))
         result = ValidationResult::fail("frame.slotOverlap: plane overlaps a plane of another locked slot");
     return result;

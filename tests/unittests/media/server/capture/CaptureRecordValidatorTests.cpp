@@ -298,3 +298,24 @@ TEST(CaptureRecordValidatorTest, ShouldAcceptFlushedFrameReusingAnObjectId)
     fixtures.makeExampleB(next, 2, 3);
     EXPECT_FALSE(validateFrame(next, kAdmittedSlots, &locked).ok); // overlaps slot 1, same generation
 }
+
+TEST(CaptureRecordValidatorTest, ShouldRequireCompleteColourForYuv)
+{
+    runFrameCases({
+        {"complete NV12", &CaptureRecordFixtures::makeExampleB, noChange, ""},
+        {"NV12 unknown matrix", &CaptureRecordFixtures::makeExampleB, [](CapturedFrame &f, CaptureRecordFixtures &)
+         { f.colorDescription.matrix = CaptureYcbcrMatrix::UNKNOWN; }, "frame.colorDescription"},
+        {"NV12 unknown range", &CaptureRecordFixtures::makeExampleC, [](CapturedFrame &f, CaptureRecordFixtures &)
+         { f.colorDescription.range = CaptureSampleRange::UNKNOWN; }, "frame.colorDescription"},
+        {"NV12 unknown horizontal siting", &CaptureRecordFixtures::makeExampleB,
+         [](CapturedFrame &f, CaptureRecordFixtures &)
+         { f.colorDescription.horizontalSiting = CaptureChromaSiting::UNKNOWN; }, "frame.colorDescription"},
+        {"YUV420 unknown vertical siting", &CaptureRecordFixtures::makeExampleD,
+         [](CapturedFrame &f, CaptureRecordFixtures &)
+         { f.colorDescription.verticalSiting = CaptureChromaSiting::UNKNOWN; }, "frame.colorDescription"},
+        {"RGB with unknown colour", &CaptureRecordFixtures::makeExampleA, noChange, ""},
+        {"unfamiliar format treated as YUV", &CaptureRecordFixtures::makeExampleA,
+         [](CapturedFrame &f, CaptureRecordFixtures &) { f.capabilities.drmFormat = 0x31313131; },
+         "frame.colorDescription"},
+    });
+}
