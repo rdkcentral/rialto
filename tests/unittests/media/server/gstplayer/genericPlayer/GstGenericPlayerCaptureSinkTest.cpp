@@ -53,6 +53,7 @@ protected:
                                                    std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
                                                    m_gstProtectionMetadataFactoryMock);
         m_sink = fakeElement();
+        m_factory = gst_element_factory_find("fakesrc"); // a real object: the player casts it
         m_codecCaps = gst_caps_new_empty_simple("video/x-h264");
     }
 
@@ -62,6 +63,7 @@ protected:
         m_sut.reset(); // first: the player may still refer to the sink
         gst_caps_unref(m_codecCaps);
         gst_object_unref(m_sink);
+        gst_object_unref(m_factory);
     }
 
     static GstElement *fakeElement()
@@ -100,8 +102,7 @@ protected:
 
     std::unique_ptr<IGstGenericPlayer> m_sut;
     VideoRequirements m_videoReq{kMinPrimaryVideoWidth, kMinPrimaryVideoHeight};
-    char m_dummy{0};
-    GstElementFactory *m_factory{reinterpret_cast<GstElementFactory *>(&m_dummy)};
+    GstElementFactory *m_factory{nullptr};
     GstElement *m_sink{nullptr};
     GstCaps *m_codecCaps{nullptr};
     GParamSpec m_property{};

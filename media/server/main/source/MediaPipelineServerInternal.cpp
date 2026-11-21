@@ -21,6 +21,7 @@
 #include <stdexcept>
 
 #include "ActiveRequests.h"
+#include "CaptureCommit.h"
 #include "DataReaderFactory.h"
 #include "IDataReader.h"
 #include "IRdkGstreamerUtilsWrapper.h"
@@ -135,11 +136,16 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
     const std::shared_ptr<IGstGenericPlayerFactory> &gstPlayerFactory, int sessionId,
     const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     const std::shared_ptr<common::ITimerFactory> &timerFactory, std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
-    std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService)
+    std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService,
+    const std::shared_ptr<ICaptureCommit> &captureCommit)
     : m_mediaPipelineClient(client), m_kGstPlayerFactory(gstPlayerFactory), m_kVideoRequirements(videoRequirements),
       m_sessionId{sessionId}, m_shmBuffer{shmBuffer}, m_dataReaderFactory{std::move(dataReaderFactory)},
       m_timerFactory{timerFactory}, m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService},
-      m_currentPlaybackState{PlaybackState::UNKNOWN}, m_wasAllSourcesAttachedCalled{false}
+      m_currentPlaybackState{PlaybackState::UNKNOWN}, m_wasAllSourcesAttachedCalled{false},
+      m_captureCommit{
+          captureCommit ? captureCommit
+                        : std::make_shared<CaptureCommit>(wrappers::ICaptureHalLibraryFactory::createFactory(),
+                                                          ICaptureAdmissionFactory::instance()->createCaptureAdmission())}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -173,6 +179,13 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
 MediaPipelineServerInternal::~MediaPipelineServerInternal()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (m_captureSession)
+    {
+        // the sink borrows the HAL session, so the player goes first
+        m_gstPlayer.reset();
+        m_captureSession.reset();
+    }
 
     auto task = [&]()
     {
@@ -266,6 +279,10 @@ bool MediaPipelineServerInternal::attachSourceInternal(const std::unique_ptr<Med
         RIALTO_SERVER_LOG_DEBUG("New ID generated for MediaSourceType: %s: %d",
                                 common::convertMediaSourceType(source->getType()), source->getId());
         m_attachedSources.emplace(source->getType(), source->getId());
+        if (source->getType() == MediaSourceType::VIDEO)
+        {
+            m_videoSource = source->copy(); // the capture commit builds the sink's codec caps from it
+        }
     }
     else
     {
@@ -308,6 +325,10 @@ bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
     m_needMediaDataTimers.erase(type);
     m_noAvailableSamplesCounter.erase(type);
     m_isMediaTypeEosMap.erase(type);
+    if (type == MediaSourceType::VIDEO)
+    {
+        m_videoSource.reset();
+    }
 
     m_attachedSources.erase(sourceIter);
     return true;
@@ -336,6 +357,18 @@ bool MediaPipelineServerInternal::allSourcesAttachedInternal()
     {
         RIALTO_SERVER_LOG_WARN("Failed to notify all sources attached - It was already called");
         return false;
+    }
+
+    // with a capture, its configuration step runs first and synchronously; on failure nothing is recorded, so
+    // the application may call allSourcesAttached() again (proposal 3.3)
+    if (m_attachedCaptureId)
+    {
+        CaptureSessionHandle committed;
+        if (!m_captureCommit->run(*m_gstPlayer, m_sessionId, *m_attachedCaptureId, m_videoSource, committed))
+        {
+            return false;
+        }
+        m_captureSession = std::make_unique<CaptureSessionHandle>(std::move(committed));
     }
 
     m_gstPlayer->allSourcesAttached();

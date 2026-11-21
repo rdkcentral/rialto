@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include "CaptureCommitMock.h"
 #include "MediaPipelineTestBase.h"
 
 /**
@@ -26,8 +27,16 @@ class RialtoServerMediaPipelineCaptureAttachTest : public MediaPipelineTestBase
 {
 protected:
     static constexpr uint32_t kCaptureId{7};
+    std::shared_ptr<testing::NiceMock<firebolt::rialto::server::CaptureCommitMock>> m_captureCommitMock{
+        std::make_shared<testing::NiceMock<firebolt::rialto::server::CaptureCommitMock>>()};
 
-    RialtoServerMediaPipelineCaptureAttachTest() { createMediaPipeline(); }
+    RialtoServerMediaPipelineCaptureAttachTest()
+    {
+        // commits with a capture succeed here; the commit itself is tested in CaptureCommitTest
+        ON_CALL(*m_captureCommitMock, run(_, _, _, _, _)).WillByDefault(Return(true));
+        m_captureCommit = m_captureCommitMock;
+        createMediaPipeline();
+    }
     ~RialtoServerMediaPipelineCaptureAttachTest() { destroyMediaPipeline(); }
 
     bool attach(uint32_t captureId = kCaptureId)

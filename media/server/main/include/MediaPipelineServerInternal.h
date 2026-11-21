@@ -22,6 +22,7 @@
 
 #include "DataReaderFactory.h"
 #include "IActiveRequests.h"
+#include "ICaptureCommit.h"
 #include "IGstGenericPlayer.h"
 #include "IMainThread.h"
 #include "IMediaPipelineServerInternal.h"
@@ -87,7 +88,8 @@ public:
                                 const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
                                 const std::shared_ptr<common::ITimerFactory> &timerFactory,
                                 std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
-                                std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService);
+                                std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService,
+                                const std::shared_ptr<ICaptureCommit> &captureCommit = nullptr);
 
     /**
      * @brief Virtual destructor.
@@ -305,6 +307,21 @@ protected:
      * @brief The attached video frame capture, if any. Accessed only on the main thread.
      */
     std::optional<uint32_t> m_attachedCaptureId;
+
+    /**
+     * @brief The capture configuration step of allSourcesAttached() for an attached capture.
+     */
+    std::shared_ptr<ICaptureCommit> m_captureCommit;
+
+    /**
+     * @brief A copy of the attached video source, for the capture commit. Accessed only on the main thread.
+     */
+    std::unique_ptr<MediaSource> m_videoSource;
+
+    /**
+     * @brief The committed capture session. Deleted only after the player, and so its sink, is gone.
+     */
+    std::unique_ptr<CaptureSessionHandle> m_captureSession;
 
     /**
      * @brief Flag used to check if low latency is set for video source

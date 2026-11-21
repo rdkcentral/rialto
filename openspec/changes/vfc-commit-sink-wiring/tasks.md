@@ -15,7 +15,7 @@
 
 ## 3. Commit orchestration (D1, D4)
 
-- [ ] 3.1 Add `CaptureCommit::run()`: clear-source and video-present checks, sink override check, session creation, `configureCaptureSink`, `admit`, and full rollback with session deletion after NULL. Call it from `allSourcesAttachedInternal()`, setting `m_wasAllSourcesAttachedCalled` only on success. Verify with `./build_ut.py -s servermain`: encrypted source, no video source, override, sink failure, admission failure each return `false` with no leaks; success returns `true` and schedules shipping setup after.
+- [x] 3.1 Add `CaptureCommit::run()`: clear-source and video-present checks, sink override check, session creation, `configureCaptureSink`, `admit`, and full rollback with session deletion after NULL. Call it from `allSourcesAttachedInternal()`, setting `m_wasAllSourcesAttachedCalled` only on success. Verify with `./build_ut.py -s servermain`: encrypted source, no video source, override, sink failure, admission failure each return `false` with no leaks; success returns `true` and schedules shipping setup after.
 - [ ] 3.2 Verify retry: after a failure, a second call creates a new session and a new sink; after detach, the second call commits without capture.
 - [ ] 3.3 Verify no change without a capture: existing `allSourcesAttached` unit and component tests pass unchanged.
 

@@ -39,6 +39,7 @@ add_library(
 
         source/MediaPipelineServerInternal.cpp
         source/CaptureAdmission.cpp
+        source/CaptureCommit.cpp
         source/MediaPipelineCapabilities.cpp
         source/ActiveRequests.cpp
         source/DataReaderFactory.cpp

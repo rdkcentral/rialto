@@ -26,6 +26,7 @@
 #include "DecryptionServiceMock.h"
 #include "GstGenericPlayerFactoryMock.h"
 #include "GstGenericPlayerMock.h"
+#include "ICaptureCommit.h"
 #include "IGstGenericPlayerClient.h"
 #include "MainThreadFactoryMock.h"
 #include "MainThreadMock.h"
@@ -85,6 +86,8 @@ protected:
     const int m_kSessionId{1};
     const int32_t m_kMainThreadClientId = {5};
     VideoRequirements m_videoReq = {123, 456};
+    // the capture commit given to the pipeline; null gives the real one
+    std::shared_ptr<firebolt::rialto::server::ICaptureCommit> m_captureCommit;
 
     void createMediaPipeline();
     void destroyMediaPipeline();

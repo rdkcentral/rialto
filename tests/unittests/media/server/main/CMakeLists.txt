@@ -47,6 +47,8 @@ add_gtests (
         mediaPipeline/TextTrackIdentifierTest.cpp
         mediaPipeline/CaptureAttachTest.cpp
         captureCommit/CaptureAdmissionTest.cpp
+        captureCommit/CaptureCommitTest.cpp
+        mediaPipeline/CaptureCommitPipelineTest.cpp
 
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
 

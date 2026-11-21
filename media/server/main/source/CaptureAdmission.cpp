@@ -22,6 +22,24 @@
 
 namespace firebolt::rialto::server
 {
+namespace
+{
+class UnavailableCaptureAdmissionFactory : public ICaptureAdmissionFactory
+{
+public:
+    std::shared_ptr<ICaptureAdmission> createCaptureAdmission() const override
+    {
+        return std::make_shared<UnavailableCaptureAdmission>();
+    }
+};
+} // namespace
+
+std::shared_ptr<ICaptureAdmissionFactory> &ICaptureAdmissionFactory::instance()
+{
+    static std::shared_ptr<ICaptureAdmissionFactory> factory{std::make_shared<UnavailableCaptureAdmissionFactory>()};
+    return factory;
+}
+
 bool UnavailableCaptureAdmission::admit(CaptureSessionHandle &handle)
 {
     RIALTO_SERVER_LOG_WARN("Video frame capture %u of session %d cannot be admitted: pool admission is not available",

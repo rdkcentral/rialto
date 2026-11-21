@@ -63,6 +63,24 @@ public:
 };
 
 /**
+ * @brief Creates the admission each new pipeline uses.
+ */
+class ICaptureAdmissionFactory
+{
+public:
+    ICaptureAdmissionFactory() = default;
+    virtual ~ICaptureAdmissionFactory() = default;
+
+    /**
+     * @brief The factory used for new pipelines. Pool admission (R8) installs its own; component tests replace it.
+     *        Until then it creates UnavailableCaptureAdmission.
+     */
+    static std::shared_ptr<ICaptureAdmissionFactory> &instance();
+
+    virtual std::shared_ptr<ICaptureAdmission> createCaptureAdmission() const = 0;
+};
+
+/**
  * @brief The admission used until pool admission (R8) exists: it refuses every session, so capture commits fail
  *        cleanly and are rolled back.
  */

@@ -20,6 +20,7 @@
 #include "ActionTraits.h"
 #include "ConfigureAction.h"
 #include "ExpectMessage.h"
+#include "ICaptureAdmission.h"
 #include "MediaPipelineTest.h"
 #include "MessageBuilders.h"
 
@@ -27,8 +28,11 @@
 #include <cstdlib>
 
 using testing::_;
+using testing::DoAll;
 using testing::Invoke;
+using testing::NotNull;
 using testing::Return;
+using testing::SetArgPointee;
 using testing::StrEq;
 
 namespace
@@ -53,9 +57,72 @@ public:
     {
         // the capture HAL is loaded on the first create
         setenv(kCaptureHalLibraryEnv, FAKE_CAPTURE_HAL_PATH, 1);
+        // pool admission (R8) does not exist yet: these tests accept every configured session
+        m_defaultAdmissionFactory = ICaptureAdmissionFactory::instance();
+        ICaptureAdmissionFactory::instance() = std::make_shared<AcceptingAdmissionFactory>();
+        m_captureSink = gst_element_factory_make("fakesink", nullptr);
+        m_sinkFactory = gst_element_factory_find("fakesink"); // a real object: the server casts it
     }
 
-    ~VideoFrameCaptureAttachTest() override { unsetenv(kCaptureHalLibraryEnv); }
+    ~VideoFrameCaptureAttachTest() override
+    {
+        gst_object_unref(m_sinkFactory);
+        gst_object_unref(m_captureSink);
+        ICaptureAdmissionFactory::instance() = m_defaultAdmissionFactory;
+        unsetenv(kCaptureHalLibraryEnv);
+    }
+
+    class AcceptingAdmission : public ICaptureAdmission
+    {
+    public:
+        bool admit(CaptureSessionHandle &) override { return true; }
+    };
+    class AcceptingAdmissionFactory : public ICaptureAdmissionFactory
+    {
+    public:
+        std::shared_ptr<ICaptureAdmission> createCaptureAdmission() const override
+        {
+            return std::make_shared<AcceptingAdmission>();
+        }
+    };
+
+    // The commit with a capture builds the codec caps, then creates, configures and readies a westerossink.
+    void captureSinkWillBeConfigured()
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(StrEq("video/x-h264")))
+            .WillOnce(Return(&m_captureCaps))
+            .RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstCapsSetSimpleStringStub(&m_captureCaps, StrEq("alignment"), G_TYPE_STRING, StrEq("nal")));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstCapsSetSimpleStringStub(&m_captureCaps, StrEq("stream-format"), G_TYPE_STRING, StrEq("raw")));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_captureCaps, StrEq("width"), G_TYPE_INT, kWidth));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_captureCaps, StrEq("height"), G_TYPE_INT, kHeight));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("westerossink"))).WillOnce(Return(m_sinkFactory));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(m_sinkFactory, nullptr)).WillOnce(Return(m_captureSink));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(GST_OBJECT(m_sinkFactory)));
+        for (const char *kName : {"rdk-capture-session", "codec", "resolution"})
+            EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq(kName))).WillOnce(Return(&m_paramSpec));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetPointerStub(m_captureSink, StrEq("rdk-capture-session"), NotNull()));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetPointerStub(m_captureSink, StrEq("codec"), &m_captureCaps));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStrStub(m_captureSink, StrEq("resolution"), StrEq("1920x1080")));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_captureSink));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, StrEq("video-sink")));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(m_captureSink, GST_STATE_READY))
+            .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(m_captureSink, _, _, _))
+            .WillOnce(DoAll(SetArgPointee<1>(GST_STATE_READY), Return(GST_STATE_CHANGE_SUCCESS)));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_captureCaps));
+    }
+
+    // Destroying a committed pipeline drops the player's reference to its capture sink.
+    void captureSinkWillBeDropped() { EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(GST_OBJECT(m_captureSink))); }
+
+    std::shared_ptr<ICaptureAdmissionFactory> m_defaultAdmissionFactory;
+    GstElement *m_captureSink{nullptr};
+    GstCaps m_captureCaps{};
+    GstElementFactory *m_sinkFactory{nullptr};
+    GParamSpec m_paramSpec{};
 
     std::uint32_t createCapture()
     {
@@ -111,6 +178,7 @@ public:
         willSetupAndAddSource(&m_audioAppSrc);
         willSetupAndAddSource(&m_videoAppSrc);
         willFinishSetupAndAddSource();
+        captureSinkWillBeConfigured();
         indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
     }
 
@@ -198,6 +266,7 @@ TEST_F(VideoFrameCaptureAttachTest, shouldFollowTheStateTableThroughPlayback)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
+    captureSinkWillBeConfigured();
     indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
     checkCommittedState(false); // IDLE
 
@@ -251,6 +320,7 @@ TEST_F(VideoFrameCaptureAttachTest, shouldFollowTheStateTableThroughPlayback)
     checkCommittedState(true);
     detach(true);
 
+    captureSinkWillBeDropped();
     gstPlayerWillBeDestructed();
     destroySession();
 }
@@ -290,6 +360,7 @@ TEST_F(VideoFrameCaptureAttachTest, shouldRefuseAttachAndDetachInFailure)
     // Step 2: FAILURE
     checkCommittedState(false);
 
+    captureSinkWillBeDropped();
     gstPlayerWillBeDestructed();
     destroySession();
 }

@@ -77,3 +77,10 @@ TEST(CaptureAdmissionTest, UnavailableAdmissionRefusesAndLeavesTheSessionToTheCa
     }
     EXPECT_TRUE(deleted);
 }
+
+TEST(CaptureAdmissionTest, DefaultFactoryCreatesTheUnavailableAdmission)
+{
+    auto admission = firebolt::rialto::server::ICaptureAdmissionFactory::instance()->createCaptureAdmission();
+    ASSERT_NE(admission, nullptr);
+    EXPECT_NE(dynamic_cast<UnavailableCaptureAdmission *>(admission.get()), nullptr);
+}
