@@ -95,6 +95,12 @@ protected:
     std::shared_ptr<StrictMock<VideoFrameCaptureIpcMock>> m_ipc{std::make_shared<StrictMock<VideoFrameCaptureIpcMock>>()};
     std::shared_ptr<NiceMock<FrameImporterMock>> m_importer{std::make_shared<NiceMock<FrameImporterMock>>()};
     std::shared_ptr<CaptureCore> m_core{std::make_shared<CaptureCore>(m_ipc, kCaptureId, m_importer)};
+
+    void SetUp() override
+    {
+        // tests that do not check releases still release every frame they acquire
+        EXPECT_CALL(*m_ipc, releaseFrame(kCaptureId, _, _, _)).Times(::testing::AnyNumber()).WillRepeatedly(Return(true));
+    }
 };
 
 #endif // CAPTURE_CORE_TEST_BASE_H_

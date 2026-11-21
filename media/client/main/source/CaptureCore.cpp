@@ -27,7 +27,8 @@ namespace firebolt::rialto::client
 {
 CaptureCore::CaptureCore(const std::shared_ptr<IVideoFrameCaptureIpc> &ipc, std::uint32_t captureId,
                          const std::shared_ptr<IFrameImporter> &importer)
-    : m_ipc{ipc}, m_captureId{captureId}, m_importer{importer}
+    : m_ipc{ipc}, m_captureId{captureId}, m_importer{importer},
+      m_leaseState{std::make_shared<CaptureLeaseState>(ipc, captureId)}
 {
 }
 
@@ -85,11 +86,13 @@ std::shared_ptr<IGLVideoFrame> CaptureCore::importNewFrame(CaptureAcquireResult 
     {
         closeFds(result.fds);
     }
+    auto lease = std::make_unique<FrameLease>(m_leaseState, result.description.poolId, result.description.slotIndex,
+                                              result.description.acquisitionToken);
     if (!image)
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to import video frame in slot %u", result.description.slotIndex);
-        return nullptr;
+        return nullptr; // the lease is dropped here, so the slot is released
     }
-    return std::make_shared<VideoFrame>(result.description, image);
+    return std::make_shared<VideoFrame>(result.description, image, std::move(lease));
 }
 } // namespace firebolt::rialto::client

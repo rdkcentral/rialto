@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_VIDEO_FRAME_H_
 #define FIREBOLT_RIALTO_CLIENT_VIDEO_FRAME_H_
 
+#include "FrameLease.h"
 #include "IFrameImporter.h"
 #include "IVideoFrameCapture.h"
 #include "IVideoFrameCaptureIpc.h"
@@ -31,12 +32,14 @@
 namespace firebolt::rialto::client
 {
 /**
- * @brief A frame returned to the application. Holding a reference holds the frame's capture slot (the lease).
+ * @brief A frame returned to the application. Holding a reference holds the frame's capture slot (the lease):
+ * when the last reference goes, the slot is released.
  */
 class VideoFrame : public IGLVideoFrame
 {
 public:
-    VideoFrame(const CaptureFrameDescription &description, const std::shared_ptr<IImportedImage> &image);
+    VideoFrame(const CaptureFrameDescription &description, const std::shared_ptr<IImportedImage> &image,
+               std::unique_ptr<FrameLease> lease = nullptr);
     ~VideoFrame() override = default;
 
     std::uint32_t frameIndex() const override { return m_description.slotIndex; }
@@ -56,6 +59,7 @@ public:
 private:
     const CaptureFrameDescription m_description;
     std::shared_ptr<IImportedImage> m_image;
+    std::unique_ptr<FrameLease> m_lease; /**< Released when the last reference to the frame goes. */
 };
 } // namespace firebolt::rialto::client
 

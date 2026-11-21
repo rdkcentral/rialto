@@ -19,10 +19,13 @@
 
 #include "VideoFrame.h"
 
+#include <utility>
+
 namespace firebolt::rialto::client
 {
-VideoFrame::VideoFrame(const CaptureFrameDescription &description, const std::shared_ptr<IImportedImage> &image)
-    : m_description{description}, m_image{image}
+VideoFrame::VideoFrame(const CaptureFrameDescription &description, const std::shared_ptr<IImportedImage> &image,
+                       std::unique_ptr<FrameLease> lease)
+    : m_description{description}, m_image{image}, m_lease{std::move(lease)}
 {
 }
 

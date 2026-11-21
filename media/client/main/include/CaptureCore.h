@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_CAPTURE_CORE_H_
 #define FIREBOLT_RIALTO_CLIENT_CAPTURE_CORE_H_
 
+#include "FrameLease.h"
 #include "IFrameImporter.h"
 #include "IVideoFrameCapture.h"
 #include "IVideoFrameCaptureIpc.h"
@@ -64,8 +65,8 @@ private:
     const std::uint32_t m_captureId;
     std::shared_ptr<IFrameImporter> m_importer;
 
-    std::mutex m_acquireMutex; /**< Serializes acquisitions, the current frame and the cache. */
-    std::mutex m_releaseMutex; /**< Serializes slot releases, which may come from any thread. */
+    std::mutex m_acquireMutex;                       /**< Serializes acquisitions, the current frame and the cache. */
+    std::shared_ptr<CaptureLeaseState> m_leaseState; /**< Shared with frames, which may outlive the capture. */
     std::shared_ptr<IGLVideoFrame> m_currentFrame;
 };
 } // namespace firebolt::rialto::client

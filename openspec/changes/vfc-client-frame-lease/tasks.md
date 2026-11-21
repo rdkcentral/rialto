@@ -11,7 +11,7 @@ Unit tests run with `./build_ut.py -s client` (mock IPC and mock importer). "Spe
 
 - [x] 2.1 Implement the status mapping and current-frame handling. Verify: new frame `changed = true`; repeat returns the same object with no new lock; `NO_FRAME` returns null; `NO_RESOURCES` and IPC failure keep the current frame; `FATAL_ERROR` clears it.
 - [x] 2.2 Implement `VideoFrame` with the lease token and accessors (`frameIndex`, PTS, texture and visible size, `RGBA`, one resource). Verify accessor values for a 1920x1088 backing with a 1280x720 visible size.
-- [ ] 2.3 Implement release on last reference, serialized per capture, surviving capture destruction. Verify: one release per frame with the right slot and token; two threads dropping last references produce two non-overlapping releases; a frame outliving the capture still sends its release.
+- [x] 2.3 Implement release on last reference, serialized per capture, surviving capture destruction. Verify: one release per frame with the right slot and token; two threads dropping last references produce two non-overlapping releases; a frame outliving the capture still sends its release.
 
 ## 3. Cache and invalidation (D3, D4)
 
