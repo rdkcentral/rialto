@@ -22,12 +22,38 @@
 
 namespace firebolt::rialto::server::service
 {
+VideoFrameCaptureService::VideoFrameCaptureService(
+    const std::shared_ptr<wrappers::ICaptureHalLibraryFactory> &captureHalLibraryFactory)
+    : m_captureHalLibraryFactory{captureHalLibraryFactory}
+{
+}
+
+bool VideoFrameCaptureService::isCaptureAvailableLocked()
+{
+    if (!m_captureHalLibrary && m_captureHalLibraryFactory)
+    {
+        // held for the server's lifetime once obtained, so the vendor library is loaded at most once
+        m_captureHalLibrary = m_captureHalLibraryFactory->getCaptureHalLibrary();
+    }
+    return m_captureHalLibrary && m_captureHalLibrary->isAvailable();
+}
+
 VideoFrameCaptureServiceStatus VideoFrameCaptureService::createCapture(VideoFrameCaptureClientId clientId,
                                                                        std::optional<GraphicsAPIType> api,
                                                                        std::uint32_t &captureId)
 {
     std::lock_guard<std::mutex> lock{m_mutex};
-    captureId = m_registries[clientId].add(api.value_or(GraphicsAPIType::GL));
+    if (!api)
+    {
+        RIALTO_SERVER_LOG_ERROR("Cannot register a video frame capture with an unknown graphics API");
+        return VideoFrameCaptureServiceStatus::INVALID_ARGUMENT;
+    }
+    if (!isCaptureAvailableLocked())
+    {
+        RIALTO_SERVER_LOG_WARN("Video frame capture is unavailable: no capture HAL library");
+        return VideoFrameCaptureServiceStatus::UNSUPPORTED;
+    }
+    captureId = m_registries[clientId].add(*api);
     RIALTO_SERVER_LOG_INFO("Registered video frame capture %u for client %llu", captureId,
                            static_cast<unsigned long long>(clientId));
     return VideoFrameCaptureServiceStatus::OK;

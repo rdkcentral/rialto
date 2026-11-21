@@ -5,7 +5,7 @@
 ## 1. Server registry (D1–D3)
 
 - [x] 1.1 Add `VideoFrameCaptureRegistry` (per connection: counter from 1, `capture_id` → `CaptureEntry`) and `IVideoFrameCaptureService`/`VideoFrameCaptureService` holding one registry per client, with a mock. Verify with unit tests in `./build_ut.py -s serverservice`: unique non-zero IDs, no reuse after destroy, unknown and destroyed IDs not found, removing a client empties only its registry.
-- [ ] 1.2 Make creation consult `ICaptureHalLibrary::isAvailable()` and return `UNSUPPORTED` when false, `INVALID_ARGUMENT` for `GRAPHICS_API_TYPE_UNKNOWN`. Verify with unit tests using the R2 loader mock.
+- [x] 1.2 Make creation consult `ICaptureHalLibrary::isAvailable()` and return `UNSUPPORTED` when false, `INVALID_ARGUMENT` for `GRAPHICS_API_TYPE_UNKNOWN`. Verify with unit tests using the R2 loader mock.
 
 ## 2. Server IPC module
 

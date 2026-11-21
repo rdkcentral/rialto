@@ -20,10 +20,12 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SERVICE_VIDEO_FRAME_CAPTURE_SERVICE_H_
 #define FIREBOLT_RIALTO_SERVER_SERVICE_VIDEO_FRAME_CAPTURE_SERVICE_H_
 
+#include "ICaptureHalLibrary.h"
 #include "IVideoFrameCaptureService.h"
 #include "VideoFrameCaptureRegistry.h"
 
 #include <map>
+#include <memory>
 #include <mutex>
 
 namespace firebolt::rialto::server::service
@@ -31,7 +33,10 @@ namespace firebolt::rialto::server::service
 class VideoFrameCaptureService : public IVideoFrameCaptureService
 {
 public:
-    VideoFrameCaptureService() = default;
+    /**
+     * @param[in] captureHalLibraryFactory : Gives the capture HAL loader, which decides whether capture is available.
+     */
+    explicit VideoFrameCaptureService(const std::shared_ptr<wrappers::ICaptureHalLibraryFactory> &captureHalLibraryFactory);
     ~VideoFrameCaptureService() override = default;
 
     VideoFrameCaptureServiceStatus createCapture(VideoFrameCaptureClientId clientId, std::optional<GraphicsAPIType> api,
@@ -41,6 +46,11 @@ public:
     void removeClient(VideoFrameCaptureClientId clientId) override;
 
 private:
+    /** Must be called with m_mutex held. */
+    bool isCaptureAvailableLocked();
+
+    std::shared_ptr<wrappers::ICaptureHalLibraryFactory> m_captureHalLibraryFactory;
+    std::shared_ptr<wrappers::ICaptureHalLibrary> m_captureHalLibrary;
     mutable std::mutex m_mutex;
     std::map<VideoFrameCaptureClientId, VideoFrameCaptureRegistry> m_registries;
 };

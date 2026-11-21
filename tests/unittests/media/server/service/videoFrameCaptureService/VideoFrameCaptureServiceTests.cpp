@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+#include "CaptureHalLibraryFactoryMock.h"
+#include "CaptureHalLibraryMock.h"
 #include "VideoFrameCaptureRegistry.h"
 #include "VideoFrameCaptureService.h"
 
@@ -26,11 +28,26 @@
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server::service;
+using firebolt::rialto::wrappers::CaptureHalLibraryFactoryMock;
+using firebolt::rialto::wrappers::CaptureHalLibraryMock;
+using ::testing::NiceMock;
+using ::testing::Return;
+using ::testing::StrictMock;
 
 namespace
 {
 constexpr VideoFrameCaptureClientId kClientA{1};
 constexpr VideoFrameCaptureClientId kClientB{2};
+
+// A loader factory whose library is available, or not.
+std::shared_ptr<CaptureHalLibraryFactoryMock> halFactory(bool available)
+{
+    auto library = std::make_shared<NiceMock<CaptureHalLibraryMock>>();
+    ON_CALL(*library, isAvailable()).WillByDefault(Return(available));
+    auto factory = std::make_shared<NiceMock<CaptureHalLibraryFactoryMock>>();
+    ON_CALL(*factory, getCaptureHalLibrary()).WillByDefault(Return(library));
+    return factory;
+}
 } // namespace
 
 TEST(VideoFrameCaptureRegistryTest, ShouldGiveUniqueNonZeroIdsAndNeverReuseThem)
@@ -56,7 +73,7 @@ TEST(VideoFrameCaptureRegistryTest, ShouldGiveUniqueNonZeroIdsAndNeverReuseThem)
 
 TEST(VideoFrameCaptureServiceTest, ShouldRegisterCapturesPerClient)
 {
-    VideoFrameCaptureService service;
+    VideoFrameCaptureService service{halFactory(true)};
     std::uint32_t first{0}, second{0};
     EXPECT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, first), VideoFrameCaptureServiceStatus::OK);
     EXPECT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, second), VideoFrameCaptureServiceStatus::OK);
@@ -68,7 +85,7 @@ TEST(VideoFrameCaptureServiceTest, ShouldRegisterCapturesPerClient)
 
 TEST(VideoFrameCaptureServiceTest, ShouldNotFindCaptureOfAnotherClient)
 {
-    VideoFrameCaptureService service;
+    VideoFrameCaptureService service{halFactory(true)};
     std::uint32_t captureId{0};
     ASSERT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, captureId), VideoFrameCaptureServiceStatus::OK);
 
@@ -79,7 +96,7 @@ TEST(VideoFrameCaptureServiceTest, ShouldNotFindCaptureOfAnotherClient)
 
 TEST(VideoFrameCaptureServiceTest, ShouldDestroyOnceAndNotFindDestroyedId)
 {
-    VideoFrameCaptureService service;
+    VideoFrameCaptureService service{halFactory(true)};
     std::uint32_t captureId{0};
     ASSERT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, captureId), VideoFrameCaptureServiceStatus::OK);
 
@@ -91,7 +108,7 @@ TEST(VideoFrameCaptureServiceTest, ShouldDestroyOnceAndNotFindDestroyedId)
 
 TEST(VideoFrameCaptureServiceTest, ShouldRemoveOnlyTheDisconnectedClientsCaptures)
 {
-    VideoFrameCaptureService service;
+    VideoFrameCaptureService service{halFactory(true)};
     std::uint32_t a1{0}, a2{0}, b1{0};
     service.createCapture(kClientA, GraphicsAPIType::GL, a1);
     service.createCapture(kClientA, GraphicsAPIType::GL, a2);
@@ -102,4 +119,45 @@ TEST(VideoFrameCaptureServiceTest, ShouldRemoveOnlyTheDisconnectedClientsCapture
     EXPECT_FALSE(service.hasCapture(kClientA, a1));
     EXPECT_FALSE(service.hasCapture(kClientA, a2));
     EXPECT_TRUE(service.hasCapture(kClientB, b1));
+}
+
+TEST(VideoFrameCaptureServiceTest, ShouldReturnUnsupportedWithoutCaptureHal)
+{
+    VideoFrameCaptureService service{halFactory(false)};
+    std::uint32_t captureId{0};
+    EXPECT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, captureId),
+              VideoFrameCaptureServiceStatus::UNSUPPORTED);
+    EXPECT_EQ(captureId, 0U);
+    EXPECT_FALSE(service.hasCapture(kClientA, 1));
+}
+
+TEST(VideoFrameCaptureServiceTest, ShouldReturnUnsupportedWithoutLoader)
+{
+    auto factory = std::make_shared<StrictMock<CaptureHalLibraryFactoryMock>>();
+    EXPECT_CALL(*factory, getCaptureHalLibrary()).WillRepeatedly(Return(nullptr));
+    VideoFrameCaptureService service{factory};
+    std::uint32_t captureId{0};
+    EXPECT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, captureId),
+              VideoFrameCaptureServiceStatus::UNSUPPORTED);
+}
+
+TEST(VideoFrameCaptureServiceTest, ShouldRejectUnknownGraphicsApi)
+{
+    VideoFrameCaptureService service{halFactory(true)};
+    std::uint32_t captureId{0};
+    EXPECT_EQ(service.createCapture(kClientA, std::nullopt, captureId), VideoFrameCaptureServiceStatus::INVALID_ARGUMENT);
+    EXPECT_FALSE(service.hasCapture(kClientA, 1));
+}
+
+TEST(VideoFrameCaptureServiceTest, ShouldGetTheLoaderOnce)
+{
+    auto library = std::make_shared<StrictMock<CaptureHalLibraryMock>>();
+    EXPECT_CALL(*library, isAvailable()).Times(2).WillRepeatedly(Return(true));
+    auto factory = std::make_shared<StrictMock<CaptureHalLibraryFactoryMock>>();
+    EXPECT_CALL(*factory, getCaptureHalLibrary()).WillOnce(Return(library));
+
+    VideoFrameCaptureService service{factory};
+    std::uint32_t first{0}, second{0};
+    EXPECT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, first), VideoFrameCaptureServiceStatus::OK);
+    EXPECT_EQ(service.createCapture(kClientB, GraphicsAPIType::VULKAN, second), VideoFrameCaptureServiceStatus::OK);
 }
