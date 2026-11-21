@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <iterator>
 #include <map>
 #include <utility>
 
@@ -165,12 +166,38 @@ std::optional<VkFormat> vulkanFormatForDrmFormat(std::uint32_t drmFormat)
     }
 }
 
-VulkanFrameImporter::VulkanFrameImporter(const std::shared_ptr<VulkanDeviceContext> &context) : m_context{context} {}
+VulkanFrameImporter::VulkanFrameImporter(const std::shared_ptr<VulkanDeviceContext> &context)
+    : m_context{context}, m_inFlight(context->ring().size())
+{
+}
 
 VulkanFrameImporter::~VulkanFrameImporter()
 {
+    // design D6: wait for Rialto's own submissions, destroy every object, then send the releases still held.
+    // Frames released after the last acquisition get no release barrier: their images are destroyed here.
+    std::vector<PendingRelease> releases;
+    for (std::size_t i = 0; i < m_inFlight.size(); ++i)
+    {
+        if (m_inFlight[i].busy)
+        {
+            VkFence fence{m_context->ring()[i].fence};
+            m_context->api().waitForFences(m_context->device(), 1, &fence, VK_TRUE, UINT64_MAX);
+            m_inFlight[i].busy = false;
+            std::move(m_inFlight[i].releases.begin(), m_inFlight[i].releases.end(), std::back_inserter(releases));
+            m_inFlight[i].releases.clear();
+        }
+    }
+    {
+        std::lock_guard<std::mutex> lock{m_retiredMutex};
+        std::move(m_pendingReleases.begin(), m_pendingReleases.end(), std::back_inserter(releases));
+        m_pendingReleases.clear();
+        for (const PendingRelease &kRelease : releases)
+            kRelease.image->releasesInFlight = 0;
+    }
     drain();
     sweepSamplers(true);
+    for (PendingRelease &release : releases)
+        release.sendRelease();
 }
 
 std::shared_ptr<IImportedImage> VulkanFrameImporter::importFrame(const CaptureFrameDescription &description,
@@ -578,10 +605,183 @@ void VulkanFrameImporter::drain()
         std::lock_guard<std::mutex> lock{m_retiredMutex};
         retired.swap(m_retired);
     }
+    std::vector<std::shared_ptr<VulkanImportedImage>> kept;
     for (const std::shared_ptr<VulkanImportedImage> &kImage : retired)
     {
-        destroyImport(*kImage);
+        bool inFlight{false};
+        {
+            std::lock_guard<std::mutex> lock{m_retiredMutex};
+            inFlight = kImage->releasesInFlight > 0;
+        }
+        if (inFlight)
+            kept.push_back(kImage); // its release barrier still needs the image
+        else
+            destroyImport(*kImage);
+    }
+    if (!kept.empty())
+    {
+        std::lock_guard<std::mutex> lock{m_retiredMutex};
+        m_retired.insert(m_retired.end(), kept.begin(), kept.end());
     }
     sweepSamplers(false);
+}
+
+bool VulkanFrameImporter::deferRelease(const std::shared_ptr<IImportedImage> &image, std::function<void()> sendRelease)
+{
+    auto vulkanImage = std::dynamic_pointer_cast<VulkanImportedImage>(image);
+    if (!vulkanImage)
+    {
+        return false;
+    }
+    std::lock_guard<std::mutex> lock{m_retiredMutex};
+    ++vulkanImage->releasesInFlight;
+    m_pendingReleases.push_back(PendingRelease{vulkanImage, std::move(sendRelease)});
+    return true;
+}
+
+void VulkanFrameImporter::sendReleases(std::vector<PendingRelease> &releases)
+{
+    for (PendingRelease &release : releases)
+    {
+        release.sendRelease();
+        std::lock_guard<std::mutex> lock{m_retiredMutex};
+        --release.image->releasesInFlight;
+    }
+    releases.clear();
+}
+
+void VulkanFrameImporter::pollSubmissions()
+{
+    IVulkanApi &api{m_context->api()};
+    auto &ring = m_context->ring();
+    for (std::size_t i = 0; i < m_inFlight.size(); ++i)
+    {
+        if (m_inFlight[i].busy && api.getFenceStatus(m_context->device(), ring[i].fence) == VK_SUCCESS)
+        {
+            m_inFlight[i].busy = false;
+            sendReleases(m_inFlight[i].releases);
+        }
+    }
+}
+
+std::size_t VulkanFrameImporter::freeSubmission()
+{
+    std::size_t oldest{0};
+    for (std::size_t i = 0; i < m_inFlight.size(); ++i)
+    {
+        if (!m_inFlight[i].busy)
+            return i;
+        if (m_inFlight[i].sequence < m_inFlight[oldest].sequence)
+            oldest = i;
+    }
+    // every entry is in flight: wait for the oldest, which the GPU should finish first
+    VkFence fence{m_context->ring()[oldest].fence};
+    m_context->api().waitForFences(m_context->device(), 1, &fence, VK_TRUE, UINT64_MAX);
+    m_inFlight[oldest].busy = false;
+    sendReleases(m_inFlight[oldest].releases);
+    return oldest;
+}
+
+void VulkanFrameImporter::renewFence(VulkanDeviceContext::Submission &submission)
+{
+    IVulkanApi &api{m_context->api()};
+    api.destroyFence(m_context->device(), submission.fence);
+    VkFenceCreateInfo info{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+    info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    if (api.createFence(m_context->device(), &info, &submission.fence) != VK_SUCCESS)
+    {
+        submission.fence = VK_NULL_HANDLE;
+    }
+}
+
+void VulkanFrameImporter::submitOwnershipTransfers(const std::shared_ptr<VulkanImportedImage> &acquired)
+{
+    pollSubmissions();
+    std::vector<PendingRelease> releases;
+    {
+        std::lock_guard<std::mutex> lock{m_retiredMutex};
+        releases.swap(m_pendingReleases);
+    }
+    if (releases.empty() && !acquired)
+    {
+        return;
+    }
+
+    IVulkanApi &api{m_context->api()};
+    const VkDevice kDevice{m_context->device()};
+    const std::uint32_t kFamily{m_context->queueFamilyIndex()};
+    const VkImageLayout kLayout{m_context->requiredImageLayout()};
+    const std::size_t kIndex{freeSubmission()};
+    VulkanDeviceContext::Submission &submission{m_context->ring()[kIndex]};
+
+    auto barrier = [](VkImage image)
+    {
+        VkImageMemoryBarrier result{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
+        result.image = image;
+        result.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+        return result;
+    };
+    std::vector<VkImageMemoryBarrier> releaseBarriers;
+    for (const PendingRelease &kRelease : releases)
+    {
+        VkImageMemoryBarrier release{barrier(kRelease.image->image)};
+        release.srcAccessMask = 0; // the application only read the image
+        release.oldLayout = kLayout;
+        release.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+        release.srcQueueFamilyIndex = kFamily;
+        release.dstQueueFamilyIndex = VK_QUEUE_FAMILY_FOREIGN_EXT;
+        releaseBarriers.push_back(release);
+    }
+
+    bool recorded{api.resetCommandBuffer(submission.commandBuffer, 0) == VK_SUCCESS};
+    VkCommandBufferBeginInfo beginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    recorded = recorded && api.beginCommandBuffer(submission.commandBuffer, &beginInfo) == VK_SUCCESS;
+    if (recorded)
+    {
+        if (!releaseBarriers.empty())
+        {
+            // after every earlier use of the images on this queue
+            api.cmdPipelineBarrier(submission.commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                                   VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                                   static_cast<std::uint32_t>(releaseBarriers.size()), releaseBarriers.data());
+        }
+        if (acquired)
+        {
+            // before any later use of the image on this queue
+            VkImageMemoryBarrier acquire{barrier(acquired->image)};
+            acquire.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            acquire.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+            acquire.newLayout = kLayout;
+            acquire.srcQueueFamilyIndex = VK_QUEUE_FAMILY_FOREIGN_EXT;
+            acquire.dstQueueFamilyIndex = kFamily;
+            api.cmdPipelineBarrier(submission.commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                                   VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 1, &acquire);
+        }
+        recorded = api.endCommandBuffer(submission.commandBuffer) == VK_SUCCESS;
+    }
+
+    bool submitted{false};
+    if (recorded && api.resetFences(kDevice, 1, &submission.fence) == VK_SUCCESS)
+    {
+        VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO};
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &submission.commandBuffer;
+        submitted = api.queueSubmit(m_context->queue(), 1, &submitInfo, submission.fence) == VK_SUCCESS;
+        if (!submitted)
+        {
+            renewFence(submission); // the reset fence would never signal
+        }
+    }
+    if (!submitted)
+    {
+        RIALTO_CLIENT_LOG_ERROR("Cannot submit Vulkan queue-family transfers for video frame capture");
+        sendReleases(releases); // the slots must not stay locked; the producer may see the images early
+        return;
+    }
+    m_inFlight[kIndex].busy = true;
+    m_inFlight[kIndex].sequence = m_nextSequence++;
+    m_inFlight[kIndex].releases = std::move(releases);
+    pollSubmissions();
 }
 } // namespace firebolt::rialto::client

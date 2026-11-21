@@ -24,6 +24,7 @@
 #include "VulkanDeviceContext.h"
 
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -82,6 +83,7 @@ public:
     VkSamplerYcbcrConversion conversion{VK_NULL_HANDLE};
     std::vector<VkDeviceMemory> memories;
     std::shared_ptr<VulkanSamplerEntry> samplerEntry; /**< Keeps the sampler and conversion alive. */
+    int releasesInFlight{0}; /**< Deferred releases not yet sent; the import is not destroyed meanwhile. */
 
 private:
     const std::vector<std::uint32_t> m_noTextures;
@@ -111,6 +113,23 @@ public:
     void retire(const std::shared_ptr<IImportedImage> &image) override;
     void drain() override;
 
+    /**
+     * @brief Keeps a released frame's slot release until its image is back with the producer (design D5).
+     *
+     * Any thread; makes no Vulkan call.
+     */
+    bool deferRelease(const std::shared_ptr<IImportedImage> &image, std::function<void()> sendRelease) override;
+
+    /**
+     * @brief Records and submits the queue-family transfers, then sends releases whose fences have signalled
+     *        (design D4). Called from acquireCurrentFrame() on the thread that owns the queue.
+     *
+     * One command buffer holds, first, a release barrier (requiredImageLayout to GENERAL, app family to FOREIGN)
+     * for each frame released since the last call, then, if \a acquired is set, its acquire barrier (FOREIGN to the
+     * app family, GENERAL to requiredImageLayout). Nothing is submitted when there is nothing to record.
+     */
+    void submitOwnershipTransfers(const std::shared_ptr<VulkanImportedImage> &acquired);
+
 private:
     /**
      * @brief Creates the image, imports and binds its memory, and creates the sampler and view.
@@ -135,9 +154,34 @@ private:
     /** Destroys an import's view, image and memory, and drops its sampler reference. */
     void destroyImport(VulkanImportedImage &image);
 
+    /** A released frame waiting for its release barrier. */
+    struct PendingRelease
+    {
+        std::shared_ptr<VulkanImportedImage> image;
+        std::function<void()> sendRelease;
+    };
+    /** What one ring entry carries while its submission is in flight. */
+    struct InFlight
+    {
+        bool busy{false};
+        std::uint64_t sequence{0};
+        std::vector<PendingRelease> releases;
+    };
+    /** Sends the releases of signalled submissions and frees their ring entries; waits for none. */
+    void pollSubmissions();
+    /** A free ring entry, waiting for the oldest submission if every entry is in flight. */
+    std::size_t freeSubmission();
+    /** Sends releases and lets their imports be destroyed. */
+    void sendReleases(std::vector<PendingRelease> &releases);
+    /** Replaces a fence left unsignalled by a failed submission. */
+    void renewFence(VulkanDeviceContext::Submission &submission);
+
     std::shared_ptr<VulkanDeviceContext> m_context;
-    std::mutex m_retiredMutex;
+    std::mutex m_retiredMutex; /**< Guards m_retired, m_pendingReleases and every import's releasesInFlight. */
     std::vector<std::shared_ptr<VulkanImportedImage>> m_retired;
+    std::vector<PendingRelease> m_pendingReleases;
+    std::vector<InFlight> m_inFlight;
+    std::uint64_t m_nextSequence{1};
     std::map<VulkanSamplerKey, std::shared_ptr<VulkanSamplerEntry>> m_samplers;
     std::optional<VulkanSamplerKey> m_lastSamplerKey;
 

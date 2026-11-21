@@ -19,6 +19,7 @@
 
 #include "VulkanVideoFrameCapture.h"
 #include "RialtoClientLogging.h"
+#include "VulkanVideoFrame.h"
 
 namespace firebolt::rialto::client
 {
@@ -27,7 +28,8 @@ VulkanVideoFrameCapture::VulkanVideoFrameCapture(const std::shared_ptr<IVideoFra
                                                  const std::shared_ptr<VulkanDeviceContext> &context,
                                                  const std::shared_ptr<IFrameImporter> &importer,
                                                  const CaptureCore::FrameMaker &frameMaker)
-    : m_context{context}, m_core{std::make_shared<CaptureCore>(videoFrameCaptureIpc, captureId, importer, frameMaker)},
+    : m_context{context}, m_importer{std::dynamic_pointer_cast<VulkanFrameImporter>(importer)},
+      m_core{std::make_shared<CaptureCore>(videoFrameCaptureIpc, captureId, importer, frameMaker)},
       m_videoFrameCaptureIpc{videoFrameCaptureIpc}, m_captureId{captureId}
 {
 }
@@ -42,7 +44,17 @@ VulkanVideoFrameCapture::~VulkanVideoFrameCapture()
 
 VulkanFrameAcquisition VulkanVideoFrameCapture::acquireCurrentFrame()
 {
+    std::lock_guard<std::mutex> lock{m_acquireMutex};
     CaptureFrameAcquisition acquisition{m_core->acquireFrame()};
-    return VulkanFrameAcquisition{acquisition.changed, std::dynamic_pointer_cast<IVulkanVideoFrame>(acquisition.frame)};
+    auto frame = std::dynamic_pointer_cast<VulkanVideoFrame>(acquisition.frame);
+    if (m_importer)
+    {
+        // a changed frame is acquired from the producer; an unchanged one already is
+        std::shared_ptr<VulkanImportedImage> acquired;
+        if (acquisition.changed && frame && frame->import())
+            acquired = std::dynamic_pointer_cast<VulkanImportedImage>(frame->import()->image());
+        m_importer->submitOwnershipTransfers(acquired);
+    }
+    return VulkanFrameAcquisition{acquisition.changed, frame};
 }
 } // namespace firebolt::rialto::client

@@ -26,10 +26,12 @@
 #include "IVideoFrameCapture.h"
 #include "IVideoFrameCaptureIpc.h"
 #include "VulkanDeviceContext.h"
+#include "VulkanFrameImporter.h"
 
 #include <atomic>
 #include <cstdint>
 #include <memory>
+#include <mutex>
 
 namespace firebolt::rialto::client
 {
@@ -56,7 +58,9 @@ public:
     const std::shared_ptr<VulkanDeviceContext> &context() const { return m_context; }
 
 private:
+    std::mutex m_acquireMutex; /**< Serializes acquisitions and their submissions. */
     std::shared_ptr<VulkanDeviceContext> m_context;
+    std::shared_ptr<VulkanFrameImporter> m_importer;
     std::shared_ptr<CaptureCore> m_core;
     std::shared_ptr<IVideoFrameCaptureIpc> m_videoFrameCaptureIpc;
     const std::uint32_t m_captureId;

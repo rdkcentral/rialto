@@ -20,7 +20,7 @@ Unit tests run with `./build_ut.py -s client` using a Vulkan wrapper mock. "Spec
 ## 4. Barriers and deferred release (D4, D5)
 
 - [x] 4.1 Extend R11's `IFrameImporter` with `deferRelease` (GL returns `false`). Verify R11 and R12 tests pass unchanged.
-- [ ] 4.2 Record and submit acquire and release barriers in `acquireCurrentFrame()` and send deferred releases when fences signal. Verify with the mock: one acquire barrier per changed frame with `GENERAL` → `requiredImageLayout` and FOREIGN → app family; none for unchanged frames; a released frame's slot release is sent only after its fence signals; no queue submission on a releasing thread.
+- [x] 4.2 Record and submit acquire and release barriers in `acquireCurrentFrame()` and send deferred releases when fences signal. Verify with the mock: one acquire barrier per changed frame with `GENERAL` → `requiredImageLayout` and FOREIGN → app family; none for unchanged frames; a released frame's slot release is sent only after its fence signals; no queue submission on a releasing thread.
 
 ## 5. Teardown (D6)
 
