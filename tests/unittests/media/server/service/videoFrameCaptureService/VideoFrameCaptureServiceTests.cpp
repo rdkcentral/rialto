@@ -19,6 +19,7 @@
 
 #include "CaptureHalLibraryFactoryMock.h"
 #include "CaptureHalLibraryMock.h"
+#include "CaptureSessionMock.h"
 #include "VideoFrameCaptureRegistry.h"
 #include "VideoFrameCaptureService.h"
 
@@ -223,4 +224,24 @@ TEST(VideoFrameCaptureServiceTest, ShouldReportBoundCapturesOfDisconnectedClient
     service.removeClient(kClientA);
     ASSERT_EQ(removed.size(), 1U); // only client A's bound capture
     EXPECT_EQ(removed[0], std::make_pair(10, first));
+}
+
+TEST(VideoFrameCaptureServiceTest, ShouldGiveTheRuntimeOnlyToItsOwnClient)
+{
+    VideoFrameCaptureService service{halFactory(true)};
+    std::uint32_t captureId{0};
+    ASSERT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, captureId), VideoFrameCaptureServiceStatus::OK);
+    EXPECT_EQ(service.captureRuntime(kClientA, captureId), nullptr); // not committed yet
+
+    auto runtime = std::make_shared<firebolt::rialto::server::CaptureSessionRuntime>(
+        firebolt::rialto::wrappers::CaptureSessionPtr{new ::testing::NiceMock<firebolt::rialto::capture::CaptureSessionMock>(),
+                                                      [](firebolt::rialto::capture::ICaptureSession *session)
+                                                      { delete session; }},
+        1, firebolt::rialto::capture::CapturePool{});
+    service.setCaptureRuntime(kClientA, captureId, runtime);
+    EXPECT_EQ(service.captureRuntime(kClientA, captureId), runtime);
+    EXPECT_EQ(service.captureRuntime(kClientB, captureId), nullptr);
+    service.setCaptureRuntime(kClientB, captureId, runtime); // another client's: ignored
+    EXPECT_TRUE(service.destroyCapture(kClientA, captureId));
+    EXPECT_EQ(service.captureRuntime(kClientA, captureId), nullptr);
 }

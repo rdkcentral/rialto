@@ -70,6 +70,7 @@ public:
     MOCK_METHOD(bool, attachCapture, (uint32_t captureId), (override));
     MOCK_METHOD(bool, detachCapture, (uint32_t & captureId), (override));
     MOCK_METHOD(void, dropCapture, (uint32_t captureId), (override));
+    MOCK_METHOD(std::shared_ptr<CaptureSessionRuntime>, captureRuntime, (), (override));
     MOCK_METHOD(bool, flush, (int32_t sourceId, bool resetTime, bool &async), (override));
     MOCK_METHOD(bool, setSourcePosition,
                 (int32_t sourceId, int64_t position, bool resetTime, double appliedRate, uint64_t stopPosition),

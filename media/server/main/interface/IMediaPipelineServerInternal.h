@@ -34,6 +34,7 @@
 #include <string>
 #include <vector>
 
+#include "CaptureSessionRuntime.h"
 #include "IDecryptionService.h"
 #include "IHeartbeatHandler.h"
 #include "IMediaPipeline.h"
@@ -132,6 +133,11 @@ public:
      * @brief Removes the attached capture in any state, if it is \a captureId (implicit detach).
      */
     virtual void dropCapture(uint32_t captureId) = 0;
+
+    /**
+     * @brief The runtime of the committed capture session, or null if no capture was committed.
+     */
+    virtual std::shared_ptr<CaptureSessionRuntime> captureRuntime() = 0;
 };
 
 }; // namespace firebolt::rialto::server

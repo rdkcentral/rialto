@@ -42,6 +42,15 @@ bool VideoFrameCaptureRegistry::bind(std::uint32_t captureId, int sessionId)
     return true;
 }
 
+bool VideoFrameCaptureRegistry::setRuntime(std::uint32_t captureId, const std::shared_ptr<CaptureSessionRuntime> &runtime)
+{
+    auto it = m_entries.find(captureId);
+    if (it == m_entries.end())
+        return false;
+    it->second.runtime = runtime;
+    return true;
+}
+
 bool VideoFrameCaptureRegistry::unbind(std::uint32_t captureId)
 {
     auto it = m_entries.find(captureId);

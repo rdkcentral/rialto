@@ -140,6 +140,8 @@ public:
 
     void dropCapture(uint32_t captureId) override;
 
+    std::shared_ptr<CaptureSessionRuntime> captureRuntime() override;
+
     bool renderFrame() override;
 
     bool setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType) override;
@@ -319,9 +321,10 @@ protected:
     std::unique_ptr<MediaSource> m_videoSource;
 
     /**
-     * @brief The committed capture session. Deleted only after the player, and so its sink, is gone.
+     * @brief The committed capture session's runtime, shared with the capture registry. The pipeline drops its
+     *        reference only after the player, and so the sink borrowing the session, is gone.
      */
-    std::unique_ptr<CaptureSessionHandle> m_captureSession;
+    std::shared_ptr<CaptureSessionRuntime> m_captureRuntime;
 
     /**
      * @brief Flag used to check if low latency is set for video source

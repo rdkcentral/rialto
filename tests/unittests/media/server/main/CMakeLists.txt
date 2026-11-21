@@ -48,6 +48,7 @@ add_gtests (
         mediaPipeline/CaptureAttachTest.cpp
         captureCommit/CaptureAdmissionTest.cpp
         captureCommit/CaptureCommitTest.cpp
+        captureCommit/CaptureSessionRuntimeTest.cpp
         mediaPipeline/CaptureCommitPipelineTest.cpp
 
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp

@@ -35,6 +35,8 @@ struct CaptureSessionHandle
     int sessionId{-1};                   /**< The pipeline session. */
     std::uint32_t captureId{0};          /**< The attached capture. */
     wrappers::CaptureSessionPtr session; /**< The HAL session, whose sink has reached configured READY. */
+    std::uint32_t poolId{0};             /**< Set by admission: the admitted pool's ID. */
+    capture::CapturePool pool{};         /**< Set by admission: the admitted pool. */
 };
 
 /**

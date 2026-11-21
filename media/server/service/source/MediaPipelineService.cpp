@@ -182,7 +182,19 @@ bool MediaPipelineService::allSourcesAttached(int sessionId)
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
-    return mediaPipelineIter->second->allSourcesAttached();
+    if (!mediaPipelineIter->second->allSourcesAttached())
+    {
+        return false;
+    }
+    // a committed capture's acquire and release calls find its session runtime through the registry
+    auto attachedIter = m_attachedCaptures.find(sessionId);
+    if (attachedIter != m_attachedCaptures.end())
+    {
+        m_playbackService.getVideoFrameCaptureService().setCaptureRuntime(attachedIter->second.clientId,
+                                                                          attachedIter->second.captureId,
+                                                                          mediaPipelineIter->second->captureRuntime());
+    }
+    return true;
 }
 
 bool MediaPipelineService::play(int sessionId, bool &async)

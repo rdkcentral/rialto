@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SERVICE_VIDEO_FRAME_CAPTURE_REGISTRY_H_
 #define FIREBOLT_RIALTO_SERVER_SERVICE_VIDEO_FRAME_CAPTURE_REGISTRY_H_
 
+#include "CaptureSessionRuntime.h"
 #include "IVideoFrameCapture.h"
 
 #include <cstddef>
@@ -35,7 +36,8 @@ namespace firebolt::rialto::server::service
 struct VideoFrameCaptureEntry
 {
     GraphicsAPIType api;
-    std::optional<int> attachedSessionId; /**< The pipeline session the capture is attached to, if any. */
+    std::optional<int> attachedSessionId;           /**< The pipeline session the capture is attached to, if any. */
+    std::shared_ptr<CaptureSessionRuntime> runtime; /**< The committed session's runtime, once committed. */
 };
 
 /**
@@ -64,6 +66,9 @@ public:
 
     /** @retval the IDs and sessions of every bound capture. */
     std::map<std::uint32_t, int> boundCaptures() const;
+
+    /** Gives a capture its committed session's runtime. @retval false if there is no such capture. */
+    bool setRuntime(std::uint32_t captureId, const std::shared_ptr<CaptureSessionRuntime> &runtime);
 
     /** Number of registered captures. */
     std::size_t size() const { return m_entries.size(); }

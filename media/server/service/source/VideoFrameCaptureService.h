@@ -47,6 +47,10 @@ public:
     bool bindCapture(VideoFrameCaptureClientId clientId, std::uint32_t captureId, int sessionId) override;
     void unbindCapture(VideoFrameCaptureClientId clientId, std::uint32_t captureId) override;
     void setBoundCaptureRemovedHandler(const BoundCaptureRemovedHandler &handler) override;
+    void setCaptureRuntime(VideoFrameCaptureClientId clientId, std::uint32_t captureId,
+                           const std::shared_ptr<CaptureSessionRuntime> &runtime) override;
+    std::shared_ptr<CaptureSessionRuntime> captureRuntime(VideoFrameCaptureClientId clientId,
+                                                          std::uint32_t captureId) const override;
 
 private:
     /** Must be called with m_mutex held. */

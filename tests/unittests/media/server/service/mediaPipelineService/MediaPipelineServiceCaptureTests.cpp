@@ -180,3 +180,29 @@ TEST_F(MediaPipelineServiceImplicitDetachTests, destroyingTheBoundCaptureDetache
     EXPECT_CALL(m_mediaPipelineMock, attachCapture(newCaptureId)).WillOnce(Return(true));
     EXPECT_TRUE(m_sut->attachVideoFrameCapture(kSession, kCaptureClient, newCaptureId));
 }
+
+TEST_F(MediaPipelineServiceCaptureTests, shouldGiveTheCommittedRuntimeToTheCapture)
+{
+    initSession();
+    expectCaptureService();
+    EXPECT_CALL(m_captureServiceMock, bindCapture(kCaptureClient, kCaptureId, kSession)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, attachCapture(kCaptureId)).WillOnce(Return(true));
+    ASSERT_TRUE(m_sut->attachVideoFrameCapture(kSession, kCaptureClient, kCaptureId));
+
+    EXPECT_CALL(m_mediaPipelineMock, allSourcesAttached()).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, captureRuntime()).WillOnce(Return(nullptr));
+    EXPECT_CALL(m_captureServiceMock, setCaptureRuntime(kCaptureClient, kCaptureId, _));
+    EXPECT_TRUE(m_sut->allSourcesAttached(kSession));
+}
+
+TEST_F(MediaPipelineServiceCaptureTests, shouldNotTouchTheRegistryWhenCommitFails)
+{
+    initSession();
+    expectCaptureService();
+    EXPECT_CALL(m_captureServiceMock, bindCapture(kCaptureClient, kCaptureId, kSession)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, attachCapture(kCaptureId)).WillOnce(Return(true));
+    ASSERT_TRUE(m_sut->attachVideoFrameCapture(kSession, kCaptureClient, kCaptureId));
+
+    EXPECT_CALL(m_mediaPipelineMock, allSourcesAttached()).WillOnce(Return(false));
+    EXPECT_FALSE(m_sut->allSourcesAttached(kSession));
+}

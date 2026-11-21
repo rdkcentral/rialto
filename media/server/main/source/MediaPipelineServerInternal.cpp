@@ -180,11 +180,11 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (m_captureSession)
+    if (m_captureRuntime)
     {
         // the sink borrows the HAL session, so the player goes first
         m_gstPlayer.reset();
-        m_captureSession.reset();
+        m_captureRuntime.reset();
     }
 
     auto task = [&]()
@@ -368,7 +368,8 @@ bool MediaPipelineServerInternal::allSourcesAttachedInternal()
         {
             return false;
         }
-        m_captureSession = std::make_unique<CaptureSessionHandle>(std::move(committed));
+        m_captureRuntime =
+            std::make_shared<CaptureSessionRuntime>(std::move(committed.session), committed.poolId, committed.pool);
     }
 
     m_gstPlayer->allSourcesAttached();
@@ -430,6 +431,13 @@ bool MediaPipelineServerInternal::detachCapture(uint32_t &captureId)
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
+}
+
+std::shared_ptr<CaptureSessionRuntime> MediaPipelineServerInternal::captureRuntime()
+{
+    std::shared_ptr<CaptureSessionRuntime> runtime;
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, [&]() { runtime = m_captureRuntime; });
+    return runtime;
 }
 
 void MediaPipelineServerInternal::dropCapture(uint32_t captureId)

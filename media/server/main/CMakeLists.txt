@@ -40,6 +40,7 @@ add_library(
         source/MediaPipelineServerInternal.cpp
         source/CaptureAdmission.cpp
         source/CaptureCommit.cpp
+        source/CaptureSessionRuntime.cpp
         source/MediaPipelineCapabilities.cpp
         source/ActiveRequests.cpp
         source/DataReaderFactory.cpp
@@ -95,6 +96,9 @@ target_compile_options(
 
 target_link_libraries(
         RialtoServerMain
+
+        PUBLIC
+        RialtoServerCapture
 
         PRIVATE
         RialtoLogging

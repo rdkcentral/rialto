@@ -4,7 +4,7 @@
 
 ## 1. Session runtime (D1, D6)
 
-- [ ] 1.1 Add `CaptureSessionRuntime` with the per-session lock, slot-indexed record storage, `pendingFlush`, `lastSentDescription`, `fatal` and `LockedRanges`, attached to the registry entry by commit. Verify with `./build_ut.py -s servermain` construction and lookup tests.
+- [x] 1.1 Add `CaptureSessionRuntime` with the per-session lock, slot-indexed record storage, `pendingFlush`, `lastSentDescription`, `fatal` and `LockedRanges`, attached to the registry entry by commit. Verify with `./build_ut.py -s servermain` construction and lookup tests.
 - [ ] 1.2 Add the HAL-to-wire status mapping, including `CAPABILITIES_NOT_AVAILABLE_YET` → `FATAL_ERROR` with a log. Verify with a table test.
 
 ## 2. Acquire (D2–D4)

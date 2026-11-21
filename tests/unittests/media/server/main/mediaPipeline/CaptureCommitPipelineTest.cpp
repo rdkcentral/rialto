@@ -18,6 +18,7 @@
  */
 
 #include "CaptureCommitMock.h"
+#include "CaptureSessionMock.h"
 #include "MediaPipelineTestBase.h"
 
 using firebolt::rialto::server::CaptureCommitMock;
@@ -122,4 +123,35 @@ TEST_F(RialtoServerMediaPipelineCaptureCommitTest, RetryAfterDetachCommitsWithou
 
     EXPECT_CALL(*m_gstPlayerMock, allSourcesAttached()); // and no second commit run
     EXPECT_TRUE(allSourcesAttached());
+}
+
+TEST_F(RialtoServerMediaPipelineCaptureCommitTest, CommitCreatesTheSessionRuntime)
+{
+    loadGstPlayer();
+    attachCapture();
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_EQ(m_mediaPipeline->captureRuntime(), nullptr);
+
+    EXPECT_CALL(*m_captureCommitMock, run(_, m_kSessionId, kCaptureId, _, _))
+        .WillOnce(Invoke(
+            [](IGstGenericPlayer &, int, std::uint32_t, const std::unique_ptr<IMediaPipeline::MediaSource> &,
+               CaptureSessionHandle &committed)
+            {
+                committed.session =
+                    firebolt::rialto::wrappers::CaptureSessionPtr{new testing::NiceMock<
+                                                                      firebolt::rialto::capture::CaptureSessionMock>(),
+                                                                  [](firebolt::rialto::capture::ICaptureSession *session)
+                                                                  { delete session; }};
+                committed.poolId = 6;
+                committed.pool.slotLayouts.resize(2);
+                return true;
+            }));
+    EXPECT_CALL(*m_gstPlayerMock, allSourcesAttached());
+    EXPECT_TRUE(allSourcesAttached());
+
+    mainThreadWillEnqueueTaskAndWait();
+    auto runtime = m_mediaPipeline->captureRuntime();
+    ASSERT_NE(runtime, nullptr);
+    EXPECT_EQ(runtime->poolId(), 6U);
+    EXPECT_EQ(runtime->slotCount(), 2U);
 }

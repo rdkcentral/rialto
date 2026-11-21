@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SERVICE_I_VIDEO_FRAME_CAPTURE_SERVICE_H_
 #define FIREBOLT_RIALTO_SERVER_SERVICE_I_VIDEO_FRAME_CAPTURE_SERVICE_H_
 
+#include "CaptureSessionRuntime.h"
 #include "IVideoFrameCapture.h"
 
 #include <cstdint>
@@ -110,6 +111,18 @@ public:
      * @brief Sets the handler for bound captures that are removed (implicit detach).
      */
     virtual void setBoundCaptureRemovedHandler(const BoundCaptureRemovedHandler &handler) = 0;
+
+    /**
+     * @brief Gives a client's capture the runtime of its committed session.
+     */
+    virtual void setCaptureRuntime(VideoFrameCaptureClientId clientId, std::uint32_t captureId,
+                                   const std::shared_ptr<CaptureSessionRuntime> &runtime) = 0;
+
+    /**
+     * @brief The runtime of a client's committed capture, or null if it is not committed or not the client's.
+     */
+    virtual std::shared_ptr<CaptureSessionRuntime> captureRuntime(VideoFrameCaptureClientId clientId,
+                                                                  std::uint32_t captureId) const = 0;
 };
 } // namespace firebolt::rialto::server::service
 

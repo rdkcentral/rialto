@@ -142,4 +142,25 @@ void VideoFrameCaptureService::setBoundCaptureRemovedHandler(const BoundCaptureR
     std::lock_guard<std::mutex> lock{m_mutex};
     m_boundCaptureRemovedHandler = handler;
 }
+
+void VideoFrameCaptureService::setCaptureRuntime(VideoFrameCaptureClientId clientId, std::uint32_t captureId,
+                                                 const std::shared_ptr<CaptureSessionRuntime> &runtime)
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+    auto it = m_registries.find(clientId);
+    if (it == m_registries.end() || !it->second.setRuntime(captureId, runtime))
+    {
+        RIALTO_SERVER_LOG_WARN("Cannot give video frame capture %u of client %llu its session runtime", captureId,
+                               static_cast<unsigned long long>(clientId));
+    }
+}
+
+std::shared_ptr<CaptureSessionRuntime> VideoFrameCaptureService::captureRuntime(VideoFrameCaptureClientId clientId,
+                                                                                std::uint32_t captureId) const
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+    auto it = m_registries.find(clientId);
+    const VideoFrameCaptureEntry *kEntry{it == m_registries.end() ? nullptr : it->second.find(captureId)};
+    return kEntry ? kEntry->runtime : nullptr;
+}
 } // namespace firebolt::rialto::server::service
