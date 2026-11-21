@@ -29,6 +29,7 @@ class EglLibraryMock : public IEglLibrary
 {
 public:
     MOCK_METHOD(bool, load, (), (override));
+    MOCK_METHOD(std::shared_ptr<IEglGl>, functions, (), (override));
 };
 } // namespace firebolt::rialto::client
 

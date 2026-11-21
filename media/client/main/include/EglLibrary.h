@@ -20,6 +20,8 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_EGL_LIBRARY_H_
 #define FIREBOLT_RIALTO_CLIENT_EGL_LIBRARY_H_
 
+#include "IEglGl.h"
+
 #include <memory>
 #include <mutex>
 
@@ -48,22 +50,33 @@ public:
      * @retval false if it cannot be loaded; later calls return the same result.
      */
     virtual bool load() = 0;
+
+    /**
+     * @brief The EGL and GL entry points, resolved on first call after a successful load().
+     *
+     * @retval null if EGL is not loaded or a required entry point is missing.
+     */
+    virtual std::shared_ptr<IEglGl> functions() = 0;
 };
 
 class EglLibrary : public IEglLibrary
 {
 public:
     static constexpr const char *kLibraryName{"libEGL.so.1"};
+    static constexpr const char *kLibraryEnv{"RIALTO_EGL_LIBRARY"};
 
     EglLibrary() = default;
     ~EglLibrary() override;
 
     bool load() override;
+    std::shared_ptr<IEglGl> functions() override;
 
 private:
     std::mutex m_mutex;
     bool m_loadAttempted{false};
     void *m_handle{nullptr};
+    bool m_resolveAttempted{false};
+    std::shared_ptr<IEglGl> m_functions;
 };
 } // namespace firebolt::rialto::client
 

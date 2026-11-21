@@ -4,7 +4,7 @@ Unit tests run with `./build_ut.py -s client` using EGL/GL mocks. "Spec" means `
 
 ## 1. EGL/GL access (D1, D2)
 
-- [ ] 1.1 Extend `EglLibrary` with the EGL and GL function table resolved through `eglGetProcAddress`, and add a mockable table for tests. Verify `readelf -d libRialtoClient.so` still shows no `libEGL` or `libGLESv2` dependency.
+- [x] 1.1 Extend `EglLibrary` with the EGL and GL function table resolved through `eglGetProcAddress`, and add a mockable table for tests. Verify `readelf -d libRialtoClient.so` still shows no `libEGL` or `libGLESv2` dependency.
 - [ ] 1.2 Implement the once-per-capture extension and format/modifier check. Verify: missing `EGL_EXT_image_dma_buf_import` fails imports, logs once and closes FDs; a listed pair passes.
 
 ## 2. Import (D3, D5)

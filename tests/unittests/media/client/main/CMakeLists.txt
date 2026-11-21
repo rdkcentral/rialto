@@ -33,6 +33,7 @@ add_gtests (
         videoFrameCapture/CaptureCoreCacheTest.cpp
         videoFrameCapture/CaptureCoreLeaseTest.cpp
         videoFrameCapture/VideoFrameTest.cpp
+        videoFrameCapture/EglLibraryTest.cpp
         mediaPipeline/SourceTest.cpp
         mediaPipeline/LoadTest.cpp
         mediaPipeline/CallbackTest.cpp
@@ -140,4 +141,15 @@ target_link_libraries(
         # # Link application source
         RialtoClient
         RialtoClientIpcImpl
+        )
+
+# EglLibraryTest loads the fake libEGL, and the fake capture HAL as a library without EGL entry points
+target_link_libraries( RialtoClientUnitTests FakeEglControl )
+add_dependencies( RialtoClientUnitTests fake_egl fake_capture_hal )
+target_compile_definitions(
+        RialtoClientUnitTests
+
+        PRIVATE
+        FAKE_EGL_PATH="$<TARGET_FILE:fake_egl>"
+        FAKE_NOT_EGL_PATH="$<TARGET_FILE:fake_capture_hal>"
         )
