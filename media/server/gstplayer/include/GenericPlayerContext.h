@@ -113,6 +113,11 @@ struct GenericPlayerContext
     GstElement *videoSink{nullptr};
 
     /**
+     * @brief The westerossink configured for video frame capture, with a reference held by the player.
+     */
+    GstElement *captureSink{nullptr};
+
+    /**
      * @brief Flag used to check, if video decoder handle has been set.
      */
     bool isVideoHandleSet{false};

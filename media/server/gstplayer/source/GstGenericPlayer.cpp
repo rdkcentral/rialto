@@ -24,6 +24,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <functional>
+#include <future>
 #include <limits>
 #include <malloc.h>
 #include <optional>
@@ -181,6 +183,22 @@ bool operator==(const firebolt::rialto::server::SegmentData &lhs, const firebolt
 
 namespace firebolt::rialto::server
 {
+namespace
+{
+/**
+ * @brief A worker thread task that runs a function.
+ */
+class FunctionTask : public IPlayerTask
+{
+public:
+    explicit FunctionTask(std::function<void()> function) : m_function{std::move(function)} {}
+    void execute() const override { m_function(); }
+
+private:
+    std::function<void()> m_function;
+};
+} // namespace
+
 std::weak_ptr<IGstGenericPlayerFactory> GstGenericPlayerFactory::m_factory;
 
 std::shared_ptr<IGstGenericPlayerFactory> IGstGenericPlayerFactory::getFactory()
@@ -336,6 +354,7 @@ GstGenericPlayer::GstGenericPlayer(
     if ((kMinPrimaryVideoWidth > videoRequirements.maxWidth) || (kMinPrimaryVideoHeight > videoRequirements.maxHeight))
     {
         RIALTO_SERVER_LOG_MIL("Secondary video playback selected");
+        m_isSecondaryVideo = true;
         bool westerossinkSecondaryVideoResult = setWesterossinkSecondaryVideo();
         bool ermContextResult = setErmContext();
         if (!westerossinkSecondaryVideoResult && !ermContextResult)
@@ -574,6 +593,87 @@ void GstGenericPlayer::allSourcesAttached()
     {
         m_workerThread->enqueueTask(m_taskFactory->createFinishSetupSource(m_context, *this));
     }
+}
+
+bool GstGenericPlayer::configureCaptureSink(void *captureSession, GstCaps *codecCaps, const std::string &resolution,
+                                            std::chrono::milliseconds readyTimeout)
+{
+    bool result{false};
+    // GStreamer objects belong to the worker thread; the caller needs the outcome before it continues
+    if (!runOnWorkerThreadAndWait(
+            [&]() { result = configureCaptureSinkInternal(captureSession, codecCaps, resolution, readyTimeout); }))
+    {
+        RIALTO_SERVER_LOG_ERROR("Cannot configure the capture sink: no worker thread");
+        return false;
+    }
+    return result;
+}
+
+bool GstGenericPlayer::runOnWorkerThreadAndWait(const std::function<void()> &function)
+{
+    if (!m_workerThread)
+    {
+        return false;
+    }
+    std::promise<void> done;
+    std::future<void> finished{done.get_future()};
+    m_workerThread->enqueueTask(std::make_unique<FunctionTask>(
+        [&function, &done]()
+        {
+            function();
+            done.set_value();
+        }));
+    finished.wait();
+    return true;
+}
+
+bool GstGenericPlayer::configureCaptureSinkInternal(void *captureSession, GstCaps *codecCaps,
+                                                    const std::string &resolution, std::chrono::milliseconds readyTimeout)
+{
+    bool westerossinkMissing{false};
+    GstElement *sink = createWesterossink(m_isSecondaryVideo, westerossinkMissing);
+    if (!sink)
+    {
+        RIALTO_SERVER_LOG_ERROR("Video frame capture needs westerossink, which %s",
+                                westerossinkMissing ? "is not installed" : "could not be created");
+        return false;
+    }
+    for (const char *kProperty : {"rdk-capture-session", "codec", "resolution"})
+    {
+        if (!m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), kProperty))
+        {
+            RIALTO_SERVER_LOG_ERROR("westerossink has no '%s' property: it does not support video frame capture",
+                                    kProperty);
+            return false;
+        }
+    }
+
+    // everything is set before the sink leaves NULL (proposal 3.3 steps 4 to 6)
+    m_glibWrapper->gObjectSet(sink, "rdk-capture-session", captureSession, nullptr);
+    m_glibWrapper->gObjectSet(sink, "codec", codecCaps, nullptr);
+    m_glibWrapper->gObjectSet(sink, "resolution", resolution.c_str(), nullptr);
+    m_gstWrapper->gstObjectRef(sink); // the player's reference; playbin takes the floating one
+    m_glibWrapper->gObjectSet(m_context.pipeline, "video-sink", sink, nullptr);
+    m_context.captureSink = sink;
+
+    if (m_gstWrapper->gstElementSetState(sink, GST_STATE_READY) == GST_STATE_CHANGE_FAILURE)
+    {
+        RIALTO_SERVER_LOG_ERROR("The capture sink rejected its configuration (NULL to READY failed)");
+        return false;
+    }
+    GstState state{GST_STATE_NULL};
+    GstState pending{GST_STATE_VOID_PENDING};
+    const GstClockTime kTimeout{
+        static_cast<GstClockTime>(std::chrono::duration_cast<std::chrono::nanoseconds>(readyTimeout).count())};
+    if (m_gstWrapper->gstElementGetState(sink, &state, &pending, kTimeout) != GST_STATE_CHANGE_SUCCESS ||
+        state != GST_STATE_READY)
+    {
+        RIALTO_SERVER_LOG_ERROR("The capture sink did not reach READY within %lld ms",
+                                static_cast<long long>(readyTimeout.count()));
+        return false;
+    }
+    RIALTO_SERVER_LOG_MIL("Video frame capture sink is configured and READY");
+    return true;
 }
 
 void GstGenericPlayer::attachSamples(const IMediaPipeline::MediaSegmentVector &mediaSegments)

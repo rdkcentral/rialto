@@ -76,10 +76,15 @@ public:
                 gint val = va_arg(args, gint);
                 gObjectSetIntStub(object, kProperty, val);
             }
-            else if (g_strcmp0(kProperty, "audio-fade") == 0)
+            else if (g_strcmp0(kProperty, "audio-fade") == 0 || g_strcmp0(kProperty, "resolution") == 0)
             {
                 const gchar *val = va_arg(args, const gchar *);
                 gObjectSetStrStub(object, kProperty, val);
+            }
+            else if (g_strcmp0(kProperty, "rdk-capture-session") == 0 || g_strcmp0(kProperty, "codec") == 0)
+            {
+                gpointer val = va_arg(args, gpointer);
+                gObjectSetPointerStub(object, kProperty, val);
             }
             else
             {
@@ -97,6 +102,7 @@ public:
     MOCK_METHOD(void, gObjectSetStrStub, (gpointer object, const gchar *first_property_name, const gchar *val));
     MOCK_METHOD(void, gObjectSetBoolStub, (gpointer object, const gchar *first_property_name, gboolean val));
     MOCK_METHOD(void, gObjectSetIntStub, (gpointer object, const gchar *first_property_name, gint val));
+    MOCK_METHOD(void, gObjectSetPointerStub, (gpointer object, const gchar *first_property_name, gpointer val));
     void gObjectGet(gpointer object, const gchar *first_property_name, ...) override
     {
         va_list args;

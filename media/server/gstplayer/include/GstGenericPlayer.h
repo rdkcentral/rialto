@@ -111,6 +111,8 @@ public:
     void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
     void removeSource(const MediaSourceType &mediaSourceType) override;
     void allSourcesAttached() override;
+    bool configureCaptureSink(void *captureSession, GstCaps *codecCaps, const std::string &resolution,
+                              std::chrono::milliseconds readyTimeout) override;
     void play(bool &async) override;
     void pause() override;
     void stop() override;
@@ -258,6 +260,17 @@ private:
      * @retval true on success.
      */
     bool setWesterossinkSecondaryVideo();
+
+    /**
+     * @brief Runs a function on the worker thread and waits for it. @retval false if there is no worker thread.
+     */
+    bool runOnWorkerThreadAndWait(const std::function<void()> &function);
+
+    /**
+     * @brief The worker-thread part of configureCaptureSink().
+     */
+    bool configureCaptureSinkInternal(void *captureSession, GstCaps *codecCaps, const std::string &resolution,
+                                      std::chrono::milliseconds readyTimeout);
 
     /**
      * @brief Creates a westerossink, with res-usage 0 for a secondary-video pipeline. The one creation path for
@@ -469,6 +482,11 @@ private:
      * @brief Thread for handling player tasks.
      */
     std::unique_ptr<IWorkerThread> m_workerThread;
+
+    /**
+     * @brief Whether the pipeline was created for a secondary video (small maximum size).
+     */
+    bool m_isSecondaryVideo{false};
 
     /**
      * @brief Thread for handling gst bus callbacks
