@@ -168,6 +168,13 @@ public:
      * Keep the frame handle until GL work using it has completed, then release the
      * final reference to release the slot. Compatible imports may remain cached,
      * but released pixels must not be accessed until the backing is reacquired.
+     *
+     * Call this with a context of the capture's share group current: Rialto creates
+     * textures here and deletes the ones it no longer needs here. Releasing a frame
+     * and destroying the capture need no current context and make no GL calls on the
+     * releasing thread; Rialto deletes what remains when the capture and its last
+     * frame are gone, on a temporary shared context if the creation context is not
+     * current then.
      * @return The current retained frame and whether its selection changed.
      */
     virtual GLFrameAcquisition acquireCurrentFrame() = 0;
@@ -190,6 +197,10 @@ public:
      * @param[in] eglDisplay EGL display used to import and manage frame resources.
      * @param[in] eglContext EGL context/share group used for GL resources.
      * @return A GL capture object, or nullptr if unsupported or creation fails.
+     *
+     * The display and the context's share group must stay valid until the capture and
+     * every frame acquired from it have been released; destroying them first is
+     * undefined behaviour. Rialto loads libEGL only when a GL capture is created.
      */
     virtual std::shared_ptr<IGLVideoFrameCapture> createGLVideoFrameCapture(EGLDisplay eglDisplay,
                                                                             EGLContext eglContext) = 0;

@@ -17,7 +17,7 @@ Unit tests run with `./build_ut.py -s client` using EGL/GL mocks. "Spec" means `
 
 - [x] 3.1 Implement `retire` (queue only) and `drain` (texture then image). Verify with a GL call counter: dropping a frame on a thread with no context makes zero EGL/GL calls; the queued import is deleted at the next acquire.
 - [x] 3.2 Implement teardown: direct deletion when `eglGetCurrentContext()` matches; otherwise the temporary shared context on a Rialto thread (surfaceless, else 1x1 pbuffer), with an info log. Verify both paths with mocks, including that the temporary context is destroyed and the thread joined.
-- [ ] 3.3 Document in `IVideoFrameCapture.h` that no current context is needed to release frames or destroy the capture, and that the display and share group must outlive frames and the capture. Verify the Doxygen build is clean.
+- [x] 3.3 Document in `IVideoFrameCapture.h` that no current context is needed to release frames or destroy the capture, and that the display and share group must outlive frames and the capture. Verify the Doxygen build is clean.
 
 ## 4. Integration
 
