@@ -24,6 +24,7 @@
 #include "VulkanDeviceContext.h"
 #include "VulkanFrameImporter.h"
 #include "VulkanLibrary.h"
+#include "VulkanVideoFrame.h"
 #include "VulkanVideoFrameCapture.h"
 #endif
 #include "RialtoClientLogging.h"
@@ -136,8 +137,13 @@ VideoFrameCaptureFactory::createVulkanVideoFrameCapture(VkPhysicalDevice physica
         RIALTO_CLIENT_LOG_WARN("Video frame capture is unavailable: the server did not register it");
         return nullptr;
     }
+    const VkImageLayout kImageLayout{context->requiredImageLayout()};
+    CaptureCore::FrameMaker frameMaker{
+        [kImageLayout](const CaptureFrameDescription &description, const std::shared_ptr<ImportCacheEntry> &import,
+                       std::unique_ptr<FrameLease> lease) -> std::shared_ptr<IVideoFrame>
+        { return std::make_shared<VulkanVideoFrame>(description, import, std::move(lease), kImageLayout); }};
     return std::make_shared<VulkanVideoFrameCapture>(videoFrameCaptureIpc, captureId, context,
-                                                     std::make_shared<VulkanFrameImporter>(context));
+                                                     std::make_shared<VulkanFrameImporter>(context), frameMaker);
 #else
     (void)physicalDevice;
     (void)device;

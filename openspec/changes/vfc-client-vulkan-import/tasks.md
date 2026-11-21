@@ -15,7 +15,7 @@ Unit tests run with `./build_ut.py -s client` using a Vulkan wrapper mock. "Spec
 
 - [x] 3.1 Implement image creation and memory import per D2, with FD consume/dup/close rules and reverse-order unwind. Verify with the mock: one object with two planes imports once; an object imported twice uses a duplicated FD; an allocation failure closes its FD and destroys everything created.
 - [x] 3.2 Implement the sampler/conversion cache. Verify: same description returns the same handles; a colour change returns new ones while held frames keep theirs; RGB returns a null conversion; linear filtering only when the format reports it.
-- [ ] 3.3 Make Vulkan frames report `imageFormat()`, `imageLayout() == requiredImageLayout`, one resource and `RGBA`. Verify with a unit test.
+- [x] 3.3 Make Vulkan frames report `imageFormat()`, `imageLayout() == requiredImageLayout`, one resource and `RGBA`. Verify with a unit test.
 
 ## 4. Barriers and deferred release (D4, D5)
 
