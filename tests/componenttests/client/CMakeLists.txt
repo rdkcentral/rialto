@@ -72,6 +72,7 @@ add_gtests (
         tests/mse/VolumeTest.cpp
         tests/mse/WriteSegmentEdgeCasesTest.cpp
         tests/videoFrameCapture/VideoFrameCaptureRegistrationTest.cpp
+        tests/videoFrameCapture/VideoFrameCaptureAttachTest.cpp
         
         # Web Audio Component tests
         tests/webaudio/CreateWebAudioPlayerTest.cpp

@@ -26,7 +26,10 @@
 #include <cstdint>
 #include <cstdlib>
 
+using testing::_;
+using testing::Invoke;
 using testing::Return;
+using testing::StrEq;
 
 namespace
 {
@@ -35,6 +38,7 @@ constexpr unsigned kFramesToPush{1};
 constexpr int kFrameCountInPlayingState{3};
 constexpr int kPositionInPaused{10};
 constexpr double kSeekPlaybackRate{1.0};
+const std::string kVideoSinkTypeName{"VideoSink"};
 } // namespace
 
 namespace firebolt::rialto::server::ct
@@ -122,6 +126,26 @@ public:
         }
         willNotifyPaused();
         notifyPaused();
+    }
+
+    void destroyCapture(std::uint32_t captureId)
+    {
+        DestroyVideoFrameCaptureRequest request;
+        request.set_capture_id(captureId);
+        ConfigureAction<DestroyVideoFrameCapture>(m_clientStub).send(request).expectSuccess();
+    }
+
+    void createAndLoadSession()
+    {
+        createSession();
+        gstPlayerWillBeCreated();
+        load();
+    }
+
+    void destroyLoadedSession()
+    {
+        gstPlayerWillBeDestructed();
+        destroySession();
     }
 
     std::uint32_t m_captureId{0};
@@ -268,5 +292,108 @@ TEST_F(VideoFrameCaptureAttachTest, shouldRefuseAttachAndDetachInFailure)
 
     gstPlayerWillBeDestructed();
     destroySession();
+}
+
+/*
+ * Component Test: Reuse after detach and after pipeline destruction
+ * Test Objective:
+ *  Check that a capture can be attached to a new pipeline once it was detached, or its pipeline destroyed.
+ *
+ * Test Steps:
+ *  Step 1: Attach the capture to a loaded pipeline and detach it; destroy the pipeline; attach it to a new one.
+ *  Step 2: Destroy that pipeline while the capture is attached; attach it to a third pipeline.
+ *
+ * Expected Results:
+ *  Each attach succeeds.
+ *
+ * Code:
+ */
+TEST_F(VideoFrameCaptureAttachTest, shouldReuseCaptureAfterDetachAndAfterPipelineDestruction)
+{
+    m_captureId = createCapture();
+
+    // Step 1: Reuse after detach
+    createAndLoadSession();
+    attach(m_captureId, true);
+    detach(true);
+    destroyLoadedSession();
+    createAndLoadSession();
+    attach(m_captureId, true);
+
+    // Step 2: Reuse after pipeline destruction
+    destroyLoadedSession();
+    createAndLoadSession();
+    attach(m_captureId, true);
+    destroyLoadedSession();
+}
+
+/*
+ * Component Test: Destroying an attached capture
+ * Test Objective:
+ *  Check that destroying the registration of an attached capture detaches it.
+ *
+ * Test Steps:
+ *  Step 1: Attach a capture to a loaded pipeline and destroy the capture.
+ *  Step 2: Attach a new capture to the same pipeline.
+ *
+ * Expected Results:
+ *  The new capture is attached.
+ *
+ * Code:
+ */
+TEST_F(VideoFrameCaptureAttachTest, shouldDetachDestroyedCapture)
+{
+    m_captureId = createCapture();
+    createAndLoadSession();
+
+    // Step 1: Destroy the attached capture
+    attach(m_captureId, true);
+    destroyCapture(m_captureId);
+
+    // Step 2: The pipeline takes a new capture
+    attach(createCapture(), true);
+    destroyLoadedSession();
+}
+
+/*
+ * Component Test: setVideoWindow while a capture is attached
+ * Test Objective:
+ *  Check that setVideoWindow fails while a capture is attached and works as before after detach.
+ *
+ * Test Steps:
+ *  Step 1: Attach a capture to a loaded pipeline; setVideoWindow fails.
+ *  Step 2: Detach; setVideoWindow sets the sink rectangle.
+ *
+ * Expected Results:
+ *  The video window is refused only while capturing.
+ *
+ * Code:
+ */
+TEST_F(VideoFrameCaptureAttachTest, shouldRefuseVideoWindowWhileCaptureIsAttached)
+{
+    m_captureId = createCapture();
+    createAndLoadSession();
+
+    // Step 1: Refused while attached
+    attach(m_captureId, true);
+    ConfigureAction<SetVideoWindow>(m_clientStub).send(createSetVideoWindowRequest(m_sessionId)).expectFailure();
+
+    // Step 2: As before after detach
+    detach(true);
+    GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
+    GstElement *videoSink = gst_element_factory_create(elementFactory, nullptr);
+    gst_object_unref(elementFactory);
+    GParamSpec paramSpec{};
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
+        .WillOnce(Invoke([&](gpointer, const gchar *, void *element)
+                         { *reinterpret_cast<GstElement **>(element) = videoSink; }));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(videoSink))).WillOnce(Return(kVideoSinkTypeName.c_str()));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("rectangle"))).WillOnce(Return(&paramSpec));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(videoSink, StrEq("rectangle")));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(videoSink));
+    ConfigureAction<SetVideoWindow>(m_clientStub).send(createSetVideoWindowRequest(m_sessionId)).expectSuccess();
+
+    destroyLoadedSession();
+    gst_object_unref(videoSink);
 }
 } // namespace firebolt::rialto::server::ct

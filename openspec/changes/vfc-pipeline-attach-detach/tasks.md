@@ -17,7 +17,7 @@
 ## 3. Component tests
 
 - [x] 3.1 Add a component-test state matrix that drives a real pipeline through UNKNOWN (created), loaded, committed, IDLE, PAUSED, PLAYING, SEEKING, END_OF_STREAM, STOPPED and FAILURE and checks the attach and detach result for each row of proposal §3.5. Verify with `./build_ct.py`.
-- [ ] 3.2 Add component tests for one capture on two pipelines, two captures on one pipeline, reuse after detach and after pipeline destruction, and `setVideoWindow()` while attached. Verify with `./build_ct.py`.
+- [x] 3.2 Add component tests for one capture on two pipelines, two captures on one pipeline, reuse after detach and after pipeline destruction, and `setVideoWindow()` while attached. Verify with `./build_ct.py`.
 
 ## Workflow follow-up
 
