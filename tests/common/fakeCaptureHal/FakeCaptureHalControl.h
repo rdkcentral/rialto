@@ -62,6 +62,9 @@ extern "C"
     /** Queues a CaptureStatus value to be returned by the next call of \a operation instead of the default. */
     void fakeCaptureHalPushResult(int operation, uint32_t status);
 
+    /** Makes the next successfully acquired frame invalid (a plane past the end of its object). */
+    void fakeCaptureHalSetNextFrameInvalid(bool invalid);
+
     /** Number of calls made to \a operation since the last reset. */
     int fakeCaptureHalCallCount(int operation);
 
@@ -78,6 +81,7 @@ extern "C"
     typedef void (*FakeCaptureHalPushResultFunction)(int, uint32_t);
     typedef int (*FakeCaptureHalCallCountFunction)(int);
     typedef int (*FakeCaptureHalCountFunction)();
+    typedef void (*FakeCaptureHalSetNextFrameInvalidFunction)(bool);
 }
 
 #endif // FIREBOLT_RIALTO_CAPTURE_FAKE_CAPTURE_HAL_CONTROL_H_

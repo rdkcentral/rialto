@@ -49,6 +49,7 @@ struct FakeState
     std::array<int, FAKE_CAPTURE_HAL_OPERATION_COUNT> callCounts{};
     int liveSessions{0};
     int destroyedSessions{0};
+    bool nextFrameInvalid{false};
 };
 
 FakeState &state()
@@ -157,6 +158,12 @@ public:
         outFrame.dmaBufObjects = {{kObjectId, kFrameBytes}};
         outFrame.planes = {{0, kObjectId, 0, kLumaBytes, kWidth}, {1, kObjectId, kLumaBytes, kLumaBytes / 2, kWidth}};
         outFrame.exportedDmaBufs = {{kObjectId, kFd}};
+        if (state().nextFrameInvalid)
+        {
+            // the chroma plane runs past the end of its object: fails range validation
+            state().nextFrameInvalid = false;
+            outFrame.planes[1].lengthBytes = kFrameBytes;
+        }
         return CaptureStatus::OK;
     }
 
@@ -218,6 +225,7 @@ extern "C"
             queue.clear();
         fake.callCounts = {};
         fake.destroyedSessions = 0;
+        fake.nextFrameInvalid = false;
     }
 
     void fakeCaptureHalSetFactoryReturnsNull(bool returnsNull)
@@ -231,6 +239,12 @@ extern "C"
         std::lock_guard<std::mutex> lock{state().mutex};
         state().minimumSlots = minimumSlots;
         state().maximumSlots = maximumSlots;
+    }
+
+    void fakeCaptureHalSetNextFrameInvalid(bool invalid)
+    {
+        std::lock_guard<std::mutex> lock{state().mutex};
+        state().nextFrameInvalid = invalid;
     }
 
     void fakeCaptureHalPushResult(int operation, uint32_t status)

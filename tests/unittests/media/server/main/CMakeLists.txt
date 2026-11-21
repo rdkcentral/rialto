@@ -49,6 +49,7 @@ add_gtests (
         captureCommit/CaptureAdmissionTest.cpp
         captureCommit/CaptureCommitTest.cpp
         captureCommit/CaptureSessionRuntimeTest.cpp
+        captureCommit/CaptureSessionRuntimeFakeHalTest.cpp
         ${CMAKE_SOURCE_DIR}/tests/unittests/media/server/capture/CaptureRecordFixtures.cpp
         mediaPipeline/CaptureCommitPipelineTest.cpp
 
@@ -162,3 +163,8 @@ target_link_libraries(
         RialtoPlayerCommon
         RialtoCommonMisc
         )
+
+# CaptureSessionRuntimeFakeHalTest loads the fake capture HAL
+target_link_libraries( RialtoServerMainUnitTests FakeCaptureHalControl )
+add_dependencies( RialtoServerMainUnitTests fake_capture_hal )
+target_compile_definitions( RialtoServerMainUnitTests PRIVATE FAKE_CAPTURE_HAL_PATH="$<TARGET_FILE:fake_capture_hal>" )
