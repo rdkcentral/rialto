@@ -80,6 +80,9 @@ public:
      */
     std::shared_ptr<CaptureSessionRuntime> sessionForRelease(std::uint32_t captureId, std::uint32_t poolId) const;
 
+    /** Every session of every capture, active, retired or of a destroyed capture. */
+    std::vector<std::shared_ptr<CaptureSessionRuntime>> allSessions() const;
+
     /** Number of registered captures. */
     std::size_t size() const { return m_entries.size(); }
 

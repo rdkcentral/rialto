@@ -43,6 +43,20 @@ bool VideoFrameCaptureRegistry::remove(std::uint32_t captureId)
     return true;
 }
 
+std::vector<std::shared_ptr<CaptureSessionRuntime>> VideoFrameCaptureRegistry::allSessions() const
+{
+    std::vector<std::shared_ptr<CaptureSessionRuntime>> sessions;
+    for (const auto &[kId, kEntry] : m_entries)
+    {
+        if (kEntry.runtime)
+            sessions.push_back(kEntry.runtime);
+        sessions.insert(sessions.end(), kEntry.retiredSessions.begin(), kEntry.retiredSessions.end());
+    }
+    for (const auto &[kId, kOrphans] : m_orphans)
+        sessions.insert(sessions.end(), kOrphans.begin(), kOrphans.end());
+    return sessions;
+}
+
 std::shared_ptr<CaptureSessionRuntime> VideoFrameCaptureRegistry::sessionForRelease(std::uint32_t captureId,
                                                                                     std::uint32_t poolId) const
 {

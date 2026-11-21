@@ -148,6 +148,12 @@ public:
      */
     void retire();
 
+    /**
+     * @brief For a client that disconnected (R10 design D4): releases every held frame once, then retires the
+     *        session. Pending deliveries resolve on their own: their frames are no longer held.
+     */
+    void releaseAllAndRetire();
+
     /** Whether the session was retired. */
     bool isRetired() const;
 

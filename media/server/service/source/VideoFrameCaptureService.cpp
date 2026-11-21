@@ -100,6 +100,7 @@ bool VideoFrameCaptureService::hasCapture(VideoFrameCaptureClientId clientId, st
 void VideoFrameCaptureService::removeClient(VideoFrameCaptureClientId clientId)
 {
     std::map<std::uint32_t, int> bound;
+    std::vector<std::shared_ptr<CaptureSessionRuntime>> sessions;
     BoundCaptureRemovedHandler handler;
     {
         std::lock_guard<std::mutex> lock{m_mutex};
@@ -107,8 +108,15 @@ void VideoFrameCaptureService::removeClient(VideoFrameCaptureClientId clientId)
         if (it == m_registries.end())
             return;
         bound = it->second.boundCaptures();
+        sessions = it->second.allSessions();
         m_registries.erase(it);
         handler = m_boundCaptureRemovedHandler;
+    }
+    // design D4: the client's frames will never be released by it, so release them all, once, and retire the
+    // sessions; their pipelines are destroyed with the client, which lets the deletion gate delete them
+    for (const auto &kSession : sessions)
+    {
+        kSession->releaseAllAndRetire();
     }
     for (const auto &[kCaptureId, kSessionId] : bound)
     {

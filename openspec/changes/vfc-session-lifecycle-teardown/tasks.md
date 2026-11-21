@@ -15,7 +15,7 @@
 
 ## 3. Disconnect (D4)
 
-- [ ] 3.1 On `clientDisconnected`, release every stored record once, retire all runtimes, and remove the registry when empty. Verify with `./build_ut.py -s serveripc` tests.
+- [x] 3.1 On `clientDisconnected`, release every stored record once, retire all runtimes, and remove the registry when empty. Verify with `./build_ut.py -s serveripc` tests.
 
 ## 4. Component tests
 

@@ -19,6 +19,7 @@
 
 #include "CaptureHalLibraryFactoryMock.h"
 #include "CaptureHalLibraryMock.h"
+#include "CaptureRecordFixtures.h"
 #include "CaptureSessionMock.h"
 #include "VideoFrameCaptureRegistry.h"
 #include "VideoFrameCaptureService.h"
@@ -316,4 +317,62 @@ TEST(VideoFrameCaptureServiceTest, ShouldFindSessionsForReleaseAfterRetirementAn
     EXPECT_EQ(service.sessionForRelease(kClientA, captureId, 1), first);
     EXPECT_EQ(service.sessionForRelease(kClientA, captureId, 2), second);
     EXPECT_TRUE(second->isRetired());
+}
+
+TEST(VideoFrameCaptureServiceTest, ShouldReleaseEveryHeldFrameOnceWhenTheClientDisconnects)
+{
+    VideoFrameCaptureService service{halFactory(true)};
+    std::uint32_t captureId{0};
+    ASSERT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, captureId), VideoFrameCaptureServiceStatus::OK);
+
+    firebolt::rialto::capture::test::CaptureRecordFixtures records;
+    auto *session = new ::testing::NiceMock<firebolt::rialto::capture::CaptureSessionMock>();
+    bool deleted{false};
+    firebolt::rialto::capture::CapturePool pool;
+    firebolt::rialto::capture::test::CaptureRecordFixtures::makeNv12Pool(pool, 3);
+    auto runtime = std::make_shared<firebolt::rialto::server::CaptureSessionRuntime>(
+        firebolt::rialto::wrappers::CaptureSessionPtr{session,
+                                                      [&deleted](firebolt::rialto::capture::ICaptureSession *doomed)
+                                                      {
+                                                          deleted = true;
+                                                          delete doomed;
+                                                      }},
+        1, pool);
+    service.setCaptureRuntime(kClientA, captureId, runtime);
+
+    // two frames delivered and held
+    EXPECT_CALL(*session, acquireCurrentFrame(::testing::_))
+        .WillOnce(::testing::Invoke(
+            [&](firebolt::rialto::capture::CapturedFrame &frame)
+            {
+                records.makeExampleB(frame, 0, 1);
+                firebolt::rialto::capture::test::CaptureRecordFixtures::setSingleObjectId(frame, 100);
+                return firebolt::rialto::capture::CaptureStatus::OK;
+            }))
+        .WillOnce(::testing::Invoke(
+            [&](firebolt::rialto::capture::CapturedFrame &frame)
+            {
+                records.makeExampleB(frame, 1, 2);
+                firebolt::rialto::capture::test::CaptureRecordFixtures::setSingleObjectId(frame, 101);
+                return firebolt::rialto::capture::CaptureStatus::OK;
+            }));
+    for (int i = 0; i < 2; ++i)
+    {
+        firebolt::rialto::server::CaptureSessionRuntime::DeliveryTicket ticket;
+        ASSERT_EQ(runtime->acquire([](const firebolt::rialto::capture::CapturedFrame &, bool, bool) {}, ticket),
+                  firebolt::rialto::capture::CaptureStatus::OK);
+        runtime->onDelivery(ticket, true);
+    }
+
+    EXPECT_CALL(*session, releaseFrame(::testing::_))
+        .Times(2)
+        .WillRepeatedly(Return(firebolt::rialto::capture::CaptureStatus::OK));
+    service.removeClient(kClientA);
+    EXPECT_TRUE(runtime->isRetired());
+    EXPECT_FALSE(runtime->isSlotLocked(0));
+    EXPECT_FALSE(runtime->isSlotLocked(1));
+    EXPECT_FALSE(deleted);    // its pipeline still has the sink
+    runtime->setSinkAtNull(); // the client's pipeline is destroyed
+    EXPECT_TRUE(deleted);
+    EXPECT_EQ(service.captureRuntime(kClientA, captureId), nullptr); // the registry is gone
 }

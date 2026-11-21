@@ -44,6 +44,7 @@ add_gtests (
         metrics/PrivateMetricsServiceTests.cpp
 
         videoFrameCaptureService/VideoFrameCaptureServiceTests.cpp
+        ${CMAKE_SOURCE_DIR}/tests/unittests/media/server/capture/CaptureRecordFixtures.cpp
         )
 
 target_include_directories(
@@ -64,6 +65,7 @@ target_include_directories(
         ../../../../../media/server/service/source/
         $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:ExternalLibraryMocks,INTERFACE_INCLUDE_DIRECTORIES>
+        ${CMAKE_SOURCE_DIR}/tests/unittests/media/server/capture
         )
 
 target_link_libraries(

@@ -221,6 +221,27 @@ void CaptureSessionRuntime::retire()
     doomed = takeSessionIfDeletableLocked();
 }
 
+void CaptureSessionRuntime::releaseAllAndRetire()
+{
+    wrappers::CaptureSessionPtr doomed;
+    std::lock_guard<std::mutex> lock{m_mutex};
+    for (auto &record : m_slots)
+    {
+        if (record)
+        {
+            const std::uint32_t kSlot{record->slotIndex};
+            if (m_guard.releaseFrame(*record) != capture::CaptureStatus::OK)
+            {
+                RIALTO_SERVER_LOG_ERROR("The capture HAL failed to release slot %u of pool %u", kSlot, m_poolId);
+            }
+            m_lockedRanges.remove(kSlot);
+            record.reset(); // released once, whatever the result: the client that held it is gone
+        }
+    }
+    m_retired = true;
+    doomed = takeSessionIfDeletableLocked();
+}
+
 void CaptureSessionRuntime::setSinkAtNull()
 {
     wrappers::CaptureSessionPtr doomed;
