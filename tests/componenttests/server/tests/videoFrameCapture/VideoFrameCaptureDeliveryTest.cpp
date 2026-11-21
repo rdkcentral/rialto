@@ -414,4 +414,29 @@ TEST_F(VideoFrameCaptureTeardownTest, shouldDeleteTheSessionAfterALateReleaseFol
     tearDownCommittedPipeline();
 }
 
+/*
+ * Component Test: Pipeline destroyed while frames are held (4.2)
+ * Expected Results:
+ *  Both releases succeed after the pipeline is gone, and the session is deleted after the second.
+ */
+TEST_F(VideoFrameCaptureTeardownTest, shouldDeleteTheSessionAfterTheLastReleaseFollowingDestruction)
+{
+    commitWithCapture();
+    const auto kFirst = acquire();
+    const auto kSecond = acquire();
+    ASSERT_EQ(kFirst.status(), VIDEO_FRAME_CAPTURE_STATUS_OK);
+    ASSERT_EQ(kSecond.status(), VIDEO_FRAME_CAPTURE_STATUS_OK);
+
+    captureSinkWillBeDropped();
+    gstPlayerWillBeDestructed();
+    destroySession();
+    EXPECT_EQ(liveSessions(), 1);
+
+    EXPECT_EQ(release(kFirst), VIDEO_FRAME_CAPTURE_STATUS_OK);
+    EXPECT_EQ(liveSessions(), 1);
+    EXPECT_EQ(release(kSecond), VIDEO_FRAME_CAPTURE_STATUS_OK);
+    EXPECT_EQ(liveSessions(), 0);
+    destroyCapture(m_captureId);
+}
+
 } // namespace firebolt::rialto::server::ct
