@@ -161,6 +161,26 @@ void CaptureSessionRuntime::onDelivery(const DeliveryTicket &ticket, bool delive
     m_slots[ticket.slotIndex].reset();
 }
 
+capture::CaptureStatus CaptureSessionRuntime::release(std::uint32_t slotIndex, std::uint64_t acquisitionToken)
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+    if (slotIndex >= m_slots.size() || !m_slots[slotIndex] || m_slots[slotIndex]->acquisitionToken != acquisitionToken)
+    {
+        RIALTO_SERVER_LOG_WARN("Release of slot %u with token %llu of pool %u matches no frame lock", slotIndex,
+                               static_cast<unsigned long long>(acquisitionToken), m_poolId);
+        return capture::CaptureStatus::INVALID_ARGUMENT;
+    }
+    const capture::CaptureStatus kStatus{m_guard.releaseFrame(*m_slots[slotIndex])};
+    if (kStatus != capture::CaptureStatus::OK)
+    {
+        RIALTO_SERVER_LOG_ERROR("The capture HAL failed to release slot %u of pool %u", slotIndex, m_poolId);
+        return kStatus; // the lock may still be held: keep the record
+    }
+    m_lockedRanges.remove(slotIndex);
+    m_slots[slotIndex].reset();
+    return capture::CaptureStatus::OK;
+}
+
 bool CaptureSessionRuntime::isSlotLocked(std::uint32_t slotIndex) const
 {
     std::lock_guard<std::mutex> lock{m_mutex};

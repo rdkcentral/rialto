@@ -135,6 +135,8 @@ TEST_F(CaptureSessionRuntimeFakeHalTest, InvalidFrameIsReleasedClosedAndMakesThe
     EXPECT_EQ(acquire(later), capture::CaptureStatus::FATAL_ERROR);
     EXPECT_EQ(m_callCount(FAKE_CAPTURE_HAL_ACQUIRE_CURRENT_FRAME), kAcquiresSoFar);
 
-    // the earlier frame keeps its lock, so its release still works (tested with release in 3.1)
+    // the earlier frame keeps its lock, and its release still works on the fatal session
     EXPECT_TRUE(m_runtime->isSlotLocked(earlier.slotIndex));
+    EXPECT_EQ(m_runtime->release(earlier.slotIndex, earlier.acquisitionToken), capture::CaptureStatus::OK);
+    EXPECT_EQ(m_callCount(FAKE_CAPTURE_HAL_RELEASE_FRAME), 2);
 }

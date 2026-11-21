@@ -59,6 +59,10 @@ public:
                              const ::firebolt::rialto::AcquireCurrentVideoFrameRequest *request,
                              ::firebolt::rialto::AcquireCurrentVideoFrameResponse *response,
                              ::google::protobuf::Closure *done) override;
+    void releaseFrame(::google::protobuf::RpcController *controller,
+                      const ::firebolt::rialto::ReleaseVideoFrameRequest *request,
+                      ::firebolt::rialto::ReleaseVideoFrameResponse *response,
+                      ::google::protobuf::Closure *done) override;
 
 private:
     /** @retval false if the call did not come from a known client connection. */

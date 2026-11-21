@@ -133,6 +133,15 @@ public:
      */
     void onDelivery(const DeliveryTicket &ticket, bool delivered);
 
+    /**
+     * @brief Ends the frame lock of a delivered frame (design D5). Works on a capture-fatal session too.
+     *
+     * @retval INVALID_ARGUMENT, keeping every lock, for a slot outside the pool, an unlocked slot or another token;
+     *         otherwise the HAL result. On OK the slot and its locked ranges are cleared; on any other result the
+     *         record is kept.
+     */
+    capture::CaptureStatus release(std::uint32_t slotIndex, std::uint64_t acquisitionToken);
+
     /** Whether the slot holds a frame lock owed a release. */
     bool isSlotLocked(std::uint32_t slotIndex) const;
 

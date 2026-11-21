@@ -16,7 +16,7 @@
 
 ## 3. Release (D5)
 
-- [ ] 3.1 Implement the release handler: matching release `OK`; wrong slot, unlocked slot and wrong token `INVALID_ARGUMENT` with the lock kept. Verify with server IPC unit tests.
+- [x] 3.1 Implement the release handler: matching release `OK`; wrong slot, unlocked slot and wrong token `INVALID_ARGUMENT` with the lock kept. Verify with server IPC unit tests.
 
 ## 4. Component tests
 

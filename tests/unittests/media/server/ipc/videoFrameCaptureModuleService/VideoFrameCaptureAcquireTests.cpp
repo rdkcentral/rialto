@@ -243,3 +243,80 @@ TEST_F(VideoFrameCaptureAcquireTests, PoolMetadataIsSentOncePerDescriptionWithou
     EXPECT_EQ(kResized.pool_metadata().texture_width(), 1280U);
     callbacks[2](true);
 }
+
+class VideoFrameCaptureReleaseTests : public VideoFrameCaptureAcquireTests
+{
+protected:
+    ReleaseVideoFrameResponse release(std::uint32_t poolId, std::uint32_t slot, std::uint64_t token)
+    {
+        ReleaseVideoFrameRequest request;
+        request.set_capture_id(kCaptureId);
+        request.set_pool_id(poolId);
+        request.set_slot_index(slot);
+        request.set_acquisition_token(token);
+        ReleaseVideoFrameResponse response;
+        EXPECT_CALL(m_controller, getClient()).WillOnce(Return(m_client));
+        EXPECT_CALL(m_closure, Run());
+        m_sut->releaseFrame(&m_controller, &request, &response, &m_closure);
+        return response;
+    }
+
+    // A frame delivered to the client in slot 1 with token 42.
+    void frameIsHeld()
+    {
+        captureIsCommitted();
+        EXPECT_CALL(*m_session, acquireCurrentFrame(_))
+            .WillOnce(Invoke(
+                [&](CapturedFrame &frame)
+                {
+                    m_records.makeExampleB(frame, 1, 42);
+                    return CaptureStatus::OK;
+                }));
+        EXPECT_CALL(m_controller, setReplyFdsOwned(true));
+        EXPECT_CALL(m_controller, setDeliveryCallback(_))
+            .WillOnce(Invoke([](std::function<void(bool)> callback) { callback(true); }));
+        ASSERT_EQ(acquire().status(), VIDEO_FRAME_CAPTURE_STATUS_OK);
+    }
+};
+
+TEST_F(VideoFrameCaptureReleaseTests, MatchingReleaseEndsTheLock)
+{
+    frameIsHeld();
+    EXPECT_CALL(*m_session, releaseFrame(_))
+        .WillOnce(Invoke(
+            [](CapturedFrame &frame)
+            {
+                EXPECT_EQ(frame.slotIndex, 1U);
+                EXPECT_EQ(frame.acquisitionToken, 42U);
+                return CaptureStatus::OK;
+            }));
+    EXPECT_EQ(release(kPoolId, 1, 42).status(), VIDEO_FRAME_CAPTURE_STATUS_OK);
+    EXPECT_FALSE(m_runtime->isSlotLocked(1));
+    EXPECT_EQ(release(kPoolId, 1, 42).status(), VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT); // only once
+}
+
+TEST_F(VideoFrameCaptureReleaseTests, MismatchedReleasesAreInvalidAndKeepTheLock)
+{
+    frameIsHeld();
+    EXPECT_CALL(*m_session, releaseFrame(_)).Times(0);
+    EXPECT_EQ(release(kPoolId, 2, 42).status(), VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT);     // wrong slot
+    EXPECT_EQ(release(kPoolId, 0, 42).status(), VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT);     // unlocked slot
+    EXPECT_EQ(release(kPoolId, 1, 43).status(), VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT);     // wrong token
+    EXPECT_EQ(release(kPoolId, 99, 42).status(), VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT);    // outside the pool
+    EXPECT_EQ(release(kPoolId + 1, 1, 42).status(), VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT); // another pool
+    EXPECT_TRUE(m_runtime->isSlotLocked(1));
+}
+
+TEST_F(VideoFrameCaptureReleaseTests, HalReleaseFailureKeepsTheRecord)
+{
+    frameIsHeld();
+    EXPECT_CALL(*m_session, releaseFrame(_)).WillOnce(Return(CaptureStatus::NO_RESOURCES));
+    EXPECT_EQ(release(kPoolId, 1, 42).status(), VIDEO_FRAME_CAPTURE_STATUS_NO_RESOURCES);
+    EXPECT_TRUE(m_runtime->isSlotLocked(1));
+}
+
+TEST_F(VideoFrameCaptureReleaseTests, ReleaseWithoutACommittedSessionIsInvalid)
+{
+    EXPECT_CALL(m_service, captureRuntime(1, kCaptureId)).WillOnce(Return(nullptr));
+    EXPECT_EQ(release(kPoolId, 1, 42).status(), VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT);
+}

@@ -339,4 +339,28 @@ void VideoFrameCaptureModuleService::acquireCurrentFrame(::google::protobuf::Rpc
     }
     done->Run();
 }
+
+void VideoFrameCaptureModuleService::releaseFrame(::google::protobuf::RpcController *controller,
+                                                  const ::firebolt::rialto::ReleaseVideoFrameRequest *request,
+                                                  ::firebolt::rialto::ReleaseVideoFrameResponse *response,
+                                                  ::google::protobuf::Closure *done)
+{
+    service::VideoFrameCaptureClientId clientId{0};
+    if (!clientIdOf(controller, clientId))
+    {
+        controller->SetFailed("Unknown client");
+        done->Run();
+        return;
+    }
+    std::shared_ptr<CaptureSessionRuntime> runtime{
+        m_videoFrameCaptureService.captureRuntime(clientId, request->capture_id())};
+    if (!runtime || runtime->poolId() != request->pool_id())
+    {
+        response->set_status(VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT);
+        done->Run();
+        return;
+    }
+    response->set_status(toWireStatus(runtime->release(request->slot_index(), request->acquisition_token())));
+    done->Run();
+}
 } // namespace firebolt::rialto::server::ipc
