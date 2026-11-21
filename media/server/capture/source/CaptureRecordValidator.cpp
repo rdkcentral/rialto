@@ -19,6 +19,7 @@
 
 #include "CaptureRecordValidator.h"
 
+#include <map>
 #include <set>
 
 namespace firebolt::rialto::capture
@@ -108,11 +109,39 @@ ValidationResult validateIdentity(const CapturedFrame &frame, uint32_t admittedS
 
     return ValidationResult::pass();
 }
+// Overflow-safe: only subtracts values already known to be in range.
+bool fitsWithin(uint64_t offset, uint64_t length, uint64_t size)
+{
+    return offset <= size && length <= size - offset;
+}
+
+ValidationResult validateRanges(const CapturedFrame &frame)
+{
+    std::map<uint64_t, uint64_t> objectSizes;
+    for (const DmaBufObject &kObject : frame.dmaBufObjects)
+        objectSizes[kObject.objectId] = kObject.sizeBytes;
+
+    for (const FramePlane &kPlane : frame.planes)
+    {
+        if (!fitsWithin(kPlane.offsetBytes, kPlane.lengthBytes, objectSizes.at(kPlane.dmaBufObjectId)))
+            return ValidationResult::fail("frame.planeRange: plane extends past the end of its object");
+    }
+
+    const Rectangle &kVisible = frame.visibleRegion;
+    if (!fitsWithin(kVisible.x, kVisible.size.width, frame.backingSize.width) ||
+        !fitsWithin(kVisible.y, kVisible.size.height, frame.backingSize.height))
+        return ValidationResult::fail("frame.visibleRegion: visible region extends past the backing size");
+
+    return ValidationResult::pass();
+}
 } // namespace
 
 ValidationResult validateFrame(const CapturedFrame &frame, uint32_t admittedSlots)
 {
-    return validateIdentity(frame, admittedSlots);
+    ValidationResult result = validateIdentity(frame, admittedSlots);
+    if (result.ok)
+        result = validateRanges(frame);
+    return result;
 }
 
 } // namespace firebolt::rialto::capture

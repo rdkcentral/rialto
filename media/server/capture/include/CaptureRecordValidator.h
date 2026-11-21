@@ -75,6 +75,10 @@ ValidationResult validatePool(const CapturePool &pool, const CaptureCapabilities
  * frame has planes; every object ID is non-zero and listed once; every plane references a listed object and every
  * listed object is referenced; exportedDmaBufs has exactly one valid descriptor for each referenced object, with no
  * duplicates and no unreferenced objects.
+ *
+ * Range rules, checked without arithmetic overflow: every plane satisfies offsetBytes <= sizeBytes and
+ * lengthBytes <= sizeBytes - offsetBytes for its object; the visible region fits inside backingSize from its
+ * origin.
  */
 ValidationResult validateFrame(const CapturedFrame &frame, uint32_t admittedSlots);
 

@@ -22,7 +22,9 @@
 
 #include <gtest/gtest.h>
 
+#include <cstdint>
 #include <functional>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -183,5 +185,44 @@ TEST(CaptureRecordValidatorTest, ShouldCheckFrameIdentityAndDescriptors)
          [](CapturedFrame &f, CaptureRecordFixtures &) { f.exportedDmaBufs.pop_back(); }, "frame.missingDescriptor"},
         {"negative descriptor", &CaptureRecordFixtures::makeExampleA,
          [](CapturedFrame &f, CaptureRecordFixtures &) { f.exportedDmaBufs[0].fd = -1; }, "frame.invalidDescriptor"},
+    });
+}
+
+TEST(CaptureRecordValidatorTest, ShouldCheckRangesWithoutOverflow)
+{
+    constexpr uint64_t kMax64{std::numeric_limits<uint64_t>::max()};
+    constexpr uint32_t kMax32{std::numeric_limits<uint32_t>::max()};
+    runFrameCases({
+        {"plane ends exactly at object end", &CaptureRecordFixtures::makeExampleA,
+         [](CapturedFrame &f, CaptureRecordFixtures &) { f.planes[0].lengthBytes = f.dmaBufObjects[0].sizeBytes; }, ""},
+        {"plane one byte too long", &CaptureRecordFixtures::makeExampleA, [](CapturedFrame &f, CaptureRecordFixtures &)
+         { f.planes[0].lengthBytes = f.dmaBufObjects[0].sizeBytes + 1; }, "frame.planeRange"},
+        {"offset past object end", &CaptureRecordFixtures::makeExampleB,
+         [](CapturedFrame &f, CaptureRecordFixtures &)
+         {
+             f.planes[1].offsetBytes = f.dmaBufObjects[0].sizeBytes + 1;
+             f.planes[1].lengthBytes = 0;
+         },
+         "frame.planeRange"},
+        {"offset plus length wraps 64 bits", &CaptureRecordFixtures::makeExampleB,
+         [=](CapturedFrame &f, CaptureRecordFixtures &) { f.planes[1].lengthBytes = kMax64 - 4; }, "frame.planeRange"},
+        {"visible region exactly the backing", &CaptureRecordFixtures::makeExampleB,
+         [](CapturedFrame &f, CaptureRecordFixtures &) { f.visibleRegion = Rectangle{0, 0, f.backingSize}; }, ""},
+        {"visible width too large", &CaptureRecordFixtures::makeExampleB, [](CapturedFrame &f, CaptureRecordFixtures &)
+         { f.visibleRegion.size.width = f.backingSize.width + 1; }, "frame.visibleRegion"},
+        {"visible height too large from its origin", &CaptureRecordFixtures::makeExampleB,
+         [](CapturedFrame &f, CaptureRecordFixtures &)
+         {
+             f.visibleRegion.y = 16;
+             f.visibleRegion.size.height = f.backingSize.height - 8;
+         },
+         "frame.visibleRegion"},
+        {"visible x plus width wraps 32 bits", &CaptureRecordFixtures::makeExampleB,
+         [=](CapturedFrame &f, CaptureRecordFixtures &)
+         {
+             f.visibleRegion.x = 2;
+             f.visibleRegion.size.width = kMax32;
+         },
+         "frame.visibleRegion"},
     });
 }
