@@ -18,6 +18,7 @@
  */
 
 #include "VideoFrameCaptureFactory.h"
+#include "GLVideoFrameCapture.h"
 #include "RialtoClientLogging.h"
 
 #include <exception>
@@ -30,7 +31,9 @@ std::shared_ptr<IVideoFrameCaptureFactory> IVideoFrameCaptureFactory::createFact
 
     try
     {
-        factory = std::make_shared<client::VideoFrameCaptureFactory>();
+        factory =
+            std::make_shared<client::VideoFrameCaptureFactory>(client::IEglLibrary::instance(),
+                                                               client::IVideoFrameCaptureIpcFactory::createFactory());
     }
     catch (const std::exception &e)
     {
@@ -43,12 +46,38 @@ std::shared_ptr<IVideoFrameCaptureFactory> IVideoFrameCaptureFactory::createFact
 
 namespace firebolt::rialto::client
 {
+VideoFrameCaptureFactory::VideoFrameCaptureFactory(
+    const std::shared_ptr<IEglLibrary> &eglLibrary,
+    const std::shared_ptr<IVideoFrameCaptureIpcFactory> &videoFrameCaptureIpcFactory)
+    : m_eglLibrary{eglLibrary}, m_videoFrameCaptureIpcFactory{videoFrameCaptureIpcFactory}
+{
+}
+
 std::shared_ptr<IGLVideoFrameCapture> VideoFrameCaptureFactory::createGLVideoFrameCapture(EGLDisplay eglDisplay,
                                                                                           EGLContext eglContext)
 {
-    (void)eglDisplay;
-    (void)eglContext;
-    RIALTO_CLIENT_LOG_WARN("Video frame capture is not supported");
-    return nullptr;
+    // load EGL first, so a client that cannot import frames never registers a capture with the server
+    if (!m_eglLibrary || !m_eglLibrary->load())
+    {
+        RIALTO_CLIENT_LOG_WARN("Video frame capture is unavailable: cannot load EGL");
+        return nullptr;
+    }
+
+    std::shared_ptr<IVideoFrameCaptureIpc> videoFrameCaptureIpc =
+        m_videoFrameCaptureIpcFactory ? m_videoFrameCaptureIpcFactory->createVideoFrameCaptureIpc() : nullptr;
+    if (!videoFrameCaptureIpc)
+    {
+        RIALTO_CLIENT_LOG_WARN("Video frame capture is unavailable: no connection to the server");
+        return nullptr;
+    }
+
+    std::uint32_t captureId{0};
+    if (!videoFrameCaptureIpc->createVideoFrameCapture(GraphicsAPIType::GL, captureId))
+    {
+        RIALTO_CLIENT_LOG_WARN("Video frame capture is unavailable: the server did not register it");
+        return nullptr;
+    }
+
+    return std::make_shared<GLVideoFrameCapture>(videoFrameCaptureIpc, captureId, eglDisplay, eglContext);
 }
 } // namespace firebolt::rialto::client

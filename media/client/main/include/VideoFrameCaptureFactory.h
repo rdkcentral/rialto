@@ -20,7 +20,9 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_VIDEO_FRAME_CAPTURE_FACTORY_H_
 #define FIREBOLT_RIALTO_CLIENT_VIDEO_FRAME_CAPTURE_FACTORY_H_
 
+#include "EglLibrary.h"
 #include "IVideoFrameCapture.h"
+#include "IVideoFrameCaptureIpc.h"
 
 #include <memory>
 
@@ -29,16 +31,20 @@ namespace firebolt::rialto::client
 /**
  * @brief Client implementation of IVideoFrameCaptureFactory.
  *
- * Captures are not available yet: registration with the server arrives with the capture registry, so
- * createGLVideoFrameCapture() returns null.
+ * A GL capture is created by loading libEGL at run time and then registering the capture with the server.
  */
 class VideoFrameCaptureFactory : public IVideoFrameCaptureFactory
 {
 public:
-    VideoFrameCaptureFactory() = default;
+    VideoFrameCaptureFactory(const std::shared_ptr<IEglLibrary> &eglLibrary,
+                             const std::shared_ptr<IVideoFrameCaptureIpcFactory> &videoFrameCaptureIpcFactory);
     ~VideoFrameCaptureFactory() override = default;
 
     std::shared_ptr<IGLVideoFrameCapture> createGLVideoFrameCapture(EGLDisplay eglDisplay, EGLContext eglContext) override;
+
+private:
+    std::shared_ptr<IEglLibrary> m_eglLibrary;
+    std::shared_ptr<IVideoFrameCaptureIpcFactory> m_videoFrameCaptureIpcFactory;
 };
 
 } // namespace firebolt::rialto::client

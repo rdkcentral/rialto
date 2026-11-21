@@ -35,6 +35,8 @@ set(LIB_RIALTO_CLIENT_SOURCES
         source/MediaKeysCapabilities.cpp
         source/MediaPipeline.cpp
         source/MediaPipelineCapabilities.cpp
+        source/EglLibrary.cpp
+        source/GLVideoFrameCapture.cpp
         source/SharedMemoryHandle.cpp
         source/VideoFrameCaptureFactory.cpp
         source/WebAudioPlayer.cpp
@@ -87,6 +89,7 @@ target_link_libraries(
         RialtoEthanLog
 
         Threads::Threads
+        ${CMAKE_DL_LIBS}
 
         )
 
