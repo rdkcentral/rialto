@@ -28,6 +28,8 @@
 
 namespace firebolt::rialto::client
 {
+class IVulkanLibrary;
+
 /**
  * @brief Client implementation of IVideoFrameCaptureFactory.
  *
@@ -36,8 +38,12 @@ namespace firebolt::rialto::client
 class VideoFrameCaptureFactory : public IVideoFrameCaptureFactory
 {
 public:
+    /**
+     * @param[in] vulkanLibrary : The Vulkan loader; null when Vulkan capture is not built in.
+     */
     VideoFrameCaptureFactory(const std::shared_ptr<IEglLibrary> &eglLibrary,
-                             const std::shared_ptr<IVideoFrameCaptureIpcFactory> &videoFrameCaptureIpcFactory);
+                             const std::shared_ptr<IVideoFrameCaptureIpcFactory> &videoFrameCaptureIpcFactory,
+                             const std::shared_ptr<IVulkanLibrary> &vulkanLibrary = nullptr);
     ~VideoFrameCaptureFactory() override = default;
 
     std::shared_ptr<IGLVideoFrameCapture> createGLVideoFrameCapture(EGLDisplay eglDisplay, EGLContext eglContext) override;
@@ -49,6 +55,7 @@ public:
 private:
     std::shared_ptr<IEglLibrary> m_eglLibrary;
     std::shared_ptr<IVideoFrameCaptureIpcFactory> m_videoFrameCaptureIpcFactory;
+    std::shared_ptr<IVulkanLibrary> m_vulkanLibrary;
 };
 
 } // namespace firebolt::rialto::client

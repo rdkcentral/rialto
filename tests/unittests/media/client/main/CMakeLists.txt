@@ -166,6 +166,10 @@ if(RIALTO_TEST_VULKAN_INCLUDE_DIR)
             PRIVATE
             videoFrameCapture/VulkanApiBeforeTest.cpp
             videoFrameCapture/VulkanApiAfterTest.cpp
+            videoFrameCapture/VulkanCaptureCreationTest.cpp
+            videoFrameCapture/VulkanLibraryTest.cpp
             )
     target_include_directories(RialtoClientUnitTests PRIVATE ${RIALTO_TEST_VULKAN_INCLUDE_DIR})
+    add_dependencies(RialtoClientUnitTests fake_vulkan)
+    target_compile_definitions(RialtoClientUnitTests PRIVATE FAKE_VULKAN_PATH="$<TARGET_FILE:fake_vulkan>")
 endif()

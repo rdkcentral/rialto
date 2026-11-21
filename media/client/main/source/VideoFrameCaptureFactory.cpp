@@ -20,6 +20,9 @@
 #include "VideoFrameCaptureFactory.h"
 #include "GLVideoFrameCapture.h"
 #include "GlFrameImporter.h"
+#ifdef RIALTO_ENABLE_VULKAN_CAPTURE
+#include "VulkanLibrary.h"
+#endif
 #include "RialtoClientLogging.h"
 
 #include <exception>
@@ -32,9 +35,15 @@ std::shared_ptr<IVideoFrameCaptureFactory> IVideoFrameCaptureFactory::createFact
 
     try
     {
+#ifdef RIALTO_ENABLE_VULKAN_CAPTURE
+        const std::shared_ptr<client::IVulkanLibrary> kVulkanLibrary{client::IVulkanLibrary::instance()};
+#else
+        const std::shared_ptr<client::IVulkanLibrary> kVulkanLibrary;
+#endif
         factory =
             std::make_shared<client::VideoFrameCaptureFactory>(client::IEglLibrary::instance(),
-                                                               client::IVideoFrameCaptureIpcFactory::createFactory());
+                                                               client::IVideoFrameCaptureIpcFactory::createFactory(),
+                                                               kVulkanLibrary);
     }
     catch (const std::exception &e)
     {
@@ -49,8 +58,10 @@ namespace firebolt::rialto::client
 {
 VideoFrameCaptureFactory::VideoFrameCaptureFactory(
     const std::shared_ptr<IEglLibrary> &eglLibrary,
-    const std::shared_ptr<IVideoFrameCaptureIpcFactory> &videoFrameCaptureIpcFactory)
-    : m_eglLibrary{eglLibrary}, m_videoFrameCaptureIpcFactory{videoFrameCaptureIpcFactory}
+    const std::shared_ptr<IVideoFrameCaptureIpcFactory> &videoFrameCaptureIpcFactory,
+    const std::shared_ptr<IVulkanLibrary> &vulkanLibrary)
+    : m_eglLibrary{eglLibrary}, m_videoFrameCaptureIpcFactory{videoFrameCaptureIpcFactory},
+      m_vulkanLibrary{vulkanLibrary}
 {
 }
 
@@ -88,13 +99,33 @@ std::shared_ptr<IVulkanVideoFrameCapture>
 VideoFrameCaptureFactory::createVulkanVideoFrameCapture(VkPhysicalDevice physicalDevice, VkDevice device, VkQueue queue,
                                                         uint32_t queueFamilyIndex, int32_t requiredImageLayout)
 {
+#ifdef RIALTO_ENABLE_VULKAN_CAPTURE
+    // load Vulkan and check the device first, so nothing is registered with the server for a device that cannot
+    // import frames (R13 2.1)
+    std::shared_ptr<IVulkanApi> api = m_vulkanLibrary ? m_vulkanLibrary->deviceApi(device) : nullptr;
+    if (!api)
+    {
+        RIALTO_CLIENT_LOG_WARN("Vulkan video frame capture is unavailable: cannot load Vulkan or a command is missing");
+        return nullptr;
+    }
+    if (!isVulkanDeviceSupported(*api, physicalDevice))
+    {
+        return nullptr;
+    }
+    (void)queue;
+    (void)queueFamilyIndex;
+    (void)requiredImageLayout;
+    // the Vulkan capture itself follows (vfc-client-vulkan-import 2.2)
+    RIALTO_CLIENT_LOG_WARN("Vulkan video frame capture is not available yet");
+    return nullptr;
+#else
     (void)physicalDevice;
     (void)device;
     (void)queue;
     (void)queueFamilyIndex;
     (void)requiredImageLayout;
-    // Vulkan loading and the importer follow (vfc-client-vulkan-import 2.x)
-    RIALTO_CLIENT_LOG_WARN("Vulkan video frame capture is not available yet");
+    RIALTO_CLIENT_LOG_WARN("Vulkan video frame capture is not built in");
     return nullptr;
+#endif
 }
 } // namespace firebolt::rialto::client
