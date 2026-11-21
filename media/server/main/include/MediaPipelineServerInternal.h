@@ -29,6 +29,7 @@
 #include "NeedDataDelayCalculator.h"
 #include <map>
 #include <memory>
+#include <optional>
 #include <shared_mutex>
 #include <string>
 #include <unordered_map>
@@ -130,6 +131,12 @@ public:
     bool haveData(MediaSourceStatus status, uint32_t numFrames, uint32_t needDataRequestId) override;
 
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
+
+    bool attachCapture(uint32_t captureId) override;
+
+    bool detachCapture(uint32_t &captureId) override;
+
+    void dropCapture(uint32_t captureId) override;
 
     bool renderFrame() override;
 
@@ -293,6 +300,11 @@ protected:
      * @brief Flag used to check if allSourcesAttached was already called
      */
     bool m_wasAllSourcesAttachedCalled;
+
+    /**
+     * @brief The attached video frame capture, if any. Accessed only on the main thread.
+     */
+    std::optional<uint32_t> m_attachedCaptureId;
 
     /**
      * @brief Flag used to check if low latency is set for video source

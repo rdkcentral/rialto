@@ -343,6 +343,76 @@ bool MediaPipelineServerInternal::allSourcesAttachedInternal()
     return true;
 }
 
+bool MediaPipelineServerInternal::attachCapture(uint32_t captureId)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result{false};
+    auto task = [&]()
+    {
+        if (!m_gstPlayer || m_wasAllSourcesAttachedCalled || m_currentPlaybackState != PlaybackState::UNKNOWN)
+        {
+            RIALTO_SERVER_LOG_WARN("Cannot attach video frame capture %u - session %d is not loaded and uncommitted",
+                                   captureId, m_sessionId);
+            return;
+        }
+        if (m_attachedCaptureId)
+        {
+            RIALTO_SERVER_LOG_WARN("Cannot attach video frame capture %u - session %d already has capture %u",
+                                   captureId, m_sessionId, *m_attachedCaptureId);
+            return;
+        }
+        m_attachedCaptureId = captureId;
+        result = true;
+    };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::detachCapture(uint32_t &captureId)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result{false};
+    auto task = [&]()
+    {
+        if (!m_attachedCaptureId)
+        {
+            RIALTO_SERVER_LOG_WARN("Cannot detach video frame capture - session %d has none", m_sessionId);
+            return;
+        }
+        const bool kBeforeCommit{m_gstPlayer && !m_wasAllSourcesAttachedCalled &&
+                                 m_currentPlaybackState == PlaybackState::UNKNOWN};
+        if (!kBeforeCommit && m_currentPlaybackState != PlaybackState::STOPPED)
+        {
+            RIALTO_SERVER_LOG_WARN("Cannot detach video frame capture %u in the current state of session %d",
+                                   *m_attachedCaptureId, m_sessionId);
+            return;
+        }
+        captureId = *m_attachedCaptureId;
+        m_attachedCaptureId.reset();
+        result = true;
+    };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+void MediaPipelineServerInternal::dropCapture(uint32_t captureId)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&]()
+    {
+        if (m_attachedCaptureId == captureId)
+        {
+            m_attachedCaptureId.reset();
+        }
+    };
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+}
+
 bool MediaPipelineServerInternal::play(bool &async)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");

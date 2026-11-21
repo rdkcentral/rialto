@@ -25,16 +25,17 @@
 #include <cstddef>
 #include <cstdint>
 #include <map>
+#include <optional>
 
 namespace firebolt::rialto::server::service
 {
 /**
- * @brief What the server knows about one registered capture. Later changes add the attached pipeline and its
- * capture sessions.
+ * @brief What the server knows about one registered capture. Later changes add its capture sessions.
  */
 struct VideoFrameCaptureEntry
 {
     GraphicsAPIType api;
+    std::optional<int> attachedSessionId; /**< The pipeline session the capture is attached to, if any. */
 };
 
 /**
@@ -54,6 +55,12 @@ public:
 
     /** @retval the entry, or nullptr if there is no capture with this ID. */
     const VideoFrameCaptureEntry *find(std::uint32_t captureId) const;
+
+    /** Binds a capture to a pipeline session. @retval false if unknown or already bound to any session. */
+    bool bind(std::uint32_t captureId, int sessionId);
+
+    /** Unbinds a capture. @retval false if unknown or not bound. */
+    bool unbind(std::uint32_t captureId);
 
     /** Number of registered captures. */
     std::size_t size() const { return m_entries.size(); }

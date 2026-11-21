@@ -33,6 +33,24 @@ bool VideoFrameCaptureRegistry::remove(std::uint32_t captureId)
     return m_entries.erase(captureId) != 0;
 }
 
+bool VideoFrameCaptureRegistry::bind(std::uint32_t captureId, int sessionId)
+{
+    auto it = m_entries.find(captureId);
+    if (it == m_entries.end() || it->second.attachedSessionId)
+        return false;
+    it->second.attachedSessionId = sessionId;
+    return true;
+}
+
+bool VideoFrameCaptureRegistry::unbind(std::uint32_t captureId)
+{
+    auto it = m_entries.find(captureId);
+    if (it == m_entries.end() || !it->second.attachedSessionId)
+        return false;
+    it->second.attachedSessionId.reset();
+    return true;
+}
+
 const VideoFrameCaptureEntry *VideoFrameCaptureRegistry::find(std::uint32_t captureId) const
 {
     auto it = m_entries.find(captureId);

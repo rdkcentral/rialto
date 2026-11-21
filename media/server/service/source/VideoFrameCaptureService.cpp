@@ -84,4 +84,27 @@ void VideoFrameCaptureService::removeClient(VideoFrameCaptureClientId clientId)
     std::lock_guard<std::mutex> lock{m_mutex};
     m_registries.erase(clientId);
 }
+
+bool VideoFrameCaptureService::bindCapture(VideoFrameCaptureClientId clientId, std::uint32_t captureId, int sessionId)
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+    auto it = m_registries.find(clientId);
+    if (it == m_registries.end() || !it->second.bind(captureId, sessionId))
+    {
+        RIALTO_SERVER_LOG_WARN("Cannot bind video frame capture %u of client %llu to session %d", captureId,
+                               static_cast<unsigned long long>(clientId), sessionId);
+        return false;
+    }
+    return true;
+}
+
+void VideoFrameCaptureService::unbindCapture(VideoFrameCaptureClientId clientId, std::uint32_t captureId)
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+    auto it = m_registries.find(clientId);
+    if (it != m_registries.end())
+    {
+        it->second.unbind(captureId);
+    }
+}
 } // namespace firebolt::rialto::server::service

@@ -105,6 +105,33 @@ public:
      * @param[out] heartbeatHandler : The heartbeat handler instance
      */
     virtual void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) = 0;
+
+    /**
+     * @brief Records a registered video frame capture as attached (proposal 3.2).
+     *
+     * Succeeds only after load() and before allSourcesAttached(), while no capture is attached. Allocates nothing.
+     *
+     * @param[in] captureId : The capture's registry ID; the caller has already bound it to this pipeline.
+     *
+     * @retval true on success.
+     */
+    virtual bool attachCapture(uint32_t captureId) = 0;
+
+    /**
+     * @brief Removes the attached capture (proposal 3.2).
+     *
+     * Succeeds after load() and before allSourcesAttached(), or in STOPPED; fails when no capture is attached.
+     *
+     * @param[out] captureId : The capture that was attached, on success.
+     *
+     * @retval true on success.
+     */
+    virtual bool detachCapture(uint32_t &captureId) = 0;
+
+    /**
+     * @brief Removes the attached capture in any state, if it is \a captureId (implicit detach).
+     */
+    virtual void dropCapture(uint32_t captureId) = 0;
 };
 
 }; // namespace firebolt::rialto::server

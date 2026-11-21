@@ -161,3 +161,28 @@ TEST(VideoFrameCaptureServiceTest, ShouldGetTheLoaderOnce)
     EXPECT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, first), VideoFrameCaptureServiceStatus::OK);
     EXPECT_EQ(service.createCapture(kClientB, GraphicsAPIType::VULKAN, second), VideoFrameCaptureServiceStatus::OK);
 }
+
+TEST(VideoFrameCaptureServiceTest, ShouldBindACaptureToOneSessionAtATime)
+{
+    VideoFrameCaptureService service{halFactory(true)};
+    std::uint32_t captureId{0};
+    ASSERT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, captureId), VideoFrameCaptureServiceStatus::OK);
+
+    EXPECT_TRUE(service.bindCapture(kClientA, captureId, 10));
+    EXPECT_FALSE(service.bindCapture(kClientA, captureId, 11)); // already bound elsewhere
+    EXPECT_FALSE(service.bindCapture(kClientA, captureId, 10)); // or to the same session
+    service.unbindCapture(kClientA, captureId);
+    EXPECT_TRUE(service.bindCapture(kClientA, captureId, 11)); // reusable after unbinding
+}
+
+TEST(VideoFrameCaptureServiceTest, ShouldNotBindAnotherClientsOrUnknownCapture)
+{
+    VideoFrameCaptureService service{halFactory(true)};
+    std::uint32_t captureId{0};
+    ASSERT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, captureId), VideoFrameCaptureServiceStatus::OK);
+
+    EXPECT_FALSE(service.bindCapture(kClientB, captureId, 10));
+    EXPECT_FALSE(service.bindCapture(kClientA, captureId + 1, 10));
+    service.unbindCapture(kClientB, captureId); // harmless
+    EXPECT_TRUE(service.bindCapture(kClientA, captureId, 10));
+}

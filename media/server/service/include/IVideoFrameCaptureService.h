@@ -85,6 +85,18 @@ public:
      * @brief Removes every capture registration of a client, when its connection closes.
      */
     virtual void removeClient(VideoFrameCaptureClientId clientId) = 0;
+
+    /**
+     * @brief Binds a client's capture to a pipeline session.
+     *
+     * @retval false if the client has no such capture or it is already bound to any session.
+     */
+    virtual bool bindCapture(VideoFrameCaptureClientId clientId, std::uint32_t captureId, int sessionId) = 0;
+
+    /**
+     * @brief Unbinds a client's capture from its session. Does nothing if it is not bound.
+     */
+    virtual void unbindCapture(VideoFrameCaptureClientId clientId, std::uint32_t captureId) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

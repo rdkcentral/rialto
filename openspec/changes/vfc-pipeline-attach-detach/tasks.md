@@ -4,7 +4,7 @@
 
 ## 1. Server (D1, D3, D4)
 
-- [ ] 1.1 Add `attachVideoFrameCapture(captureId)` and `detachVideoFrameCapture()` to `MediaPipelineServerInternal` with the state rules, storing `m_attachedCaptureId`, and registry bind/unbind with "already bound elsewhere" rejection. Verify with `./build_ut.py -s servermain` tests for every state in the spec.
+- [x] 1.1 Add `attachVideoFrameCapture(captureId)` and `detachVideoFrameCapture()` to `MediaPipelineServerInternal` with the state rules, storing `m_attachedCaptureId`, and registry bind/unbind with "already bound elsewhere" rejection. Verify with `./build_ut.py -s servermain` tests for every state in the spec.
 - [ ] 1.2 Implement the R4 `MediaPipelineModuleService` handlers by calling the service layer, validating that `capture_id` belongs to the calling connection. Verify with `./build_ut.py -s serveripc`: success, wrong state, foreign ID, unknown session.
 - [ ] 1.3 Unbind on pipeline destruction and on capture destroy while bound. Verify with unit tests that both leave the capture attachable to a new pipeline.
 - [ ] 1.4 Make `setVideoWindow()` return `false` while a capture is attached. Verify with a unit test before attach, while attached and after detach.
