@@ -49,6 +49,7 @@ add_gtests (
         captureCommit/CaptureAdmissionTest.cpp
         captureCommit/CaptureCommitTest.cpp
         captureCommit/CaptureSessionRuntimeTest.cpp
+        ${CMAKE_SOURCE_DIR}/tests/unittests/media/server/capture/CaptureRecordFixtures.cpp
         mediaPipeline/CaptureCommitPipelineTest.cpp
 
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
@@ -139,6 +140,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoPlayerPublicClientMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:ExternalLibraryMocks,INTERFACE_INCLUDE_DIRECTORIES>
+        ${CMAKE_SOURCE_DIR}/tests/unittests/media/server/capture
         $<TARGET_PROPERTY:RialtoUnittestCommonMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoWrappersMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerIpc,INTERFACE_INCLUDE_DIRECTORIES>

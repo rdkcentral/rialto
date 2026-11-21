@@ -63,6 +63,12 @@ void closeDescriptors(capture::CapturedFrame &frame)
 
 capture::CaptureStatus CaptureSessionRuntime::acquire(const FrameReplyFiller &fillReply)
 {
+    DeliveryTicket ticket;
+    return acquire(fillReply, ticket);
+}
+
+capture::CaptureStatus CaptureSessionRuntime::acquire(const FrameReplyFiller &fillReply, DeliveryTicket &ticket)
+{
     std::lock_guard<std::mutex> lock{m_mutex};
     if (m_fatal)
     {
@@ -77,7 +83,11 @@ capture::CaptureStatus CaptureSessionRuntime::acquire(const FrameReplyFiller &fi
     }
 
     // an invalidation is kept until a frame carrying it is delivered (SoC spec 7.3)
-    m_pendingFlush = m_pendingFlush || record->dmaBufObjectsFlushed;
+    if (record->dmaBufObjectsFlushed)
+    {
+        m_pendingFlush = true;
+        ++m_flushGeneration;
+    }
 
     const capture::ValidationResult kValidation{capture::validateFrame(*record, slotCount(), &m_lockedRanges)};
     m_warnings.report(kValidation);
@@ -98,9 +108,36 @@ capture::CaptureStatus CaptureSessionRuntime::acquire(const FrameReplyFiller &fi
     {
         exported.fd = -1; // the reply owns them now
     }
+    ticket = DeliveryTicket{record->slotIndex, record->acquisitionToken, m_flushGeneration};
     const std::uint32_t kSlot{record->slotIndex};
     m_slots[kSlot] = std::move(record);
     return capture::CaptureStatus::OK;
+}
+
+void CaptureSessionRuntime::onDelivery(const DeliveryTicket &ticket, bool delivered)
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+    if (ticket.slotIndex >= m_slots.size() || !m_slots[ticket.slotIndex] ||
+        m_slots[ticket.slotIndex]->acquisitionToken != ticket.acquisitionToken)
+    {
+        return; // already resolved
+    }
+    capture::CapturedFrame &record{*m_slots[ticket.slotIndex]};
+    if (delivered)
+    {
+        // the client holds the frame now: its bytes are locked until it releases it
+        m_lockedRanges.add(record);
+        if (ticket.flushGeneration == m_flushGeneration)
+        {
+            m_pendingFlush = false; // consumed only by a delivery that carried every invalidation seen
+        }
+        return;
+    }
+    // the client never got the frame: end its lock now (SoC spec 7.3); the invalidation stays pending
+    RIALTO_SERVER_LOG_WARN("Video frame in slot %u of pool %u was not delivered; releasing it", ticket.slotIndex,
+                           m_poolId);
+    m_guard.releaseFrame(record);
+    m_slots[ticket.slotIndex].reset();
 }
 
 bool CaptureSessionRuntime::isSlotLocked(std::uint32_t slotIndex) const

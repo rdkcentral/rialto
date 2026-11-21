@@ -79,6 +79,31 @@ public:
      */
     capture::CaptureStatus acquire(const FrameReplyFiller &fillReply);
 
+    /**
+     * @brief Identifies an acquired frame whose reply is being sent.
+     */
+    struct DeliveryTicket
+    {
+        std::uint32_t slotIndex{0};
+        std::uint64_t acquisitionToken{0};
+        std::uint64_t flushGeneration{0}; /**< The invalidations the reply covered. */
+    };
+
+    /**
+     * @brief As acquire(), also giving the ticket to pass to onDelivery() for an OK frame.
+     */
+    capture::CaptureStatus acquire(const FrameReplyFiller &fillReply, DeliveryTicket &ticket);
+
+    /**
+     * @brief Resolves an acquired frame once its reply was sent (design D3). Called by the IPC delivery callback,
+     *        with no IPC lock held, on any thread.
+     *
+     * Delivered: the frame's ranges become locked and the invalidation latch is cleared, unless a newer
+     * invalidation arrived since the reply was filled. Not delivered: the frame lock is released at once and the
+     * latch stays set, so the next delivered frame carries the invalidation.
+     */
+    void onDelivery(const DeliveryTicket &ticket, bool delivered);
+
     /** Whether the slot holds a frame lock owed a release. */
     bool isSlotLocked(std::uint32_t slotIndex) const;
 
@@ -96,6 +121,7 @@ private:
     const capture::CapturePool m_pool;
     std::vector<std::unique_ptr<capture::CapturedFrame>> m_slots; /**< Records are not movable: one per slot. */
     bool m_pendingFlush{false};
+    std::uint64_t m_flushGeneration{0}; /**< Counts invalidations seen, so a delivery clears only what it carried. */
     bool m_fatal{false};
     capture::LockedRanges m_lockedRanges;
     capture::ValidationWarningLog m_warnings;

@@ -272,8 +272,9 @@ void VideoFrameCaptureModuleService::acquireCurrentFrame(::google::protobuf::Rpc
         return;
     }
 
+    CaptureSessionRuntime::DeliveryTicket ticket;
     const capture::CaptureStatus kStatus{runtime->acquire([response](const capture::CapturedFrame &frame, bool flushed)
-                                                          { fillFrameReply(frame, flushed, *response); })};
+                                                          { fillFrameReply(frame, flushed, *response); }, ticket)};
     response->set_status(toWireStatus(kStatus));
     if (kStatus == capture::CaptureStatus::OK)
     {
@@ -282,6 +283,13 @@ void VideoFrameCaptureModuleService::acquireCurrentFrame(::google::protobuf::Rpc
         if (auto *ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller))
         {
             ipcController->setReplyFdsOwned(true);
+            // only the send outcome says whether the client holds the frame; the callback keeps the runtime alive
+            ipcController->setDeliveryCallback([runtime, ticket](bool delivered)
+                                               { runtime->onDelivery(ticket, delivered); });
+        }
+        else
+        {
+            runtime->onDelivery(ticket, false); // no way to learn the outcome: do not leave the lock behind
         }
     }
     done->Run();

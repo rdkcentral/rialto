@@ -18,13 +18,18 @@
  */
 
 #include "CaptureSessionRuntime.h"
+#include "CaptureRecordFixtures.h"
 #include "CaptureSessionMock.h"
 
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
+using firebolt::rialto::capture::test::CaptureRecordFixtures;
+using ::testing::_;
+using ::testing::Invoke;
 using ::testing::NiceMock;
+using ::testing::Return;
 
 namespace
 {
@@ -63,4 +68,81 @@ TEST(CaptureSessionRuntimeTest, ShouldKeepOneEmptySlotPerAdmittedSlot)
         EXPECT_FALSE(deleted);
     }
     EXPECT_TRUE(deleted); // the runtime owns the HAL session
+}
+
+class CaptureSessionRuntimeDeliveryTest : public ::testing::Test
+{
+protected:
+    CaptureSessionRuntimeDeliveryTest()
+    {
+        capture::CapturePool pool;
+        CaptureRecordFixtures::makeNv12Pool(pool, 3);
+        m_runtime =
+            std::make_unique<CaptureSessionRuntime>(wrappers::CaptureSessionPtr{m_session,
+                                                                                [](capture::ICaptureSession *session)
+                                                                                { delete session; }},
+                                                    1, pool);
+    }
+
+    // The HAL returns an Example B frame in the slot; the reply's flush flag is returned.
+    bool acquire(std::uint32_t slot, std::uint64_t token, bool flushed, CaptureSessionRuntime::DeliveryTicket &ticket)
+    {
+        EXPECT_CALL(*m_session, acquireCurrentFrame(_))
+            .WillOnce(Invoke(
+                [&, slot, token, flushed](capture::CapturedFrame &frame)
+                {
+                    m_records.makeExampleB(frame, slot, token);
+                    frame.dmaBufObjectsFlushed = flushed;
+                    return capture::CaptureStatus::OK;
+                }))
+            .RetiresOnSaturation();
+        bool replyFlushed{false};
+        EXPECT_EQ(m_runtime->acquire([&](const capture::CapturedFrame &, bool flag) { replyFlushed = flag; }, ticket),
+                  capture::CaptureStatus::OK);
+        return replyFlushed;
+    }
+
+    CaptureRecordFixtures m_records;
+    NiceMock<capture::CaptureSessionMock> *m_session{new NiceMock<capture::CaptureSessionMock>()};
+    std::unique_ptr<CaptureSessionRuntime> m_runtime;
+};
+
+TEST_F(CaptureSessionRuntimeDeliveryTest, DeliveredClearsTheLatchAndKeepsTheLock)
+{
+    CaptureSessionRuntime::DeliveryTicket ticket;
+    EXPECT_TRUE(acquire(0, 1, true, ticket));
+    EXPECT_TRUE(m_runtime->isFlushPending());
+    EXPECT_CALL(*m_session, releaseFrame(_)).Times(0);
+    m_runtime->onDelivery(ticket, true);
+    EXPECT_FALSE(m_runtime->isFlushPending());
+    EXPECT_TRUE(m_runtime->isSlotLocked(0)); // the client holds it until it releases
+}
+
+TEST_F(CaptureSessionRuntimeDeliveryTest, NotDeliveredReleasesOnceAndKeepsTheLatch)
+{
+    CaptureSessionRuntime::DeliveryTicket ticket;
+    EXPECT_TRUE(acquire(0, 1, true, ticket));
+    EXPECT_CALL(*m_session, releaseFrame(_)).WillOnce(Return(capture::CaptureStatus::OK));
+    m_runtime->onDelivery(ticket, false);
+    m_runtime->onDelivery(ticket, false); // already resolved
+    EXPECT_FALSE(m_runtime->isSlotLocked(0));
+    EXPECT_TRUE(m_runtime->isFlushPending());
+
+    // the next frame carries the invalidation although the HAL flag is false
+    CaptureSessionRuntime::DeliveryTicket next;
+    EXPECT_TRUE(acquire(1, 2, false, next));
+    m_runtime->onDelivery(next, true);
+    EXPECT_FALSE(m_runtime->isFlushPending());
+}
+
+TEST_F(CaptureSessionRuntimeDeliveryTest, NewerInvalidationIsNotLostWhenAnOlderReplyIsDelivered)
+{
+    CaptureSessionRuntime::DeliveryTicket older;
+    EXPECT_FALSE(acquire(0, 1, false, older));
+    CaptureSessionRuntime::DeliveryTicket newer;
+    EXPECT_TRUE(acquire(1, 2, true, newer)); // a flush before the older reply's outcome is known
+    m_runtime->onDelivery(older, true);
+    EXPECT_TRUE(m_runtime->isFlushPending()); // the older reply did not carry it
+    m_runtime->onDelivery(newer, true);
+    EXPECT_FALSE(m_runtime->isFlushPending());
 }

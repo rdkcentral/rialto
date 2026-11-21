@@ -108,6 +108,7 @@ TEST_F(VideoFrameCaptureAcquireTests, OkFillsTheReplyAndHandsOverTheDescriptors)
                 return CaptureStatus::OK;
             }));
     EXPECT_CALL(m_controller, setReplyFdsOwned(true));
+    EXPECT_CALL(m_controller, setDeliveryCallback(_));
 
     const auto kResponse = acquire();
     ASSERT_EQ(kResponse.status(), VIDEO_FRAME_CAPTURE_STATUS_OK);
@@ -158,4 +159,37 @@ TEST_F(VideoFrameCaptureAcquireTests, UnknownCaptureIsInvalid)
 {
     EXPECT_CALL(m_service, hasCapture(1, kCaptureId)).WillOnce(Return(false));
     EXPECT_EQ(acquire().status(), VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT);
+}
+
+TEST_F(VideoFrameCaptureAcquireTests, DeliveryCallbackResolvesTheFrame)
+{
+    captureIsCommitted();
+    EXPECT_CALL(*m_session, acquireCurrentFrame(_))
+        .WillOnce(Invoke(
+            [&](CapturedFrame &frame)
+            {
+                m_records.makeExampleB(frame, 2, 9);
+                frame.dmaBufObjectsFlushed = true;
+                return CaptureStatus::OK;
+            }));
+    EXPECT_CALL(m_controller, setReplyFdsOwned(true));
+    std::function<void(bool)> callback;
+    EXPECT_CALL(m_controller, setDeliveryCallback(_))
+        .WillOnce(Invoke([&](std::function<void(bool)> cb) { callback = cb; }));
+    EXPECT_TRUE(acquire().dma_buf_objects_flushed());
+    ASSERT_TRUE(callback);
+
+    // not delivered: the HAL lock is released once and the invalidation stays pending
+    EXPECT_CALL(*m_session, releaseFrame(_))
+        .WillOnce(Invoke(
+            [](CapturedFrame &frame)
+            {
+                EXPECT_EQ(frame.slotIndex, 2U);
+                EXPECT_EQ(frame.acquisitionToken, 9U);
+                return CaptureStatus::OK;
+            }));
+    callback(false);
+    EXPECT_FALSE(m_runtime->isSlotLocked(2));
+    EXPECT_TRUE(m_runtime->isFlushPending());
+    callback(false); // resolved already: no second release
 }
