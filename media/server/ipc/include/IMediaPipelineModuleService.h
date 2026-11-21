@@ -23,7 +23,10 @@
 #include "IMediaPipelineService.h"
 #include "mediapipelinemodule.pb.h"
 #include <IIpcServer.h>
+#include <cstdint>
+#include <functional>
 #include <memory>
+#include <optional>
 
 namespace firebolt::rialto::server::ipc
 {
@@ -81,6 +84,19 @@ public:
      * @param[in] ipcClient : The ipc client to disconnect to.
      */
     virtual void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) = 0;
+
+    /**
+     * @brief Function giving the video frame capture service's ID for a client, or nothing if it has none.
+     */
+    using CaptureClientLookup =
+        std::function<std::optional<std::uint64_t>(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &)>;
+
+    /**
+     * @brief Sets how attachVideoFrameCapture() finds the capture client ID of the calling connection.
+     *
+     * Without it, attaching always fails.
+     */
+    virtual void setCaptureClientLookup(const CaptureClientLookup & /*lookup*/) {}
 };
 
 } // namespace firebolt::rialto::server::ipc

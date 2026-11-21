@@ -745,16 +745,37 @@ void MediaPipelineModuleService::getDuration(::google::protobuf::RpcController *
     done->Run();
 }
 
+void MediaPipelineModuleService::setCaptureClientLookup(const CaptureClientLookup &lookup)
+{
+    m_captureClientLookup = lookup;
+}
+
 void MediaPipelineModuleService::attachVideoFrameCapture(::google::protobuf::RpcController *controller,
                                                          const ::firebolt::rialto::AttachVideoFrameCaptureRequest *request,
                                                          ::firebolt::rialto::AttachVideoFrameCaptureResponse *response,
                                                          ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    (void)request;
     (void)response;
-    RIALTO_SERVER_LOG_WARN("Video frame capture is not supported");
-    controller->SetFailed("Video frame capture is not supported");
+    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+    if (!ipcController)
+    {
+        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        controller->SetFailed("ipc library provided incompatible controller object");
+        done->Run();
+        return;
+    }
+
+    // the capture must have been created on this connection
+    const std::optional<std::uint64_t> kCaptureClientId =
+        m_captureClientLookup ? m_captureClientLookup(ipcController->getClient()) : std::nullopt;
+    if (!kCaptureClientId ||
+        !m_mediaPipelineService.attachVideoFrameCapture(request->session_id(), *kCaptureClientId, request->capture_id()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Attach video frame capture %u to session %d failed", request->capture_id(),
+                                request->session_id());
+        controller->SetFailed("Operation failed");
+    }
     done->Run();
 }
 
@@ -764,10 +785,12 @@ void MediaPipelineModuleService::detachVideoFrameCapture(::google::protobuf::Rpc
                                                          ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    (void)request;
     (void)response;
-    RIALTO_SERVER_LOG_WARN("Video frame capture is not supported");
-    controller->SetFailed("Video frame capture is not supported");
+    if (!m_mediaPipelineService.detachVideoFrameCapture(request->session_id()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Detach video frame capture from session %d failed", request->session_id());
+        controller->SetFailed("Operation failed");
+    }
     done->Run();
 }
 

@@ -28,6 +28,7 @@
 #include "MediaPipelineServiceMock.h"
 #include <gtest/gtest.h>
 #include <memory>
+#include <optional>
 
 using testing::StrictMock;
 
@@ -169,8 +170,11 @@ public:
     void sendGetPositionRequestAndReceiveResponseWithoutPositionMatch();
     void sendGetDurationRequestAndReceiveResponse();
     void sendGetDurationRequestAndReceiveResponseWithoutDurationMatch();
-    void sendAttachVideoFrameCaptureRequestAndExpectFailure();
-    void sendDetachVideoFrameCaptureRequestAndExpectFailure();
+    void captureClientLookupWillFindClient(bool found);
+    void mediaPipelineServiceWillAttachVideoFrameCapture(bool result);
+    void mediaPipelineServiceWillDetachVideoFrameCapture(bool result);
+    void sendAttachVideoFrameCaptureRequestAndExpect(bool success);
+    void sendDetachVideoFrameCaptureRequestAndExpect(bool success);
     void sendSetImmediateOutputRequestAndReceiveResponse();
     void sendSetImmediateOutputRequestAndReceiveResponse(int sessionId, int32_t sourceId);
     void sendSetImmediateOutputRequestAndReceiveResponse(int sessionId, int32_t sourceId, bool immediateOutput);

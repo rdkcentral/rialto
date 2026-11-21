@@ -26,6 +26,7 @@ add_gtests (
 
         mediaPipelineService/MediaPipelineServiceTestsFixture.cpp
         mediaPipelineService/MediaPipelineServiceTests.cpp
+        mediaPipelineService/MediaPipelineServiceCaptureTests.cpp
 
         cdmService/CdmServiceTestsFixture.cpp
         cdmService/CdmServiceTests.cpp

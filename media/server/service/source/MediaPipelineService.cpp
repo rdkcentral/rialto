@@ -21,6 +21,7 @@
 #include "IGstCapabilities.h"
 #include "IMediaCapabilitiesServerInternal.h"
 #include "IMediaPipelineServerInternal.h"
+#include "IVideoFrameCaptureService.h"
 #include "MediaPipelineMetricsClient.h"
 #include "RialtoServerLogging.h"
 #include <exception>
@@ -360,6 +361,58 @@ bool MediaPipelineService::setVideoWindow(int sessionId, std::uint32_t x, std::u
         return false;
     }
     return mediaPipelineIter->second->setVideoWindow(x, y, width, height);
+}
+
+bool MediaPipelineService::attachVideoFrameCapture(int sessionId, std::uint64_t captureClientId, std::uint32_t captureId)
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to attach video frame capture %u, session id: %d", captureId,
+                           sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    // the registry rejects another client's capture and one attached elsewhere; the session checks its state
+    IVideoFrameCaptureService &captureService{m_playbackService.getVideoFrameCaptureService()};
+    if (!captureService.bindCapture(captureClientId, captureId, sessionId))
+    {
+        return false;
+    }
+    if (!mediaPipelineIter->second->attachCapture(captureId))
+    {
+        captureService.unbindCapture(captureClientId, captureId);
+        return false;
+    }
+    m_captureClientIds[sessionId] = captureClientId;
+    return true;
+}
+
+bool MediaPipelineService::detachVideoFrameCapture(int sessionId)
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to detach video frame capture, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    std::uint32_t captureId{0};
+    if (!mediaPipelineIter->second->detachCapture(captureId))
+    {
+        return false;
+    }
+    auto clientIter = m_captureClientIds.find(sessionId);
+    if (clientIter != m_captureClientIds.end())
+    {
+        m_playbackService.getVideoFrameCaptureService().unbindCapture(clientIter->second, captureId);
+        m_captureClientIds.erase(clientIter);
+    }
+    return true;
 }
 
 bool MediaPipelineService::haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,

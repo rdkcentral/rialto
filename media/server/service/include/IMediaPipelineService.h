@@ -64,6 +64,17 @@ public:
     virtual bool getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
     virtual bool setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
                                 std::uint32_t height) = 0;
+    /**
+     * @brief Attaches a client's registered video frame capture to a session (proposal 3.2).
+     *
+     * Fails if the session does not exist, the capture is not the client's or is attached elsewhere, or the session
+     * rejects it.
+     */
+    virtual bool attachVideoFrameCapture(int sessionId, std::uint64_t captureClientId, std::uint32_t captureId) = 0;
+    /**
+     * @brief Detaches the session's video frame capture (proposal 3.2).
+     */
+    virtual bool detachVideoFrameCapture(int sessionId) = 0;
     virtual bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
                           std::uint32_t needDataRequestId) = 0;
     virtual bool renderFrame(int sessionId) = 0;

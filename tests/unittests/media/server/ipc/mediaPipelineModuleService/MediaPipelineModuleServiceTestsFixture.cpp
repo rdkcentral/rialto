@@ -35,12 +35,16 @@ using testing::Return;
 using testing::SaveArg;
 using testing::SetArgReferee;
 
+using ::testing::AtMost;
+
 namespace
 {
 constexpr firebolt::rialto::MediaSourceType kMediaSourceType{firebolt::rialto::MediaSourceType::AUDIO};
 constexpr std::uint32_t kWidth{1920};
 constexpr std::uint32_t kHeight{1080};
 constexpr int kHardcodedSessionId{2};
+constexpr std::uint64_t kCaptureClientId{4};
+constexpr std::uint32_t kVideoFrameCaptureId{9};
 const firebolt::rialto::MediaType kMediaType{firebolt::rialto::MediaType::MSE};
 const std::string kMimeType{"exampleMimeType"};
 constexpr uint32_t kDolbyProfile{5};
@@ -1891,24 +1895,49 @@ void MediaPipelineModuleServiceTests::expectRequestSuccess()
     EXPECT_CALL(*m_closureMock, Run());
 }
 
-void MediaPipelineModuleServiceTests::sendAttachVideoFrameCaptureRequestAndExpectFailure()
+void MediaPipelineModuleServiceTests::captureClientLookupWillFindClient(bool found)
+{
+    const std::optional<std::uint64_t> captureClientId{found ? std::optional<std::uint64_t>{kCaptureClientId}
+                                                             : std::nullopt};
+    m_service->setCaptureClientLookup(
+        [this, captureClientId](const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client)
+        {
+            EXPECT_EQ(client, m_clientMock); // the calling connection
+            return captureClientId;
+        });
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachVideoFrameCapture(bool result)
+{
+    EXPECT_CALL(m_mediaPipelineServiceMock,
+                attachVideoFrameCapture(kHardcodedSessionId, kCaptureClientId, kVideoFrameCaptureId))
+        .WillOnce(Return(result));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillDetachVideoFrameCapture(bool result)
+{
+    EXPECT_CALL(m_mediaPipelineServiceMock, detachVideoFrameCapture(kHardcodedSessionId)).WillOnce(Return(result));
+}
+
+void MediaPipelineModuleServiceTests::sendAttachVideoFrameCaptureRequestAndExpect(bool success)
 {
     firebolt::rialto::AttachVideoFrameCaptureRequest request;
     firebolt::rialto::AttachVideoFrameCaptureResponse response;
     request.set_session_id(kHardcodedSessionId);
-    request.set_capture_id(1);
+    request.set_capture_id(kVideoFrameCaptureId);
 
-    expectRequestFailure();
+    EXPECT_CALL(*m_controllerMock, getClient()).Times(AtMost(1)).WillRepeatedly(Return(m_clientMock));
+    success ? expectRequestSuccess() : expectRequestFailure();
     m_service->attachVideoFrameCapture(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
-void MediaPipelineModuleServiceTests::sendDetachVideoFrameCaptureRequestAndExpectFailure()
+void MediaPipelineModuleServiceTests::sendDetachVideoFrameCaptureRequestAndExpect(bool success)
 {
     firebolt::rialto::DetachVideoFrameCaptureRequest request;
     firebolt::rialto::DetachVideoFrameCaptureResponse response;
     request.set_session_id(kHardcodedSessionId);
 
-    expectRequestFailure();
+    success ? expectRequestSuccess() : expectRequestFailure();
     m_service->detachVideoFrameCapture(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 

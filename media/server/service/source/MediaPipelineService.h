@@ -78,6 +78,8 @@ public:
     bool getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
     bool setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
                         std::uint32_t height) override;
+    bool attachVideoFrameCapture(int sessionId, std::uint64_t captureClientId, std::uint32_t captureId) override;
+    bool detachVideoFrameCapture(int sessionId) override;
     bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
                   std::uint32_t needDataRequestId) override;
     bool renderFrame(int sessionId) override;
@@ -126,6 +128,7 @@ private:
     IPrivateMetricsService &m_metricsService;
     std::map<int, std::unique_ptr<IMediaPipelineServerInternal>> m_mediaPipelines;
     std::mutex m_mediaPipelineMutex;
+    std::map<int, std::uint64_t> m_captureClientIds; /**< The client of each session's attached capture. */
 };
 } // namespace firebolt::rialto::server::service
 

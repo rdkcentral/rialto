@@ -121,6 +121,16 @@ void VideoFrameCaptureModuleService::clientDisconnected(const std::shared_ptr<::
     }
 }
 
+std::optional<service::VideoFrameCaptureClientId>
+VideoFrameCaptureModuleService::captureClientIdOf(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+    auto it = m_clientIds.find(ipcClient);
+    if (it == m_clientIds.end())
+        return std::nullopt;
+    return it->second;
+}
+
 bool VideoFrameCaptureModuleService::clientIdOf(::google::protobuf::RpcController *controller,
                                                 service::VideoFrameCaptureClientId &clientId)
 {

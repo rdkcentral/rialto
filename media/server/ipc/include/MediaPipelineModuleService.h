@@ -46,6 +46,7 @@ public:
 
     void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) override;
     void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) override;
+    void setCaptureClientLookup(const CaptureClientLookup &lookup) override;
 
     void createSession(::google::protobuf::RpcController *controller,
                        const ::firebolt::rialto::CreateSessionRequest *request,
@@ -183,6 +184,7 @@ private:
     std::map<std::shared_ptr<::firebolt::rialto::ipc::IClient>, std::set<int>> m_clientSessions;
     std::map<int, std::map<int32_t, MediaSourceType>> m_sessionSources;
     std::map<int, bool> m_sessionImmediateOutput;
+    CaptureClientLookup m_captureClientLookup;
 };
 } // namespace firebolt::rialto::server::ipc
 

@@ -227,7 +227,7 @@ public:
     void initSession();
     void triggerPing();
 
-private:
+protected: // visible to the capture tests in MediaPipelineServiceCaptureTests.cpp
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalFactoryMock>> m_mediaPipelineFactoryMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesFactoryMock>>
         m_mediaPipelineCapabilitiesFactoryMock;

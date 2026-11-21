@@ -24,6 +24,7 @@
 #include "videoframecapturemodule.pb.h"
 #include <IIpcServer.h>
 #include <memory>
+#include <optional>
 
 namespace firebolt::rialto::server::ipc
 {
@@ -61,6 +62,12 @@ public:
 
     virtual void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) = 0;
     virtual void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) = 0;
+
+    /**
+     * @brief The capture service's ID for a connected client, shared with other modules that name its captures.
+     */
+    virtual std::optional<service::VideoFrameCaptureClientId>
+    captureClientIdOf(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) = 0;
 };
 } // namespace firebolt::rialto::server::ipc
 

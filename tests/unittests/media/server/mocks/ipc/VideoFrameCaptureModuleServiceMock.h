@@ -32,6 +32,8 @@ public:
     MOCK_METHOD(void, clientConnected, (const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient), (override));
     MOCK_METHOD(void, clientDisconnected, (const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient),
                 (override));
+    MOCK_METHOD(std::optional<service::VideoFrameCaptureClientId>, captureClientIdOf,
+                (const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient), (override));
     MOCK_METHOD(void, createVideoFrameCapture,
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::CreateVideoFrameCaptureRequest *request,

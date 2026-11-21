@@ -696,12 +696,40 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetUseBuffering)
     sendGetUseBufferingRequestAndReceiveResponseWithoutMatch();
 }
 
-TEST_F(MediaPipelineModuleServiceTests, shouldFailToAttachVideoFrameCaptureUntilSupported)
+TEST_F(MediaPipelineModuleServiceTests, shouldAttachVideoFrameCaptureOfTheCallingConnection)
 {
-    sendAttachVideoFrameCaptureRequestAndExpectFailure();
+    captureClientLookupWillFindClient(true);
+    mediaPipelineServiceWillAttachVideoFrameCapture(true);
+    sendAttachVideoFrameCaptureRequestAndExpect(true);
 }
 
-TEST_F(MediaPipelineModuleServiceTests, shouldFailToDetachVideoFrameCaptureUntilSupported)
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToAttachVideoFrameCaptureRejectedByService)
 {
-    sendDetachVideoFrameCaptureRequestAndExpectFailure();
+    // the service rejects a wrong state, an unknown session and another connection's capture ID
+    captureClientLookupWillFindClient(true);
+    mediaPipelineServiceWillAttachVideoFrameCapture(false);
+    sendAttachVideoFrameCaptureRequestAndExpect(false);
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToAttachVideoFrameCaptureForConnectionWithoutCaptures)
+{
+    captureClientLookupWillFindClient(false);
+    sendAttachVideoFrameCaptureRequestAndExpect(false); // the service is not called
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToAttachVideoFrameCaptureWithoutLookup)
+{
+    sendAttachVideoFrameCaptureRequestAndExpect(false);
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldDetachVideoFrameCapture)
+{
+    mediaPipelineServiceWillDetachVideoFrameCapture(true);
+    sendDetachVideoFrameCaptureRequestAndExpect(true);
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToDetachVideoFrameCapture)
+{
+    mediaPipelineServiceWillDetachVideoFrameCapture(false);
+    sendDetachVideoFrameCaptureRequestAndExpect(false);
 }

@@ -66,6 +66,17 @@ SessionManagementServer::SessionManagementServer(
       m_controlModule{controlModuleFactory->create(playbackService, controlService)}
 {
     m_ipcServer = ipcFactory->create();
+    if (m_mediaPipelineModule && m_videoFrameCaptureModule)
+    {
+        // attachVideoFrameCapture names a capture by the ID the capture module issued for the same connection
+        std::weak_ptr<IVideoFrameCaptureModuleService> captureModule{m_videoFrameCaptureModule};
+        m_mediaPipelineModule->setCaptureClientLookup(
+            [captureModule](const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
+            {
+                auto module = captureModule.lock();
+                return module ? module->captureClientIdOf(ipcClient) : std::nullopt;
+            });
+    }
 }
 
 SessionManagementServer::~SessionManagementServer()

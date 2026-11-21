@@ -43,6 +43,8 @@ public:
 
     void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) override;
     void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) override;
+    std::optional<service::VideoFrameCaptureClientId>
+    captureClientIdOf(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) override;
 
     void createVideoFrameCapture(::google::protobuf::RpcController *controller,
                                  const ::firebolt::rialto::CreateVideoFrameCaptureRequest *request,
