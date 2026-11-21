@@ -10,7 +10,7 @@
 
 ## 2. Deletion gate (D3, D5)
 
-- [ ] 2.1 Track `sinkAtNull`, `lockedCount` and `inFlight`; delete the HAL session outside the lock when all are satisfied. Set `sinkAtNull` from the pipeline when playbin reaches NULL. Verify with unit tests for each ordering of the three events.
+- [x] 2.1 Track `sinkAtNull`, `lockedCount` and `inFlight`; delete the HAL session outside the lock when all are satisfied. Set `sinkAtNull` from the pipeline when playbin reaches NULL. Verify with unit tests for each ordering of the three events.
 - [ ] 2.2 Make R9's delivery callback hold a `shared_ptr` and count in `inFlight`. Verify with a test that retires during a pending send and checks the session is deleted only after the callback.
 
 ## 3. Disconnect (D4)

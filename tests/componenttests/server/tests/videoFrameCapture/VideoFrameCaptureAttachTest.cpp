@@ -357,9 +357,8 @@ TEST_F(VideoFrameCaptureAttachTest, shouldRollBackWhenAdmissionRefusesAndCommitO
     captureSinkWillBeDropped();
     gstPlayerWillBeDestructed();
     destroySession();
-    EXPECT_EQ(liveHalSessions(), 1); // kept by the capture registration for late releases
+    EXPECT_EQ(liveHalSessions(), 0); // retired with its pipeline, sink at NULL, no frame held: deleted (R10)
     destroyCapture(m_captureId);
-    EXPECT_EQ(liveHalSessions(), 0); // deleted with the capture
 }
 
 TEST_F(VideoFrameCaptureAttachTest, shouldUseOneSinkForCaptureAndSecondaryVideo)

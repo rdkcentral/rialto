@@ -151,6 +151,17 @@ public:
     /** Whether the session was retired. */
     bool isRetired() const;
 
+    /**
+     * @brief Records that the pipeline, and so the sink borrowing the session, has reached NULL (R10 design D3).
+     */
+    void setSinkAtNull();
+
+    /**
+     * @brief Whether the HAL session was deleted: retired, sink at NULL, no locked slot and no pending delivery.
+     *        The session is deleted outside the lock by whichever of those events comes last.
+     */
+    bool isSessionDeleted() const;
+
     /** Whether the slot holds a frame lock owed a release. */
     bool isSlotLocked(std::uint32_t slotIndex) const;
 
@@ -172,6 +183,17 @@ private:
     std::optional<CaptureFrameDescription> m_lastSentDescription;
     bool m_fatal{false};
     bool m_retired{false};
+    bool m_sinkAtNull{false};
+    std::uint32_t m_inFlight{0}; /**< Replies sent whose delivery outcome is not known yet. */
+
+    /** The body of onDelivery(). Must be called with m_mutex held. */
+    void resolveDeliveryLocked(const DeliveryTicket &ticket, bool delivered);
+
+    /** The body of release(). Must be called with m_mutex held. */
+    capture::CaptureStatus releaseLocked(std::uint32_t slotIndex, std::uint64_t acquisitionToken);
+
+    /** Must be called with m_mutex held. @retval the session to delete outside the lock, if it may go now. */
+    wrappers::CaptureSessionPtr takeSessionIfDeletableLocked();
     capture::LockedRanges m_lockedRanges;
     capture::ValidationWarningLog m_warnings;
 };

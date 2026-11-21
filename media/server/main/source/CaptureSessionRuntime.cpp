@@ -133,6 +133,7 @@ capture::CaptureStatus CaptureSessionRuntime::acquire(const FrameReplyFiller &fi
         exported.fd = -1; // the reply owns them now
     }
     ticket = DeliveryTicket{record->slotIndex, record->acquisitionToken, m_flushGeneration, std::move(description)};
+    ++m_inFlight; // until onDelivery()
     const std::uint32_t kSlot{record->slotIndex};
     m_slots[kSlot] = std::move(record);
     return capture::CaptureStatus::OK;
@@ -140,11 +141,25 @@ capture::CaptureStatus CaptureSessionRuntime::acquire(const FrameReplyFiller &fi
 
 void CaptureSessionRuntime::onDelivery(const DeliveryTicket &ticket, bool delivered)
 {
-    std::lock_guard<std::mutex> lock{m_mutex};
+    wrappers::CaptureSessionPtr doomed;
+    {
+        std::lock_guard<std::mutex> lock{m_mutex};
+        if (m_inFlight > 0)
+        {
+            --m_inFlight; // called exactly once per OK acquisition
+        }
+        resolveDeliveryLocked(ticket, delivered);
+        doomed = takeSessionIfDeletableLocked();
+    }
+    // a session whose last obligation was this delivery is deleted here, outside the lock
+}
+
+void CaptureSessionRuntime::resolveDeliveryLocked(const DeliveryTicket &ticket, bool delivered)
+{
     if (ticket.slotIndex >= m_slots.size() || !m_slots[ticket.slotIndex] ||
         m_slots[ticket.slotIndex]->acquisitionToken != ticket.acquisitionToken)
     {
-        return; // already resolved
+        return; // already resolved, for example by a disconnect
     }
     capture::CapturedFrame &record{*m_slots[ticket.slotIndex]};
     if (delivered)
@@ -167,7 +182,16 @@ void CaptureSessionRuntime::onDelivery(const DeliveryTicket &ticket, bool delive
 
 capture::CaptureStatus CaptureSessionRuntime::release(std::uint32_t slotIndex, std::uint64_t acquisitionToken)
 {
+    wrappers::CaptureSessionPtr doomed;
     std::lock_guard<std::mutex> lock{m_mutex};
+    const capture::CaptureStatus kStatus{releaseLocked(slotIndex, acquisitionToken)};
+    doomed = takeSessionIfDeletableLocked();
+    // the lock is released before doomed is destroyed: it was declared first
+    return kStatus;
+}
+
+capture::CaptureStatus CaptureSessionRuntime::releaseLocked(std::uint32_t slotIndex, std::uint64_t acquisitionToken)
+{
     if (slotIndex >= m_slots.size() || !m_slots[slotIndex] || m_slots[slotIndex]->acquisitionToken != acquisitionToken)
     {
         RIALTO_SERVER_LOG_WARN("Release of slot %u with token %llu of pool %u matches no frame lock", slotIndex,
@@ -187,12 +211,44 @@ capture::CaptureStatus CaptureSessionRuntime::release(std::uint32_t slotIndex, s
 
 void CaptureSessionRuntime::retire()
 {
+    wrappers::CaptureSessionPtr doomed;
     std::lock_guard<std::mutex> lock{m_mutex};
     if (!m_retired)
     {
         RIALTO_SERVER_LOG_INFO("Video frame capture session of pool %u retired", m_poolId);
         m_retired = true;
     }
+    doomed = takeSessionIfDeletableLocked();
+}
+
+void CaptureSessionRuntime::setSinkAtNull()
+{
+    wrappers::CaptureSessionPtr doomed;
+    std::lock_guard<std::mutex> lock{m_mutex};
+    m_sinkAtNull = true;
+    doomed = takeSessionIfDeletableLocked();
+}
+
+bool CaptureSessionRuntime::isSessionDeleted() const
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+    return !m_session;
+}
+
+wrappers::CaptureSessionPtr CaptureSessionRuntime::takeSessionIfDeletableLocked()
+{
+    if (!m_session || !m_retired || !m_sinkAtNull || m_inFlight != 0)
+    {
+        return nullptr;
+    }
+    for (const auto &kRecord : m_slots)
+    {
+        if (kRecord)
+            return nullptr; // a frame lock is still owed a release
+    }
+    // SoC spec 4.6: retired, the sink no longer uses the session, no lock and no call outstanding
+    RIALTO_SERVER_LOG_INFO("Deleting the video frame capture session of pool %u", m_poolId);
+    return std::move(m_session);
 }
 
 bool CaptureSessionRuntime::isRetired() const

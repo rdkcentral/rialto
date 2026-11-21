@@ -184,7 +184,8 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
     {
         // the sink borrows the HAL session, so the player goes first
         m_captureRuntime->retire();
-        m_gstPlayer.reset();
+        m_gstPlayer.reset();               // playbin and its sink go to NULL and are destroyed
+        m_captureRuntime->setSinkAtNull(); // so the session may be deleted once its frames are released
         m_captureRuntime.reset();
     }
 
@@ -1610,6 +1611,10 @@ void MediaPipelineServerInternal::notifyPlaybackState(PlaybackState state)
         if (state == PlaybackState::FAILURE)
         {
             retireCapture("playback failure");
+        }
+        if (state == PlaybackState::STOPPED && m_captureRuntime)
+        {
+            m_captureRuntime->setSinkAtNull(); // STOPPED is reported once playbin, with its sink, reached NULL
         }
         if (m_mediaPipelineClient)
         {

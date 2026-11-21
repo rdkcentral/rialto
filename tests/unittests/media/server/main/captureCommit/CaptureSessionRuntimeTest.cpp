@@ -193,3 +193,84 @@ TEST_F(CaptureSessionRuntimeDeliveryTest, RetiredSessionAnswersNoFrameWithoutAsk
               capture::CaptureStatus::NO_FRAME);
     EXPECT_TRUE(m_runtime->isSlotLocked(0)); // the frame the client holds stays locked
 }
+
+class CaptureSessionRuntimeDeletionTest : public ::testing::Test
+{
+protected:
+    CaptureSessionRuntimeDeletionTest()
+    {
+        capture::CapturePool pool;
+        CaptureRecordFixtures::makeNv12Pool(pool, 3);
+        m_runtime =
+            std::make_unique<CaptureSessionRuntime>(wrappers::CaptureSessionPtr{m_session,
+                                                                                [this](capture::ICaptureSession *session)
+                                                                                {
+                                                                                    m_deleted = true;
+                                                                                    delete session;
+                                                                                }},
+                                                    1, pool);
+        ON_CALL(*m_session, releaseFrame(_)).WillByDefault(Return(capture::CaptureStatus::OK));
+    }
+
+    // A frame acquired in slot 0; its delivery outcome is left to the test.
+    CaptureSessionRuntime::DeliveryTicket acquireFrame()
+    {
+        EXPECT_CALL(*m_session, acquireCurrentFrame(_))
+            .WillOnce(Invoke(
+                [this](capture::CapturedFrame &frame)
+                {
+                    m_records.makeExampleB(frame, 0, 1);
+                    return capture::CaptureStatus::OK;
+                }));
+        CaptureSessionRuntime::DeliveryTicket ticket;
+        EXPECT_EQ(m_runtime->acquire([](const capture::CapturedFrame &, bool, bool) {}, ticket),
+                  capture::CaptureStatus::OK);
+        return ticket;
+    }
+
+    CaptureRecordFixtures m_records;
+    NiceMock<capture::CaptureSessionMock> *m_session{new NiceMock<capture::CaptureSessionMock>()};
+    bool m_deleted{false};
+    std::unique_ptr<CaptureSessionRuntime> m_runtime;
+};
+
+TEST_F(CaptureSessionRuntimeDeletionTest, LastReleaseDeletes)
+{
+    const auto kTicket = acquireFrame();
+    m_runtime->onDelivery(kTicket, true);
+    m_runtime->retire();
+    m_runtime->setSinkAtNull();
+    EXPECT_FALSE(m_deleted); // a lock is still held
+    EXPECT_EQ(m_runtime->release(0, 1), capture::CaptureStatus::OK);
+    EXPECT_TRUE(m_deleted);
+    EXPECT_TRUE(m_runtime->isSessionDeleted());
+}
+
+TEST_F(CaptureSessionRuntimeDeletionTest, SinkReachingNullLastDeletes)
+{
+    const auto kTicket = acquireFrame();
+    m_runtime->onDelivery(kTicket, true);
+    m_runtime->retire();
+    EXPECT_EQ(m_runtime->release(0, 1), capture::CaptureStatus::OK);
+    EXPECT_FALSE(m_deleted); // the sink may still use the session
+    m_runtime->setSinkAtNull();
+    EXPECT_TRUE(m_deleted);
+}
+
+TEST_F(CaptureSessionRuntimeDeletionTest, PendingDeliveryLastDeletes)
+{
+    const auto kTicket = acquireFrame(); // its reply is still being sent
+    m_runtime->retire();
+    m_runtime->setSinkAtNull();
+    EXPECT_FALSE(m_deleted);
+    m_runtime->onDelivery(kTicket, false); // not delivered: released, and the last obligation goes
+    EXPECT_TRUE(m_deleted);
+}
+
+TEST_F(CaptureSessionRuntimeDeletionTest, RetirementLastDeletes)
+{
+    m_runtime->setSinkAtNull();
+    EXPECT_FALSE(m_deleted); // an active session is never deleted
+    m_runtime->retire();
+    EXPECT_TRUE(m_deleted);
+}

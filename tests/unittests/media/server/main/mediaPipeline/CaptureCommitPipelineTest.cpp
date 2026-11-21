@@ -239,3 +239,22 @@ TEST_F(RialtoServerMediaPipelineCaptureRetireTest, PipelineDestructionRetires)
     EXPECT_TRUE(runtime->isRetired());
     createMediaPipeline(); // for the fixture's teardown
 }
+
+TEST_F(RialtoServerMediaPipelineCaptureRetireTest, StoppedMarksTheSinkAtNullAndDeletesAnIdleSession)
+{
+    auto runtime = commit();
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, stop());
+    EXPECT_TRUE(m_mediaPipeline->stop());
+    EXPECT_FALSE(runtime->isSessionDeleted()); // retired, but playbin is not at NULL yet
+    setState(PlaybackState::STOPPED);
+    EXPECT_TRUE(runtime->isSessionDeleted()); // no frame held: deleted
+}
+
+TEST_F(RialtoServerMediaPipelineCaptureRetireTest, DestructionMarksTheSinkAtNull)
+{
+    auto runtime = commit();
+    destroyMediaPipeline();
+    EXPECT_TRUE(runtime->isSessionDeleted());
+    createMediaPipeline(); // for the fixture's teardown
+}
