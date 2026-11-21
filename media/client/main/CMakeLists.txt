@@ -35,6 +35,7 @@ set(LIB_RIALTO_CLIENT_SOURCES
         source/MediaKeysCapabilities.cpp
         source/MediaPipeline.cpp
         source/MediaPipelineCapabilities.cpp
+        source/CaptureCore.cpp
         source/EglLibrary.cpp
         source/GLVideoFrameCapture.cpp
         source/SharedMemoryHandle.cpp

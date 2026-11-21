@@ -24,9 +24,114 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
+#include <vector>
 
 namespace firebolt::rialto::client
 {
+/**
+ * @brief One DMA-BUF object of an acquired frame.
+ */
+struct CaptureObject
+{
+    std::uint64_t objectId{0};
+    std::uint64_t sizeBytes{0};
+};
+
+/**
+ * @brief One DRM plane of an acquired frame and where it is stored.
+ */
+struct CapturePlane
+{
+    std::uint32_t planeIndex{0};
+    std::uint64_t objectId{0};
+    std::uint64_t offsetBytes{0};
+    std::uint64_t lengthBytes{0};
+    std::uint32_t strideBytes{0};
+};
+
+/**
+ * @brief Effective colour interpretation of a frame, as the wire enum values (matrix, range, siting).
+ */
+struct CaptureColour
+{
+    std::uint32_t matrix{0};
+    std::uint32_t range{0};
+    std::uint32_t horizontalSiting{0};
+    std::uint32_t verticalSiting{0};
+
+    bool operator==(const CaptureColour &other) const
+    {
+        return matrix == other.matrix && range == other.range && horizontalSiting == other.horizontalSiting &&
+               verticalSiting == other.verticalSiting;
+    }
+};
+
+/**
+ * @brief Everything the server sends about one acquired frame, apart from its descriptors.
+ */
+struct CaptureFrameDescription
+{
+    std::uint32_t poolId{0};
+    std::uint32_t slotIndex{0};
+    std::uint64_t acquisitionToken{0};
+    std::int64_t presentationTimeNs{0};
+    std::uint32_t visibleWidth{0};
+    std::uint32_t visibleHeight{0};
+    std::uint32_t drmFormat{0};
+    std::uint64_t drmModifier{0};
+    std::uint32_t backingWidth{0};
+    std::uint32_t backingHeight{0};
+    std::vector<CaptureObject> objects;
+    std::vector<CapturePlane> planes;
+    CaptureColour colour;
+    bool dmaBufObjectsFlushed{false};
+};
+
+/**
+ * @brief A received descriptor for one DMA-BUF object. The receiver owns fd until it is closed or consumed.
+ */
+struct CaptureObjectFd
+{
+    std::uint64_t objectId{0};
+    int fd{-1};
+};
+
+/**
+ * @brief The structural pool description: identity and admitted slot count.
+ */
+struct CapturePoolDescription
+{
+    std::uint32_t poolId{0};
+    std::uint32_t slotCount{0};
+};
+
+/**
+ * @brief Result of an acquisition call.
+ */
+enum class CaptureAcquireStatus
+{
+    OK,
+    NO_NEW_FRAME,
+    NO_FRAME,
+    UNSUPPORTED,
+    INVALID_ARGUMENT,
+    NO_RESOURCES,
+    FATAL_ERROR,
+    IPC_FAILURE /**< The call itself failed (server gone, channel down). */
+};
+
+/**
+ * @brief An acquisition: status, and for OK the frame description, its descriptors and any updated pool.
+ */
+struct CaptureAcquireResult
+{
+    CaptureAcquireStatus status{CaptureAcquireStatus::IPC_FAILURE};
+    CaptureFrameDescription description;
+    std::vector<CaptureObjectFd> fds;
+    std::optional<CapturePoolDescription> pool;
+};
+
 class IVideoFrameCaptureIpc;
 
 /**

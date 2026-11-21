@@ -23,8 +23,10 @@
 namespace firebolt::rialto::client
 {
 GLVideoFrameCapture::GLVideoFrameCapture(const std::shared_ptr<IVideoFrameCaptureIpc> &videoFrameCaptureIpc,
-                                         std::uint32_t captureId, EGLDisplay eglDisplay, EGLContext eglContext)
-    : m_videoFrameCaptureIpc{videoFrameCaptureIpc}, m_captureId{captureId}, m_eglDisplay{eglDisplay},
+                                         std::uint32_t captureId, EGLDisplay eglDisplay, EGLContext eglContext,
+                                         const std::shared_ptr<IFrameImporter> &importer)
+    : m_core{std::make_shared<CaptureCore>(videoFrameCaptureIpc, captureId, importer)},
+      m_videoFrameCaptureIpc{videoFrameCaptureIpc}, m_captureId{captureId}, m_eglDisplay{eglDisplay},
       m_eglContext{eglContext}
 {
 }
@@ -40,6 +42,6 @@ GLVideoFrameCapture::~GLVideoFrameCapture()
 
 GLFrameAcquisition GLVideoFrameCapture::acquireCurrentFrame()
 {
-    return GLFrameAcquisition{false, nullptr};
+    return m_core->acquireCurrentFrame();
 }
 } // namespace firebolt::rialto::client

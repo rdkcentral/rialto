@@ -20,6 +20,8 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_GL_VIDEO_FRAME_CAPTURE_H_
 #define FIREBOLT_RIALTO_CLIENT_GL_VIDEO_FRAME_CAPTURE_H_
 
+#include "CaptureCore.h"
+#include "IFrameImporter.h"
 #include "IVideoFrameCapture.h"
 #include "IVideoFrameCaptureIpc.h"
 
@@ -31,13 +33,14 @@ namespace firebolt::rialto::client
 /**
  * @brief A GL capture registered with the server. Destroying it removes the registration.
  *
- * Frame delivery is not implemented yet: acquireCurrentFrame() returns no frame.
+ * Acquisition, the frame lease and the import cache are in CaptureCore; the importer does the GL import.
  */
 class GLVideoFrameCapture : public IGLVideoFrameCapture
 {
 public:
     GLVideoFrameCapture(const std::shared_ptr<IVideoFrameCaptureIpc> &videoFrameCaptureIpc, std::uint32_t captureId,
-                        EGLDisplay eglDisplay, EGLContext eglContext);
+                        EGLDisplay eglDisplay, EGLContext eglContext,
+                        const std::shared_ptr<IFrameImporter> &importer = nullptr);
     ~GLVideoFrameCapture() override;
 
     GraphicsAPIType apiType() const override { return GraphicsAPIType::GL; }
@@ -47,6 +50,7 @@ public:
     std::uint32_t captureId() const { return m_captureId; }
 
 private:
+    std::shared_ptr<CaptureCore> m_core;
     std::shared_ptr<IVideoFrameCaptureIpc> m_videoFrameCaptureIpc;
     const std::uint32_t m_captureId;
     EGLDisplay m_eglDisplay;

@@ -4,7 +4,7 @@ Unit tests run with `./build_ut.py -s client` (mock IPC and mock importer). "Spe
 
 ## 1. Core and interfaces (D1)
 
-- [ ] 1.1 Add `IFrameImporter` (`importFrame`, `retire`, `drain`) and a mock; add `CaptureCore` owning the IPC, current frame, cache and release mutex; make `GLVideoFrameCapture` delegate `acquireCurrentFrame()` to it. Verify the client builds and existing tests pass.
+- [x] 1.1 Add `IFrameImporter` (`importFrame`, `retire`, `drain`) and a mock; add `CaptureCore` owning the IPC, current frame, cache and release mutex; make `GLVideoFrameCapture` delegate `acquireCurrentFrame()` to it. Verify the client builds and existing tests pass.
 - [ ] 1.2 Add acquire, release and getPool to `VideoFrameCaptureIpc` (FDs read from `exported_dma_bufs`). Verify with `./build_ut.py -s clientipc`.
 
 ## 2. Acquisition and lease (D2, D5)
