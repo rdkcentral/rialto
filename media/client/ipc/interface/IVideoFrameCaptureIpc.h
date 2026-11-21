@@ -188,6 +188,29 @@ public:
      * @retval false if the call failed.
      */
     virtual bool destroyVideoFrameCapture(std::uint32_t captureId) = 0;
+
+    /**
+     * @brief Acquires the current frame of a capture.
+     *
+     * For OK the result carries the frame description, one received descriptor per distinct object (owned by the
+     * caller), and the updated pool description if the server sent one. IPC_FAILURE means the call itself failed.
+     */
+    virtual CaptureAcquireResult acquireCurrentFrame(std::uint32_t captureId) = 0;
+
+    /**
+     * @brief Releases the frame lock identified by pool, slot and acquisition token.
+     *
+     * @retval true if the server released it.
+     */
+    virtual bool releaseFrame(std::uint32_t captureId, std::uint32_t poolId, std::uint32_t slotIndex,
+                              std::uint64_t acquisitionToken) = 0;
+
+    /**
+     * @brief Gets the capture's admitted pool description.
+     *
+     * @retval false if the call failed or the capture has no pool.
+     */
+    virtual bool getPool(std::uint32_t captureId, CapturePoolDescription &pool) = 0;
 };
 } // namespace firebolt::rialto::client
 

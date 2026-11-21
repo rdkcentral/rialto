@@ -31,6 +31,11 @@ class VideoFrameCaptureIpcMock : public IVideoFrameCaptureIpc
 public:
     MOCK_METHOD(bool, createVideoFrameCapture, (GraphicsAPIType api, std::uint32_t &captureId), (override));
     MOCK_METHOD(bool, destroyVideoFrameCapture, (std::uint32_t captureId), (override));
+    MOCK_METHOD(CaptureAcquireResult, acquireCurrentFrame, (std::uint32_t captureId), (override));
+    MOCK_METHOD(bool, releaseFrame,
+                (std::uint32_t captureId, std::uint32_t poolId, std::uint32_t slotIndex, std::uint64_t acquisitionToken),
+                (override));
+    MOCK_METHOD(bool, getPool, (std::uint32_t captureId, CapturePoolDescription &pool), (override));
 };
 
 class VideoFrameCaptureIpcFactoryMock : public IVideoFrameCaptureIpcFactory

@@ -42,6 +42,10 @@ public:
 
     bool createVideoFrameCapture(GraphicsAPIType api, std::uint32_t &captureId) override;
     bool destroyVideoFrameCapture(std::uint32_t captureId) override;
+    CaptureAcquireResult acquireCurrentFrame(std::uint32_t captureId) override;
+    bool releaseFrame(std::uint32_t captureId, std::uint32_t poolId, std::uint32_t slotIndex,
+                      std::uint64_t acquisitionToken) override;
+    bool getPool(std::uint32_t captureId, CapturePoolDescription &pool) override;
 
 private:
     bool createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
