@@ -170,6 +170,7 @@ VulkanFrameImporter::VulkanFrameImporter(const std::shared_ptr<VulkanDeviceConte
 VulkanFrameImporter::~VulkanFrameImporter()
 {
     drain();
+    sweepSamplers(true);
 }
 
 std::shared_ptr<IImportedImage> VulkanFrameImporter::importFrame(const CaptureFrameDescription &description,
@@ -410,10 +411,66 @@ bool VulkanFrameImporter::createSamplerAndView(const CaptureFrameDescription &de
 {
     IVulkanApi &api{m_context->api()};
     const VkDevice kDevice{m_context->device()};
+
+    const VulkanSamplerKey kKey{import.format,
+                                description.drmModifier,
+                                description.colour.matrix,
+                                description.colour.range,
+                                description.colour.horizontalSiting,
+                                description.colour.verticalSiting};
+    bool createdNow{false};
+    auto it = m_samplers.find(kKey);
+    if (it == m_samplers.end())
+    {
+        std::shared_ptr<VulkanSamplerEntry> entry{createSamplerEntry(description, import)};
+        if (!entry)
+        {
+            return false;
+        }
+        it = m_samplers.emplace(kKey, entry).first;
+        createdNow = true;
+    }
+    import.samplerEntry = it->second;
+    import.sampler = it->second->sampler;
+    import.conversion = it->second->conversion;
+
+    VkSamplerYcbcrConversionInfo conversionInfo{VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO};
+    conversionInfo.conversion = import.conversion;
+    VkImageViewCreateInfo viewInfo{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+                                   import.conversion != VK_NULL_HANDLE ? &conversionInfo : nullptr};
+    viewInfo.image = import.image;
+    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    viewInfo.format = import.format;
+    viewInfo.components = {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+                           VK_COMPONENT_SWIZZLE_IDENTITY};
+    viewInfo.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+    if (api.createImageView(kDevice, &viewInfo, &import.view) != VK_SUCCESS)
+    {
+        import.view = VK_NULL_HANDLE;
+        RIALTO_CLIENT_LOG_ERROR("Cannot create the Vulkan image view for a captured frame");
+        if (createdNow)
+        {
+            // created by this attempt: destroyed with it
+            import.samplerEntry.reset();
+            destroySamplerEntry(*it->second);
+            m_samplers.erase(it);
+        }
+        return false;
+    }
+    m_lastSamplerKey = kKey;
+    return true;
+}
+
+std::shared_ptr<VulkanSamplerEntry> VulkanFrameImporter::createSamplerEntry(const CaptureFrameDescription &description,
+                                                                            const VulkanImportedImage &import)
+{
+    IVulkanApi &api{m_context->api()};
+    const VkDevice kDevice{m_context->device()};
     const bool kYcbcr{isYcbcr(import.format)};
     const bool kLinear{(import.features & (kYcbcr ? VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT
                                                   : VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) != 0};
     const VkFilter kFilter{kLinear ? VK_FILTER_LINEAR : VK_FILTER_NEAREST};
+    auto entry = std::make_shared<VulkanSamplerEntry>();
 
     VkSamplerYcbcrConversionInfo conversionInfo{VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO};
     if (kYcbcr)
@@ -429,13 +486,12 @@ bool VulkanFrameImporter::createSamplerAndView(const CaptureFrameDescription &de
         info.yChromaOffset = chromaLocation(description.colour.verticalSiting, VK_CHROMA_LOCATION_MIDPOINT);
         info.chromaFilter = kFilter;
         info.forceExplicitReconstruction = VK_FALSE;
-        if (api.createSamplerYcbcrConversion(kDevice, &info, &import.conversion) != VK_SUCCESS)
+        if (api.createSamplerYcbcrConversion(kDevice, &info, &entry->conversion) != VK_SUCCESS)
         {
-            import.conversion = VK_NULL_HANDLE;
             RIALTO_CLIENT_LOG_ERROR("Cannot create the Vulkan YCbCr conversion for a captured frame");
-            return false;
+            return nullptr;
         }
-        conversionInfo.conversion = import.conversion;
+        conversionInfo.conversion = entry->conversion;
     }
 
     VkSamplerCreateInfo samplerInfo{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO, kYcbcr ? &conversionInfo : nullptr};
@@ -447,27 +503,43 @@ bool VulkanFrameImporter::createSamplerAndView(const CaptureFrameDescription &de
     samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     samplerInfo.anisotropyEnable = VK_FALSE;
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
-    if (api.createSampler(kDevice, &samplerInfo, &import.sampler) != VK_SUCCESS)
+    if (api.createSampler(kDevice, &samplerInfo, &entry->sampler) != VK_SUCCESS)
     {
-        import.sampler = VK_NULL_HANDLE;
         RIALTO_CLIENT_LOG_ERROR("Cannot create the Vulkan sampler for a captured frame");
-        return false;
+        entry->sampler = VK_NULL_HANDLE;
+        destroySamplerEntry(*entry);
+        return nullptr;
     }
+    return entry;
+}
 
-    VkImageViewCreateInfo viewInfo{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, kYcbcr ? &conversionInfo : nullptr};
-    viewInfo.image = import.image;
-    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    viewInfo.format = import.format;
-    viewInfo.components = {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
-                           VK_COMPONENT_SWIZZLE_IDENTITY};
-    viewInfo.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-    if (api.createImageView(kDevice, &viewInfo, &import.view) != VK_SUCCESS)
+void VulkanFrameImporter::destroySamplerEntry(const VulkanSamplerEntry &entry)
+{
+    IVulkanApi &api{m_context->api()};
+    const VkDevice kDevice{m_context->device()};
+    if (entry.sampler != VK_NULL_HANDLE)
+        api.destroySampler(kDevice, entry.sampler);
+    if (entry.conversion != VK_NULL_HANDLE)
+        api.destroySamplerYcbcrConversion(kDevice, entry.conversion);
+}
+
+void VulkanFrameImporter::sweepSamplers(bool all)
+{
+    for (auto it = m_samplers.begin(); it != m_samplers.end();)
     {
-        import.view = VK_NULL_HANDLE;
-        RIALTO_CLIENT_LOG_ERROR("Cannot create the Vulkan image view for a captured frame");
-        return false;
+        // imports change their references only here and in importFrame(), both on the acquiring thread
+        const bool kUnused{it->second.use_count() == 1};
+        const bool kKeep{!all && m_lastSamplerKey && it->first == *m_lastSamplerKey};
+        if (kUnused && !kKeep)
+        {
+            destroySamplerEntry(*it->second);
+            it = m_samplers.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
     }
-    return true;
 }
 
 void VulkanFrameImporter::destroyImport(VulkanImportedImage &import)
@@ -477,10 +549,8 @@ void VulkanFrameImporter::destroyImport(VulkanImportedImage &import)
     // SoC spec 6.5 order, which is also the reverse of creation
     if (import.view != VK_NULL_HANDLE)
         api.destroyImageView(kDevice, import.view);
-    if (import.sampler != VK_NULL_HANDLE)
-        api.destroySampler(kDevice, import.sampler);
-    if (import.conversion != VK_NULL_HANDLE)
-        api.destroySamplerYcbcrConversion(kDevice, import.conversion);
+    // the sampler and conversion are the cache's; sweepSamplers() destroys them once no import holds them
+    import.samplerEntry.reset();
     if (import.image != VK_NULL_HANDLE)
         api.destroyImage(kDevice, import.image);
     for (auto it = import.memories.rbegin(); it != import.memories.rend(); ++it)
@@ -512,5 +582,6 @@ void VulkanFrameImporter::drain()
     {
         destroyImport(*kImage);
     }
+    sweepSamplers(false);
 }
 } // namespace firebolt::rialto::client

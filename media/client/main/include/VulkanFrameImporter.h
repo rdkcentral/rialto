@@ -24,13 +24,45 @@
 #include "VulkanDeviceContext.h"
 
 #include <cstdint>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <tuple>
 #include <vector>
 
 namespace firebolt::rialto::client
 {
+/**
+ * @brief The key of a cached sampler and conversion (R13 design D3).
+ */
+struct VulkanSamplerKey
+{
+    VkFormat format{VK_FORMAT_UNDEFINED};
+    std::uint64_t modifier{0};
+    std::uint32_t matrix{0};
+    std::uint32_t range{0};
+    std::uint32_t horizontalSiting{0};
+    std::uint32_t verticalSiting{0};
+
+    bool operator<(const VulkanSamplerKey &other) const
+    {
+        return std::tie(format, modifier, matrix, range, horizontalSiting, verticalSiting) <
+               std::tie(other.format, other.modifier, other.matrix, other.range, other.horizontalSiting,
+                        other.verticalSiting);
+    }
+    bool operator==(const VulkanSamplerKey &other) const { return !(*this < other) && !(other < *this); }
+};
+
+/**
+ * @brief A cached sampler and its conversion (null for RGB). Imports hold it; the importer destroys it.
+ */
+struct VulkanSamplerEntry
+{
+    VkSampler sampler{VK_NULL_HANDLE};
+    VkSamplerYcbcrConversion conversion{VK_NULL_HANDLE};
+};
+
 /**
  * @brief One frame layout imported as a Vulkan image (SoC spec 6.5), with its view, sampler and conversion.
  *
@@ -49,6 +81,7 @@ public:
     VkSampler sampler{VK_NULL_HANDLE};
     VkSamplerYcbcrConversion conversion{VK_NULL_HANDLE};
     std::vector<VkDeviceMemory> memories;
+    std::shared_ptr<VulkanSamplerEntry> samplerEntry; /**< Keeps the sampler and conversion alive. */
 
 private:
     const std::vector<std::uint32_t> m_noTextures;
@@ -88,14 +121,29 @@ private:
                       VulkanImportedImage &import);
     /** Imports one descriptor into memory for the image (or one plane of a disjoint image). Consumes or closes fd. */
     bool importMemory(VulkanImportedImage &import, bool disjoint, VkImageAspectFlagBits planeAspect, int &fd);
-    /** Creates the frame's conversion (YUV only), sampler and view. */
+    /** Gets the frame's sampler and conversion from the cache, or creates them, and creates the view. */
     bool createSamplerAndView(const CaptureFrameDescription &description, VulkanImportedImage &import);
-    /** Destroys an import's objects: view, sampler, conversion, image, then memory. */
+    /** Creates a sampler and its conversion (YUV only). @retval null on failure, with nothing left created. */
+    std::shared_ptr<VulkanSamplerEntry> createSamplerEntry(const CaptureFrameDescription &description,
+                                                           const VulkanImportedImage &import);
+    void destroySamplerEntry(const VulkanSamplerEntry &entry);
+    /**
+     * @brief Destroys cached samplers that no import holds, except the most recent description's, which stays
+     *        so that frames after a flush keep the same handles.
+     */
+    void sweepSamplers(bool all);
+    /** Destroys an import's view, image and memory, and drops its sampler reference. */
     void destroyImport(VulkanImportedImage &image);
 
     std::shared_ptr<VulkanDeviceContext> m_context;
     std::mutex m_retiredMutex;
     std::vector<std::shared_ptr<VulkanImportedImage>> m_retired;
+    std::map<VulkanSamplerKey, std::shared_ptr<VulkanSamplerEntry>> m_samplers;
+    std::optional<VulkanSamplerKey> m_lastSamplerKey;
+
+public:
+    /** Number of cached samplers, for tests. */
+    std::size_t samplerCount() const { return m_samplers.size(); }
 };
 } // namespace firebolt::rialto::client
 
