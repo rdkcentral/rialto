@@ -86,6 +86,14 @@ public:
                      ::firebolt::rialto::GetPositionResponse *response, ::google::protobuf::Closure *done) override;
     void getDuration(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetDurationRequest *request,
                      ::firebolt::rialto::GetDurationResponse *response, ::google::protobuf::Closure *done) override;
+    void attachVideoFrameCapture(::google::protobuf::RpcController *controller,
+                                 const ::firebolt::rialto::AttachVideoFrameCaptureRequest *request,
+                                 ::firebolt::rialto::AttachVideoFrameCaptureResponse *response,
+                                 ::google::protobuf::Closure *done) override;
+    void detachVideoFrameCapture(::google::protobuf::RpcController *controller,
+                                 const ::firebolt::rialto::DetachVideoFrameCaptureRequest *request,
+                                 ::firebolt::rialto::DetachVideoFrameCaptureResponse *response,
+                                 ::google::protobuf::Closure *done) override;
     void setImmediateOutput(::google::protobuf::RpcController *controller,
                             const ::firebolt::rialto::SetImmediateOutputRequest *request,
                             ::firebolt::rialto::SetImmediateOutputResponse *response,

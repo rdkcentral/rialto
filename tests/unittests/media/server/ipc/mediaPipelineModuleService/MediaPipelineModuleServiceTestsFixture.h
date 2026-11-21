@@ -169,6 +169,8 @@ public:
     void sendGetPositionRequestAndReceiveResponseWithoutPositionMatch();
     void sendGetDurationRequestAndReceiveResponse();
     void sendGetDurationRequestAndReceiveResponseWithoutDurationMatch();
+    void sendAttachVideoFrameCaptureRequestAndExpectFailure();
+    void sendDetachVideoFrameCaptureRequestAndExpectFailure();
     void sendSetImmediateOutputRequestAndReceiveResponse();
     void sendSetImmediateOutputRequestAndReceiveResponse(int sessionId, int32_t sourceId);
     void sendSetImmediateOutputRequestAndReceiveResponse(int sessionId, int32_t sourceId, bool immediateOutput);

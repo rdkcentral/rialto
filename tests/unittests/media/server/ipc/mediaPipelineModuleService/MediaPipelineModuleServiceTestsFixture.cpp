@@ -1891,6 +1891,27 @@ void MediaPipelineModuleServiceTests::expectRequestSuccess()
     EXPECT_CALL(*m_closureMock, Run());
 }
 
+void MediaPipelineModuleServiceTests::sendAttachVideoFrameCaptureRequestAndExpectFailure()
+{
+    firebolt::rialto::AttachVideoFrameCaptureRequest request;
+    firebolt::rialto::AttachVideoFrameCaptureResponse response;
+    request.set_session_id(kHardcodedSessionId);
+    request.set_capture_id(1);
+
+    expectRequestFailure();
+    m_service->attachVideoFrameCapture(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendDetachVideoFrameCaptureRequestAndExpectFailure()
+{
+    firebolt::rialto::DetachVideoFrameCaptureRequest request;
+    firebolt::rialto::DetachVideoFrameCaptureResponse response;
+    request.set_session_id(kHardcodedSessionId);
+
+    expectRequestFailure();
+    m_service->detachVideoFrameCapture(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
 void MediaPipelineModuleServiceTests::expectRequestFailure()
 {
     EXPECT_CALL(*m_controllerMock, SetFailed(_));

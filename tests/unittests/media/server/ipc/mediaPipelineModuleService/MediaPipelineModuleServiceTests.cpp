@@ -695,3 +695,13 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetUseBuffering)
     mediaPipelineServiceWillFailToGetUseBuffering();
     sendGetUseBufferingRequestAndReceiveResponseWithoutMatch();
 }
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToAttachVideoFrameCaptureUntilSupported)
+{
+    sendAttachVideoFrameCaptureRequestAndExpectFailure();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToDetachVideoFrameCaptureUntilSupported)
+{
+    sendDetachVideoFrameCaptureRequestAndExpectFailure();
+}

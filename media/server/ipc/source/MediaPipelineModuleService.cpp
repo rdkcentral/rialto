@@ -745,6 +745,32 @@ void MediaPipelineModuleService::getDuration(::google::protobuf::RpcController *
     done->Run();
 }
 
+void MediaPipelineModuleService::attachVideoFrameCapture(::google::protobuf::RpcController *controller,
+                                                         const ::firebolt::rialto::AttachVideoFrameCaptureRequest *request,
+                                                         ::firebolt::rialto::AttachVideoFrameCaptureResponse *response,
+                                                         ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    (void)request;
+    (void)response;
+    RIALTO_SERVER_LOG_WARN("Video frame capture is not supported");
+    controller->SetFailed("Video frame capture is not supported");
+    done->Run();
+}
+
+void MediaPipelineModuleService::detachVideoFrameCapture(::google::protobuf::RpcController *controller,
+                                                         const ::firebolt::rialto::DetachVideoFrameCaptureRequest *request,
+                                                         ::firebolt::rialto::DetachVideoFrameCaptureResponse *response,
+                                                         ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    (void)request;
+    (void)response;
+    RIALTO_SERVER_LOG_WARN("Video frame capture is not supported");
+    controller->SetFailed("Video frame capture is not supported");
+    done->Run();
+}
+
 void MediaPipelineModuleService::setImmediateOutput(::google::protobuf::RpcController *controller,
                                                     const ::firebolt::rialto::SetImmediateOutputRequest *request,
                                                     ::firebolt::rialto::SetImmediateOutputResponse *response,
