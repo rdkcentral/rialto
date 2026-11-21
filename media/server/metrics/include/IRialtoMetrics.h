@@ -48,7 +48,8 @@ public:
 
 GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, MetricEvent& out,
 										   GstMessage* gstMessage = nullptr, 
-										   ElementToSourceMapper* mapper = nullptr);
+										   ElementToSourceMapper* mapper = nullptr,
+										   int32_t* outSessionId = nullptr);
 
 } // namespace firebolt::rialto::server
 

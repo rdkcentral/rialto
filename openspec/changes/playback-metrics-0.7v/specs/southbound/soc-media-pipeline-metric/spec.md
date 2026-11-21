@@ -36,7 +36,7 @@ This spec defines the normative structure and semantics for the `media-pipeline-
 
 **Statement:** The parser MUST validate that every `media-pipeline-metric` structure contains a field named `metric` with type `G_TYPE_UINT`.
 
-**Rationale:** The `metric` field identifies the type of observation (e.g., 1=PLAYBACK_STARTED, 7=BUFFER_UNDERFLOW). This field is mandatory and must be unsigned 32-bit integer per the SoC contract.
+**Rationale:** The `metric` field identifies the type of observation (e.g., 1=VIDEO_FRAME_DROP, 7=BUFFER_UNDERFLOW). This field is mandatory and must be unsigned 32-bit integer per the SoC contract.
 
 **Acceptance Criteria:**
 
@@ -55,7 +55,7 @@ This spec defines the normative structure and semantics for the `media-pipeline-
 
 **Statement:** The parser MUST validate that every `media-pipeline-metric` structure contains a field named `observation-kind` with type `G_TYPE_UINT`.
 
-**Rationale:** The `observation-kind` field specifies the semantic context of the metric (1=OCCURRENCE, 2=BUFFER_UNDERFLOW_START, 3=BUFFER_UNDERFLOW_RESOLVED). This field is mandatory.
+**Rationale:** The `observation-kind` field specifies the semantic context of the metric (1=OCCURRENCE, 2=EPISODE_STARTED, 3=EPISODE_RESOLVED). This field is mandatory.
 
 **Acceptance Criteria:**
 
@@ -74,7 +74,7 @@ This spec defines the normative structure and semantics for the `media-pipeline-
 
 **Statement:** If the `media-pipeline-metric` structure contains a field named `pts-ns`, it MUST have type `G_TYPE_INT64`. If present, the parser must extract and validate the presentation timestamp nanoseconds value. If absent, the parser must accept the message without this field.
 
-**Rationale:** The `pts-ns` field carries presentation timestamp data for metrics that need precise timing. It is optional; some metrics (e.g., PLAYBACK_STARTED) may omit it. When present, it must be a signed 64-bit integer per the SoC contract.
+**Rationale:** The `pts-ns` field carries presentation timestamp data for metrics that need precise timing. It is optional; some occurrence metrics (e.g., VIDEO_FRAME_DROP) may omit it. When present, it must be a signed 64-bit integer per the SoC contract.
 
 **Acceptance Criteria:**
 
@@ -94,7 +94,7 @@ This spec defines the normative structure and semantics for the `media-pipeline-
 
 **Statement:** If the `media-pipeline-metric` structure contains a field named `duration-ns`, it MUST have type `G_TYPE_UINT64` and the value MUST be >= 0. If present, the parser must extract and validate this field. If absent, the parser must accept the message without this field.
 
-**Rationale:** The `duration-ns` field indicates the duration of an observation in nanoseconds. It is optional and only meaningful for certain observation kinds (e.g., BUFFER_UNDERFLOW_START with a known duration). It must be unsigned (non-negative) per the SoC contract.
+**Rationale:** The `duration-ns` field indicates the duration of an observation in nanoseconds. It is optional and only meaningful for certain observation kinds (e.g., BUFFER_UNDERFLOW with EPISODE_STARTED and a known duration). It must be unsigned (non-negative) per the SoC contract.
 
 **Acceptance Criteria:**
 
@@ -131,7 +131,7 @@ This spec defines the normative structure and semantics for the `media-pipeline-
 
 **Statement:** The parser MUST validate that the `metric` field value is within the authorized range [1, 7], corresponding to defined SoC metric types.
 
-**Rationale:** Metric types are enumerated in the SoC contract: 1=PLAYBACK_STARTED, 2=PLAYBACK_PAUSED, ..., 7=BUFFER_UNDERFLOW. Values outside this range are either reserved for future use or invalid. Rejecting out-of-range values prevents downstream processing of undefined metrics.
+**Rationale:** Metric types are enumerated in the SoC contract: 1=VIDEO_FRAME_DROP, 2=AUDIO_FRAME_DROP, 3=VIDEO_DECODE_ERROR, 4=AUDIO_DECODE_ERROR, 5=VIDEO_FRAME_REPEAT, 6=AUDIO_GAP, 7=BUFFER_UNDERFLOW. Values outside this range are either reserved for future use or invalid. Rejecting out-of-range values prevents downstream processing of undefined metrics.
 
 **Acceptance Criteria:**
 
@@ -150,7 +150,7 @@ This spec defines the normative structure and semantics for the `media-pipeline-
 
 **Statement:** The parser MUST validate that the `observation-kind` field value is within the authorized range [1, 3], corresponding to defined SoC observation types.
 
-**Rationale:** Observation kinds are enumerated: 1=OCCURRENCE, 2=BUFFER_UNDERFLOW_START, 3=BUFFER_UNDERFLOW_RESOLVED. Values outside this range are invalid or unknown.
+**Rationale:** Observation kinds are enumerated: 1=OCCURRENCE, 2=EPISODE_STARTED, 3=EPISODE_RESOLVED. Values outside this range are invalid or unknown.
 
 **Acceptance Criteria:**
 
@@ -169,7 +169,7 @@ This spec defines the normative structure and semantics for the `media-pipeline-
 
 **Statement:** If `observation-kind` = 1 (OCCURRENCE), the message MUST NOT contain `duration-ns` or `count` fields. The parser MUST validate this constraint.
 
-**Rationale:** OCCURRENCE metrics represent a point-in-time event (e.g., PLAYBACK_STARTED), not a duration-bound or repeating event. Presence of duration or count fields in an OCCURRENCE message indicates a schema error or producer bug.
+**Rationale:** OCCURRENCE metrics represent a point-in-time event (e.g., VIDEO_FRAME_DROP), not a duration-bound or repeating event. Presence of duration or count fields in an OCCURRENCE message indicates a schema error or producer bug.
 
 **Acceptance Criteria:**
 

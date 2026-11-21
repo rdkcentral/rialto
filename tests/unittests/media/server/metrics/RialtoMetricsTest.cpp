@@ -436,6 +436,33 @@ TEST(ValidateMediaPipelineMetricTest, AcceptsValidMediaPipelineMetricStructureNa
     EXPECT_EQ(GST_FLOW_OK, result);
 }
 
+TEST(ValidateMediaPipelineMetricTest, ReusedOutputDoesNotKeepOptionalFieldsFromPreviousMessage)
+{
+    gst_init(nullptr, nullptr);
+
+    GstStructure *episode = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U, "observation-kind",
+                                              G_TYPE_UINT, 3U, "pts-ns", G_TYPE_INT64, gint64{9001},
+                                              "duration-ns", G_TYPE_UINT64, guint64{5000}, nullptr);
+    GstStructure *occurrence = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U,
+                                                 "observation-kind", G_TYPE_UINT, 1U, nullptr);
+    ASSERT_NE(nullptr, episode);
+    ASSERT_NE(nullptr, occurrence);
+
+    MetricEvent out;
+    EXPECT_EQ(GST_FLOW_OK, ValidateMediaPipelineMetric(episode, out));
+    ASSERT_TRUE(out.presentationTimeStampNs.has_value());
+    ASSERT_TRUE(out.durationNs.has_value());
+
+    EXPECT_EQ(GST_FLOW_OK, ValidateMediaPipelineMetric(occurrence, out));
+    EXPECT_EQ(MetricPhase::OCCURRENCE, out.phase);
+    EXPECT_FALSE(out.presentationTimeStampNs.has_value());
+    EXPECT_FALSE(out.durationNs.has_value());
+    EXPECT_FALSE(out.count.has_value());
+
+    gst_structure_free(episode);
+    gst_structure_free(occurrence);
+}
+
 TEST(ValidateMediaPipelineMetricTest, RejectsStructureNamedMetric)
 {
     gst_init(nullptr, nullptr);

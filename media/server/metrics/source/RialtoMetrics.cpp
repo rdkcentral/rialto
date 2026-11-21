@@ -167,9 +167,10 @@ std::optional<MetricEvent> RialtoMetrics::onMetricMessage(
 		return std::nullopt;
 	}
 
-	// Validate the metric message using the new ValidateMediaPipelineMetric function
+	// Validate the metric message; the session/source pair is resolved once here and reused for the counter cache key.
 	MetricEvent parsedMessage;
-	GstFlowReturn validationResult = ValidateMediaPipelineMetric(structure, parsedMessage, message, m_elementToSourceMapper.get());
+	int32_t sessionId = 0;
+	GstFlowReturn validationResult = ValidateMediaPipelineMetric(structure, parsedMessage, message, m_elementToSourceMapper.get(), &sessionId);
 	
 	if (validationResult != GST_FLOW_OK)
 	{
@@ -194,32 +195,16 @@ std::optional<MetricEvent> RialtoMetrics::onMetricMessage(
 		parsedMessage.observedAtUnixNs = nowUnixNs;
 	}
 
-	// The session id is not part of MetricEvent; it is only needed to key the counter cache and for logging.
-	// Resolve the session/source pair once using the mapper to ensure consistency: if the element is unregistered
-	// between validation and caching, we use the resolved IDs from validation rather than allowing a second lookup to fail.
-	int32_t sessionId = 0;
-	int32_t sourceId = parsedMessage.sourceId;
-	uint32_t mappedSessionId = 0;
-	uint32_t mappedSourceId = 0;
-	GstObject* sourceObject = GST_MESSAGE_SRC(message);
-	GstElement* sourceElement = GST_IS_ELEMENT(sourceObject) ? GST_ELEMENT(sourceObject) : nullptr;
-	if (sourceElement && m_elementToSourceMapper &&
-	    m_elementToSourceMapper->MapElement(sourceElement, mappedSessionId, mappedSourceId))
-	{
-		sessionId = static_cast<int32_t>(mappedSessionId);
-		sourceId = static_cast<int32_t>(mappedSourceId);
-	}
-
 	// Counted after validation, so rejected messages never reach the counters.
 	if (parsedMessage.type == MetricType::VIDEO_DECODE_ERROR && parsedMessage.phase == MetricPhase::OCCURRENCE)
 	{
 		std::lock_guard<std::mutex> lock{m_counterMutex};
-		++m_counterCache[{sessionId, sourceId}].counters.corruptedFrames;
+		++m_counterCache[{sessionId, parsedMessage.sourceId}].counters.corruptedFrames;
 	}
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
 					 "RialtoMetrics::onMetricMessage validated metric: %u, observation_kind: %u, session_id: %d, source_id: %d",
 					 static_cast<uint32_t>(parsedMessage.type), static_cast<uint32_t>(parsedMessage.phase), sessionId,
-					 sourceId);
+					 parsedMessage.sourceId);
 	
 	return parsedMessage;
 }
@@ -288,13 +273,15 @@ ElementToSourceMapper* RialtoMetrics::getElementToSourceMapper()
 	return m_elementToSourceMapper.get();
 }
 
-// Validates a "media-pipeline-metric" structure and fills out. Checks run in order: structure name, metric,
+// Validates a "media-pipeline-metric" structure and fills out, which is reset on every call. Checks run in order: structure name, metric,
 // observation-kind, optional pts-ns, duration-ns and count, then field combinations. Any failure logs a warning and
 // returns GST_FLOW_ERROR, so the caller drops only that message. Session and source IDs are filled in last from
 // GST_MESSAGE_SRC(); an unregistered element keeps source 0 rather than rejecting the message.
 GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, MetricEvent& out, GstMessage* gstMessage,
-										   ElementToSourceMapper* mapper)
+										   ElementToSourceMapper* mapper, int32_t* outSessionId)
 {
+	out = MetricEvent{};
+
 	if (!msg)
 	{
 		RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, "ValidateMediaPipelineMetric: null structure provided");
@@ -469,7 +456,11 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, MetricEvent& 
 	}
 
 	out.sourceId = 0;
-	// Enrichment: Extract source element from GstMessage and map to session_id (log only) and source_id
+	if (outSessionId)
+	{
+		*outSessionId = 0;
+	}
+	// Enrichment: Extract source element from GstMessage and map to session_id and source_id in a single lookup
 	if (gstMessage && mapper)
 	{
 		GstObject* sourceObject = GST_MESSAGE_SRC(gstMessage);
@@ -483,6 +474,10 @@ GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, MetricEvent& 
 			{
 				const int32_t sessionIdForLog = static_cast<int32_t>(enrichedSessionId);
 				out.sourceId = static_cast<int32_t>(enrichedSourceId);
+				if (outSessionId)
+				{
+					*outSessionId = sessionIdForLog;
+				}
 				RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
 								"ValidateMediaPipelineMetric: enriched message with session_id %d, source_id %d",
 								sessionIdForLog, out.sourceId);
