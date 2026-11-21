@@ -98,3 +98,69 @@ TEST_F(CaptureCoreCacheTest, KeepsImportsUsedByHeldFramesBeyondTheBound)
 
     ::testing::Mock::VerifyAndClearExpectations(m_importer.get());
 }
+
+TEST_F(CaptureCoreCacheTest, FlushedFrameWithSameIdsReimports)
+{
+    CaptureAcquireResult flushed = okResult(0, 2, 101);
+    flushed.description.dmaBufObjectsFlushed = true;
+    EXPECT_CALL(*m_ipc, acquireCurrentFrame(kCaptureId)).WillOnce(Return(okResult(0, 1, 101))).WillOnce(Return(flushed));
+    expectImport(2);
+
+    m_core->acquireCurrentFrame();
+    m_core->acquireCurrentFrame();
+    EXPECT_EQ(m_core->cacheSize(), 1u); // only the new import
+}
+
+TEST_F(CaptureCoreCacheTest, HeldEntryIsRetiredOnlyAfterItsFrameIsReleased)
+{
+    CaptureAcquireResult flushed = okResult(1, 2, 102);
+    flushed.description.dmaBufObjectsFlushed = true;
+    CaptureAcquireResult sameAsHeld = okResult(0, 3, 101); // matches the held, invalidated entry
+    EXPECT_CALL(*m_ipc, acquireCurrentFrame(kCaptureId))
+        .WillOnce(Return(okResult(0, 1, 101)))
+        .WillOnce(Return(flushed))
+        .WillOnce(Return(sameAsHeld));
+    expectImport(3); // the invalidated entry is never reused
+
+    int retired{0};
+    ON_CALL(*m_importer, retire(_))
+        .WillByDefault(Invoke([&retired](const std::shared_ptr<IImportedImage> &) { ++retired; }));
+
+    std::shared_ptr<IGLVideoFrame> held = m_core->acquireCurrentFrame().frame;
+    m_core->acquireCurrentFrame(); // invalidates; the entry is held, so it is not retired yet
+    EXPECT_EQ(retired, 0);
+
+    held.reset(); // its last frame goes: retired now
+    EXPECT_EQ(retired, 1);
+
+    m_core->acquireCurrentFrame(); // same IDs as the retired entry: imported again
+}
+
+TEST_F(CaptureCoreCacheTest, FailedImportLeavesInvalidationApplied)
+{
+    CaptureAcquireResult flushed = okResult(1, 2, 102);
+    flushed.description.dmaBufObjectsFlushed = true;
+    EXPECT_CALL(*m_ipc, acquireCurrentFrame(kCaptureId))
+        .WillOnce(Return(okResult(0, 1, 101)))
+        .WillOnce(Return(flushed))
+        .WillOnce(Return(okResult(0, 3, 101)));
+    EXPECT_CALL(*m_importer, importFrame(_, _, _))
+        .WillOnce(Invoke(
+            [](const CaptureFrameDescription &, const std::vector<CaptureObjectFd> &, bool &fdsConsumed)
+            {
+                fdsConsumed = false;
+                return std::make_shared<NiceMock<ImportedImageMock>>();
+            }))
+        .WillOnce(Return(nullptr)) // the flushed frame fails to import
+        .WillOnce(Invoke(
+            [](const CaptureFrameDescription &, const std::vector<CaptureObjectFd> &, bool &fdsConsumed)
+            {
+                fdsConsumed = false;
+                return std::make_shared<NiceMock<ImportedImageMock>>();
+            }));
+
+    m_core->acquireCurrentFrame();
+    m_core->acquireCurrentFrame();
+    EXPECT_EQ(m_core->cacheSize(), 0u); // the old entry was not restored
+    m_core->acquireCurrentFrame();      // so object 101 is imported again
+}

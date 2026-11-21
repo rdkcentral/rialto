@@ -89,6 +89,12 @@ public:
     /** Adds an entry, then evicts unused entries, least recently used first, while over the bound. */
     void insert(const std::shared_ptr<ImportCacheEntry> &entry);
 
+    /**
+     * @brief Invalidates every entry (SoC capture spec 6.2). Unused entries are retired now; entries held by frames
+     *        leave the cache and are retired when their last frame goes. None can be found again.
+     */
+    void invalidate() { m_entries.clear(); }
+
     std::size_t size() const { return m_entries.size(); }
 
 private:

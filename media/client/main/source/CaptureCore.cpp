@@ -101,6 +101,13 @@ std::shared_ptr<IGLVideoFrame> CaptureCore::importNewFrame(CaptureAcquireResult 
             m_cache.setBound(pool.slotCount);
     }
 
+    // invalidation comes before the lookup and is never undone, even if the import below fails
+    if (result.description.dmaBufObjectsFlushed)
+    {
+        ++m_period;
+        m_cache.invalidate();
+    }
+
     const ImportCacheKey kKey = ImportCacheKey::from(result.description, m_period);
     std::shared_ptr<ImportCacheEntry> entry = m_cache.find(kKey);
     if (entry)
