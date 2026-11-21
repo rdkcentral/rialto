@@ -1054,6 +1054,36 @@ message SourceFlushedEvent {
     optional int32 source_id = 2 [default = -1];
 }
 
+/**
+ * @fn bool attachVideoFrameCapture(int session_id, uint32 capture_id)
+ * @brief [V1.1] Directs the session's video output to a Video Frame Capture.
+ *
+ * @param[in] session_id    The id of the A/V session. Must be loaded; allSourcesAttached not yet called.
+ * @param[in] capture_id    A capture created with VideoFrameCaptureModule.createVideoFrameCapture
+ *                          on the same IPC connection.
+ *
+ * No capture buffers are allocated. allSourcesAttached creates the capture pool and configures
+ * the video sink, and fails synchronously if that is not possible.
+ */
+message AttachVideoFrameCaptureRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional uint32 capture_id = 2;
+}
+message AttachVideoFrameCaptureResponse {
+}
+
+/**
+ * @fn bool detachVideoFrameCapture(int session_id)
+ * @brief [V1.1] Detaches the session's Video Frame Capture.
+ *
+ * Accepted before allSourcesAttached and after stop. Outstanding frame locks remain valid.
+ */
+message DetachVideoFrameCaptureRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message DetachVideoFrameCaptureResponse {
+}
+
 service MediaPipelineModule {
     /**
      * @brief Creates a new playback session.
@@ -1342,6 +1372,20 @@ service MediaPipelineModule {
      * @see GetDurationRequest
      */
     rpc getDuration(GetDurationRequest) returns (GetDurationResponse) {
+    }
+
+    /**
+     * @brief [V1.1] Attaches a Video Frame Capture to the session
+     * @see AttachVideoFrameCaptureRequest
+     */
+    rpc attachVideoFrameCapture(AttachVideoFrameCaptureRequest) returns (AttachVideoFrameCaptureResponse) {
+    }
+
+    /**
+     * @brief [V1.1] Detaches the session's Video Frame Capture
+     * @see DetachVideoFrameCaptureRequest
+     */
+    rpc detachVideoFrameCapture(DetachVideoFrameCaptureRequest) returns (DetachVideoFrameCaptureResponse) {
     }
 
 }

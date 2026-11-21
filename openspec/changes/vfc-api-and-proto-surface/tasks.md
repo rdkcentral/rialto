@@ -11,7 +11,7 @@
 ## 2. Protos (D3, D4)
 
 - [x] 2.1 Add `proto/videoframecapturemodule.proto` from the interim file without the capabilities messages and RPC, and add it to `proto/CMakeLists.txt`. Verify it compiles and grep shows `field_is_fd` only on `VideoFrameCaptureExportedDmaBuf.fd`.
-- [ ] 2.2 Add `AttachVideoFrameCaptureRequest/Response`, `DetachVideoFrameCaptureRequest/Response` and their RPCs to `proto/mediapipelinemodule.proto`. Verify the generated code builds and existing message tags are unchanged (diff of the generated descriptors for existing messages is empty).
+- [x] 2.2 Add `AttachVideoFrameCaptureRequest/Response`, `DetachVideoFrameCaptureRequest/Response` and their RPCs to `proto/mediapipelinemodule.proto`. Verify the generated code builds and existing message tags are unchanged (diff of the generated descriptors for existing messages is empty).
 - [ ] 2.3 Implement server `MediaPipelineModuleService` handlers for the two new RPCs that fail through `SetFailed`. Verify with a server IPC unit test (`./build_ut.py -s serveripc`).
 
 ## 3. Compatibility tests
