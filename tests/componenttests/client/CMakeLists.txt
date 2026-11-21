@@ -68,6 +68,7 @@ add_gtests (
         tests/mse/SetVideoWindowTest.cpp
         tests/mse/SingleSourcePlaybackTest.cpp
         tests/mse/UnderflowNotificationTest.cpp
+        tests/mse/VideoFrameCaptureUnsupportedTest.cpp
         tests/mse/VolumeTest.cpp
         tests/mse/WriteSegmentEdgeCasesTest.cpp
         
