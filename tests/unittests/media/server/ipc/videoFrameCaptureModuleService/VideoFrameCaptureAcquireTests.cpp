@@ -331,3 +331,48 @@ TEST_F(VideoFrameCaptureReleaseTests, ReleaseReachesARetiredSession)
     EXPECT_CALL(*m_session, releaseFrame(_)).WillOnce(Return(CaptureStatus::OK));
     EXPECT_EQ(release(kPoolId, 1, 42).status(), VIDEO_FRAME_CAPTURE_STATUS_OK);
 }
+
+TEST_F(VideoFrameCaptureAcquireTests, PendingSendKeepsARetiredSessionUntilItsCallback)
+{
+    // the session's deletion is observable through a deleter on a dedicated runtime
+    bool deleted{false};
+    auto *session = new NiceMock<CaptureSessionMock>();
+    capture::CapturePool pool;
+    CaptureRecordFixtures::makeNv12Pool(pool, 3);
+    auto runtime = std::make_shared<
+        CaptureSessionRuntime>(firebolt::rialto::wrappers::CaptureSessionPtr{session,
+                                                                             [&deleted](capture::ICaptureSession *doomed)
+                                                                             {
+                                                                                 deleted = true;
+                                                                                 delete doomed;
+                                                                             }},
+                               kPoolId, pool);
+    EXPECT_CALL(m_service, hasCapture(1, kCaptureId)).WillOnce(Return(true));
+    EXPECT_CALL(m_service, captureRuntime(1, kCaptureId)).WillOnce(Return(runtime));
+    EXPECT_CALL(*session, acquireCurrentFrame(_))
+        .WillOnce(Invoke(
+            [&](CapturedFrame &frame)
+            {
+                m_records.makeExampleB(frame, 0, 1);
+                return CaptureStatus::OK;
+            }));
+    ON_CALL(*session, releaseFrame(_)).WillByDefault(Return(CaptureStatus::OK));
+    EXPECT_CALL(m_controller, setReplyFdsOwned(true));
+    std::function<void(bool)> callback;
+    EXPECT_CALL(m_controller, setDeliveryCallback(_))
+        .WillOnce(Invoke([&](std::function<void(bool)> registered) { callback = registered; }));
+    ASSERT_EQ(acquire().status(), VIDEO_FRAME_CAPTURE_STATUS_OK);
+
+    // the pipeline and the capture let go while the reply is still being sent
+    std::weak_ptr<CaptureSessionRuntime> watched{runtime};
+    runtime->retire();
+    runtime->setSinkAtNull();
+    runtime.reset();
+    EXPECT_FALSE(watched.expired()); // the callback holds it
+    EXPECT_FALSE(deleted);
+
+    callback(false); // the send failed: released, and the last obligation goes
+    EXPECT_TRUE(deleted);
+    callback = nullptr;
+    EXPECT_TRUE(watched.expired());
+}
