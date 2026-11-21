@@ -62,6 +62,7 @@ add_gtests (
 
         # MediaPipelineCapabilitiesIpc tests
         mediaPipelineCapabilitiesIpc/MediaPipelineCapabilitiesIpcTest.cpp
+        videoFrameCaptureIpc/VideoFrameCaptureIpcTest.cpp
 
         # MediaCapabilitiesIpc tests
         mediaCapabilitiesIpc/MediaCapabilitiesIpcTest.cpp

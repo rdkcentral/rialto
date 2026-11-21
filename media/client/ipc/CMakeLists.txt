@@ -34,6 +34,7 @@ add_library (
         source/MediaKeysIpc.cpp
         source/MediaKeysCapabilitiesIpc.cpp
         source/RialtoCommonIpc.cpp
+        source/VideoFrameCaptureIpc.cpp
         source/WebAudioPlayerIpc.cpp
 )
 

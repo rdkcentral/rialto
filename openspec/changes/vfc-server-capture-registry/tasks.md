@@ -13,7 +13,7 @@
 
 ## 3. Client (D4)
 
-- [ ] 3.1 Add `VideoFrameCaptureIpc` in `media/client/ipc` for create and destroy. Verify with `./build_ut.py -s clientipc`: success maps to an ID; `UNSUPPORTED`, a failed call and an unreachable server map to failure.
+- [x] 3.1 Add `VideoFrameCaptureIpc` in `media/client/ipc` for create and destroy. Verify with `./build_ut.py -s clientipc`: success maps to an ID; `UNSUPPORTED`, a failed call and an unreachable server map to failure.
 - [ ] 3.2 Add the `EglLibrary` run-time loader (dlopen `libEGL.so.1` once) and `GLVideoFrameCapture` holding the ID; make `createGLVideoFrameCapture()` load EGL, then register, and return null on either failure; the destructor sends destroy. `acquireCurrentFrame()` returns `{false, nullptr}`. Verify with `./build_ut.py -s client` using mocked IPC and loader.
 
 ## 4. Component tests
