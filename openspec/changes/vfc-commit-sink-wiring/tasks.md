@@ -21,7 +21,7 @@
 
 ## 4. Integration
 
-- [ ] 4.1 Add server component tests with the fake HAL and mocked admission: success, each failure, secondary-video pipeline with one sink carrying both settings. Verify with `./build_ct.py`.
+- [x] 4.1 Add server component tests with the fake HAL and mocked admission: success, each failure, secondary-video pipeline with one sink carrying both settings. Verify with `./build_ct.py`.
 - [ ] 4.2 On target, with the proprietary playbin and the vendor westerossink: commit, then play to PAUSED, and confirm the assigned sink instance is still playbin's `video-sink` and never passed through NULL (sink state-change log). Record the result in the PR.
 
 ## Workflow follow-up
