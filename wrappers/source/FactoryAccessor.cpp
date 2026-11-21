@@ -39,6 +39,11 @@ IFactoryAccessor &IFactoryAccessor::instance()
     return accessor;
 }
 
+std::shared_ptr<ICaptureHalLibraryFactory> &FactoryAccessor::captureHalLibraryFactory()
+{
+    return m_captureHalLibraryFactory;
+}
+
 std::shared_ptr<IGlibWrapperFactory> &FactoryAccessor::glibWrapperFactory()
 {
 #ifdef WRAPPERS_ENABLED

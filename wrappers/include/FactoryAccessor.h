@@ -31,6 +31,7 @@ public:
     FactoryAccessor() = default;
     ~FactoryAccessor() override = default;
 
+    std::shared_ptr<ICaptureHalLibraryFactory> &captureHalLibraryFactory() override;
     std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory() override;
     std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory() override;
     std::shared_ptr<ILinuxWrapperFactory> &linuxWrapperFactory() override;
@@ -42,6 +43,7 @@ public:
     std::shared_ptr<IYamlCppWrapperFactory> &yamlCppWrapperFactory() override;
 
 private:
+    std::shared_ptr<ICaptureHalLibraryFactory> m_captureHalLibraryFactory{nullptr};
     std::shared_ptr<IGlibWrapperFactory> m_glibWrapperFactory{nullptr};
     std::shared_ptr<IGstWrapperFactory> m_gstWrapperFactory{nullptr};
     std::shared_ptr<ILinuxWrapperFactory> m_linuxWrapperFactory{nullptr};

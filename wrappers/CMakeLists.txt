@@ -85,6 +85,7 @@ add_library(
         RialtoWrappers
 
         STATIC
+        source/CaptureHalLibraryFactoryAccessor.cpp
         source/FactoryAccessor.cpp
         source/GlibWrapperFactoryAccessor.cpp
         source/GstWrapperFactoryAccessor.cpp
@@ -110,6 +111,7 @@ target_include_directories(
 
         PUBLIC
         interface
+        $<TARGET_PROPERTY:RialtoCaptureHal,INTERFACE_INCLUDE_DIRECTORIES>
 
         PRIVATE
         include

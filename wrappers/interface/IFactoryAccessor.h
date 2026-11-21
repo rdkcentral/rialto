@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_WRAPPERS_I_FACTORY_ACCESSOR_H_
 #define FIREBOLT_RIALTO_WRAPPERS_I_FACTORY_ACCESSOR_H_
 
+#include "ICaptureHalLibrary.h"
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
 #include "ILinuxWrapper.h"
@@ -55,6 +56,13 @@ public:
      * @retval reference to the accessor
      */
     static IFactoryAccessor &instance();
+
+    /**
+     * @brief Access the ICaptureHalLibraryFactory instance.
+     *
+     * @retval non-const (by purpose) reference to the factory instance ptr
+     */
+    virtual std::shared_ptr<ICaptureHalLibraryFactory> &captureHalLibraryFactory() = 0;
 
     /**
      * @brief Access the IGlibWrapperFactory instance.

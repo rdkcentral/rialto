@@ -10,7 +10,7 @@ Unit tests run with `./build_ut.py -s <suite>`. "Spec" means `specs/capture-hal-
 
 ## 2. Loader wrapper (D2, D3)
 
-- [ ] 2.1 Add `wrappers/interface/ICaptureHalLibrary.h`, its factory accessor and a mock in the wrappers mocks. Verify the wrappers build and the mock compiles.
+- [x] 2.1 Add `wrappers/interface/ICaptureHalLibrary.h`, its factory accessor and a mock in the wrappers mocks. Verify the wrappers build and the mock compiles.
 - [ ] 2.2 Implement the loader, listed with the always-built sources in `wrappers/CMakeLists.txt` (design D2, build mode): library name from `RIALTO_CAPTURE_HAL_LIBRARY` or `lib_capture_hal.so`, `dlopen` on first use, `dlsym("createCaptureSession")`, `isAvailable()`, and `createSession()` returning a session whose deleter deletes it and then drops the shared library handle. Verify with the tests in 3.2.
 - [ ] 2.3 Add `CaptureSessionGuard`, which wraps each HAL call in `try/catch(...)`, logs, and returns `FATAL_ERROR`. Verify with a unit test using a gmock session that throws.
 
