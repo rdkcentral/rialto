@@ -46,6 +46,27 @@ std::optional<std::vector<egl::EGLint>> buildEglAttributes(const CaptureFrameDes
                                                            const std::vector<CaptureObjectFd> &fds);
 
 /**
+ * @brief One frame layout imported as an EGL image bound to one GL_TEXTURE_EXTERNAL_OES texture.
+ *
+ * Destroying it makes no EGL or GL call: the importer deletes the texture and image (design D4).
+ */
+class GlImportedImage : public IImportedImage
+{
+public:
+    GlImportedImage(egl::EGLImage image, egl::GLuint texture) : m_image{image}, m_textureIds{texture} {}
+
+    std::uint32_t textureTarget() const override { return egl::GL_TEXTURE_EXTERNAL_OES; }
+    const std::vector<std::uint32_t> &textureIds() const override { return m_textureIds; }
+
+    egl::EGLImage eglImage() const { return m_image; }
+    egl::GLuint texture() const { return m_textureIds.front(); }
+
+private:
+    const egl::EGLImage m_image;
+    const std::vector<std::uint32_t> m_textureIds;
+};
+
+/**
  * @brief Imports captured frames as EGL images bound to GL_TEXTURE_EXTERNAL_OES textures (SoC spec 6.3, 6.4).
  */
 class GlFrameImporter : public IFrameImporter
@@ -74,6 +95,9 @@ public:
 
 private:
     bool hasRequiredExtensions();
+
+    /** Deletes the texture, then the image (SoC spec 6.4 step 5). Needs a context of the share group current. */
+    void destroyImport(egl::GLuint texture, egl::EGLImage image);
 
     std::shared_ptr<IEglGl> m_gl;
     egl::EGLDisplay m_display;

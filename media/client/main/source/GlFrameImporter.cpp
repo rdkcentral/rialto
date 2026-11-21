@@ -237,13 +237,69 @@ bool GlFrameImporter::isSupported(std::uint32_t drmFormat, std::uint64_t drmModi
 std::shared_ptr<IImportedImage> GlFrameImporter::importFrame(const CaptureFrameDescription &description,
                                                              const std::vector<CaptureObjectFd> &fds, bool &fdsConsumed)
 {
-    fdsConsumed = false; // EGL borrows descriptors; the caller closes them (design D5)
-    (void)fds;
+    fdsConsumed = false; // EGL borrows descriptors; the caller closes them on success and failure (design D5)
     if (!isSupported(description.drmFormat, description.drmModifier))
     {
         return nullptr;
     }
-    return nullptr; // the import itself follows in task 2.2
+    const std::optional<std::vector<EGLint>> kAttributes = buildEglAttributes(description, fds);
+    if (!kAttributes)
+    {
+        RIALTO_CLIENT_LOG_ERROR("Cannot describe video frame in slot %u to EGL", description.slotIndex);
+        return nullptr;
+    }
+
+    // 1. the EGL image (SoC spec 6.4)
+    EGLImage image =
+        m_gl->eglCreateImageKHR(m_display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, nullptr, kAttributes->data());
+    if (image == EGL_NO_IMAGE)
+    {
+        RIALTO_CLIENT_LOG_ERROR("eglCreateImageKHR failed for video frame in slot %u: 0x%x", description.slotIndex,
+                                static_cast<unsigned>(m_gl->eglGetError()));
+        return nullptr;
+    }
+
+    // 2. the external texture
+    while (m_gl->glGetError() != GL_NO_ERROR)
+    {
+        // clear errors left by the application, so the check below sees only ours
+    }
+    GLuint texture{0};
+    m_gl->glGenTextures(1, &texture);
+    if (texture == 0)
+    {
+        RIALTO_CLIENT_LOG_ERROR("glGenTextures failed for video frame in slot %u", description.slotIndex);
+        m_gl->eglDestroyImageKHR(m_display, image);
+        return nullptr;
+    }
+    m_gl->glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture);
+    m_gl->glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    m_gl->glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    m_gl->glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_gl->glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_gl->glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, image);
+    const GLenum kError = m_gl->glGetError();
+    m_gl->glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
+    if (kError != GL_NO_ERROR)
+    {
+        RIALTO_CLIENT_LOG_ERROR("Binding video frame in slot %u to a texture failed: 0x%x", description.slotIndex,
+                                kError);
+        destroyImport(texture, image); // nothing from this attempt remains
+        return nullptr;
+    }
+    return std::make_shared<GlImportedImage>(image, texture);
+}
+
+void GlFrameImporter::destroyImport(GLuint texture, EGLImage image)
+{
+    if (texture != 0)
+    {
+        m_gl->glDeleteTextures(1, &texture);
+    }
+    if (image != EGL_NO_IMAGE)
+    {
+        m_gl->eglDestroyImageKHR(m_display, image);
+    }
 }
 
 void GlFrameImporter::retire(const std::shared_ptr<IImportedImage> &image)
