@@ -39,8 +39,11 @@ option cc_generic_services = true;
 
 /**
  * @brief Graphics API a capture is created for.
+ *
+ * Not named GraphicsAPIType: this proto's package is firebolt.rialto, so that name would clash with the public
+ * firebolt::rialto::GraphicsAPIType in IVideoFrameCapture.h. Only the type name differs; the wire is unaffected.
  */
-enum GraphicsAPIType {
+enum VideoFrameCaptureGraphicsAPIType {
     GRAPHICS_API_TYPE_UNKNOWN = 0;
     GRAPHICS_API_TYPE_GL = 1;
     GRAPHICS_API_TYPE_VULKAN = 2;
@@ -60,13 +63,13 @@ enum VideoFrameCaptureStatus {
 }
 
 /**
- * @fn createVideoFrameCapture(GraphicsAPIType api)
+ * @fn createVideoFrameCapture(VideoFrameCaptureGraphicsAPIType api)
  * @brief Registers a capture on this IPC connection. Allocates no pool.
  *
  * The capture_id is valid on this connection until destroyVideoFrameCapture or disconnection.
  */
 message CreateVideoFrameCaptureRequest {
-    optional GraphicsAPIType api = 1 [default = GRAPHICS_API_TYPE_UNKNOWN];
+    optional VideoFrameCaptureGraphicsAPIType api = 1 [default = GRAPHICS_API_TYPE_UNKNOWN];
 }
 message CreateVideoFrameCaptureResponse {
     optional VideoFrameCaptureStatus status = 1 [default = VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR];
