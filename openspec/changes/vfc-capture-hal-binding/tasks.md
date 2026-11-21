@@ -16,7 +16,7 @@ Unit tests run with `./build_ut.py -s <suite>`. "Spec" means `specs/capture-hal-
 
 ## 3. Fake HAL and loader tests (D4)
 
-- [ ] 3.1 Add the fake HAL shared library under `tests/common/fakeCaptureHal/`: exports `createCaptureSession`, takes scripted results through a control API, records calls, and creates real FDs with `memfd_create`. Verify it builds and `nm -D` shows the unmangled `createCaptureSession`.
+- [x] 3.1 Add the fake HAL shared library under `tests/common/fakeCaptureHal/`: exports `createCaptureSession`, takes scripted results through a control API, records calls, and creates real FDs with `memfd_create`. Verify it builds and `nm -D` shows the unmangled `createCaptureSession`.
 - [ ] 3.2 Add loader unit tests: the fake library loads and creates a session; a missing library and a missing symbol report unavailable and log once; an overridden name is used; a null factory result fails without crashing; a session outliving the loader keeps the library loaded until it is deleted (check with `dl_iterate_phdr` or `/proc/self/maps`). Verify with `./build_ut.py -s servermain` (or the suite that hosts the new tests).
 
 ## 4. Integration check
