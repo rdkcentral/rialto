@@ -21,6 +21,8 @@ add_gtests (
         RialtoServerCaptureUnitTests
 
         CaptureHalLibraryTests.cpp
+        CaptureRecordFixtures.cpp
+        CaptureRecordFixturesTests.cpp
         CaptureSessionGuardTests.cpp
         CapturedFrameTraitsTests.cpp
         CapturedFrameUtilsTests.cpp

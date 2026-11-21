@@ -5,7 +5,7 @@ Unit tests run with `./build_ut.py -s servercapture` (the suite added in 1.1). "
 ## 1. Setup
 
 - [x] 1.1 Add a `servercapture` unit-test suite (`tests/unittests/media/server/capture/`) and register it in `build_ut.py`. Verify `./build_ut.py -s servercapture -l` lists it.
-- [ ] 1.2 Add test fixtures that build SoC spec examples A–D (§5.2) and the NV12 example (§5.3) as `CapturedFrame` and `CapturePool` records with real `memfd_create` FDs. Verify the fixtures compile and the FDs are closed by the fixture teardown.
+- [x] 1.2 Add test fixtures that build SoC spec examples A–D (§5.2) and the NV12 example (§5.3) as `CapturedFrame` and `CapturePool` records with real `memfd_create` FDs. Verify the fixtures compile and the FDs are closed by the fixture teardown.
 
 ## 2. Capabilities and pools (D1, D2)
 
