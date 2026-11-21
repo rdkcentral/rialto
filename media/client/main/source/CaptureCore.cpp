@@ -49,6 +49,22 @@ void closeFds(const std::vector<CaptureObjectFd> &fds)
 GLFrameAcquisition CaptureCore::acquireCurrentFrame()
 {
     std::lock_guard<std::mutex> lock{m_acquireMutex};
+    // the application's context is current here: delete imports retired since the last acquisition, then, once
+    // this acquisition is done, the ones it invalidated or evicted
+    if (m_importer)
+    {
+        m_importer->drain();
+    }
+    GLFrameAcquisition acquisition{acquireLocked()};
+    if (m_importer)
+    {
+        m_importer->drain();
+    }
+    return acquisition;
+}
+
+GLFrameAcquisition CaptureCore::acquireLocked()
+{
     CaptureAcquireResult result = m_ipc->acquireCurrentFrame(m_captureId);
 
     switch (result.status)

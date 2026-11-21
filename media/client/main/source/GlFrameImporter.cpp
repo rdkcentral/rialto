@@ -304,8 +304,25 @@ void GlFrameImporter::destroyImport(GLuint texture, EGLImage image)
 
 void GlFrameImporter::retire(const std::shared_ptr<IImportedImage> &image)
 {
-    (void)image;
+    // any thread, no context: only queue it (design D4)
+    auto glImage = std::dynamic_pointer_cast<GlImportedImage>(image);
+    if (glImage)
+    {
+        std::lock_guard<std::mutex> lock{m_retiredMutex};
+        m_retired.push_back(glImage);
+    }
 }
 
-void GlFrameImporter::drain() {}
+void GlFrameImporter::drain()
+{
+    std::vector<std::shared_ptr<GlImportedImage>> retired;
+    {
+        std::lock_guard<std::mutex> lock{m_retiredMutex};
+        retired.swap(m_retired);
+    }
+    for (const auto &kImage : retired)
+    {
+        destroyImport(kImage->texture(), kImage->eglImage());
+    }
+}
 } // namespace firebolt::rialto::client

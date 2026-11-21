@@ -62,6 +62,9 @@ public:
     std::size_t cacheSize();
 
 private:
+    /** The acquisition itself. Must be called with m_acquireMutex held. */
+    GLFrameAcquisition acquireLocked();
+
     /** Imports a new frame. Must be called with m_acquireMutex held. @retval null if it could not be imported. */
     std::shared_ptr<IGLVideoFrame> importNewFrame(CaptureAcquireResult &result);
 

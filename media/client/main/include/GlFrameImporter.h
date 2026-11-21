@@ -103,6 +103,8 @@ private:
     egl::EGLDisplay m_display;
     egl::EGLContext m_context;
     std::optional<bool> m_extensionsPresent;
+    std::mutex m_retiredMutex;
+    std::vector<std::shared_ptr<GlImportedImage>> m_retired; /**< Waiting for drain(); no GL call in retire(). */
     std::map<std::pair<std::uint32_t, std::uint64_t>, bool> m_supportedPairs;
 };
 } // namespace firebolt::rialto::client
