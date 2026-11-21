@@ -511,6 +511,12 @@ void GstGenericPlayer::termPipeline()
         m_gstWrapper->gstObjectUnref(m_context.videoSink);
         m_context.videoSink = nullptr;
     }
+    if (m_context.captureSink)
+    {
+        // the pipeline is already stopped, so the sink is at NULL; drop the player's reference
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(m_context.captureSink));
+        m_context.captureSink = nullptr;
+    }
     if (m_context.playbackGroup.m_curAudioPlaysinkBin)
     {
         m_gstWrapper->gstObjectUnref(m_context.playbackGroup.m_curAudioPlaysinkBin);
@@ -609,6 +615,28 @@ bool GstGenericPlayer::configureCaptureSink(void *captureSession, GstCaps *codec
     return result;
 }
 
+void GstGenericPlayer::releaseCaptureSink()
+{
+    if (!runOnWorkerThreadAndWait([this]() { releaseCaptureSinkInternal(); }))
+    {
+        RIALTO_SERVER_LOG_ERROR("Cannot release the capture sink: no worker thread");
+    }
+}
+
+void GstGenericPlayer::releaseCaptureSinkInternal()
+{
+    GstElement *sink{m_context.captureSink};
+    if (!sink)
+    {
+        return;
+    }
+    m_context.captureSink = nullptr;
+    // a sink that received a session cannot take another one (SoC spec 4.2): it is discarded, not reused
+    m_gstWrapper->gstElementSetState(sink, GST_STATE_NULL);
+    m_glibWrapper->gObjectSet(m_context.pipeline, "video-sink", nullptr, nullptr);
+    m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+}
+
 bool GstGenericPlayer::runOnWorkerThreadAndWait(const std::function<void()> &function)
 {
     if (!m_workerThread)
@@ -644,6 +672,7 @@ bool GstGenericPlayer::configureCaptureSinkInternal(void *captureSession, GstCap
         {
             RIALTO_SERVER_LOG_ERROR("westerossink has no '%s' property: it does not support video frame capture",
                                     kProperty);
+            m_gstWrapper->gstObjectUnref(GST_OBJECT(sink)); // never assigned, so ours alone
             return false;
         }
     }
@@ -659,6 +688,7 @@ bool GstGenericPlayer::configureCaptureSinkInternal(void *captureSession, GstCap
     if (m_gstWrapper->gstElementSetState(sink, GST_STATE_READY) == GST_STATE_CHANGE_FAILURE)
     {
         RIALTO_SERVER_LOG_ERROR("The capture sink rejected its configuration (NULL to READY failed)");
+        releaseCaptureSinkInternal();
         return false;
     }
     GstState state{GST_STATE_NULL};
@@ -670,6 +700,7 @@ bool GstGenericPlayer::configureCaptureSinkInternal(void *captureSession, GstCap
     {
         RIALTO_SERVER_LOG_ERROR("The capture sink did not reach READY within %lld ms",
                                 static_cast<long long>(readyTimeout.count()));
+        releaseCaptureSinkInternal();
         return false;
     }
     RIALTO_SERVER_LOG_MIL("Video frame capture sink is configured and READY");

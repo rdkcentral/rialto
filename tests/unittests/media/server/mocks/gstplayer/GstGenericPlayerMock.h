@@ -40,6 +40,7 @@ public:
                 (void *captureSession, GstCaps *codecCaps, const std::string &resolution,
                  std::chrono::milliseconds readyTimeout),
                 (override));
+    MOCK_METHOD(void, releaseCaptureSink, (), (override));
     MOCK_METHOD(void, play, (bool &async), (override));
     MOCK_METHOD(void, pause, (), (override));
     MOCK_METHOD(void, stop, (), (override));

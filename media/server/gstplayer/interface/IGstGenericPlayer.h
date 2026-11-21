@@ -127,6 +127,13 @@ public:
                                       std::chrono::milliseconds readyTimeout) = 0;
 
     /**
+     * @brief Discards the capture sink (design D4): sets it to NULL, clears playbin's video-sink and drops the
+     *        player's reference. Runs on the worker thread and returns when it is done, so the caller may then
+     *        delete the HAL session. Does nothing without a capture sink.
+     */
+    virtual void releaseCaptureSink() = 0;
+
+    /**
      * @brief Starts playback of the media.
      *
      * Once the backend is successfully playing it should notify the

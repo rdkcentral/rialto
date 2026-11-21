@@ -113,6 +113,7 @@ public:
     void allSourcesAttached() override;
     bool configureCaptureSink(void *captureSession, GstCaps *codecCaps, const std::string &resolution,
                               std::chrono::milliseconds readyTimeout) override;
+    void releaseCaptureSink() override;
     void play(bool &async) override;
     void pause() override;
     void stop() override;
@@ -271,6 +272,11 @@ private:
      */
     bool configureCaptureSinkInternal(void *captureSession, GstCaps *codecCaps, const std::string &resolution,
                                       std::chrono::milliseconds readyTimeout);
+
+    /**
+     * @brief The worker-thread part of releaseCaptureSink().
+     */
+    void releaseCaptureSinkInternal();
 
     /**
      * @brief Creates a westerossink, with res-usage 0 for a secondary-video pipeline. The one creation path for
