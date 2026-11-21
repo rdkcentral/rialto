@@ -20,6 +20,9 @@
 #include "FakeCaptureHalControl.h"
 #include "VideoFrameCaptureFixture.h"
 
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -361,4 +364,54 @@ TEST_F(VideoFrameCaptureDeliveryTest, shouldDeliverFramesWhateverTheApplicationS
 
     tearDownCommittedPipeline();
 }
+
+/**
+ * Capture session teardown (R10): retirement, late releases, and deletion once nothing uses the session.
+ */
+class VideoFrameCaptureTeardownTest : public VideoFrameCaptureDeliveryTest
+{
+public:
+    int halCount(const char *function)
+    {
+        void *hal = dlopen(FAKE_CAPTURE_HAL_PATH, RTLD_NOW | RTLD_NOLOAD);
+        if (!hal)
+            return -1;
+        auto count = reinterpret_cast<FakeCaptureHalCountFunction>(dlsym(hal, function));
+        const int kCount{count ? count() : -1};
+        dlclose(hal);
+        return kCount;
+    }
+    int liveSessions() { return halCount("fakeCaptureHalLiveSessions"); }
+
+    // Waits for the server to finish cleaning up after a disconnect or destruction.
+    void waitForLiveSessions(int expected)
+    {
+        for (int i = 0; i < 200 && liveSessions() != expected; ++i)
+            std::this_thread::sleep_for(std::chrono::milliseconds{10});
+    }
+};
+
+/*
+ * Component Test: Late release after stop (4.1)
+ * Expected Results:
+ *  After stop, acquisition answers NO_FRAME, the held frame's release answers OK, and the session is deleted right
+ *  after that release.
+ */
+TEST_F(VideoFrameCaptureTeardownTest, shouldDeleteTheSessionAfterALateReleaseFollowingStop)
+{
+    commitWithCapture();
+    const auto kFrame = acquire();
+    ASSERT_EQ(kFrame.status(), VIDEO_FRAME_CAPTURE_STATUS_OK);
+
+    willStop();
+    stop(); // playbin reaches NULL: the session is retired with its sink at NULL
+    EXPECT_EQ(acquire().status(), VIDEO_FRAME_CAPTURE_STATUS_NO_FRAME);
+    EXPECT_EQ(liveSessions(), 1); // the frame is still held
+
+    EXPECT_EQ(release(kFrame), VIDEO_FRAME_CAPTURE_STATUS_OK);
+    EXPECT_EQ(liveSessions(), 0); // deleted after the release
+
+    tearDownCommittedPipeline();
+}
+
 } // namespace firebolt::rialto::server::ct
