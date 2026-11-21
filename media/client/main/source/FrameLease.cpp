@@ -45,9 +45,22 @@ FrameLease::FrameLease(const std::shared_ptr<CaptureLeaseState> &state, std::uin
 
 FrameLease::~FrameLease()
 {
-    if (m_state)
+    if (!m_state)
     {
-        m_state->release(m_poolId, m_slotIndex, m_acquisitionToken);
+        return;
     }
+    std::function<void()> sendRelease{[state = m_state, poolId = m_poolId, slotIndex = m_slotIndex,
+                                       token = m_acquisitionToken]() { state->release(poolId, slotIndex, token); }};
+    if (m_importer && m_importer->deferRelease(m_image, sendRelease))
+    {
+        return; // the importer sends it once the image is back with the producer
+    }
+    sendRelease();
+}
+
+void FrameLease::deferTo(const std::shared_ptr<IFrameImporter> &importer, const std::shared_ptr<IImportedImage> &image)
+{
+    m_importer = importer;
+    m_image = image;
 }
 } // namespace firebolt::rialto::client

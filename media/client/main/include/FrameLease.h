@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_FRAME_LEASE_H_
 #define FIREBOLT_RIALTO_CLIENT_FRAME_LEASE_H_
 
+#include "IFrameImporter.h"
 #include "IVideoFrameCaptureIpc.h"
 
 #include <cstdint>
@@ -58,11 +59,19 @@ public:
     FrameLease(const FrameLease &) = delete;
     FrameLease &operator=(const FrameLease &) = delete;
 
+    /**
+     * @brief Offers the release to \a importer when the lease goes (IFrameImporter::deferRelease); if it declines,
+     *        the release is sent at once.
+     */
+    void deferTo(const std::shared_ptr<IFrameImporter> &importer, const std::shared_ptr<IImportedImage> &image);
+
 private:
     std::shared_ptr<CaptureLeaseState> m_state;
     const std::uint32_t m_poolId;
     const std::uint32_t m_slotIndex;
     const std::uint64_t m_acquisitionToken;
+    std::shared_ptr<IFrameImporter> m_importer;
+    std::shared_ptr<IImportedImage> m_image;
 };
 } // namespace firebolt::rialto::client
 

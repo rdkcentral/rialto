@@ -153,6 +153,7 @@ std::shared_ptr<IVideoFrame> CaptureCore::importNewFrame(CaptureAcquireResult &r
         entry = std::make_shared<ImportCacheEntry>(kKey, image, m_importer);
         m_cache.insert(entry);
     }
+    lease->deferTo(m_importer, entry->image());
     if (m_frameMaker)
     {
         return m_frameMaker(result.description, entry, std::move(lease));

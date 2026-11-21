@@ -91,6 +91,8 @@ public:
                                                 const std::vector<CaptureObjectFd> &fds, bool &fdsConsumed) override;
     void retire(const std::shared_ptr<IImportedImage> &image) override;
     void drain() override;
+    /** GL needs no ownership transfer: the release is sent at once (R13 design D5). */
+    bool deferRelease(const std::shared_ptr<IImportedImage> &, std::function<void()>) override { return false; }
 
     /**
      * @brief Whether frames of this format and modifier can be imported on the configured display (design D2).

@@ -23,6 +23,7 @@
 #include "IVideoFrameCaptureIpc.h"
 
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -85,6 +86,24 @@ public:
 
     /** Destroys queued imports. Called with the application's graphics context current. */
     virtual void drain() = 0;
+
+    /**
+     * @brief Offers to send a frame's slot release later (R13 design D5).
+     *
+     * Called on the thread that drops the frame's last reference. An importer that must first give the image back to
+     * the producer (Vulkan: a release barrier and its fence) keeps sendRelease and calls it exactly once, later.
+     *
+     * @param[in] image       : The frame's import.
+     * @param[in] sendRelease : Sends the slot release. Must be called exactly once if this returns true.
+     *
+     * @retval true if the importer took sendRelease; false to have the caller send the release now (GL).
+     */
+    virtual bool deferRelease(const std::shared_ptr<IImportedImage> &image, std::function<void()> sendRelease)
+    {
+        (void)image;
+        (void)sendRelease;
+        return false;
+    }
 };
 } // namespace firebolt::rialto::client
 
