@@ -24,7 +24,7 @@ Unit tests run with `./build_ut.py -s servercapture` (the suite added in 1.1). "
 
 ## 5. Integration check
 
-- [ ] 5.1 Run `./build_ut.py -s servercapture -val` and confirm no leaks or FD leaks across all fixtures.
+- [x] 5.1 Run `./build_ut.py -s servercapture -val` and confirm no leaks or FD leaks across all fixtures.
 
 ## Workflow follow-up
 
