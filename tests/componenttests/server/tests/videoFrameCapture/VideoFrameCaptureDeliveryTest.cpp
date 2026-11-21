@@ -440,6 +440,35 @@ TEST_F(VideoFrameCaptureTeardownTest, shouldDeleteTheSessionAfterTheLastReleaseF
 }
 
 /*
+ * Component Test: Capture-fatal session (4.4)
+ * Expected Results:
+ *  After an invalid frame makes the session capture-fatal, a frame held from before still releases, and the
+ *  session is deleted once its pipeline is gone.
+ */
+TEST_F(VideoFrameCaptureTeardownTest, shouldReleaseAndDeleteACaptureFatalSession)
+{
+    commitWithCapture();
+    const auto kHeld = acquire();
+    ASSERT_EQ(kHeld.status(), VIDEO_FRAME_CAPTURE_STATUS_OK);
+    void *hal = dlopen(FAKE_CAPTURE_HAL_PATH, RTLD_NOW | RTLD_NOLOAD);
+    ASSERT_NE(hal, nullptr);
+    auto setInvalid =
+        reinterpret_cast<FakeCaptureHalSetNextFrameInvalidFunction>(dlsym(hal, "fakeCaptureHalSetNextFrameInvalid"));
+    dlclose(hal);
+    ASSERT_NE(setInvalid, nullptr);
+    setInvalid(true);
+    EXPECT_EQ(acquire().status(), VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR);
+    EXPECT_EQ(acquire().status(), VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR);
+
+    EXPECT_EQ(release(kHeld), VIDEO_FRAME_CAPTURE_STATUS_OK);
+    captureSinkWillBeDropped();
+    gstPlayerWillBeDestructed();
+    destroySession();
+    EXPECT_EQ(liveSessions(), 0);
+    destroyCapture(m_captureId);
+}
+
+/*
  * Component Test: Client killed while holding frames (4.3)
  * Expected Results:
  *  The fake HAL sees one release per held frame, then the session deletion, and the vendor library is unloaded
