@@ -138,3 +138,7 @@ target_link_libraries(
         RialtoPlayerCommon
         RialtoProtobuf
         )
+
+# GL captures load the fake libEGL (see ClientComponentTest)
+add_dependencies( RialtoClientComponentTests fake_egl )
+target_compile_definitions( RialtoClientComponentTests PRIVATE FAKE_EGL_PATH="$<TARGET_FILE:fake_egl>" )

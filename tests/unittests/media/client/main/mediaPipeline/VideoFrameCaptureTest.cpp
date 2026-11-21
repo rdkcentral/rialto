@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include "EglGlMock.h"
 #include "EglLibraryMock.h"
 #include "GLVideoFrameCapture.h"
 #include "IVideoFrameCapture.h"
@@ -50,6 +51,8 @@ protected:
     }
 
     std::shared_ptr<StrictMock<EglLibraryMock>> m_eglLibraryMock{std::make_shared<StrictMock<EglLibraryMock>>()};
+    std::shared_ptr<firebolt::rialto::client::EglGlMock> m_eglGlMock{
+        std::make_shared<::testing::NiceMock<firebolt::rialto::client::EglGlMock>>()};
     std::shared_ptr<StrictMock<VideoFrameCaptureIpcFactoryMock>> m_ipcFactoryMock{
         std::make_shared<StrictMock<VideoFrameCaptureIpcFactoryMock>>()};
     std::shared_ptr<StrictMock<VideoFrameCaptureIpcMock>> m_ipcMock{
@@ -70,7 +73,7 @@ TEST_F(RialtoClientVideoFrameCaptureTest, CreateFactory)
  */
 TEST_F(RialtoClientVideoFrameCaptureTest, NoCaptureWithoutEgl)
 {
-    EXPECT_CALL(*m_eglLibraryMock, load()).WillOnce(Return(false));
+    EXPECT_CALL(*m_eglLibraryMock, functions()).WillOnce(Return(nullptr));
     EXPECT_EQ(m_factory.createGLVideoFrameCapture(nullptr, nullptr), nullptr);
 }
 
@@ -79,7 +82,7 @@ TEST_F(RialtoClientVideoFrameCaptureTest, NoCaptureWithoutEgl)
  */
 TEST_F(RialtoClientVideoFrameCaptureTest, NoCaptureWithoutServerConnection)
 {
-    EXPECT_CALL(*m_eglLibraryMock, load()).WillOnce(Return(true));
+    EXPECT_CALL(*m_eglLibraryMock, functions()).WillOnce(Return(m_eglGlMock));
     EXPECT_CALL(*m_ipcFactoryMock, createVideoFrameCaptureIpc()).WillOnce(Return(nullptr));
     EXPECT_EQ(m_factory.createGLVideoFrameCapture(nullptr, nullptr), nullptr);
 }
@@ -89,7 +92,7 @@ TEST_F(RialtoClientVideoFrameCaptureTest, NoCaptureWithoutServerConnection)
  */
 TEST_F(RialtoClientVideoFrameCaptureTest, NoCaptureWhenServerRefuses)
 {
-    EXPECT_CALL(*m_eglLibraryMock, load()).WillOnce(Return(true));
+    EXPECT_CALL(*m_eglLibraryMock, functions()).WillOnce(Return(m_eglGlMock));
     EXPECT_CALL(*m_ipcFactoryMock, createVideoFrameCaptureIpc()).WillOnce(Return(m_ipcMock));
     EXPECT_CALL(*m_ipcMock, createVideoFrameCapture(GraphicsAPIType::GL, _)).WillOnce(Return(false));
     EXPECT_EQ(m_factory.createGLVideoFrameCapture(nullptr, nullptr), nullptr);
@@ -101,7 +104,7 @@ TEST_F(RialtoClientVideoFrameCaptureTest, NoCaptureWhenServerRefuses)
 TEST_F(RialtoClientVideoFrameCaptureTest, CreateAndDestroyGlCapture)
 {
     constexpr std::uint32_t kCaptureId{7};
-    EXPECT_CALL(*m_eglLibraryMock, load()).WillOnce(Return(true));
+    EXPECT_CALL(*m_eglLibraryMock, functions()).WillOnce(Return(m_eglGlMock));
     EXPECT_CALL(*m_ipcFactoryMock, createVideoFrameCaptureIpc()).WillOnce(Return(m_ipcMock));
     EXPECT_CALL(*m_ipcMock, createVideoFrameCapture(GraphicsAPIType::GL, _))
         .WillOnce(DoAll(SetArgReferee<1>(kCaptureId), Return(true)));

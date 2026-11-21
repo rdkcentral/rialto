@@ -18,6 +18,7 @@
  */
 
 #include "ClientComponentTest.h"
+#include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
 #include <linux/memfd.h>
@@ -122,6 +123,10 @@ ClientComponentTest::ClientComponentTest()
         .WillByDefault(WithArgs<0, 3>(Invoke(&(*m_privateMetricsModuleMock), &PrivateMetricsModuleMock::defaultReturn)));
     ON_CALL(*m_privateMetricsModuleMock, reportClientMetrics(_, _, _, _))
         .WillByDefault(WithArgs<0, 3>(Invoke(&(*m_privateMetricsModuleMock), &PrivateMetricsModuleMock::defaultReturn)));
+
+    // GL captures load the fake libEGL, so tests do not depend on the host's EGL. The loader is process-wide and
+    // loads on first use, which is always after this.
+    setenv("RIALTO_EGL_LIBRARY", FAKE_EGL_PATH, 1);
 
     // Calculate shm size
     m_shmSize = kNumOfAVPartitions * (2 * kMetadataPartitionSize + kAudioPartitionSize + kVideoPartitionSize) +

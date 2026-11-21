@@ -19,6 +19,7 @@
 
 #include "VideoFrameCaptureFactory.h"
 #include "GLVideoFrameCapture.h"
+#include "GlFrameImporter.h"
 #include "RialtoClientLogging.h"
 
 #include <exception>
@@ -57,7 +58,8 @@ std::shared_ptr<IGLVideoFrameCapture> VideoFrameCaptureFactory::createGLVideoFra
                                                                                           EGLContext eglContext)
 {
     // load EGL first, so a client that cannot import frames never registers a capture with the server
-    if (!m_eglLibrary || !m_eglLibrary->load())
+    std::shared_ptr<IEglGl> gl = m_eglLibrary ? m_eglLibrary->functions() : nullptr;
+    if (!gl)
     {
         RIALTO_CLIENT_LOG_WARN("Video frame capture is unavailable: cannot load EGL");
         return nullptr;
@@ -78,6 +80,7 @@ std::shared_ptr<IGLVideoFrameCapture> VideoFrameCaptureFactory::createGLVideoFra
         return nullptr;
     }
 
-    return std::make_shared<GLVideoFrameCapture>(videoFrameCaptureIpc, captureId, eglDisplay, eglContext);
+    return std::make_shared<GLVideoFrameCapture>(videoFrameCaptureIpc, captureId, eglDisplay, eglContext,
+                                                 std::make_shared<GlFrameImporter>(gl, eglDisplay, eglContext));
 }
 } // namespace firebolt::rialto::client

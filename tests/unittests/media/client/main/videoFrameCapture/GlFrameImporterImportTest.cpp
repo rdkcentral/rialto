@@ -181,3 +181,30 @@ TEST_F(GlFrameImporterImportTest, DescriptorsAreClosedOnSuccessAndFailure)
     for (int fd : fds)
         EXPECT_EQ(fcntl(fd, F_GETFD), -1);
 }
+
+TEST_F(GlFrameImporterImportTest, GlFramesExposeOneExternalTextureWithRgbaLayout)
+{
+    auto ipc = std::make_shared<NiceMock<VideoFrameCaptureIpcMock>>();
+    ON_CALL(*ipc, releaseFrame(_, _, _, _)).WillByDefault(Return(true));
+    const int kFd{memfd_create("gl-frame-test", MFD_CLOEXEC)};
+    ON_CALL(*ipc, acquireCurrentFrame(5))
+        .WillByDefault(Invoke(
+            [&](std::uint32_t)
+            {
+                CaptureAcquireResult result;
+                result.status = CaptureAcquireStatus::OK;
+                result.description = exampleB(); // NV12
+                result.description.acquisitionToken = 1;
+                result.fds = {{101, kFd}};
+                return result;
+            }));
+    CaptureCore core{ipc, 5, std::make_shared<GlFrameImporter>(m_gl, m_display, m_context)};
+
+    const std::shared_ptr<IGLVideoFrame> kFrame{core.acquireCurrentFrame().frame};
+    ASSERT_NE(kFrame, nullptr);
+    EXPECT_EQ(kFrame->textureTarget(), GL_TEXTURE_EXTERNAL_OES);
+    ASSERT_EQ(kFrame->textureIds().size(), 1U);
+    EXPECT_EQ(m_textures.count(kFrame->textureIds()[0]), 1U);
+    EXPECT_EQ(kFrame->layout(), GraphicsTextureLayout::RGBA);
+    EXPECT_EQ(kFrame->numResources(), 1U);
+}
