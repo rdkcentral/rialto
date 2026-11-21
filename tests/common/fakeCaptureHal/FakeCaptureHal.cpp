@@ -24,11 +24,13 @@
 #include <unistd.h>
 
 #include <array>
+#include <atomic>
 #include <chrono>
 #include <condition_variable>
 #include <deque>
 #include <mutex>
 #include <optional>
+#include <thread>
 #include <vector>
 
 using namespace firebolt::rialto::capture;
@@ -52,6 +54,7 @@ struct FakeState
     int liveSessions{0};
     int destroyedSessions{0};
     bool nextFrameInvalid{false};
+    bool overlapDetected{false};
 };
 
 // Lets a test hold the next acquisition inside the HAL, outside the state mutex.
@@ -101,6 +104,24 @@ std::optional<CaptureStatus> takeScripted(FakeCaptureHalOperation operation)
     return kStatus;
 }
 
+// Records whether two calls on one session ever ran at the same time (Rialto must serialize them).
+class CallScope
+{
+public:
+    explicit CallScope(std::atomic<int> &inProgress) : m_inProgress{inProgress}
+    {
+        if (m_inProgress.fetch_add(1) != 0)
+        {
+            std::lock_guard<std::mutex> lock{state().mutex};
+            state().overlapDetected = true;
+        }
+    }
+    ~CallScope() { m_inProgress.fetch_sub(1); }
+
+private:
+    std::atomic<int> &m_inProgress;
+};
+
 class FakeCaptureSession final : public ICaptureSession
 {
 public:
@@ -148,6 +169,8 @@ public:
 
     CaptureStatus acquireCurrentFrame(CapturedFrame &outFrame) override
     {
+        CallScope scope{m_callsInProgress};
+        std::this_thread::sleep_for(std::chrono::microseconds{200}); // widens any overlap window
         waitAtGateIfRequested();
         std::lock_guard<std::mutex> lock{state().mutex};
         if (auto scripted = takeScripted(FAKE_CAPTURE_HAL_ACQUIRE_CURRENT_FRAME))
@@ -201,6 +224,7 @@ public:
 
     CaptureStatus releaseFrame(CapturedFrame &frame) override
     {
+        CallScope scope{m_callsInProgress};
         std::lock_guard<std::mutex> lock{state().mutex};
         if (auto scripted = takeScripted(FAKE_CAPTURE_HAL_RELEASE_FRAME))
             return *scripted;
@@ -228,6 +252,7 @@ private:
         return caps;
     }
 
+    std::atomic<int> m_callsInProgress{0};
     uint32_t m_slotCount{0};
     std::vector<uint64_t> m_lockedTokens;
     uint64_t m_tokenCounter{0};
@@ -258,6 +283,13 @@ extern "C"
         fake.callCounts = {};
         fake.destroyedSessions = 0;
         fake.nextFrameInvalid = false;
+        fake.overlapDetected = false;
+    }
+
+    bool fakeCaptureHalOverlapDetected()
+    {
+        std::lock_guard<std::mutex> lock{state().mutex};
+        return state().overlapDetected;
     }
 
     void fakeCaptureHalSetFactoryReturnsNull(bool returnsNull)

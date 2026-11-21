@@ -24,6 +24,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <atomic>
 #include <chrono>
 #include <string>
 #include <thread>
@@ -255,5 +256,75 @@ TEST_F(VideoFrameCaptureDeliveryTest, shouldReleaseAFrameWhoseReplyCannotBeSent)
     for (int i = 0; i < 200 && openFrameFiles() != kBaseline; ++i)
         std::this_thread::sleep_for(std::chrono::milliseconds{10});
     EXPECT_EQ(openFrameFiles(), kBaseline); // the server closed its copy; the client got none
+}
+
+/*
+ * Component Test: Concurrent acquisitions and releases
+ * Test Objective:
+ *  Check that the server serializes every HAL call on a session while several threads acquire and release, and
+ *  that every acquired frame is released exactly once.
+ *
+ * Code:
+ */
+TEST_F(VideoFrameCaptureDeliveryTest, shouldSerializeConcurrentAcquisitionsAndReleases)
+{
+    commitWithCapture();
+    void *hal = dlopen(FAKE_CAPTURE_HAL_PATH, RTLD_NOW | RTLD_NOLOAD);
+    ASSERT_NE(hal, nullptr);
+    auto overlapDetected =
+        reinterpret_cast<FakeCaptureHalOverlapDetectedFunction>(dlsym(hal, "fakeCaptureHalOverlapDetected"));
+    dlclose(hal);
+    ASSERT_TRUE(overlapDetected);
+    const int kReleasesBefore{m_callCount(FAKE_CAPTURE_HAL_RELEASE_FRAME)};
+
+    constexpr int kThreads{4};
+    constexpr int kIterations{25};
+    std::atomic<int> acquired{0};
+    std::atomic<int> released{0};
+    std::vector<std::thread> workers;
+    for (int worker = 0; worker < kThreads; ++worker)
+    {
+        workers.emplace_back(
+            [&]()
+            {
+                for (int i = 0; i < kIterations; ++i)
+                {
+                    AcquireCurrentVideoFrameRequest request;
+                    request.set_capture_id(m_captureId);
+                    AcquireCurrentVideoFrameResponse frame;
+                    ConfigureAction<AcquireVideoFrame>(m_clientStub)
+                        .send(request)
+                        .matchResponse([&](const AcquireCurrentVideoFrameResponse &response) { frame = response; });
+                    for (const auto &kExported : frame.exported_dma_bufs())
+                        close(kExported.fd());
+                    if (frame.status() != VIDEO_FRAME_CAPTURE_STATUS_OK)
+                        continue; // NO_NEW_FRAME while every slot is held
+                    ++acquired;
+                    ReleaseVideoFrameRequest releaseRequest;
+                    releaseRequest.set_capture_id(m_captureId);
+                    releaseRequest.set_pool_id(frame.pool_id());
+                    releaseRequest.set_slot_index(frame.slot_index());
+                    releaseRequest.set_acquisition_token(frame.acquisition_token());
+                    ConfigureAction<ReleaseVideoFrame>(m_clientStub)
+                        .send(releaseRequest)
+                        .matchResponse(
+                            [&](const ReleaseVideoFrameResponse &response)
+                            {
+                                if (response.status() == VIDEO_FRAME_CAPTURE_STATUS_OK)
+                                    ++released;
+                            });
+                }
+            });
+    }
+    for (auto &worker : workers)
+        worker.join();
+
+    EXPECT_GT(acquired.load(), 0);
+    EXPECT_EQ(released.load(), acquired.load()); // every frame released once
+    EXPECT_EQ(m_callCount(FAKE_CAPTURE_HAL_RELEASE_FRAME) - kReleasesBefore, acquired.load());
+    EXPECT_FALSE(overlapDetected());
+    EXPECT_EQ(openFrameFiles(), 0);
+
+    tearDownCommittedPipeline();
 }
 } // namespace firebolt::rialto::server::ct

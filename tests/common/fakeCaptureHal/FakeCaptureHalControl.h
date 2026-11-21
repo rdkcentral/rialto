@@ -71,6 +71,9 @@ extern "C"
     /** Lets the held acquisition continue. */
     void fakeCaptureHalUnblockAcquire();
 
+    /** Whether two calls on one session have ever run at the same time since the last reset. */
+    bool fakeCaptureHalOverlapDetected();
+
     /** Makes the next successfully acquired frame invalid (a plane past the end of its object). */
     void fakeCaptureHalSetNextFrameInvalid(bool invalid);
 
@@ -94,6 +97,7 @@ extern "C"
     typedef void (*FakeCaptureHalBlockNextAcquireFunction)();
     typedef bool (*FakeCaptureHalWaitUntilAcquireBlockedFunction)(int);
     typedef void (*FakeCaptureHalUnblockAcquireFunction)();
+    typedef bool (*FakeCaptureHalOverlapDetectedFunction)();
 }
 
 #endif // FIREBOLT_RIALTO_CAPTURE_FAKE_CAPTURE_HAL_CONTROL_H_
