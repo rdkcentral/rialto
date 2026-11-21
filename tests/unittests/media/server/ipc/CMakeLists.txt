@@ -78,6 +78,7 @@ add_gtests (
 
         # VideoFrameCaptureModuleService unittests
         videoFrameCaptureModuleService/VideoFrameCaptureModuleServiceTests.cpp
+        videoFrameCaptureModuleService/VideoFrameCaptureStatusTests.cpp
         )
 
 target_include_directories(

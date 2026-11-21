@@ -44,6 +44,7 @@ add_library (
         source/ControlModuleService.cpp
         source/PrivateMetricsModuleService.cpp
         source/VideoFrameCaptureModuleService.cpp
+        source/VideoFrameCaptureStatus.cpp
         source/ServerManagerModuleService.cpp
         source/SessionManagementServer.cpp
         source/SetLogLevelsService.cpp
