@@ -74,6 +74,7 @@ add_gtests (
         tests/videoFrameCapture/VideoFrameCaptureRegistrationTest.cpp
         tests/videoFrameCapture/VideoFrameCaptureAttachTest.cpp
         tests/videoFrameCapture/GlVideoFrameCaptureTest.cpp
+        tests/videoFrameCapture/VideoFrameLeaseTest.cpp
         
         # Web Audio Component tests
         tests/webaudio/CreateWebAudioPlayerTest.cpp

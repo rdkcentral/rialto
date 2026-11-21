@@ -25,7 +25,7 @@ Unit tests run with `./build_ut.py -s client` (mock IPC and mock importer). "Spe
 
 ## 5. End-to-end (after R9)
 
-- [ ] 5.1 Add client component tests against the server with the fake HAL: acquire, repeat, release, flush with reused IDs, late release after `stop()`. Verify with `./build_ct.py`.
+- [x] 5.1 Add client component tests against the server with the fake HAL: acquire, repeat, release, flush with reused IDs, late release after `stop()`. Verify with `./build_ct.py`.
 
 ## Workflow follow-up
 
