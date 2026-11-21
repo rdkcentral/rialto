@@ -327,4 +327,38 @@ TEST_F(VideoFrameCaptureDeliveryTest, shouldSerializeConcurrentAcquisitionsAndRe
 
     tearDownCommittedPipeline();
 }
+
+/*
+ * Component Test: Delivery does not depend on the application state (Q7)
+ * Test Objective:
+ *  Check that a playing pipeline delivers frames to a client whose application state is not RUNNING.
+ *
+ * Test Steps:
+ *  Step 1: Commit with a capture and play. The client never registers with the control module, so its
+ *          application state is never RUNNING. (Making the server inactive would destroy the pipeline, so this is
+ *          the case of "not RUNNING while the pipeline exists".)
+ *  Step 2: Acquire and release frames.
+ *
+ * Code:
+ */
+TEST_F(VideoFrameCaptureDeliveryTest, shouldDeliverFramesWhateverTheApplicationState)
+{
+    // Step 1: playing, application state not RUNNING
+    commitWithCapture();
+    pauseWithPreroll();
+    willPlay();
+    play();
+
+    // Step 2: frames are delivered
+    for (int i = 0; i < 3; ++i)
+    {
+        const auto kFrame = acquire();
+        ASSERT_EQ(kFrame.status(), VIDEO_FRAME_CAPTURE_STATUS_OK);
+        EXPECT_EQ(kFrame.exported_dma_bufs_size(), 1);
+        EXPECT_EQ(release(kFrame), VIDEO_FRAME_CAPTURE_STATUS_OK);
+    }
+    closeClientFds();
+
+    tearDownCommittedPipeline();
+}
 } // namespace firebolt::rialto::server::ct
