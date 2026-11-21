@@ -11,7 +11,7 @@
 
 ## 2. Client (D2)
 
-- [ ] 2.1 Add the two RPCs to `MediaPipelineIpc`. Verify with `./build_ut.py -s clientipc`, including an old server that fails the call.
+- [x] 2.1 Add the two RPCs to `MediaPipelineIpc`. Verify with `./build_ut.py -s clientipc`, including an old server that fails the call.
 - [ ] 2.2 Implement `MediaPipeline::attachVideoFrameCapture/detachVideoFrameCapture`: reject null and foreign captures locally, hold the `shared_ptr` only after server success, drop it on detach and destruction; track the attached marker in `GLVideoFrameCapture`. Verify with `./build_ut.py -s client`, including that the capture outlives the application's last reference while attached.
 
 ## 3. Component tests

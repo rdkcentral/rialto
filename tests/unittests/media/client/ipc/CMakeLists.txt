@@ -30,6 +30,7 @@ add_gtests (
         mediaPipelineIpc/SourceTest.cpp
         mediaPipelineIpc/CallbackTest.cpp
         mediaPipelineIpc/SetVideoWindowTest.cpp
+        mediaPipelineIpc/VideoFrameCaptureTest.cpp
         mediaPipelineIpc/DataTest.cpp
         mediaPipelineIpc/PlayPauseTest.cpp
         mediaPipelineIpc/SetPositionTest.cpp

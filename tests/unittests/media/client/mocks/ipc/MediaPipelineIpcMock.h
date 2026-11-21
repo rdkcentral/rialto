@@ -40,6 +40,8 @@ public:
     MOCK_METHOD(bool, load, (MediaType type, const std::string &mimeType, const std::string &url, bool isLive),
                 (override));
     MOCK_METHOD(bool, setVideoWindow, (uint32_t x, uint32_t y, uint32_t width, uint32_t height), (override));
+    MOCK_METHOD(bool, attachVideoFrameCapture, (uint32_t captureId), (override));
+    MOCK_METHOD(bool, detachVideoFrameCapture, (), (override));
     MOCK_METHOD(bool, play, (bool &async), (override));
     MOCK_METHOD(bool, pause, (), (override));
     MOCK_METHOD(bool, stop, (), (override));

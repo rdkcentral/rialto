@@ -125,6 +125,22 @@ public:
     virtual bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
 
     /**
+     * @brief Request to attach a registered video frame capture to the session.
+     *
+     * @param[in] captureId : The ID the server issued when the capture was created.
+     *
+     * @retval true on success; false if the server refused, or does not implement the call.
+     */
+    virtual bool attachVideoFrameCapture(uint32_t captureId) = 0;
+
+    /**
+     * @brief Request to detach the session's video frame capture.
+     *
+     * @retval true on success.
+     */
+    virtual bool detachVideoFrameCapture() = 0;
+
+    /**
      * @brief Request play on the playback session.
      *
      * @param[out] async     : True if play method call is asynchronous

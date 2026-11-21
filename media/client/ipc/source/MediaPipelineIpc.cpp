@@ -322,6 +322,59 @@ bool MediaPipelineIpc::allSourcesAttached()
     return true;
 }
 
+bool MediaPipelineIpc::attachVideoFrameCapture(uint32_t captureId)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::AttachVideoFrameCaptureRequest request;
+    request.set_session_id(m_sessionId);
+    request.set_capture_id(captureId);
+
+    firebolt::rialto::AttachVideoFrameCaptureResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->attachVideoFrameCapture(ipcController.get(), &request, &response, blockingClosure.get());
+    blockingClosure->wait();
+
+    // an old server without the method fails the call as well
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_WARN("failed to attach video frame capture %u due to '%s'", captureId,
+                               ipcController->ErrorText().c_str());
+        return false;
+    }
+    return true;
+}
+
+bool MediaPipelineIpc::detachVideoFrameCapture()
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::DetachVideoFrameCaptureRequest request;
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::DetachVideoFrameCaptureResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->detachVideoFrameCapture(ipcController.get(), &request, &response, blockingClosure.get());
+    blockingClosure->wait();
+
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_WARN("failed to detach video frame capture due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+    return true;
+}
+
 bool MediaPipelineIpc::setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 {
     if (!reattachChannelIfRequired())

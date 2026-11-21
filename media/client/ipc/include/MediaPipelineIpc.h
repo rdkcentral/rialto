@@ -79,6 +79,10 @@ public:
 
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
+    bool attachVideoFrameCapture(uint32_t captureId) override;
+
+    bool detachVideoFrameCapture() override;
+
     bool play(bool &async) override;
 
     bool pause() override;
