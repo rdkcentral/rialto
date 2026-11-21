@@ -2660,41 +2660,46 @@ bool GstGenericPlayer::setUseBuffering()
     return false;
 }
 
+GstElement *GstGenericPlayer::createWesterossink(bool secondaryVideo, bool &westerossinkMissing)
+{
+    westerossinkMissing = false;
+    GstElementFactory *factory = m_gstWrapper->gstElementFactoryFind("westerossink");
+    if (!factory)
+    {
+        westerossinkMissing = true;
+        return nullptr;
+    }
+
+    GstElement *videoSink = m_gstWrapper->gstElementFactoryCreate(factory, nullptr);
+    m_gstWrapper->gstObjectUnref(GST_OBJECT(factory));
+    if (!videoSink)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create the westerossink");
+        return nullptr;
+    }
+    if (secondaryVideo)
+    {
+        if (!m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "res-usage"))
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink res-usage");
+            m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
+            return nullptr;
+        }
+        m_glibWrapper->gObjectSet(videoSink, "res-usage", 0x0u, nullptr);
+    }
+    return videoSink;
+}
+
 bool GstGenericPlayer::setWesterossinkSecondaryVideo()
 {
-    bool result = false;
-    GstElementFactory *factory = m_gstWrapper->gstElementFactoryFind("westerossink");
-    if (factory)
+    bool westerossinkMissing{false};
+    GstElement *videoSink = createWesterossink(true, westerossinkMissing);
+    if (!videoSink)
     {
-        GstElement *videoSink = m_gstWrapper->gstElementFactoryCreate(factory, nullptr);
-        if (videoSink)
-        {
-            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "res-usage"))
-            {
-                m_glibWrapper->gObjectSet(videoSink, "res-usage", 0x0u, nullptr);
-                m_glibWrapper->gObjectSet(m_context.pipeline, "video-sink", videoSink, nullptr);
-                result = true;
-            }
-            else
-            {
-                RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink res-usage");
-                m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
-            }
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_ERROR("Failed to create the westerossink");
-        }
-
-        m_gstWrapper->gstObjectUnref(GST_OBJECT(factory));
+        return westerossinkMissing; // no westeros sink at all is fine here
     }
-    else
-    {
-        // No westeros sink
-        result = true;
-    }
-
-    return result;
+    m_glibWrapper->gObjectSet(m_context.pipeline, "video-sink", videoSink, nullptr);
+    return true;
 }
 
 bool GstGenericPlayer::setErmContext()

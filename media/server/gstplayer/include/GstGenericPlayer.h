@@ -260,6 +260,17 @@ private:
     bool setWesterossinkSecondaryVideo();
 
     /**
+     * @brief Creates a westerossink, with res-usage 0 for a secondary-video pipeline. The one creation path for
+     *        the shipping secondary-video sink and the capture sink, so one instance can carry both settings.
+     *
+     * @param[in]  secondaryVideo      : Whether to set res-usage to 0.
+     * @param[out] westerossinkMissing : True if westerossink is not installed.
+     *
+     * @retval a new sink, owned by the caller, or null on failure.
+     */
+    GstElement *createWesterossink(bool secondaryVideo, bool &westerossinkMissing);
+
+    /**
      * @brief Creates an "erm" gstreamer context in the pipeline
      *
      * @retval true on success.
