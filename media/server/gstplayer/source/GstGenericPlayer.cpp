@@ -31,6 +31,12 @@
 #include <gst/audio/audio.h> // RDKAI
 #include <sys/stat.h>        // RDKAI
 #include <unistd.h>          // RDKAI
+#include <cerrno>  // RDKAI
+#include <cstring>  // RDKAI
+#include <deque>
+
+#include <fcntl.h>  // RDKAI
+#include <sys/mman.h>  // RDKAI
 #include <algorithm>
 #include <chrono>
 #include <cinttypes>
@@ -39,6 +45,7 @@
 #include <malloc.h>
 #include <stdexcept>
 
+#include "TtsShmProtocol.h"  // RDKAI
 #include "FlushWatcher.h"
 #include "GstDispatcherThread.h"
 #include "GstGenericPlayer.h"
@@ -631,8 +638,120 @@ std::shared_ptr<RdkaiTtsTrack> rdkaiLoadTtsWav(const std::string &path, double d
     return track;
 }
 
+constexpr const char *kTtsShmName = "/edgeai_tts_pcm";
+
+struct RdkaiTtsShmReader
+{
+    int fd{-1};
+    rdkai::tts_shm::Ring *ring{nullptr};
+    uint64_t generation{0};
+    uint64_t expectedSequence{0};
+
+    ~RdkaiTtsShmReader()
+    {
+        close();
+    }
+
+    void close()
+    {
+        if (ring)
+        {
+            munmap(ring, sizeof(rdkai::tts_shm::Ring));
+            ring = nullptr;
+        }
+
+        if (fd >= 0)
+        {
+            ::close(fd);
+            fd = -1;
+        }
+
+        generation = 0;
+        expectedSequence = 0;
+    }
+
+    bool open(std::string &why)
+    {
+        if (ring)
+            return true;
+
+        fd = shm_open(kTtsShmName, O_RDWR, 0);
+        if (fd < 0)
+        {
+            why = std::string("shm_open failed: ") + std::strerror(errno);
+            return false;
+        }
+
+        void *addr =
+            mmap(nullptr,
+                 sizeof(rdkai::tts_shm::Ring),
+                 PROT_READ | PROT_WRITE,
+                 MAP_SHARED,
+                 fd,
+                 0);
+
+        if (addr == MAP_FAILED)
+        {
+            why = std::string("mmap failed: ") + std::strerror(errno);
+            ::close(fd);
+            fd = -1;
+            return false;
+        }
+
+        ring = static_cast<rdkai::tts_shm::Ring *>(addr);
+
+        if (ring->magic != rdkai::tts_shm::kMagic ||
+            ring->version != rdkai::tts_shm::kVersion)
+        {
+            why =
+                "invalid TTS SHM magic/version";
+
+            close();
+            return false;
+        }
+
+        generation =
+            ring->generation.load(std::memory_order_acquire);
+
+        expectedSequence = 0;
+
+        RIALTO_SERVER_LOG_MIL(
+            "RDKAI-70 shm: opened generation=%llu slots=%u maxSamples=%u",
+            static_cast<unsigned long long>(generation),
+            rdkai::tts_shm::kSlotCount,
+            rdkai::tts_shm::kMaxSamplesPerSlot);
+
+        return true;
+    }
+};
+
+struct RdkaiTtsChunk
+{
+    uint64_t generation{0};
+    uint64_t sequence{0};
+
+    gint64 ptsUs{0};
+
+    int rate{0};
+
+    std::vector<int16_t> pcm;
+    bool scheduled{false}; // RDKAI-70: ptsUs fixed to its play position
+    bool dropped{false};   // RDKAI-70: too late, discard
+};
+
 struct RdkaiTtsCtx
 {
+    bool shmEnabled{false};
+    RdkaiTtsShmReader shmReader;
+    bool shmOpenErrorLogged{false};
+
+    std::mutex shmChunkLock;
+    std::deque<RdkaiTtsChunk> shmChunks;
+    gint64 shmNextFreeUs{-1};        // end of last scheduled chunk (movie time)
+    gint64 shmLastSpeechEndUs{-1};   // for duck hold
+    gint64 shmMaxLateUs{5000000};    // RDKAI_TTS_SHM_MAX_LATE_MS
+
+
     GstElement *vol{nullptr};
     GstElement *mixCaps{nullptr};
     GstPad *ttsPad{nullptr};
@@ -675,6 +794,220 @@ struct RdkaiTtsCtx
         }
     }
 };
+
+
+static void rdkaiTtsDrainShm(RdkaiTtsCtx &ctx)
+{
+    if (!ctx.shmEnabled)
+    {
+        return;
+    }
+
+    std::string why;
+    if (!ctx.shmReader.open(why))
+    {
+	if (!ctx.shmOpenErrorLogged)
+	{
+	    RIALTO_SERVER_LOG_WARN(
+		"RDKAI-70 shm: shared memory is not available: %s",
+		why.c_str());
+
+	    ctx.shmOpenErrorLogged = true;
+	}
+
+	return;
+    }
+
+    ctx.shmOpenErrorLogged = false;
+
+    using ShmRing = rdkai::tts_shm::Ring;
+    using ShmSlot = rdkai::tts_shm::Slot;
+    using ShmSampleFormat = rdkai::tts_shm::SampleFormat;
+
+    ShmRing *ring = ctx.shmReader.ring;
+    if (!ring)
+    {
+        return;
+    }
+
+    /*
+     * Drain every slot currently published by EdgeAI.
+     *
+     * PCM is copied into Rialto-owned memory so that the SHM slot can be
+     * released immediately. GStreamer must never hold an EdgeAI SHM slot
+     * while waiting for its playback PTS.
+     */
+    while (true)
+    {
+        const uint64_t ringGeneration =
+            ring->generation.load(std::memory_order_acquire);
+
+        if (ringGeneration != ctx.shmReader.generation)
+        {
+            {
+                std::lock_guard<std::mutex> lock(ctx.shmChunkLock);
+                ctx.shmChunks.clear();
+            }
+
+            ctx.shmReader.generation = ringGeneration;
+            ctx.shmReader.expectedSequence = 0;
+            ctx.shmNextFreeUs = -1;      // RDKAI-70: new session, no scheduled audio
+            ctx.shmLastSpeechEndUs = -1;
+
+            RIALTO_SERVER_LOG_MIL(
+                "RDKAI-70 shm: generation changed to %" G_GUINT64_FORMAT,
+                static_cast<guint64>(ringGeneration));
+        }
+
+        const uint32_t readIndex =
+            ring->readIndex.load(std::memory_order_acquire);
+
+        if (readIndex >= rdkai::tts_shm::kSlotCount)
+        {
+            RIALTO_SERVER_LOG_WARN(
+                "RDKAI-70 shm: invalid read index %u, resetting to zero",
+                readIndex);
+
+            ring->readIndex.store(0, std::memory_order_release);
+            continue;
+        }
+
+        ShmSlot &slot = ring->slots[readIndex];
+
+        if (slot.ready.load(std::memory_order_acquire) == 0)
+        {
+            break;
+        }
+
+        const uint64_t slotGeneration = slot.generation;
+        const uint64_t sequence = slot.sequence;
+        const int64_t ptsUs = slot.ptsUs;
+        const uint32_t sampleRate = slot.sampleRate;
+        const uint32_t sampleCount = slot.sampleCount;
+        const uint16_t channels = slot.channels;
+        const ShmSampleFormat format = slot.format;
+
+        bool valid = true;
+
+        if (slotGeneration != ringGeneration)
+        {
+            RIALTO_SERVER_LOG_WARN(
+                "RDKAI-70 shm: dropping stale slot generation=%"
+                G_GUINT64_FORMAT " current=%" G_GUINT64_FORMAT,
+                static_cast<guint64>(slotGeneration),
+                static_cast<guint64>(ringGeneration));
+
+            valid = false;
+        }
+
+        if (sampleRate < 8000 || sampleRate > 96000)
+        {
+            RIALTO_SERVER_LOG_WARN(
+                "RDKAI-70 shm: dropping sequence=%" G_GUINT64_FORMAT
+                " with invalid sample rate=%u",
+                static_cast<guint64>(sequence),
+                sampleRate);
+
+            valid = false;
+        }
+
+        if (sampleCount == 0 || sampleCount > rdkai::tts_shm::kMaxSamplesPerSlot)
+        {
+            RIALTO_SERVER_LOG_WARN(
+                "RDKAI-70 shm: dropping sequence=%" G_GUINT64_FORMAT
+                " with invalid sample count=%u",
+                static_cast<guint64>(sequence),
+                sampleCount);
+
+            valid = false;
+        }
+
+        if (channels != 1)
+        {
+            RIALTO_SERVER_LOG_WARN(
+                "RDKAI-70 shm: dropping sequence=%" G_GUINT64_FORMAT
+                " with unsupported channels=%u",
+                static_cast<guint64>(sequence),
+                static_cast<unsigned int>(channels));
+
+            valid = false;
+        }
+
+        if (format != ShmSampleFormat::S16LE)
+        {
+            RIALTO_SERVER_LOG_WARN(
+                "RDKAI-70 shm: dropping sequence=%" G_GUINT64_FORMAT
+                " with unsupported format=%u",
+                static_cast<guint64>(sequence),
+                static_cast<unsigned int>(format));
+
+            valid = false;
+        }
+
+        if (valid)
+        {
+            if (sequence != ctx.shmReader.expectedSequence)
+            {
+                RIALTO_SERVER_LOG_WARN(
+                    "RDKAI-70 shm: sequence gap expected=%"
+                    G_GUINT64_FORMAT " received=%" G_GUINT64_FORMAT,
+                    static_cast<guint64>(
+                        ctx.shmReader.expectedSequence),
+                    static_cast<guint64>(sequence));
+            }
+
+            RdkaiTtsChunk chunk;
+            chunk.generation = slotGeneration;
+            chunk.sequence = sequence;
+            chunk.ptsUs = static_cast<gint64>(ptsUs);
+            chunk.rate = static_cast<int>(sampleRate);
+            chunk.pcm.assign(slot.pcm, slot.pcm + sampleCount);
+
+            {
+                std::lock_guard<std::mutex> lock(ctx.shmChunkLock);
+                ctx.shmChunks.emplace_back(std::move(chunk));
+            }
+
+            ctx.shmReader.expectedSequence = sequence + 1;
+
+            RIALTO_SERVER_LOG_MIL(
+                "RDKAI-70 shm: consumed sequence=%" G_GUINT64_FORMAT
+                " generation=%" G_GUINT64_FORMAT
+                " pts_us=%" G_GINT64_FORMAT
+                " rate=%u samples=%u",
+                static_cast<guint64>(sequence),
+                static_cast<guint64>(slotGeneration),
+                static_cast<gint64>(ptsUs),
+                sampleRate,
+                sampleCount);
+        }
+        else if (
+            slotGeneration == ringGeneration &&
+            sequence >= ctx.shmReader.expectedSequence)
+        {
+            /*
+             * The slot cannot be replayed after being discarded. Advance the
+             * expected sequence so that subsequent valid chunks do not all
+             * appear to be the same sequence gap.
+             */
+            ctx.shmReader.expectedSequence = sequence + 1;
+        }
+
+        /*
+         * Always release a published slot, including an invalid one.
+         * Leaving an invalid slot ready would permanently block this reader
+         * position and eventually fill the producer ring.
+         */
+        slot.ready.store(0, std::memory_order_release);
+
+        const uint32_t nextReadIndex =
+            (readIndex + 1) % rdkai::tts_shm::kSlotCount;
+
+        ring->readIndex.store(
+            nextReadIndex,
+            std::memory_order_release);
+    }
+}
 
 void rdkaiTtsCtxFree(gpointer data)
 {
@@ -774,6 +1107,127 @@ void rdkaiTtsPush(RdkaiTtsCtx &ctx, GstMiniObject *obj)
     }
 }
 
+// ===== RDKAI-70: SHM playback =====
+constexpr gint64 kTtsUsPerSec = 1000000;
+constexpr gint64 kTtsShmDuckHoldUs = 300000;
+
+static gint64 rdkaiTtsChunkEndUs(const RdkaiTtsChunk &c)
+{
+    return c.ptsUs + static_cast<gint64>(c.pcm.size()) * kTtsUsPerSec / c.rate;
+}
+
+static void rdkaiTtsShmResetPlayback(RdkaiTtsCtx &ctx)
+{
+    {
+        std::lock_guard<std::mutex> lock(ctx.shmChunkLock);
+        ctx.shmChunks.clear();
+    }
+    ctx.shmNextFreeUs = -1;
+    ctx.shmLastSpeechEndUs = -1;
+}
+
+static void rdkaiTtsFillFromShm(RdkaiTtsCtx &ctx, int16_t *dst, gsize frames, int rate, int channels,
+                                gint64 winStartUs, gdouble &gainOut)
+{
+    const gint64 winEndUs = winStartUs + static_cast<gint64>(frames) * kTtsUsPerSec / rate;
+    bool speech = false;
+    gint64 nextStartUs = -1;
+
+    std::lock_guard<std::mutex> lock(ctx.shmChunkLock);
+
+    // 1. Schedule newly received chunks: never in the past, never overlapping.
+    for (auto &c : ctx.shmChunks)
+    {
+        if (c.scheduled)
+            continue;
+        c.scheduled = true;
+
+        const gint64 wantUs = c.ptsUs;
+        gint64 playUs = std::max(wantUs, winStartUs);
+        if (ctx.shmNextFreeUs >= 0)
+            playUs = std::max(playUs, ctx.shmNextFreeUs);
+        const gint64 lateUs = playUs - wantUs;
+
+        if (lateUs > ctx.shmMaxLateUs)
+        {
+            c.dropped = true;
+            RIALTO_SERVER_LOG_WARN("RDKAI-70 shm: dropping sequence=%llu late_ms=%lld (max %lld)",
+                                   static_cast<unsigned long long>(c.sequence),
+                                   static_cast<long long>(lateUs / 1000),
+                                   static_cast<long long>(ctx.shmMaxLateUs / 1000));
+            continue;
+        }
+
+        c.ptsUs = playUs;
+        ctx.shmNextFreeUs = rdkaiTtsChunkEndUs(c);
+        RIALTO_SERVER_LOG_MIL("RDKAI-70 shm: scheduled sequence=%llu want_us=%lld play_us=%lld late_ms=%lld "
+                              "samples=%u rate=%d",
+                              static_cast<unsigned long long>(c.sequence), static_cast<long long>(wantUs),
+                              static_cast<long long>(playUs), static_cast<long long>(lateUs / 1000),
+                              static_cast<unsigned>(c.pcm.size()), c.rate);
+    }
+
+    // 2. Render the part of each chunk that overlaps this main buffer.
+    for (const auto &c : ctx.shmChunks)
+    {
+        if (c.dropped)
+            continue;
+        const gint64 endUs = rdkaiTtsChunkEndUs(c);
+        if (c.ptsUs >= winEndUs)
+        {
+            if (nextStartUs < 0 || c.ptsUs < nextStartUs)
+                nextStartUs = c.ptsUs;
+            continue;
+        }
+        if (endUs <= winStartUs)
+            continue;
+
+        speech = true;
+        const double first = static_cast<double>(c.ptsUs - winStartUs) * rate / kTtsUsPerSec;
+        const double last = static_cast<double>(endUs - winStartUs) * rate / kTtsUsPerSec;
+        const gsize i0 = first <= 0.0 ? 0 : static_cast<gsize>(std::ceil(first));
+        const gsize i1 = std::min<gsize>(frames, static_cast<gsize>(std::ceil(last)));
+        const double step = static_cast<double>(c.rate) / rate;
+        const size_t n = c.pcm.size();
+        double pos = static_cast<double>(winStartUs - c.ptsUs) / kTtsUsPerSec * c.rate +
+                     static_cast<double>(i0) * step;
+
+        for (gsize i = i0; i < i1; ++i, pos += step)
+        {
+            if (pos < 0.0)
+                continue;
+            const size_t k = static_cast<size_t>(pos);
+            if (k >= n)
+                break;
+            const double frac = pos - static_cast<double>(k);
+            const int16_t s = (k + 1 < n) ? static_cast<int16_t>(c.pcm[k] + frac * (c.pcm[k + 1] - c.pcm[k]))
+                                          : c.pcm[k];
+            int16_t *frame = dst + i * static_cast<gsize>(channels);
+            for (int ch = 0; ch < channels; ++ch)
+                frame[ch] = GINT16_TO_LE(s);
+        }
+    }
+
+    // 3. Drop finished / discarded chunks.
+    ctx.shmChunks.erase(std::remove_if(ctx.shmChunks.begin(), ctx.shmChunks.end(),
+                                       [winEndUs](const RdkaiTtsChunk &c)
+                                       { return c.dropped || rdkaiTtsChunkEndUs(c) <= winEndUs; }),
+                        ctx.shmChunks.end());
+
+    // 4. Ducking: ramp orig-vol toward duck/1.0 over fadeMs.
+    if (speech)
+        ctx.shmLastSpeechEndUs = winEndUs;
+    const gint64 fadeUs = static_cast<gint64>(std::max(ctx.fadeMs, 1)) * 1000;
+    const bool duckNow = speech || (nextStartUs >= 0 && nextStartUs - winEndUs <= fadeUs) ||
+                         (ctx.shmLastSpeechEndUs >= 0 && winStartUs - ctx.shmLastSpeechEndUs <= kTtsShmDuckHoldUs);
+    const double target = duckNow ? ctx.duck : 1.0;
+    const double maxStep = (1.0 - ctx.duck) * static_cast<double>(winEndUs - winStartUs) / static_cast<double>(fadeUs);
+    double g = ctx.lastGain;
+    g = (g < target) ? std::min(target, g + maxStep) : std::max(target, g - maxStep);
+    gainOut = g;
+}
+
+
 // Builds the TTS buffer for one main buffer and returns the orig-vol gain for it
 GstBuffer *rdkaiTtsMakeBuffer(RdkaiTtsCtx &ctx, GstBuffer *main, gdouble &gainOut)
 {
@@ -809,6 +1263,19 @@ GstBuffer *rdkaiTtsMakeBuffer(RdkaiTtsCtx &ctx, GstBuffer *main, gdouble &gainOu
             segRate = ctx.mainSeg.rate;
         }
     }
+
+    if (ctx.shmEnabled) // RDKAI-70: live PCM from EdgeAI SHM
+    {
+        if (stream != GST_CLOCK_TIME_NONE && segRate == 1.0)
+        {
+            const gint64 winStartUs = (static_cast<gint64>(stream) - ctx.offsetNs) / 1000;
+            rdkaiTtsFillFromShm(ctx, reinterpret_cast<int16_t *>(map.data), frames, rate, channels, winStartUs,
+                                gainOut);
+        }
+        gst_buffer_unmap(out, &map);
+        return out;
+    }
+
     if (!track)
     {
         if (!ctx.loggedNoTrack)
@@ -858,7 +1325,14 @@ GstPadProbeReturn rdkaiTtsMainProbe(GstPad *, GstPadProbeInfo *info, gpointer us
         GstBuffer *main = GST_PAD_PROBE_INFO_BUFFER(info);
         if (!ctx.mainInfoValid)
             return GST_PAD_PROBE_OK;
-        rdkaiTtsPollCtl(ctx);
+        if (ctx.shmEnabled)
+	{
+	    rdkaiTtsDrainShm(ctx);
+	}
+	else
+	{
+	    rdkaiTtsPollCtl(ctx);
+	}
         gdouble gain = 1.0;
         GstBuffer *tts = rdkaiTtsMakeBuffer(ctx, main, gain);
         if (std::fabs(gain - ctx.lastGain) > 0.001)
@@ -929,8 +1403,12 @@ GstPadProbeReturn rdkaiTtsMainProbe(GstPad *, GstPadProbeInfo *info, gpointer us
     case GST_EVENT_FLUSH_STOP:
         if (GST_EVENT_TYPE(ev) == GST_EVENT_FLUSH_STOP)
         {
-            std::lock_guard<std::mutex> lock(ctx.segLock);
-            ctx.mainSegValid = false;
+            {
+                std::lock_guard<std::mutex> lock(ctx.segLock);
+                ctx.mainSegValid = false;
+            }
+            if (ctx.shmEnabled)
+                rdkaiTtsShmResetPlayback(ctx); // RDKAI-70: drop pre-seek translations
         }
         rdkaiTtsPush(ctx, GST_MINI_OBJECT_CAST(gst_event_copy(ev)));
         break;
@@ -1062,9 +1540,17 @@ bool rdkaiTtsAttach(GstElement *bin, GstElement *tee, GstElement *vol, GstElemen
     }
 
     auto ctx = std::make_shared<RdkaiTtsCtx>();
+    const char *shmEnv = getenv("RDKAI_TTS_SHM");
+    ctx->shmEnabled =
+        shmEnv &&
+        shmEnv[0] &&
+        std::string(shmEnv) != "0" &&
+        std::string(shmEnv) != "false";
     ctx->vol = vol;
     ctx->mixCaps = mixCaps;
     ctx->duck = rdkaiEnvDouble("RDKAI_TTS_DUCK", 0.25, 0.0, 1.0);
+    ctx->shmMaxLateUs =
+        static_cast<gint64>(rdkaiEnvDouble("RDKAI_TTS_SHM_MAX_LATE_MS", 5000.0, 0.0, 60000.0) * 1000.0);
     ctx->fadeMs = static_cast<int>(rdkaiEnvDouble("RDKAI_TTS_FADE_MS", 100, 0, 1000));
     ctx->offsetNs = static_cast<gint64>(rdkaiEnvDouble("RDKAI_TTS_OFFSET_MS", 0, -3600000, 3600000) * GST_MSECOND);
     ctx->ttsPad = gst_pad_new("tts-src", GST_PAD_SRC);
@@ -1105,12 +1591,21 @@ bool rdkaiTtsAttach(GstElement *bin, GstElement *tee, GstElement *vol, GstElemen
     }
 
     const char *wav = getenv("RDKAI_TTS_WAV");
-    if (wav && wav[0])
+    if (!ctx->shmEnabled && wav && wav[0])
         rdkaiTtsStartLoad(*ctx, wav);
-    RIALTO_SERVER_LOG_MIL("RDKAI-68 tts: mixer attached (duck=%.2f fade=%d ms offset=%lld ms latency=%u ms, "
-                          "initial wav=%s, control file=%s)",
-                          ctx->duck, ctx->fadeMs, static_cast<long long>(ctx->offsetNs / GST_MSECOND), latencyMs,
-                          (wav && wav[0]) ? wav : "(none)", kTtsCtl);
+
+    RIALTO_SERVER_LOG_MIL(
+        "RDKAI-68 tts: mixer attached "
+        "(source=%s duck=%.2f fade=%d ms offset=%lld ms "
+        "latency=%u ms, initial wav=%s, control file=%s)",
+        ctx->shmEnabled ? "shm" : "wav",
+        ctx->duck,
+        ctx->fadeMs,
+        static_cast<long long>(ctx->offsetNs / GST_MSECOND),
+        latencyMs,
+        (wav && wav[0]) ? wav : "(none)",
+        kTtsCtl);
+
     return true;
 }
 
