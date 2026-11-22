@@ -127,6 +127,9 @@ ClientComponentTest::ClientComponentTest()
     // GL captures load the fake libEGL, so tests do not depend on the host's EGL. The loader is process-wide and
     // loads on first use, which is always after this.
     setenv("RIALTO_EGL_LIBRARY", FAKE_EGL_PATH, 1);
+#ifdef FAKE_VULKAN_PATH
+    setenv("RIALTO_VULKAN_LIBRARY", FAKE_VULKAN_PATH, 1); // likewise for Vulkan captures
+#endif
 
     // Calculate shm size
     m_shmSize = kNumOfAVPartitions * (2 * kMetadataPartitionSize + kAudioPartitionSize + kVideoPartitionSize) +

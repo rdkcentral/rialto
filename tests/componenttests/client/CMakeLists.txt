@@ -144,3 +144,12 @@ target_link_libraries(
 # GL captures load the fake libEGL (see ClientComponentTest)
 add_dependencies( RialtoClientComponentTests fake_egl )
 target_compile_definitions( RialtoClientComponentTests PRIVATE FAKE_EGL_PATH="$<TARGET_FILE:fake_egl>" )
+
+# Vulkan captures load the fake libvulkan; built only with the Vulkan headers
+if(TARGET fake_vulkan)
+    target_sources( RialtoClientComponentTests PRIVATE tests/videoFrameCapture/VulkanVideoFrameCaptureTest.cpp )
+    add_dependencies( RialtoClientComponentTests fake_vulkan )
+    target_compile_definitions( RialtoClientComponentTests PRIVATE FAKE_VULKAN_PATH="$<TARGET_FILE:fake_vulkan>" )
+    target_include_directories( RialtoClientComponentTests PRIVATE ${RIALTO_FAKE_VULKAN_INCLUDE_DIR} )
+    target_link_libraries( RialtoClientComponentTests FakeVulkanControl )
+endif()

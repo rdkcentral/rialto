@@ -28,7 +28,7 @@ Unit tests run with `./build_ut.py -s client` using a Vulkan wrapper mock. "Spec
 
 ## 6. Integration
 
-- [ ] 6.1 Add a client component test with the fake HAL and the Vulkan mock: acquire, colour change, release on another thread, acquire, teardown. Verify with `./build_ct.py`.
+- [x] 6.1 Add a client component test with the fake HAL and the Vulkan mock: acquire, colour change, release on another thread, acquire, teardown. Verify with `./build_ct.py`.
 - [ ] 6.2 Optional on-target test with validation layers: import an NV12 frame, sample it, tear down, and confirm no validation errors or leaked objects. Record the result in the PR.
 
 ## Workflow follow-up

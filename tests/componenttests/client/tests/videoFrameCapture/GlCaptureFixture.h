@@ -120,14 +120,16 @@ public:
     // The application's context is current on this thread, as it is when it acquires.
     void makeApplicationContextCurrent() { m_makeCurrent(m_display, nullptr, nullptr, m_context); }
 
-    // A frame in \a slot; its one object is 101 + slot unless \a objectId is given.
-    void serverWillReturnFrame(std::uint32_t slot, std::uint64_t token, bool flushed, std::uint64_t objectId = 0)
+    // A frame in \a slot; its one object is 101 + slot unless \a objectId is given. A \a matrix (wire value)
+    // adds a colour description with narrow range, co-sited horizontally and midpoint vertically.
+    void serverWillReturnFrame(std::uint32_t slot, std::uint64_t token, bool flushed, std::uint64_t objectId = 0,
+                               int matrix = -1)
     {
         EXPECT_CALL(*m_videoFrameCaptureModuleMock, acquireCurrentFrame(_, _, _, _))
             .WillOnce(Invoke(
-                [slot, token, flushed,
-                 objectId](::google::protobuf::RpcController *controller, const AcquireCurrentVideoFrameRequest *request,
-                           AcquireCurrentVideoFrameResponse *response, ::google::protobuf::Closure *done)
+                [slot, token, flushed, objectId,
+                 matrix](::google::protobuf::RpcController *controller, const AcquireCurrentVideoFrameRequest *request,
+                         AcquireCurrentVideoFrameResponse *response, ::google::protobuf::Closure *done)
                 {
                     EXPECT_EQ(request->capture_id(), kCaptureId);
                     response->set_status(VIDEO_FRAME_CAPTURE_STATUS_OK);
@@ -152,6 +154,14 @@ public:
                         plane->set_offset_bytes(index * 2048);
                         plane->set_length_bytes(2048);
                         plane->set_stride_bytes(64);
+                    }
+                    if (matrix >= 0)
+                    {
+                        auto *colour = metadata->mutable_color_description();
+                        colour->set_ycbcr_color_space(static_cast<VideoFrameCaptureYcbcrColorSpace>(matrix));
+                        colour->set_sample_range(VIDEO_FRAME_CAPTURE_SAMPLE_RANGE_NARROW);
+                        colour->set_horizontal_chroma_siting(VIDEO_FRAME_CAPTURE_CHROMA_SITING_0);
+                        colour->set_vertical_chroma_siting(VIDEO_FRAME_CAPTURE_CHROMA_SITING_0_5);
                     }
                     auto *exported = response->add_exported_dma_bufs();
                     exported->set_dma_buf_object_id(objectId ? objectId : 101 + slot);
