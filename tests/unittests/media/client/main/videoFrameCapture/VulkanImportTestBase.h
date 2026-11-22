@@ -119,6 +119,34 @@ protected:
         ON_CALL(*m_api, destroySampler(_, _)).WillByDefault(Invoke([this](VkDevice, VkSampler h) { destroyed(h); }));
         ON_CALL(*m_api, destroySamplerYcbcrConversion(_, _))
             .WillByDefault(Invoke([this](VkDevice, VkSamplerYcbcrConversion h) { destroyed(h); }));
+
+        // Rialto's command pool, buffers and fences get real but untracked handles
+        ON_CALL(*m_api, createCommandPool(_, _, _))
+            .WillByDefault(Invoke(
+                [this](VkDevice, const VkCommandPoolCreateInfo *, VkCommandPool *pool)
+                {
+                    *pool = reinterpret_cast<VkCommandPool>(m_nextContextHandle++);
+                    return VK_SUCCESS;
+                }));
+        ON_CALL(*m_api, allocateCommandBuffers(_, _, _))
+            .WillByDefault(Invoke(
+                [this](VkDevice, const VkCommandBufferAllocateInfo *info, VkCommandBuffer *buffers)
+                {
+                    for (uint32_t i = 0; i < info->commandBufferCount; ++i)
+                        buffers[i] = reinterpret_cast<VkCommandBuffer>(m_nextContextHandle++);
+                    return VK_SUCCESS;
+                }));
+        ON_CALL(*m_api, createFence(_, _, _))
+            .WillByDefault(Invoke(
+                [this](VkDevice, const VkFenceCreateInfo *, VkFence *fence)
+                {
+                    *fence = reinterpret_cast<VkFence>(m_nextContextHandle++);
+                    return VK_SUCCESS;
+                }));
+        m_context = firebolt::rialto::client::VulkanDeviceContext::create(m_api, reinterpret_cast<VkPhysicalDevice>(0x10),
+                                                                          reinterpret_cast<VkDevice>(0x20),
+                                                                          reinterpret_cast<VkQueue>(0x30), 2,
+                                                                          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 
     ~VulkanImportTestBase() override
@@ -178,14 +206,11 @@ protected:
 
     std::shared_ptr<::testing::NiceMock<firebolt::rialto::client::VulkanApiMock>> m_api{
         std::make_shared<::testing::NiceMock<firebolt::rialto::client::VulkanApiMock>>()};
-    std::shared_ptr<firebolt::rialto::client::VulkanDeviceContext> m_context{
-        firebolt::rialto::client::VulkanDeviceContext::create(m_api, reinterpret_cast<VkPhysicalDevice>(0x10),
-                                                              reinterpret_cast<VkDevice>(0x20),
-                                                              reinterpret_cast<VkQueue>(0x30), 2,
-                                                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)};
+    std::shared_ptr<firebolt::rialto::client::VulkanDeviceContext> m_context; /**< Made after the defaults. */
     VkFormatFeatureFlags m_modifierFeatures{VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT |
                                             VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT};
     std::uintptr_t m_nextHandle{0x1000};
+    std::uintptr_t m_nextContextHandle{0x900000};
     std::set<std::uintptr_t> m_live;
     std::vector<int> m_openFds;
     std::vector<int> m_importFds;

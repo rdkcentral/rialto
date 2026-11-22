@@ -24,7 +24,7 @@ Unit tests run with `./build_ut.py -s client` using a Vulkan wrapper mock. "Spec
 
 ## 5. Teardown (D6)
 
-- [ ] 5.1 Implement teardown: wait fences, destroy objects in §6.5 order, free memory, send remaining releases. Verify with the mock that every created object is destroyed once and every slot released once.
+- [x] 5.1 Implement teardown: wait fences, destroy objects in §6.5 order, free memory, send remaining releases. Verify with the mock that every created object is destroyed once and every slot released once.
 
 ## 6. Integration
 

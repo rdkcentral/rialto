@@ -181,23 +181,47 @@ VulkanFrameImporter::~VulkanFrameImporter()
         if (m_inFlight[i].busy)
         {
             VkFence fence{m_context->ring()[i].fence};
-            m_context->api().waitForFences(m_context->device(), 1, &fence, VK_TRUE, UINT64_MAX);
+            if (fence != VK_NULL_HANDLE)
+                m_context->api().waitForFences(m_context->device(), 1, &fence, VK_TRUE, UINT64_MAX);
             m_inFlight[i].busy = false;
             std::move(m_inFlight[i].releases.begin(), m_inFlight[i].releases.end(), std::back_inserter(releases));
             m_inFlight[i].releases.clear();
         }
     }
+    std::vector<std::shared_ptr<VulkanImportedImage>> imports;
     {
         std::lock_guard<std::mutex> lock{m_retiredMutex};
         std::move(m_pendingReleases.begin(), m_pendingReleases.end(), std::back_inserter(releases));
         m_pendingReleases.clear();
-        for (const PendingRelease &kRelease : releases)
-            kRelease.image->releasesInFlight = 0;
+        imports.swap(m_retired); // every import: frames and cache entries, which retire them, are gone
     }
-    drain();
+
+    // SoC spec 6.5 order across all imports: views, samplers and conversions, images, then memory
+    IVulkanApi &api{m_context->api()};
+    const VkDevice kDevice{m_context->device()};
+    for (const auto &kImport : imports)
+    {
+        if (kImport->view != VK_NULL_HANDLE)
+            api.destroyImageView(kDevice, kImport->view);
+        kImport->view = VK_NULL_HANDLE;
+        kImport->samplerEntry.reset();
+    }
     sweepSamplers(true);
+    for (const auto &kImport : imports)
+    {
+        if (kImport->image != VK_NULL_HANDLE)
+            api.destroyImage(kDevice, kImport->image);
+        kImport->image = VK_NULL_HANDLE;
+    }
+    for (const auto &kImport : imports)
+    {
+        destroyImport(*kImport); // frees the memory; everything else is already gone
+    }
+
     for (PendingRelease &release : releases)
+    {
         release.sendRelease();
+    }
 }
 
 std::shared_ptr<IImportedImage> VulkanFrameImporter::importFrame(const CaptureFrameDescription &description,
@@ -676,7 +700,8 @@ std::size_t VulkanFrameImporter::freeSubmission()
     }
     // every entry is in flight: wait for the oldest, which the GPU should finish first
     VkFence fence{m_context->ring()[oldest].fence};
-    m_context->api().waitForFences(m_context->device(), 1, &fence, VK_TRUE, UINT64_MAX);
+    if (fence != VK_NULL_HANDLE)
+        m_context->api().waitForFences(m_context->device(), 1, &fence, VK_TRUE, UINT64_MAX);
     m_inFlight[oldest].busy = false;
     sendReleases(m_inFlight[oldest].releases);
     return oldest;
@@ -685,7 +710,8 @@ std::size_t VulkanFrameImporter::freeSubmission()
 void VulkanFrameImporter::renewFence(VulkanDeviceContext::Submission &submission)
 {
     IVulkanApi &api{m_context->api()};
-    api.destroyFence(m_context->device(), submission.fence);
+    if (submission.fence != VK_NULL_HANDLE)
+        api.destroyFence(m_context->device(), submission.fence);
     VkFenceCreateInfo info{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
     info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
     if (api.createFence(m_context->device(), &info, &submission.fence) != VK_SUCCESS)
@@ -761,8 +787,12 @@ void VulkanFrameImporter::submitOwnershipTransfers(const std::shared_ptr<VulkanI
         recorded = api.endCommandBuffer(submission.commandBuffer) == VK_SUCCESS;
     }
 
+    if (submission.fence == VK_NULL_HANDLE)
+    {
+        renewFence(submission); // lost by an earlier failure
+    }
     bool submitted{false};
-    if (recorded && api.resetFences(kDevice, 1, &submission.fence) == VK_SUCCESS)
+    if (recorded && submission.fence != VK_NULL_HANDLE && api.resetFences(kDevice, 1, &submission.fence) == VK_SUCCESS)
     {
         VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO};
         submitInfo.commandBufferCount = 1;

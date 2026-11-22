@@ -24,6 +24,8 @@
 
 #include <sys/mman.h>
 
+#include <algorithm>
+#include <string>
 #include <thread>
 
 using namespace firebolt::rialto;
@@ -217,4 +219,111 @@ TEST_F(VulkanCaptureTransferTest, ReleasedImageIsKeptUntilItsReleaseIsSent)
     EXPECT_CALL(*m_ipc, destroyVideoFrameCapture(kCaptureId)).WillOnce(Return(true));
     EXPECT_CALL(*m_ipc, releaseFrame(kCaptureId, kPoolId, 2, 3)).WillOnce(Return(true));
     capture.reset();
+}
+
+TEST_F(VulkanCaptureTransferTest, TeardownWaitsDestroysInOrderThenReleasesEverySlotOnce)
+{
+    m_context.reset(); // replaced below by a context whose objects are tracked too
+    std::vector<std::string> events;
+    auto log = [&events](const char *event) { events.emplace_back(event); };
+    ON_CALL(*m_api, createCommandPool(_, _, _))
+        .WillByDefault(
+            Invoke([this](VkDevice, const VkCommandPoolCreateInfo *, VkCommandPool *pool) { return created(pool); }));
+    ON_CALL(*m_api, createFence(_, _, _))
+        .WillByDefault(Invoke([this](VkDevice, const VkFenceCreateInfo *, VkFence *fence) { return created(fence); }));
+    ON_CALL(*m_api, destroyCommandPool(_, _)).WillByDefault(Invoke([this](VkDevice, VkCommandPool h) { destroyed(h); }));
+    ON_CALL(*m_api, destroyFence(_, _)).WillByDefault(Invoke([this](VkDevice, VkFence h) { destroyed(h); }));
+    ON_CALL(*m_api, waitForFences(_, _, _, _, _))
+        .WillByDefault(Invoke(
+            [&log](VkDevice, uint32_t, const VkFence *, VkBool32, uint64_t)
+            {
+                log("wait");
+                return VK_SUCCESS;
+            }));
+    ON_CALL(*m_api, destroyImageView(_, _))
+        .WillByDefault(Invoke(
+            [this, &log](VkDevice, VkImageView h)
+            {
+                log("view");
+                destroyed(h);
+            }));
+    ON_CALL(*m_api, destroySampler(_, _))
+        .WillByDefault(Invoke(
+            [this, &log](VkDevice, VkSampler h)
+            {
+                log("sampler");
+                destroyed(h);
+            }));
+    ON_CALL(*m_api, destroySamplerYcbcrConversion(_, _))
+        .WillByDefault(Invoke(
+            [this, &log](VkDevice, VkSamplerYcbcrConversion h)
+            {
+                log("sampler");
+                destroyed(h);
+            }));
+    ON_CALL(*m_api, destroyImage(_, _))
+        .WillByDefault(Invoke(
+            [this, &log](VkDevice, VkImage h)
+            {
+                log("image");
+                destroyed(h);
+            }));
+    ON_CALL(*m_api, freeMemory(_, _))
+        .WillByDefault(Invoke(
+            [this, &log](VkDevice, VkDeviceMemory h)
+            {
+                log("memory");
+                destroyed(h);
+            }));
+    m_context = VulkanDeviceContext::create(m_api, reinterpret_cast<VkPhysicalDevice>(0x10),
+                                            reinterpret_cast<VkDevice>(0x20), reinterpret_cast<VkQueue>(0x30), kFamily,
+                                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    ASSERT_NE(m_context, nullptr);
+    EXPECT_CALL(*m_api, freeCommandBuffers(_, _, VulkanDeviceContext::kRingSize, _)).Times(1);
+
+    EXPECT_CALL(*m_ipc, acquireCurrentFrame(kCaptureId))
+        .WillOnce(Return(okResult(0, 1)))
+        .WillOnce(Return(okResult(1, 2)))
+        .WillRepeatedly(Return(noNewFrame()));
+    auto capture = makeCapture();
+    m_fenceSignalled = false;
+    std::shared_ptr<IVulkanVideoFrame> first = capture->acquireCurrentFrame().frame;
+    std::shared_ptr<IVulkanVideoFrame> second = capture->acquireCurrentFrame().frame;
+    first.reset();
+    capture->acquireCurrentFrame(); // first's release barrier is in flight; its fence has not signalled
+
+    // every slot is released exactly once, after every object is destroyed
+    EXPECT_CALL(*m_ipc, destroyVideoFrameCapture(kCaptureId)).WillOnce(Return(true));
+    EXPECT_CALL(*m_ipc, releaseFrame(kCaptureId, kPoolId, 0, 1))
+        .WillOnce(Invoke(
+            [&log](std::uint32_t, std::uint32_t, std::uint32_t, std::uint64_t)
+            {
+                log("release");
+                return true;
+            }));
+    EXPECT_CALL(*m_ipc, releaseFrame(kCaptureId, kPoolId, 1, 2))
+        .WillOnce(Invoke(
+            [&log](std::uint32_t, std::uint32_t, std::uint32_t, std::uint64_t)
+            {
+                log("release");
+                return true;
+            }));
+    capture.reset();
+    EXPECT_TRUE(events.empty()) << "the application still holds a frame, so nothing is torn down yet";
+    second.reset(); // the last frame: its release is pending with no barrier, and the importer goes
+
+    // order: wait for Rialto's fences, views, samplers and conversions, images, memory, then the releases
+    const std::vector<std::string> kOrder{"wait", "view", "sampler", "image", "memory", "release"};
+    std::vector<std::string> phases;
+    for (const std::string &kEvent : events)
+    {
+        if (phases.empty() || phases.back() != kEvent)
+            phases.push_back(kEvent);
+    }
+    EXPECT_EQ(phases, kOrder);
+    EXPECT_EQ(std::count(events.begin(), events.end(), "release"), 2);
+    EXPECT_EQ(std::count(events.begin(), events.end(), "image"), 2);
+
+    m_context.reset(); // the last reference: the ring and pool go
+    EXPECT_TRUE(m_live.empty()) << m_live.size() << " objects leaked";
 }
