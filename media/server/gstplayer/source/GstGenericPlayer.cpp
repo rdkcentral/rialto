@@ -555,9 +555,9 @@ void GstGenericPlayer::setupElement(GstElement *pipeline, GstElement *element, G
             int32_t sessionId = self->m_metricSessionId.load();
             int32_t sourceId = self->m_metricSourceId.load();
             
-            if ((isVideoDecoder(*self->m_gstWrapper, element) || isAudioDecoder(*self->m_gstWrapper, element) ||
-                 isVideoSink(*self->m_gstWrapper, element) || isAudioSink(*self->m_gstWrapper, element)) &&
-                sessionId >= 0 && sourceId >= 0)
+            if (sessionId >= 0 && sourceId >= 0 &&
+                (isVideoDecoder(*self->m_gstWrapper, element) || isAudioDecoder(*self->m_gstWrapper, element) ||
+                 isVideoSink(*self->m_gstWrapper, element) || isAudioSink(*self->m_gstWrapper, element)))
             {
                 // Defensive unregister: remove any stale entry at this address before re-registering
                 mapper->UnregisterElement(element);

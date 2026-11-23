@@ -18,8 +18,8 @@ do not increment the dropped count. If sink stats are unavailable, Rialto logs a
 and dropped counts (zero until stats are first available).
 
 Decoder and sink elements are registered in the `ElementToSourceMapper` when they are added to the pipeline, and are
-unregistered when they are removed. The Westeros sink does not need `metrics-session-id` or `metrics-source-id`
-properties.
+unregistered when they are removed. No element properties (such as `metrics-session-id` or `metrics-source-id`) are
+required on the sinks.
 The Westeros message does not carry cumulative frame-counter fields; only corruption totals are accumulated by
 Rialto from occurrence messages. Sink stats replace the cached rendered and dropped totals without changing the
 corruption count or the last metric PTS.
