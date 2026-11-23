@@ -86,6 +86,7 @@ target_link_libraries(
 
         Threads::Threads
 
+        ${RDKPERF_LIBRARIES}
         )
 
 include( GNUInstallDirs )

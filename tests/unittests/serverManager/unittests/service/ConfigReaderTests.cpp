@@ -494,3 +494,53 @@ TEST_F(ConfigReaderTests, extraEnvVariablesMultipleElementArray)
     EXPECT_TRUE(m_sut->read());
     EXPECT_THAT(m_sut->getExtraEnvVariables(), UnorderedElementsAre("ELEM_1", "ELEM_2"));
 }
+
+TEST_F(ConfigReaderTests, profilingSectionParsesToExtraEnvVariables)
+{
+    auto profilingJsonValueMock = std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
+    auto enabledJsonValueMock = std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
+    auto scopeModeJsonValueMock = std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
+    auto interfacesJsonValueMock = std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
+    auto interface1JsonValueMock = std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
+    auto interface2JsonValueMock = std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
+    auto interface3JsonValueMock = std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
+
+    expectSuccessfulParsing();
+
+    EXPECT_CALL(*m_rootJsonValueMock, isMember("profiling")).WillOnce(Return(true));
+    EXPECT_CALL(*m_rootJsonValueMock, at("profiling")).WillOnce(Return(profilingJsonValueMock));
+    EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("profiling"))).WillRepeatedly(Return(false));
+
+    EXPECT_CALL(*profilingJsonValueMock, isMember("enabled")).WillOnce(Return(true));
+    EXPECT_CALL(*profilingJsonValueMock, at("enabled")).WillRepeatedly(Return(enabledJsonValueMock));
+    EXPECT_CALL(*enabledJsonValueMock, isBool()).WillOnce(Return(true));
+    EXPECT_CALL(*enabledJsonValueMock, asBool()).WillOnce(Return(true));
+
+    EXPECT_CALL(*profilingJsonValueMock, isMember("scopeMode")).WillOnce(Return(true));
+    EXPECT_CALL(*profilingJsonValueMock, at("scopeMode")).WillRepeatedly(Return(scopeModeJsonValueMock));
+    EXPECT_CALL(*scopeModeJsonValueMock, isString()).WillOnce(Return(true));
+    EXPECT_CALL(*scopeModeJsonValueMock, asString()).WillOnce(Return("interface"));
+
+    EXPECT_CALL(*profilingJsonValueMock, isMember("interfaces")).WillOnce(Return(true));
+    EXPECT_CALL(*profilingJsonValueMock, at("interfaces")).WillRepeatedly(Return(interfacesJsonValueMock));
+    EXPECT_CALL(*interfacesJsonValueMock, isArray()).WillOnce(Return(true));
+    EXPECT_CALL(*interfacesJsonValueMock, size()).WillOnce(Return(3));
+    EXPECT_CALL(*interfacesJsonValueMock, at(Matcher<Json::ArrayIndex>(0u))).WillOnce(Return(interface1JsonValueMock));
+    EXPECT_CALL(*interfacesJsonValueMock, at(Matcher<Json::ArrayIndex>(1u))).WillOnce(Return(interface2JsonValueMock));
+    EXPECT_CALL(*interfacesJsonValueMock, at(Matcher<Json::ArrayIndex>(2u))).WillOnce(Return(interface3JsonValueMock));
+
+    EXPECT_CALL(*interface1JsonValueMock, isString()).WillOnce(Return(true));
+    EXPECT_CALL(*interface1JsonValueMock, asString()).WillOnce(Return("IMediaPipeline"));
+
+    EXPECT_CALL(*interface2JsonValueMock, isString()).WillOnce(Return(true));
+    EXPECT_CALL(*interface2JsonValueMock, asString()).WillOnce(Return("UnsupportedInterface"));
+
+    EXPECT_CALL(*interface3JsonValueMock, isString()).WillOnce(Return(true));
+    EXPECT_CALL(*interface3JsonValueMock, asString()).WillOnce(Return("IMediaKeys"));
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_THAT(m_sut->getExtraEnvVariables(),
+                UnorderedElementsAre("RIALTO_SERVER_PROFILING_ENABLED=1",
+                                     "RIALTO_SERVER_PROFILING_SCOPE_MODE=interface",
+                                     "RIALTO_SERVER_PROFILING_INTERFACES=IMediaPipeline,IMediaKeys"));
+}

@@ -20,11 +20,16 @@
 #include "MediaPipelineService.h"
 #include "IMediaPipelineServerInternal.h"
 #include "RialtoServerLogging.h"
+#include "ServerProfiling.h"
 #include <exception>
 #include <future>
 #include <string>
 #include <utility>
 #include <vector>
+
+#define RIALTO_SERVER_PROFILE_SCOPE(operationName)                                                                 \
+    [[maybe_unused]] auto profileScope =                                                                           \
+        profiling::makeScope(profiling::ProfileInterface::MediaPipeline, operationName)
 
 namespace firebolt::rialto::server::service
 {
@@ -59,6 +64,7 @@ bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IM
                                          std::uint32_t maxWidth, std::uint32_t maxHeight)
 {
     RIALTO_SERVER_LOG_DEBUG("MediaPipelineService requested to create new session with id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("createSession");
     if (!m_playbackService.isActive())
     {
         RIALTO_SERVER_LOG_ERROR("Skip to create session with id: %d - Session Server in Inactive state", sessionId);
@@ -99,6 +105,7 @@ bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IM
 bool MediaPipelineService::destroySession(int sessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("MediaPipelineService requested to destroy session with id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("destroySession");
     {
         std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
         auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -117,6 +124,7 @@ bool MediaPipelineService::load(int sessionId, MediaType type, const std::string
                                 bool isLive)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to load session with id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("load");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -131,6 +139,7 @@ bool MediaPipelineService::load(int sessionId, MediaType type, const std::string
 bool MediaPipelineService::attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to attach source, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("attachSource");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -145,6 +154,7 @@ bool MediaPipelineService::attachSource(int sessionId, const std::unique_ptr<IMe
 bool MediaPipelineService::removeSource(int sessionId, std::int32_t sourceId)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to remove source, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("removeSource");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -159,6 +169,7 @@ bool MediaPipelineService::removeSource(int sessionId, std::int32_t sourceId)
 bool MediaPipelineService::allSourcesAttached(int sessionId)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService notified that all sources were attached, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("allSourcesAttached");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -173,6 +184,7 @@ bool MediaPipelineService::allSourcesAttached(int sessionId)
 bool MediaPipelineService::play(int sessionId, bool &async)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to play, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("play");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -187,6 +199,7 @@ bool MediaPipelineService::play(int sessionId, bool &async)
 bool MediaPipelineService::pause(int sessionId)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to pause, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("pause");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -201,6 +214,7 @@ bool MediaPipelineService::pause(int sessionId)
 bool MediaPipelineService::stop(int sessionId)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to stop, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("stop");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -215,6 +229,7 @@ bool MediaPipelineService::stop(int sessionId)
 bool MediaPipelineService::setPlaybackRate(int sessionId, double rate)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to set playback rate, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("setPlaybackRate");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -229,6 +244,7 @@ bool MediaPipelineService::setPlaybackRate(int sessionId, double rate)
 bool MediaPipelineService::setPosition(int sessionId, std::int64_t position)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to set position, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("setPosition");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -243,6 +259,7 @@ bool MediaPipelineService::setPosition(int sessionId, std::int64_t position)
 bool MediaPipelineService::getPosition(int sessionId, std::int64_t &position)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to get position, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("getPosition");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -257,6 +274,7 @@ bool MediaPipelineService::getPosition(int sessionId, std::int64_t &position)
 bool MediaPipelineService::setImmediateOutput(int sessionId, int32_t sourceId, bool immediateOutput)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to setImmediateOutput, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("setImmediateOutput");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -271,6 +289,7 @@ bool MediaPipelineService::setImmediateOutput(int sessionId, int32_t sourceId, b
 bool MediaPipelineService::getImmediateOutput(int sessionId, int32_t sourceId, bool &immediateOutput)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to getImmediateOutput, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("getImmediateOutput");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -285,6 +304,7 @@ bool MediaPipelineService::getImmediateOutput(int sessionId, int32_t sourceId, b
 bool MediaPipelineService::getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to get stats, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("getStats");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -300,6 +320,7 @@ bool MediaPipelineService::setVideoWindow(int sessionId, std::uint32_t x, std::u
                                           std::uint32_t height)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to set video window, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("setVideoWindow");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -315,6 +336,7 @@ bool MediaPipelineService::haveData(int sessionId, MediaSourceStatus status, std
                                     std::uint32_t needDataRequestId)
 {
     RIALTO_SERVER_LOG_DEBUG("New data available, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("haveData");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -329,6 +351,7 @@ bool MediaPipelineService::haveData(int sessionId, MediaSourceStatus status, std
 bool MediaPipelineService::renderFrame(int sessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("Render frame requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("renderFrame");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -342,6 +365,7 @@ bool MediaPipelineService::renderFrame(int sessionId)
 bool MediaPipelineService::setVolume(int sessionId, double targetVolume, uint32_t volumeDuration, EaseType easeType)
 {
     RIALTO_SERVER_LOG_DEBUG("Set volume requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("setVolume");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -356,6 +380,7 @@ bool MediaPipelineService::setVolume(int sessionId, double targetVolume, uint32_
 bool MediaPipelineService::getVolume(int sessionId, double &volume)
 {
     RIALTO_SERVER_LOG_DEBUG("Get volume requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("getVolume");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -370,6 +395,7 @@ bool MediaPipelineService::getVolume(int sessionId, double &volume)
 bool MediaPipelineService::setMute(int sessionId, std::int32_t sourceId, bool mute)
 {
     RIALTO_SERVER_LOG_DEBUG("Set mute requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("setMute");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -384,6 +410,7 @@ bool MediaPipelineService::setMute(int sessionId, std::int32_t sourceId, bool mu
 bool MediaPipelineService::getMute(int sessionId, std::int32_t sourceId, bool &mute)
 {
     RIALTO_SERVER_LOG_DEBUG("Get mute requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("getMute");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -398,6 +425,7 @@ bool MediaPipelineService::getMute(int sessionId, std::int32_t sourceId, bool &m
 bool MediaPipelineService::setTextTrackIdentifier(int sessionId, const std::string &textTrackIdentifier)
 {
     RIALTO_SERVER_LOG_DEBUG("Set text track identifier requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("setTextTrackIdentifier");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -412,6 +440,7 @@ bool MediaPipelineService::setTextTrackIdentifier(int sessionId, const std::stri
 bool MediaPipelineService::getTextTrackIdentifier(int sessionId, std::string &textTrackIdentifier)
 {
     RIALTO_SERVER_LOG_DEBUG("Get text track identifier requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("getTextTrackIdentifier");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -426,6 +455,7 @@ bool MediaPipelineService::getTextTrackIdentifier(int sessionId, std::string &te
 bool MediaPipelineService::setLowLatency(int sessionId, bool lowLatency)
 {
     RIALTO_SERVER_LOG_DEBUG("Set low latency requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("setLowLatency");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -440,6 +470,7 @@ bool MediaPipelineService::setLowLatency(int sessionId, bool lowLatency)
 bool MediaPipelineService::setSync(int sessionId, bool sync)
 {
     RIALTO_SERVER_LOG_DEBUG("Set sync requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("setSync");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -454,6 +485,7 @@ bool MediaPipelineService::setSync(int sessionId, bool sync)
 bool MediaPipelineService::getSync(int sessionId, bool &sync)
 {
     RIALTO_SERVER_LOG_DEBUG("Get sync requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("getSync");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -468,6 +500,7 @@ bool MediaPipelineService::getSync(int sessionId, bool &sync)
 bool MediaPipelineService::setSyncOff(int sessionId, bool syncOff)
 {
     RIALTO_SERVER_LOG_DEBUG("Set sync off requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("setSyncOff");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -482,6 +515,7 @@ bool MediaPipelineService::setSyncOff(int sessionId, bool syncOff)
 bool MediaPipelineService::setStreamSyncMode(int sessionId, int32_t sourceId, int32_t streamSyncMode)
 {
     RIALTO_SERVER_LOG_DEBUG("Set stream sync mode requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("setStreamSyncMode");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -496,6 +530,7 @@ bool MediaPipelineService::setStreamSyncMode(int sessionId, int32_t sourceId, in
 bool MediaPipelineService::getStreamSyncMode(int sessionId, int32_t &streamSyncMode)
 {
     RIALTO_SERVER_LOG_DEBUG("Get stream sync mode requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("getStreamSyncMode");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -510,6 +545,7 @@ bool MediaPipelineService::getStreamSyncMode(int sessionId, int32_t &streamSyncM
 bool MediaPipelineService::flush(int sessionId, std::int32_t sourceId, bool resetTime, bool &isAsync)
 {
     RIALTO_SERVER_LOG_DEBUG("Flush requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("flush");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -525,6 +561,7 @@ bool MediaPipelineService::setSourcePosition(int sessionId, int32_t sourceId, in
                                              double appliedRate, uint64_t stopPosition)
 {
     RIALTO_SERVER_LOG_DEBUG("Set Source Position requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("setSourcePosition");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -539,6 +576,7 @@ bool MediaPipelineService::setSourcePosition(int sessionId, int32_t sourceId, in
 bool MediaPipelineService::setSubtitleOffset(int sessionId, int32_t sourceId, int64_t position)
 {
     RIALTO_SERVER_LOG_DEBUG("Set Subtitle Offset requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("setSubtitleOffset");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -554,6 +592,7 @@ bool MediaPipelineService::processAudioGap(int sessionId, int64_t position, uint
                                            bool audioAac)
 {
     RIALTO_SERVER_LOG_DEBUG("Process Audio Gap requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("processAudioGap");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -568,6 +607,7 @@ bool MediaPipelineService::processAudioGap(int sessionId, int64_t position, uint
 bool MediaPipelineService::setBufferingLimit(int sessionId, uint32_t limitBufferingMs)
 {
     RIALTO_SERVER_LOG_DEBUG("Set buffering limit requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("setBufferingLimit");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -582,6 +622,7 @@ bool MediaPipelineService::setBufferingLimit(int sessionId, uint32_t limitBuffer
 bool MediaPipelineService::getBufferingLimit(int sessionId, uint32_t &limitBufferingMs)
 {
     RIALTO_SERVER_LOG_DEBUG("Get buffering limit requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("getBufferingLimit");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -596,6 +637,7 @@ bool MediaPipelineService::getBufferingLimit(int sessionId, uint32_t &limitBuffe
 bool MediaPipelineService::setUseBuffering(int sessionId, bool useBuffering)
 {
     RIALTO_SERVER_LOG_DEBUG("Set use buffering requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("setUseBuffering");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -610,6 +652,7 @@ bool MediaPipelineService::setUseBuffering(int sessionId, bool useBuffering)
 bool MediaPipelineService::getUseBuffering(int sessionId, bool &useBuffering)
 {
     RIALTO_SERVER_LOG_DEBUG("Get use buffering requested, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("getUseBuffering");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -624,6 +667,7 @@ bool MediaPipelineService::getUseBuffering(int sessionId, bool &useBuffering)
 bool MediaPipelineService::switchSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to switch source, session id: %d", sessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("switchSource");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -638,29 +682,34 @@ bool MediaPipelineService::switchSource(int sessionId, const std::unique_ptr<IMe
 bool MediaPipelineService::isVideoMaster(bool &isVideoMaster)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested check if video is master");
+    RIALTO_SERVER_PROFILE_SCOPE("isVideoMaster");
 
     return m_mediaPipelineCapabilities->isVideoMaster(isVideoMaster);
 }
 
 std::vector<std::string> MediaPipelineService::getSupportedMimeTypes(MediaSourceType type)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("getSupportedMimeTypes");
     return m_mediaPipelineCapabilities->getSupportedMimeTypes(type);
 }
 
 bool MediaPipelineService::isMimeTypeSupported(const std::string &mimeType)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("isMimeTypeSupported");
     return m_mediaPipelineCapabilities->isMimeTypeSupported(mimeType);
 }
 
 std::vector<std::string> MediaPipelineService::getSupportedProperties(MediaSourceType mediaType,
                                                                       const std::vector<std::string> &propertyNames)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("getSupportedProperties");
     return m_mediaPipelineCapabilities->getSupportedProperties(mediaType, propertyNames);
 }
 
 void MediaPipelineService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure)
 {
     RIALTO_SERVER_LOG_DEBUG("Ping requested");
+    RIALTO_SERVER_PROFILE_SCOPE("ping");
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     for (const auto &mediaPipelinePair : m_mediaPipelines)
     {
@@ -668,5 +717,7 @@ void MediaPipelineService::ping(const std::shared_ptr<IHeartbeatProcedure> &hear
         mediaPipeline->ping(heartbeatProcedure->createHandler());
     }
 }
+
+#undef RIALTO_SERVER_PROFILE_SCOPE
 
 } // namespace firebolt::rialto::server::service

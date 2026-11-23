@@ -62,13 +62,19 @@ private:
     void parseNumOfPreloadedServers(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
     void parseLogLevel(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
     void parseNumOfPingsBeforeRecovery(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
+    void parseProfiling(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
 
     std::list<std::string> getListOfStrings(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root,
                                             const std::string &valueName) const;
+    std::list<std::string> getListOfStrings(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root) const;
     std::optional<std::string> getString(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root,
                                          const std::string &valueName) const;
+    std::optional<std::string> getString(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> value) const;
     std::optional<unsigned int> getUInt(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root,
                                         const std::string &valueName) const;
+    std::optional<bool> getBool(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root,
+                                const std::string &valueName) const;
+    std::string joinList(const std::list<std::string> &values, const std::string &delimiter) const;
 
     std::shared_ptr<firebolt::rialto::wrappers::IJsonCppWrapper> m_jsonWrapper;
     std::shared_ptr<IFileReader> m_fileReader;

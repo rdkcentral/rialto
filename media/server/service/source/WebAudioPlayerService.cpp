@@ -24,11 +24,16 @@
 #include "IWebAudioPlayer.h"
 #include "IWebAudioPlayerServerInternal.h"
 #include "RialtoServerLogging.h"
+#include "ServerProfiling.h"
 #include <exception>
 #include <future>
 #include <string>
 #include <utility>
 #include <vector>
+
+#define RIALTO_SERVER_PROFILE_SCOPE(operationName)                                                                 \
+    [[maybe_unused]] auto profileScope =                                                                           \
+        profiling::makeScope(profiling::ProfileInterface::WebAudioPlayer, operationName)
 
 namespace firebolt::rialto::server::service
 {
@@ -56,6 +61,7 @@ bool WebAudioPlayerService::createWebAudioPlayer(int handle,
                                                  std::weak_ptr<const WebAudioConfig> config)
 {
     RIALTO_SERVER_LOG_DEBUG("WebAudioPlayerService requested to create new WebAudioPlayer with id: %d", handle);
+    RIALTO_SERVER_PROFILE_SCOPE("createWebAudioPlayer");
     if (!m_playbackService.isActive())
     {
         RIALTO_SERVER_LOG_ERROR("Skip create WebAudioPlayer with id: %d - Session Server in Inactive state", handle);
@@ -98,6 +104,7 @@ bool WebAudioPlayerService::createWebAudioPlayer(int handle,
 bool WebAudioPlayerService::destroyWebAudioPlayer(int handle)
 {
     RIALTO_SERVER_LOG_DEBUG("WebAudioPlayerService requested to destroy WebAudioPlayer with handle: %d", handle);
+    RIALTO_SERVER_PROFILE_SCOPE("destroyWebAudioPlayer");
     {
         std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
         auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
@@ -115,6 +122,7 @@ bool WebAudioPlayerService::destroyWebAudioPlayer(int handle)
 bool WebAudioPlayerService::play(int handle)
 {
     RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to play WebAudioPlayer with handle: %d", handle);
+    RIALTO_SERVER_PROFILE_SCOPE("play");
 
     std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
     auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
@@ -129,6 +137,7 @@ bool WebAudioPlayerService::play(int handle)
 bool WebAudioPlayerService::pause(int handle)
 {
     RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to pause WebAudioPlayer with handle: %d", handle);
+    RIALTO_SERVER_PROFILE_SCOPE("pause");
 
     std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
     auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
@@ -143,6 +152,7 @@ bool WebAudioPlayerService::pause(int handle)
 bool WebAudioPlayerService::setEos(int handle)
 {
     RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to setEos WebAudioPlayer with handle: %d", handle);
+    RIALTO_SERVER_PROFILE_SCOPE("setEos");
 
     std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
     auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
@@ -159,6 +169,7 @@ bool WebAudioPlayerService::getBufferAvailable(int handle, uint32_t &availableFr
 {
     RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to getBufferAvailable WebAudioPlayer with handle: %d",
                            handle);
+    RIALTO_SERVER_PROFILE_SCOPE("getBufferAvailable");
 
     std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
     auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
@@ -173,6 +184,7 @@ bool WebAudioPlayerService::getBufferAvailable(int handle, uint32_t &availableFr
 bool WebAudioPlayerService::getBufferDelay(int handle, uint32_t &delayFrames)
 {
     RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to getBufferDelay WebAudioPlayer with handle: %d", handle);
+    RIALTO_SERVER_PROFILE_SCOPE("getBufferDelay");
 
     std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
     auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
@@ -187,6 +199,7 @@ bool WebAudioPlayerService::getBufferDelay(int handle, uint32_t &delayFrames)
 bool WebAudioPlayerService::writeBuffer(int handle, const uint32_t numberOfFrames, void *data)
 {
     RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to writeBuffer WebAudioPlayer with handle: %d", handle);
+    RIALTO_SERVER_PROFILE_SCOPE("writeBuffer");
 
     std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
     auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
@@ -202,6 +215,7 @@ bool WebAudioPlayerService::getDeviceInfo(int handle, uint32_t &preferredFrames,
                                           bool &supportDeferredPlay)
 {
     RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to getDeviceInfo WebAudioPlayer with handle: %d", handle);
+    RIALTO_SERVER_PROFILE_SCOPE("getDeviceInfo");
 
     std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
     auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
@@ -216,6 +230,7 @@ bool WebAudioPlayerService::getDeviceInfo(int handle, uint32_t &preferredFrames,
 bool WebAudioPlayerService::setVolume(int handle, double volume)
 {
     RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to setVolume WebAudioPlayer with handle: %d", handle);
+    RIALTO_SERVER_PROFILE_SCOPE("setVolume");
 
     std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
     auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
@@ -230,6 +245,7 @@ bool WebAudioPlayerService::setVolume(int handle, double volume)
 bool WebAudioPlayerService::getVolume(int handle, double &volume)
 {
     RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to getVolume WebAudioPlayer with handle: %d", handle);
+    RIALTO_SERVER_PROFILE_SCOPE("getVolume");
 
     std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
     auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
@@ -244,6 +260,7 @@ bool WebAudioPlayerService::getVolume(int handle, double &volume)
 void WebAudioPlayerService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure)
 {
     RIALTO_SERVER_LOG_DEBUG("Ping requested");
+    RIALTO_SERVER_PROFILE_SCOPE("ping");
     std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
     for (const auto &webAudioPlayersPair : m_webAudioPlayers)
     {
@@ -251,4 +268,6 @@ void WebAudioPlayerService::ping(const std::shared_ptr<IHeartbeatProcedure> &hea
         webAudioPlayer->ping(heartbeatProcedure->createHandler());
     }
 }
+
+#undef RIALTO_SERVER_PROFILE_SCOPE
 } // namespace firebolt::rialto::server::service

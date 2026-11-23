@@ -26,6 +26,11 @@
 
 #include "CdmService.h"
 #include "RialtoServerLogging.h"
+#include "ServerProfiling.h"
+
+#define RIALTO_SERVER_PROFILE_SCOPE(operationName)                                                                 \
+    [[maybe_unused]] auto profileScope =                                                                           \
+        profiling::makeScope(profiling::ProfileInterface::MediaKeys, operationName)
 
 namespace firebolt::rialto::server::service
 {
@@ -63,6 +68,7 @@ void CdmService::switchToInactive()
 bool CdmService::createMediaKeys(int mediaKeysHandle, std::string keySystem)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to create new media keys handle: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("createMediaKeys");
     if (!m_isActive)
     {
         RIALTO_SERVER_LOG_ERROR("Skip to create media keys handle: %d - Session Server in Inactive state",
@@ -93,6 +99,7 @@ bool CdmService::createMediaKeys(int mediaKeysHandle, std::string keySystem)
 bool CdmService::destroyMediaKeys(int mediaKeysHandle)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to destroy media keys handle: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("destroyMediaKeys");
 
     {
         std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
@@ -125,6 +132,7 @@ MediaKeyErrorStatus CdmService::createKeySession(int mediaKeysHandle, KeySession
                                                  int32_t &keySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to create key session: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("createKeySession");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
@@ -156,6 +164,7 @@ MediaKeyErrorStatus CdmService::generateRequest(int mediaKeysHandle, int32_t key
                                                 const std::vector<uint8_t> &initData)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to generate request: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("generateRequest");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
@@ -170,6 +179,7 @@ MediaKeyErrorStatus CdmService::generateRequest(int mediaKeysHandle, int32_t key
 MediaKeyErrorStatus CdmService::loadSession(int mediaKeysHandle, int32_t keySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to load session: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("loadSession");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
@@ -185,6 +195,7 @@ MediaKeyErrorStatus CdmService::updateSession(int mediaKeysHandle, int32_t keySe
                                               const std::vector<uint8_t> &responseData)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to update session: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("updateSession");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
@@ -199,6 +210,7 @@ MediaKeyErrorStatus CdmService::updateSession(int mediaKeysHandle, int32_t keySe
 MediaKeyErrorStatus CdmService::closeKeySession(int mediaKeysHandle, int32_t keySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to close key session: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("closeKeySession");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysHandleIter{m_sessionInfo.find(keySessionId)};
@@ -219,6 +231,7 @@ MediaKeyErrorStatus CdmService::closeKeySession(int mediaKeysHandle, int32_t key
 MediaKeyErrorStatus CdmService::removeKeySession(int mediaKeysHandle, int32_t keySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to remove key session: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("removeKeySession");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     return removeKeySessionInternal(mediaKeysHandle, keySessionId);
@@ -249,6 +262,7 @@ MediaKeyErrorStatus CdmService::removeKeySessionInternal(int mediaKeysHandle, in
 MediaKeyErrorStatus CdmService::getCdmKeySessionId(int mediaKeysHandle, int32_t keySessionId, std::string &cdmKeySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to get cdm key session id: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("getCdmKeySessionId");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
@@ -265,6 +279,7 @@ MediaKeyErrorStatus CdmService::getCdmKeySessionId(int mediaKeysHandle, int32_t 
 bool CdmService::containsKey(int mediaKeysHandle, int32_t keySessionId, const std::vector<uint8_t> &keyId)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if key is present: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("containsKey");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
@@ -281,6 +296,7 @@ MediaKeyErrorStatus CdmService::setDrmHeader(int mediaKeysHandle, int32_t keySes
                                              const std::vector<uint8_t> &requestData)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to set drm header: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("setDrmHeader");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
@@ -296,6 +312,7 @@ MediaKeyErrorStatus CdmService::setDrmHeader(int mediaKeysHandle, int32_t keySes
 MediaKeyErrorStatus CdmService::deleteDrmStore(int mediaKeysHandle)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to delete drm store: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("deleteDrmStore");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
@@ -310,6 +327,7 @@ MediaKeyErrorStatus CdmService::deleteDrmStore(int mediaKeysHandle)
 MediaKeyErrorStatus CdmService::deleteKeyStore(int mediaKeysHandle)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to delete key store: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("deleteKeyStore");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
@@ -325,6 +343,7 @@ MediaKeyErrorStatus CdmService::deleteKeyStore(int mediaKeysHandle)
 MediaKeyErrorStatus CdmService::getDrmStoreHash(int mediaKeysHandle, std::vector<unsigned char> &drmStoreHash)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to get drm store hash: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("getDrmStoreHash");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
@@ -339,6 +358,7 @@ MediaKeyErrorStatus CdmService::getDrmStoreHash(int mediaKeysHandle, std::vector
 MediaKeyErrorStatus CdmService::getKeyStoreHash(int mediaKeysHandle, std::vector<unsigned char> &keyStoreHash)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to get key store hash: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("getKeyStoreHash");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
@@ -353,6 +373,7 @@ MediaKeyErrorStatus CdmService::getKeyStoreHash(int mediaKeysHandle, std::vector
 MediaKeyErrorStatus CdmService::getLdlSessionsLimit(int mediaKeysHandle, uint32_t &ldlLimit)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to get ldl sessions limit: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("getLdlSessionsLimit");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
@@ -367,6 +388,7 @@ MediaKeyErrorStatus CdmService::getLdlSessionsLimit(int mediaKeysHandle, uint32_
 MediaKeyErrorStatus CdmService::getLastDrmError(int mediaKeysHandle, int32_t keySessionId, uint32_t &errorCode)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to get last drm error: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("getLastDrmError");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
@@ -381,6 +403,7 @@ MediaKeyErrorStatus CdmService::getLastDrmError(int mediaKeysHandle, int32_t key
 MediaKeyErrorStatus CdmService::getDrmTime(int mediaKeysHandle, uint64_t &drmTime)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to get drm time: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("getDrmTime");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
@@ -395,6 +418,7 @@ MediaKeyErrorStatus CdmService::getDrmTime(int mediaKeysHandle, uint64_t &drmTim
 MediaKeyErrorStatus CdmService::releaseKeySession(int mediaKeysHandle, int32_t keySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to release key session: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("releaseKeySession");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysHandleIter{m_sessionInfo.find(keySessionId)};
@@ -417,6 +441,7 @@ MediaKeyErrorStatus CdmService::releaseKeySession(int mediaKeysHandle, int32_t k
 std::vector<std::string> CdmService::getSupportedKeySystems()
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to getSupportedKeySystems");
+    RIALTO_SERVER_PROFILE_SCOPE("getSupportedKeySystems");
 
     if (!m_isActive)
     {
@@ -436,6 +461,7 @@ std::vector<std::string> CdmService::getSupportedKeySystems()
 bool CdmService::supportsKeySystem(const std::string &keySystem)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to supportsKeySystem");
+    RIALTO_SERVER_PROFILE_SCOPE("supportsKeySystem");
 
     if (!m_isActive)
     {
@@ -455,6 +481,7 @@ bool CdmService::supportsKeySystem(const std::string &keySystem)
 bool CdmService::getSupportedKeySystemVersion(const std::string &keySystem, std::string &version)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to getSupportedKeySystemVersion");
+    RIALTO_SERVER_PROFILE_SCOPE("getSupportedKeySystemVersion");
 
     if (!m_isActive)
     {
@@ -474,6 +501,7 @@ bool CdmService::getSupportedKeySystemVersion(const std::string &keySystem, std:
 bool CdmService::isServerCertificateSupported(const std::string &keySystem)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to isServerCertificateSupported");
+    RIALTO_SERVER_PROFILE_SCOPE("isServerCertificateSupported");
 
     if (!m_isActive)
     {
@@ -493,6 +521,7 @@ bool CdmService::isServerCertificateSupported(const std::string &keySystem)
 MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to decrypt, key session id: %d", keySessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("decrypt");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysHandleIter{m_sessionInfo.find(keySessionId)};
@@ -508,6 +537,7 @@ bool CdmService::isNetflixPlayreadyKeySystem(int32_t keySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if key system is Netflix Playready, key session id: %d",
                             keySessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("isNetflixPlayreadyKeySystem");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysHandleIter{m_sessionInfo.find(keySessionId)};
@@ -522,6 +552,7 @@ bool CdmService::isNetflixPlayreadyKeySystem(int32_t keySessionId)
 MediaKeyErrorStatus CdmService::selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to select key id, key session id: %d", keySessionId);
+    RIALTO_SERVER_PROFILE_SCOPE("selectKeyId");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysHandleIter{m_sessionInfo.find(keySessionId)};
@@ -591,6 +622,7 @@ void CdmService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProce
 MediaKeyErrorStatus CdmService::getMetricSystemData(int mediaKeysHandle, std::vector<uint8_t> &buffer)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to get metric system data: %d", mediaKeysHandle);
+    RIALTO_SERVER_PROFILE_SCOPE("getMetricSystemData");
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
@@ -601,4 +633,5 @@ MediaKeyErrorStatus CdmService::getMetricSystemData(int mediaKeysHandle, std::ve
     }
     return mediaKeysIter->second->getMetricSystemData(buffer);
 }
+#undef RIALTO_SERVER_PROFILE_SCOPE
 } // namespace firebolt::rialto::server::service

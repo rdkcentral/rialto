@@ -62,6 +62,9 @@ target_link_libraries(
         RialtoServerMain
         RialtoServerService
         protobuf::libprotobuf
+
+        ${RDKPERF_LIBRARIES}
+        ${SYSTEMD_LIBRARIES}
 )
 
 if( NATIVE_BUILD )

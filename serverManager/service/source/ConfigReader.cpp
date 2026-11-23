@@ -19,8 +19,30 @@
 
 #include "ConfigReader.h"
 #include "RialtoServerManagerLogging.h"
+#include <algorithm>
 #include <fstream>
 #include <json/json.h>
+#include <set>
+
+namespace
+{
+constexpr const char *kProfilingSectionKey{"profiling"};
+constexpr const char *kProfilingEnabledKey{"enabled"};
+constexpr const char *kProfilingScopeModeKey{"scopeMode"};
+constexpr const char *kProfilingInterfacesKey{"interfaces"};
+
+constexpr const char *kProfilingEnvEnabled{"RIALTO_SERVER_PROFILING_ENABLED"};
+constexpr const char *kProfilingEnvScopeMode{"RIALTO_SERVER_PROFILING_SCOPE_MODE"};
+constexpr const char *kProfilingEnvInterfaces{"RIALTO_SERVER_PROFILING_INTERFACES"};
+
+const std::set<std::string> kSupportedProfilingInterfaces{"IMediaPipeline", "IMediaKeys", "IWebAudioPlayer",
+                                                           "IMediaPipelineCapabilities", "IMediaKeysCapabilities"};
+
+bool isSupportedScopeMode(const std::string &scopeMode)
+{
+    return scopeMode == "all" || scopeMode == "interface";
+}
+} // namespace
 
 namespace rialto::servermanager::service
 {
@@ -56,6 +78,7 @@ bool ConfigReader::read()
     parseNumOfPreloadedServers(root);
     parseLogLevel(root);
     parseNumOfPingsBeforeRecovery(root);
+    parseProfiling(root);
 
     return true;
 }
@@ -162,6 +185,65 @@ void ConfigReader::parseNumOfPingsBeforeRecovery(std::shared_ptr<firebolt::rialt
     m_numOfPingsBeforeRecovery = getUInt(root, "numOfPingsBeforeRecovery");
 }
 
+void ConfigReader::parseProfiling(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
+{
+    if (!root->isMember(kProfilingSectionKey))
+    {
+        return;
+    }
+
+    const auto profiling = root->at(kProfilingSectionKey);
+    if (!profiling)
+    {
+        return;
+    }
+
+    if (const auto enabled = getBool(profiling, kProfilingEnabledKey); enabled.has_value())
+    {
+        m_extraEnvVars.emplace_back(std::string{kProfilingEnvEnabled} + "=" + (enabled.value() ? "1" : "0"));
+    }
+
+    if (const auto scopeMode = getString(profiling, kProfilingScopeModeKey); scopeMode.has_value())
+    {
+        if (!isSupportedScopeMode(scopeMode.value()))
+        {
+            RIALTO_SERVER_MANAGER_LOG_WARN("Unsupported profiling scope mode '%s' ignored", scopeMode->c_str());
+        }
+        else
+        {
+            m_extraEnvVars.emplace_back(std::string{kProfilingEnvScopeMode} + "=" + scopeMode.value());
+        }
+    }
+
+    if (!profiling->isMember(kProfilingInterfacesKey))
+    {
+        return;
+    }
+
+    const auto interfacesValue = profiling->at(kProfilingInterfacesKey);
+    if (!interfacesValue || !interfacesValue->isArray())
+    {
+        return;
+    }
+
+    const auto allInterfaces = getListOfStrings(interfacesValue);
+    std::list<std::string> supportedInterfaces;
+    for (const auto &interfaceName : allInterfaces)
+    {
+        if (kSupportedProfilingInterfaces.find(interfaceName) == kSupportedProfilingInterfaces.end())
+        {
+            RIALTO_SERVER_MANAGER_LOG_WARN("Unsupported profiling interface '%s' ignored", interfaceName.c_str());
+            continue;
+        }
+        supportedInterfaces.emplace_back(interfaceName);
+    }
+
+    if (!supportedInterfaces.empty())
+    {
+        m_extraEnvVars.emplace_back(std::string{kProfilingEnvInterfaces} + "=" + joinList(supportedInterfaces, ","));
+    }
+}
+
 std::list<std::string> ConfigReader::getEnvironmentVariables()
 {
     return m_envVars;
@@ -236,12 +318,43 @@ std::list<std::string> ConfigReader::getListOfStrings(std::shared_ptr<firebolt::
     return result;
 }
 
+std::list<std::string> ConfigReader::getListOfStrings(
+    std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root) const
+{
+    std::list<std::string> result;
+    if (!root || !root->isArray())
+    {
+        return result;
+    }
+
+    const Json::ArrayIndex size = root->size();
+    for (Json::ArrayIndex index = 0; index < size; ++index)
+    {
+        const auto value = root->at(index);
+        if (value && value->isString())
+        {
+            result.emplace_back(value->asString());
+        }
+    }
+    return result;
+}
+
 std::optional<std::string> ConfigReader::getString(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root,
                                                    const std::string &valueName) const
 {
     if (root->isMember(valueName) && root->at(valueName)->isString())
     {
         return root->at(valueName)->asString();
+    }
+    return std::nullopt;
+}
+
+std::optional<std::string> ConfigReader::getString(
+    std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> value) const
+{
+    if (value && value->isString())
+    {
+        return value->asString();
     }
     return std::nullopt;
 }
@@ -254,6 +367,30 @@ std::optional<unsigned int> ConfigReader::getUInt(std::shared_ptr<firebolt::rial
         return root->at(valueName)->asUInt();
     }
     return std::nullopt;
+}
+
+std::optional<bool> ConfigReader::getBool(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root,
+                                          const std::string &valueName) const
+{
+    if (root->isMember(valueName) && root->at(valueName)->isBool())
+    {
+        return root->at(valueName)->asBool();
+    }
+    return std::nullopt;
+}
+
+std::string ConfigReader::joinList(const std::list<std::string> &values, const std::string &delimiter) const
+{
+    std::string result;
+    for (auto it = values.begin(); it != values.end(); ++it)
+    {
+        if (!result.empty())
+        {
+            result += delimiter;
+        }
+        result += *it;
+    }
+    return result;
 }
 
 } // namespace rialto::servermanager::service
