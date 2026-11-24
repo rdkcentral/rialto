@@ -135,7 +135,7 @@ To make the default empty instead, set `kSubscribeAllMetricsByDefault` to `false
 ## Bus Message Fields
 
 The `media-pipeline-metric` structure must be named exactly `media-pipeline-metric`. Field types are checked by
-`ValidateMediaPipelineMetric`; a message that fails any check is logged and dropped without changing counters.
+`validateMediaPipelineMetric`; a message that fails any check is logged and dropped without changing counters.
 
 | Field | GType | Required | Constraints |
 |---|---|---|---|

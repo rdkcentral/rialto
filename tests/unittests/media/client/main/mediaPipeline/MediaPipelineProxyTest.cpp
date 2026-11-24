@@ -177,6 +177,11 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     /////////////////////////////////////////////
 
+    EXPECT_CALL(*mediaPipelineMock, setMetricSubscription(_)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setMetricSubscription({firebolt::rialto::MetricType::VIDEO_FRAME_DROP}));
+
+    /////////////////////////////////////////////
+
     EXPECT_CALL(*mediaPipelineMock, setImmediateOutput(kSourceId, true)).WillOnce(Return(true));
     EXPECT_TRUE(proxy->setImmediateOutput(kSourceId, true));
 

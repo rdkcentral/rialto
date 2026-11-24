@@ -188,7 +188,7 @@ std::optional<MetricEvent> RialtoMetrics::onMetricMessage(GstMessage *message)
     MetricEvent parsedMessage;
     int32_t sessionId = 0;
     GstFlowReturn validationResult =
-        ValidateMediaPipelineMetric(structure, parsedMessage, message, m_elementToSourceMapper.get(), &sessionId);
+        validateMediaPipelineMetric(structure, parsedMessage, message, m_elementToSourceMapper.get(), &sessionId);
 
     if (validationResult != GST_FLOW_OK)
     {
@@ -313,7 +313,7 @@ ElementToSourceMapper *RialtoMetrics::getElementToSourceMapper()
 // structure name, metric, observation-kind, optional pts-ns, duration-ns and count, then field combinations. Any
 // failure logs a warning and returns GST_FLOW_ERROR, so the caller drops only that message. Session and source IDs are
 // filled in last from GST_MESSAGE_SRC(); an unregistered element keeps source 0 rather than rejecting the message.
-GstFlowReturn ValidateMediaPipelineMetric(const GstStructure *msg, MetricEvent &out, GstMessage *gstMessage,
+GstFlowReturn validateMediaPipelineMetric(const GstStructure *msg, MetricEvent &out, GstMessage *gstMessage,
                                           ElementToSourceMapper *mapper, int32_t *outSessionId)
 {
     out = MetricEvent{};

@@ -319,6 +319,16 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToGetFrameCounters()
     EXPECT_CALL(m_mediaPipelineMock, getFrameCounters(_, _, _, _, _, _)).WillOnce(Return(false));
 }
 
+void MediaPipelineServiceTests::mediaPipelineWillSetMetricSubscription()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setMetricSubscription(_)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToSetMetricSubscription()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setMetricSubscription(_)).WillOnce(Return(false));
+}
+
 void MediaPipelineServiceTests::mediaPipelineWillRenderFrame()
 {
     EXPECT_CALL(m_mediaPipelineMock, renderFrame()).WillOnce(Return(true));
@@ -847,6 +857,16 @@ void MediaPipelineServiceTests::getImmediateOutputShouldFail()
 void MediaPipelineServiceTests::setReportDecodeErrorsShouldSucceed()
 {
     EXPECT_TRUE(m_sut->setReportDecodeErrors(kSessionId, kSourceId, true));
+}
+
+void MediaPipelineServiceTests::setMetricSubscriptionShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->setMetricSubscription(kSessionId, {firebolt::rialto::MetricType::VIDEO_FRAME_DROP}));
+}
+
+void MediaPipelineServiceTests::setMetricSubscriptionShouldFail()
+{
+    EXPECT_FALSE(m_sut->setMetricSubscription(kSessionId, {firebolt::rialto::MetricType::VIDEO_FRAME_DROP}));
 }
 
 void MediaPipelineServiceTests::setReportDecodeErrorsShouldFail()

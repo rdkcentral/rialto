@@ -442,6 +442,26 @@ TEST_F(MediaPipelineServiceTests, shouldGetStats)
     getStatsShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToSetMetricSubscriptionForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    setMetricSubscriptionShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetMetricSubscription)
+{
+    initSession();
+    mediaPipelineWillFailToSetMetricSubscription();
+    setMetricSubscriptionShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldSetMetricSubscription)
+{
+    initSession();
+    mediaPipelineWillSetMetricSubscription();
+    setMetricSubscriptionShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldFailToGetFrameCountersForNotExistingSession)
 {
     createMediaPipelineShouldSuccess();

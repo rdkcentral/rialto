@@ -71,7 +71,7 @@ public:
     virtual void UnregisterAllElements() = 0;
 };
 
-GstFlowReturn ValidateMediaPipelineMetric(const GstStructure *msg, MetricEvent &out, GstMessage *gstMessage = nullptr,
+GstFlowReturn validateMediaPipelineMetric(const GstStructure *msg, MetricEvent &out, GstMessage *gstMessage = nullptr,
                                           ElementToSourceMapper *mapper = nullptr, int32_t *outSessionId = nullptr);
 
 } // namespace firebolt::rialto::server

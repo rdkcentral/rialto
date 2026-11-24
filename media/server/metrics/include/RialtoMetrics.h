@@ -24,6 +24,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <utility>
 
 namespace firebolt::rialto::server
 {

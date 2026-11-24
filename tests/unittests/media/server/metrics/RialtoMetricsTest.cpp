@@ -501,7 +501,7 @@ TEST(ValidateMediaPipelineMetricTest, AcceptsValidMediaPipelineMetricStructureNa
     ASSERT_NE(nullptr, msgStructure);
 
     MetricEvent out;
-    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+    GstFlowReturn result = validateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
     gst_object_unref(source);
@@ -522,11 +522,11 @@ TEST(ValidateMediaPipelineMetricTest, ReusedOutputDoesNotKeepOptionalFieldsFromP
     ASSERT_NE(nullptr, occurrence);
 
     MetricEvent out;
-    EXPECT_EQ(GST_FLOW_OK, ValidateMediaPipelineMetric(episode, out));
+    EXPECT_EQ(GST_FLOW_OK, validateMediaPipelineMetric(episode, out));
     ASSERT_TRUE(out.presentationTimeStampNs.has_value());
     ASSERT_TRUE(out.durationNs.has_value());
 
-    EXPECT_EQ(GST_FLOW_OK, ValidateMediaPipelineMetric(occurrence, out));
+    EXPECT_EQ(GST_FLOW_OK, validateMediaPipelineMetric(occurrence, out));
     EXPECT_EQ(MetricPhase::OCCURRENCE, out.phase);
     EXPECT_FALSE(out.presentationTimeStampNs.has_value());
     EXPECT_FALSE(out.durationNs.has_value());
@@ -553,7 +553,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsStructureNamedMetric)
     ASSERT_NE(nullptr, msgStructure);
 
     MetricEvent out;
-    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+    GstFlowReturn result = validateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
     gst_object_unref(source);
@@ -578,7 +578,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsStructureNamedLegacyMetric)
     ASSERT_NE(nullptr, msgStructure);
 
     MetricEvent out;
-    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+    GstFlowReturn result = validateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
     gst_object_unref(source);
@@ -589,7 +589,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsStructureNamedLegacyMetric)
 TEST(ValidateMediaPipelineMetricTest, RejectsNullStructure)
 {
     MetricEvent out;
-    GstFlowReturn result = ValidateMediaPipelineMetric(nullptr, out);
+    GstFlowReturn result = validateMediaPipelineMetric(nullptr, out);
 
     EXPECT_EQ(GST_FLOW_ERROR, result);
 }
@@ -611,7 +611,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsMissingMetricField)
     ASSERT_NE(nullptr, msgStructure);
 
     MetricEvent out;
-    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+    GstFlowReturn result = validateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
     gst_object_unref(source);
@@ -636,7 +636,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsMetricFieldWithWrongType)
     ASSERT_NE(nullptr, msgStructure);
 
     MetricEvent out;
-    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+    GstFlowReturn result = validateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
     gst_object_unref(source);
@@ -664,7 +664,7 @@ TEST(ValidateMediaPipelineMetricTest, AcceptsAllValidMetricValuesOneToSeven)
         ASSERT_NE(nullptr, msgStructure);
 
         MetricEvent out;
-        GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+        GstFlowReturn result = validateMediaPipelineMetric(msgStructure, out);
 
         gst_message_unref(message);
 
@@ -693,7 +693,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsMetricValueZero)
     ASSERT_NE(nullptr, msgStructure);
 
     MetricEvent out;
-    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+    GstFlowReturn result = validateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
     gst_object_unref(source);
@@ -718,7 +718,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsMetricValueEight)
     ASSERT_NE(nullptr, msgStructure);
 
     MetricEvent out;
-    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+    GstFlowReturn result = validateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
     gst_object_unref(source);
@@ -743,7 +743,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsMetricValueTwoFiftFive)
     ASSERT_NE(nullptr, msgStructure);
 
     MetricEvent out;
-    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+    GstFlowReturn result = validateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
     gst_object_unref(source);
@@ -768,7 +768,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsMissingObservationPhaseField)
     ASSERT_NE(nullptr, msgStructure);
 
     MetricEvent out;
-    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+    GstFlowReturn result = validateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
     gst_object_unref(source);
@@ -794,7 +794,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsObservationPhaseFieldWithWrongType)
     ASSERT_NE(nullptr, msgStructure);
 
     MetricEvent out;
-    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+    GstFlowReturn result = validateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
     gst_object_unref(source);
@@ -822,7 +822,7 @@ TEST(ValidateMediaPipelineMetricTest, AcceptsAllValidObservationPhaseValues)
         ASSERT_NE(nullptr, msgStructure);
 
         MetricEvent out;
-        GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+        GstFlowReturn result = validateMediaPipelineMetric(msgStructure, out);
 
         gst_message_unref(message);
 
@@ -852,7 +852,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsObservationPhaseValueZero)
     ASSERT_NE(nullptr, msgStructure);
 
     MetricEvent out;
-    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+    GstFlowReturn result = validateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
     gst_object_unref(source);
@@ -878,7 +878,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsObservationPhaseValueFour)
     ASSERT_NE(nullptr, msgStructure);
 
     MetricEvent out;
-    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+    GstFlowReturn result = validateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
     gst_object_unref(source);
@@ -904,7 +904,7 @@ std::string validateAndCaptureWarnings(GstStructure *structure, GstFlowReturn &r
         true);
 
     MetricEvent out;
-    result = ValidateMediaPipelineMetric(structure, out);
+    result = validateMediaPipelineMetric(structure, out);
     firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_SERVER, nullptr, false);
     return logs;
 }
@@ -1169,7 +1169,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsCountValueZero)
     ASSERT_NE(nullptr, msgStructure);
 
     MetricEvent out;
-    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+    GstFlowReturn result = validateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
     gst_object_unref(source);
@@ -1183,7 +1183,7 @@ static GstFlowReturn validateOwnedStructure(GstStructure *structure, MetricEvent
     GstElement *source = gst_pipeline_new("test-source");
     GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
     const GstStructure *msgStructure = gst_message_get_structure(message);
-    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+    GstFlowReturn result = validateMediaPipelineMetric(msgStructure, out);
     gst_message_unref(message);
     gst_object_unref(source);
     return result;
@@ -1293,7 +1293,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsObservationPhaseValueTwoFiftFive)
     ASSERT_NE(nullptr, msgStructure);
 
     MetricEvent out;
-    GstFlowReturn result = ValidateMediaPipelineMetric(msgStructure, out);
+    GstFlowReturn result = validateMediaPipelineMetric(msgStructure, out);
 
     gst_message_unref(message);
     gst_object_unref(source);

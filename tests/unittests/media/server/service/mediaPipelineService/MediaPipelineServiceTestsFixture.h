@@ -71,6 +71,8 @@ public:
     void mediaPipelineWillFailToSetImmediateOutput();
     void mediaPipelineWillSetReportDecodeErrors();
     void mediaPipelineWillFailToSetReportDecodeErrors();
+    void mediaPipelineWillSetMetricSubscription();
+    void mediaPipelineWillFailToSetMetricSubscription();
     void mediaPipelineWillGetImmediateOutput();
     void mediaPipelineWillFailToGetImmediateOutput();
     void mediaPipelineWillGetQueuedFrames();
@@ -169,6 +171,8 @@ public:
     void getDurationShouldFail();
     void setReportDecodeErrorsShouldSucceed();
     void setReportDecodeErrorsShouldFail();
+    void setMetricSubscriptionShouldSucceed();
+    void setMetricSubscriptionShouldFail();
     void setImmediateOutputShouldSucceed();
     void setImmediateOutputShouldFail();
     void getImmediateOutputShouldSucceed();
