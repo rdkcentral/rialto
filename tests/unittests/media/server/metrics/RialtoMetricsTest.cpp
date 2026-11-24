@@ -270,6 +270,34 @@ TEST(RialtoMetricsTest, UpdatingSinkStatsUsesServerTimestampAndPreservesCorrupti
     EXPECT_GE(counters.timestamp, lastTimestamp);
 }
 
+TEST(RialtoMetricsTest, GetFrameCountersRefreshesCacheFromSinkStatsAndKeepsCorruptedFrames)
+{
+    RialtoMetrics metrics([](std::uint64_t &rendered, std::uint64_t &dropped)
+                          {
+                              rendered = 20;
+                              dropped = 5;
+                              return true;
+                          });
+    metrics.updateFrameCounters(7, 11, CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 1, 2, 3}, 4});
+
+    CounterSnapshot counters;
+    ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
+    EXPECT_EQ(20U, counters.counters.renderedFrames);
+    EXPECT_EQ(5U, counters.counters.droppedFrames);
+    EXPECT_EQ(3U, counters.counters.corruptedFrames);
+}
+
+TEST(RialtoMetricsTest, GetFrameCountersRetainsCachedCountsWhenSinkStatsUnavailable)
+{
+    RialtoMetrics metrics([](std::uint64_t &, std::uint64_t &) { return false; });
+    metrics.updateFrameCounters(7, 11, CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 1, 2, 3}, 4});
+
+    CounterSnapshot counters;
+    ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
+    EXPECT_EQ(1U, counters.counters.renderedFrames);
+    EXPECT_EQ(2U, counters.counters.droppedFrames);
+}
+
 TEST(RialtoMetricsTest, FrameCountersNeverDecrease)
 {
     RialtoMetrics metrics;

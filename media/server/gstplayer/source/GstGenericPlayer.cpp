@@ -352,7 +352,8 @@ GstGenericPlayer::GstGenericPlayer(
     }
 
     RIALTO_SERVER_LOG_DEBUG("Creating playback metrics handler");
-    m_metrics = std::make_shared<RialtoMetrics>();
+    m_metrics = std::make_shared<RialtoMetrics>([this](uint64_t &renderedFrames, uint64_t &droppedFrames)
+                                                { return getStats(MediaSourceType::VIDEO, renderedFrames, droppedFrames); });
     m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline,
                                                                                   m_context.flushOnPrerollController,
                                                                                   m_gstWrapper, m_glibWrapper);

@@ -545,7 +545,6 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersSucc
 
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getRialtoMetrics()).WillOnce(Return(metrics));
-    EXPECT_CALL(*m_gstPlayerMock, getStats(MediaSourceType::VIDEO, _, _)).WillOnce(Return(false));
 
     uint64_t renderedFrames{0};
     uint64_t droppedFrames{0};
@@ -577,19 +576,20 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersRefr
 {
     loadGstPlayer();
     const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
-    auto metrics = std::make_shared<RialtoMetrics>();
+    auto metrics = std::make_shared<RialtoMetrics>([this](uint64_t &rendered, uint64_t &dropped)
+                                                   { return m_gstPlayerMock->getStats(MediaSourceType::VIDEO, rendered, dropped); });
     metrics->updateFrameCounters(m_kSessionId, sourceId,
                                  CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 3141, 95, 7}, 1234});
 
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getRialtoMetrics()).WillOnce(Return(metrics));
     EXPECT_CALL(*m_gstPlayerMock, getStats(MediaSourceType::VIDEO, _, _))
-        .WillOnce(Invoke([](const MediaSourceType &, uint64_t &rendered, uint64_t &dropped)
-                         {
-                             rendered = 4000;
-                             dropped = 120;
-                             return true;
-                         }));
+        .WillRepeatedly(Invoke([](const MediaSourceType &, uint64_t &rendered, uint64_t &dropped)
+                               {
+                                   rendered = 4000;
+                                   dropped = 120;
+                                   return true;
+                               }));
 
     uint64_t renderedFrames{0};
     uint64_t droppedFrames{0};
@@ -614,7 +614,8 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersRead
 {
     loadGstPlayer();
     const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
-    auto metrics = std::make_shared<RialtoMetrics>();
+    auto metrics = std::make_shared<RialtoMetrics>([this](uint64_t &rendered, uint64_t &dropped)
+                                                   { return m_gstPlayerMock->getStats(MediaSourceType::VIDEO, rendered, dropped); });
 
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getRialtoMetrics()).WillOnce(Return(metrics));

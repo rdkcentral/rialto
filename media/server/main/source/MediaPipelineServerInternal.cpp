@@ -616,19 +616,7 @@ bool MediaPipelineServerInternal::getFrameCountersInternal(int32_t sessionId, in
     }
 
     CounterSnapshot counters;
-    bool hasCounters = metrics->getFrameCounters(sessionId, sourceId, counters);
-    uint64_t currentRenderedFrames{0};
-    uint64_t currentDroppedFrames{0};
-    if (m_gstPlayer->getStats(MediaSourceType::VIDEO, currentRenderedFrames, currentDroppedFrames))
-    {
-        metrics->updateSinkStats(sessionId, sourceId, currentRenderedFrames, currentDroppedFrames);
-        hasCounters = metrics->getFrameCounters(sessionId, sourceId, counters);
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_WARN("Playback metric sink stats unavailable - retaining cached rendered and dropped counts");
-    }
-    if (!hasCounters)
+    if (!metrics->getFrameCounters(sessionId, sourceId, counters))
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - no cached metrics for sessionId: %d, sourceId: %d",
                                 sessionId, sourceId);

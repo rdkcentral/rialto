@@ -5,6 +5,7 @@
 #include <gst/gst.h>
 
 #include <cstdint>
+#include <functional>
 #include <optional>
 #include <utility>
 
@@ -24,6 +25,11 @@ struct CounterSnapshot
 class IRialtoMetrics
 {
 public:
+    /**
+     * Reads the current rendered/dropped counts from a sink. Returns false if they are unavailable.
+     */
+    using SinkStatsGetter = std::function<bool(std::uint64_t &renderedFrames, std::uint64_t &droppedFrames)>;
+
     virtual ~IRialtoMetrics() = default;
     virtual void setSessionId(int32_t sessionId) = 0;
     virtual std::optional<MetricEvent> onMetricMessage(
@@ -32,7 +38,7 @@ public:
     virtual void updateFrameCounters(int32_t sessionId, int32_t sourceId, const CounterSnapshot &snapshot) = 0;
     virtual void updateSinkStats(int32_t sessionId, int32_t sourceId, std::uint64_t renderedFrames,
                                 std::uint64_t droppedFrames) = 0;
-    virtual bool getFrameCounters(int32_t sessionId, int32_t sourceId, CounterSnapshot &snapshot) const = 0;
+    virtual bool getFrameCounters(int32_t sessionId, int32_t sourceId, CounterSnapshot &snapshot) = 0;
     virtual ElementToSourceMapper* getElementToSourceMapper() = 0;
 };
 

@@ -126,7 +126,8 @@ MetricPhase convertObservationKind(std::uint32_t observationKind)
 	}
 }
 
-RialtoMetrics::RialtoMetrics() : m_elementToSourceMapper(std::make_unique<ElementToSourceMapperImpl>())
+RialtoMetrics::RialtoMetrics(SinkStatsGetter getSinkStats)
+    : m_elementToSourceMapper(std::make_unique<ElementToSourceMapperImpl>()), m_getSinkStats(std::move(getSinkStats))
 {
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics created");
 }
@@ -239,10 +240,12 @@ void RialtoMetrics::updateSinkStats(int32_t sessionId, int32_t sourceId, std::ui
 	counters.timestamp = getMonotonicTimestampNs();
 }
 
-bool RialtoMetrics::getFrameCounters(int32_t sessionId, int32_t sourceId, CounterSnapshot &snapshot) const
+bool RialtoMetrics::getFrameCounters(int32_t sessionId, int32_t sourceId, CounterSnapshot &snapshot)
 {
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
 					 "RialtoMetrics::getFrameCounters sessionId: %d, sourceId: %d", sessionId, sourceId);
+	refreshFrameCounters(sessionId, sourceId);
+
 	bool found = false;
 	{
 		std::lock_guard<std::mutex> lock{m_counterMutex};
@@ -266,6 +269,21 @@ bool RialtoMetrics::getFrameCounters(int32_t sessionId, int32_t sourceId, Counte
 					 static_cast<unsigned long long>(snapshot.counters.corruptedFrames),
 					 static_cast<unsigned long long>(snapshot.timestamp));
 	return true;
+}
+
+bool RialtoMetrics::refreshFrameCounters(int32_t sessionId, int32_t sourceId)
+{
+	uint64_t renderedFrames{0};
+	uint64_t droppedFrames{0};
+	if (m_getSinkStats && m_getSinkStats(renderedFrames, droppedFrames))
+	{
+		updateSinkStats(sessionId, sourceId, renderedFrames, droppedFrames);
+		return true;
+	}
+
+	RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER,
+					"Playback metric sink stats unavailable - retaining cached rendered and dropped counts");
+	return false;
 }
 
 ElementToSourceMapper* RialtoMetrics::getElementToSourceMapper()
