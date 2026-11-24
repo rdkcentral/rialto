@@ -38,6 +38,11 @@ public:
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::ReleaseVideoFrameRequest *request,
                  ::firebolt::rialto::ReleaseVideoFrameResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getCapabilities,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::GetVideoFrameCaptureCapabilitiesRequest *request,
+                 ::firebolt::rialto::GetVideoFrameCaptureCapabilitiesResponse *response,
+                 ::google::protobuf::Closure *done));
     MOCK_METHOD(void, getPool,
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::GetVideoFrameCapturePoolRequest *request,

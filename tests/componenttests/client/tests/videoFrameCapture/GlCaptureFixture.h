@@ -208,6 +208,31 @@ public:
             .RetiresOnSaturation();
     }
 
+    // The server answers one capabilities query with \a status; OK carries \a slots as the admitted N.
+    void serverWillAnswerCapabilities(VideoFrameCaptureWireStatus status, std::uint32_t slots = 0)
+    {
+        EXPECT_CALL(*m_videoFrameCaptureModuleMock, getCapabilities(_, _, _, _))
+            .WillOnce(Invoke(
+                [status, slots](::google::protobuf::RpcController *, const GetVideoFrameCaptureCapabilitiesRequest *request,
+                                GetVideoFrameCaptureCapabilitiesResponse *response, ::google::protobuf::Closure *done)
+                {
+                    EXPECT_EQ(request->capture_id(), kCaptureId);
+                    EXPECT_EQ(request->api(), GRAPHICS_API_TYPE_GL);
+                    response->set_status(status);
+                    if (status == VIDEO_FRAME_CAPTURE_STATUS_OK)
+                    {
+                        response->set_max_concurrent_frames(slots);
+                        response->set_max_resources_per_frame(1);
+                        response->set_supports_protected_content(0);
+                        response->set_supports_hdr(0);
+                        response->add_drm_fourccs(kNv12);
+                        response->add_drm_modifiers(0);
+                    }
+                    done->Run();
+                }))
+            .RetiresOnSaturation();
+    }
+
     void serverWillDestroyCapture()
     {
         EXPECT_CALL(*m_videoFrameCaptureModuleMock, destroyVideoFrameCapture(_, _, _, _))

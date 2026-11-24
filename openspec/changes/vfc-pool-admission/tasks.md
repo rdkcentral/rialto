@@ -65,7 +65,7 @@
   - `getCapabilities` returns `SESSION_NOT_READY` before commit and after stop, and `OK` with N after commit.
 
   Existing delivery tests keep their stand-in admission and pass unchanged.
-- [ ] 5.2 Add a client component test with the IPC server stub (as in R11–R13): `getCapabilities` before and after commit returns `SESSION_NOT_READY` and then `OK`, with `maxConcurrentFrames` equal to the stubbed N. Verify with `./build_ct.py`.
+- [x] 5.2 Add a client component test with the IPC server stub (as in R11–R13): `getCapabilities` before and after commit returns `SESSION_NOT_READY` and then `OK`, with `maxConcurrentFrames` equal to the stubbed N. Verify with `./build_ct.py`.
 
 ## Workflow follow-up
 

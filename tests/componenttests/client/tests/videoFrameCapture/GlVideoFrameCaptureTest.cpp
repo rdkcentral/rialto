@@ -105,4 +105,46 @@ TEST_F(GlVideoFrameCaptureTest, lifecycleLeavesNoDescriptorsOrGlObjects)
     EXPECT_EQ(openTestMemfds(), 0);
     m_makeCurrent(m_display, nullptr, nullptr, nullptr);
 }
+
+/*
+ * Component Test: GL capabilities before and after the commit
+ * Test Objective:
+ *  Check that getCapabilities() goes through the IPC with the capture's ID and API, and maps the server's answers.
+ *
+ * Test Steps:
+ *  Step 1: The server answers SESSION_NOT_READY, as before allSourcesAttached().
+ *   Expect SESSION_NOT_READY returned and set, and the record unchanged.
+ *  Step 2: The server answers OK with an admitted N of 3, as after the commit.
+ *   Expect OK, maxConcurrentFrames 3, one resource per frame, and every size field set.
+ *
+ * Code:
+ */
+TEST_F(GlVideoFrameCaptureTest, capabilitiesFollowTheServerBeforeAndAfterCommit)
+{
+    auto capture = createCapture();
+    ASSERT_NE(capture, nullptr);
+
+    // Step 1: before the commit
+    serverWillAnswerCapabilities(VIDEO_FRAME_CAPTURE_STATUS_SESSION_NOT_READY);
+    GLVideoFrameCaptureCaps caps{};
+    caps.common.maxConcurrentFrames = 77;
+    VideoFrameCaptureStatus status{VideoFrameCaptureStatus::OK};
+    EXPECT_EQ(capture->getCapabilities(caps, status), VideoFrameCaptureStatus::SESSION_NOT_READY);
+    EXPECT_EQ(status, VideoFrameCaptureStatus::SESSION_NOT_READY);
+    EXPECT_EQ(caps.common.maxConcurrentFrames, 77u);
+
+    // Step 2: after the commit
+    serverWillAnswerCapabilities(VIDEO_FRAME_CAPTURE_STATUS_OK, 3);
+    EXPECT_EQ(capture->getCapabilities(caps, status), VideoFrameCaptureStatus::OK);
+    EXPECT_EQ(status, VideoFrameCaptureStatus::OK);
+    EXPECT_EQ(caps.size, sizeof(GLVideoFrameCaptureCaps));
+    EXPECT_EQ(caps.common.size, sizeof(VideoFrameCaptureCaps));
+    EXPECT_EQ(caps.common.maxConcurrentFrames, 3u);
+    EXPECT_EQ(caps.common.maxResourcesPerFrame, 1u);
+    EXPECT_EQ(caps.common.supportsProtectedContent, 0u);
+    EXPECT_EQ(caps.common.supportsHdr, 0u);
+
+    serverWillDestroyCapture();
+    capture.reset();
+}
 } // namespace firebolt::rialto::client::ct
