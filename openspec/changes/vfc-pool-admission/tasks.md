@@ -4,7 +4,7 @@
 
 ## 1. Wire and public surface (D7)
 
-- [ ] 1.1 In `proto/videoframecapturemodule.proto`:
+- [x] 1.1 In `proto/videoframecapturemodule.proto`:
   - rename the enum type to `VideoFrameCaptureWireStatus`, with a comment on the clash as R4 did for `GraphicsAPIType`;
   - add `SESSION_NOT_READY = 7`;
   - add `GetVideoFrameCaptureCapabilitiesRequest { api = 1; capture_id = 2; }`, the interim response and `rpc getCapabilities`.

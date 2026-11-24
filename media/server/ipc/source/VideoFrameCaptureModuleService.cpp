@@ -128,7 +128,7 @@ std::optional<firebolt::rialto::GraphicsAPIType> toGraphicsApi(firebolt::rialto:
     }
 }
 
-firebolt::rialto::VideoFrameCaptureStatus
+firebolt::rialto::VideoFrameCaptureWireStatus
 toProtoStatus(firebolt::rialto::server::service::VideoFrameCaptureServiceStatus status)
 {
     using firebolt::rialto::server::service::VideoFrameCaptureServiceStatus;

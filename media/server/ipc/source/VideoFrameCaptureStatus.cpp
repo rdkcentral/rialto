@@ -22,7 +22,7 @@
 
 namespace firebolt::rialto::server::ipc
 {
-::firebolt::rialto::VideoFrameCaptureStatus toWireStatus(capture::CaptureStatus status)
+::firebolt::rialto::VideoFrameCaptureWireStatus toWireStatus(capture::CaptureStatus status)
 {
     switch (status)
     {

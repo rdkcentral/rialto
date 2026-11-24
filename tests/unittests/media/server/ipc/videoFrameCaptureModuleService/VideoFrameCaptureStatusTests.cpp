@@ -29,7 +29,7 @@ using firebolt::rialto::server::ipc::toWireStatus;
 
 TEST(VideoFrameCaptureStatusTest, ShouldMapEveryHalStatus)
 {
-    const std::vector<std::pair<CaptureStatus, firebolt::rialto::VideoFrameCaptureStatus>> kTable{
+    const std::vector<std::pair<CaptureStatus, firebolt::rialto::VideoFrameCaptureWireStatus>> kTable{
         {CaptureStatus::OK, firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_OK},
         {CaptureStatus::NO_NEW_FRAME, firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_NO_NEW_FRAME},
         {CaptureStatus::UNSUPPORTED, firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_UNSUPPORTED},

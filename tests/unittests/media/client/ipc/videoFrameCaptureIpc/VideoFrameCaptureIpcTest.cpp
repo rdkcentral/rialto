@@ -40,7 +40,7 @@ protected:
     }
 
 public:
-    void setCreateResponse(google::protobuf::Message *response, firebolt::rialto::VideoFrameCaptureStatus status,
+    void setCreateResponse(google::protobuf::Message *response, firebolt::rialto::VideoFrameCaptureWireStatus status,
                            bool withId)
     {
         auto *createResponse = dynamic_cast<firebolt::rialto::CreateVideoFrameCaptureResponse *>(response);
@@ -197,7 +197,7 @@ TEST_F(VideoFrameCaptureIpcTest, ShouldTranslateAcquiredFrame)
 TEST_F(VideoFrameCaptureIpcTest, ShouldMapAcquireStatuses)
 {
     createVideoFrameCaptureIpc();
-    const std::vector<std::pair<firebolt::rialto::VideoFrameCaptureStatus, CaptureAcquireStatus>> kCases{
+    const std::vector<std::pair<firebolt::rialto::VideoFrameCaptureWireStatus, CaptureAcquireStatus>> kCases{
         {firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_NO_NEW_FRAME, CaptureAcquireStatus::NO_NEW_FRAME},
         {firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_NO_FRAME, CaptureAcquireStatus::NO_FRAME},
         {firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_NO_RESOURCES, CaptureAcquireStatus::NO_RESOURCES},

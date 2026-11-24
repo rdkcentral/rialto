@@ -51,8 +51,12 @@ enum VideoFrameCaptureGraphicsAPIType {
 
 /**
  * @brief Result of a Video Frame Capture operation.
+ *
+ * Not named VideoFrameCaptureStatus: this proto's package is firebolt.rialto, so that name would clash with the
+ * public firebolt::rialto::VideoFrameCaptureStatus in IVideoFrameCapture.h. Only the type name differs; the wire is
+ * unaffected.
  */
-enum VideoFrameCaptureStatus {
+enum VideoFrameCaptureWireStatus {
     VIDEO_FRAME_CAPTURE_STATUS_OK = 0;
     VIDEO_FRAME_CAPTURE_STATUS_NO_NEW_FRAME = 1;
     VIDEO_FRAME_CAPTURE_STATUS_NO_FRAME = 2;
@@ -60,6 +64,31 @@ enum VideoFrameCaptureStatus {
     VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT = 4;
     VIDEO_FRAME_CAPTURE_STATUS_NO_RESOURCES = 5;
     VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR = 6;
+    VIDEO_FRAME_CAPTURE_STATUS_SESSION_NOT_READY = 7;
+}
+
+/**
+ * @fn getCapabilities(uint32 capture_id, VideoFrameCaptureGraphicsAPIType api)
+ * @brief Returns platform capture support and limits by invoking the HAL via the server.
+ *
+ * This call requires the capture to be attached to a pipeline whose capture session was admitted; otherwise it
+ * returns SESSION_NOT_READY. capture_id names the capture whose session is queried (an addition to the interim
+ * proto: api alone cannot reach the pipeline's HAL session). max_concurrent_frames is the admitted slot count.
+ * Graphics-specific limits (Vulkan formats) are determined client-side from the supplied graphics context and the
+ * formats listed here.
+ */
+message GetVideoFrameCaptureCapabilitiesRequest {
+    optional VideoFrameCaptureGraphicsAPIType api = 1 [default = GRAPHICS_API_TYPE_UNKNOWN];
+    optional uint32 capture_id = 2;
+}
+message GetVideoFrameCaptureCapabilitiesResponse {
+    optional VideoFrameCaptureWireStatus status = 1 [default = VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR];
+    optional uint32 max_concurrent_frames = 2;
+    optional uint32 max_resources_per_frame = 3;
+    optional uint32 supports_protected_content = 4;
+    optional uint32 supports_hdr = 5;
+    repeated uint32 drm_fourccs = 6;     // DRM fourcc codes the platform may output
+    repeated uint64 drm_modifiers = 7;   // DRM format modifiers the platform may output
 }
 
 /**
@@ -72,7 +101,7 @@ message CreateVideoFrameCaptureRequest {
     optional VideoFrameCaptureGraphicsAPIType api = 1 [default = GRAPHICS_API_TYPE_UNKNOWN];
 }
 message CreateVideoFrameCaptureResponse {
-    optional VideoFrameCaptureStatus status = 1 [default = VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR];
+    optional VideoFrameCaptureWireStatus status = 1 [default = VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR];
     optional uint32 capture_id = 2;
 }
 
@@ -172,7 +201,7 @@ message GetVideoFrameCapturePoolRequest {
     optional uint32 capture_id = 1;
 }
 message GetVideoFrameCapturePoolResponse {
-    optional VideoFrameCaptureStatus status = 1 [default = VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR];
+    optional VideoFrameCaptureWireStatus status = 1 [default = VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR];
     optional uint32 pool_id = 2;
     optional uint32 drm_fourcc = 3;
     optional uint64 drm_modifier = 4;
@@ -237,7 +266,7 @@ message VideoFrameCaptureFrameMetadata {
 }
 
 message AcquireCurrentVideoFrameResponse {
-    optional VideoFrameCaptureStatus status = 1 [default = VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR];
+    optional VideoFrameCaptureWireStatus status = 1 [default = VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR];
     optional uint32 pool_id = 2;
     optional uint32 slot_index = 3;
     optional int64 presentation_time_ns = 4;
@@ -263,7 +292,7 @@ message ReleaseVideoFrameRequest {
     optional uint64 acquisition_token = 4;
 }
 message ReleaseVideoFrameResponse {
-    optional VideoFrameCaptureStatus status = 1 [default = VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR];
+    optional VideoFrameCaptureWireStatus status = 1 [default = VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR];
 }
 
 service VideoFrameCaptureModule {
@@ -279,6 +308,13 @@ service VideoFrameCaptureModule {
      * @see DestroyVideoFrameCaptureRequest
      */
     rpc destroyVideoFrameCapture(DestroyVideoFrameCaptureRequest) returns (DestroyVideoFrameCaptureResponse) {
+    }
+
+    /**
+     * @brief Returns platform capture support and limits
+     * @see GetVideoFrameCaptureCapabilitiesRequest
+     */
+    rpc getCapabilities(GetVideoFrameCaptureCapabilitiesRequest) returns (GetVideoFrameCaptureCapabilitiesResponse) {
     }
 
     /**

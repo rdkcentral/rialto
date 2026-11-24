@@ -115,14 +115,14 @@ public:
         return received;
     }
 
-    VideoFrameCaptureStatus release(const AcquireCurrentVideoFrameResponse &frame)
+    VideoFrameCaptureWireStatus release(const AcquireCurrentVideoFrameResponse &frame)
     {
         ReleaseVideoFrameRequest request;
         request.set_capture_id(m_captureId);
         request.set_pool_id(frame.pool_id());
         request.set_slot_index(frame.slot_index());
         request.set_acquisition_token(frame.acquisition_token());
-        VideoFrameCaptureStatus status{VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR};
+        VideoFrameCaptureWireStatus status{VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR};
         ConfigureAction<ReleaseVideoFrame>(m_clientStub)
             .send(request)
             .expectSuccess()

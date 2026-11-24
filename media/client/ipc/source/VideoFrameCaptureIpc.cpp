@@ -27,7 +27,7 @@
 
 namespace
 {
-firebolt::rialto::client::CaptureAcquireStatus toAcquireStatus(firebolt::rialto::VideoFrameCaptureStatus status)
+firebolt::rialto::client::CaptureAcquireStatus toAcquireStatus(firebolt::rialto::VideoFrameCaptureWireStatus status)
 {
     using firebolt::rialto::client::CaptureAcquireStatus;
     switch (status)

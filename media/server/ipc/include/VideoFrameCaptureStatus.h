@@ -31,7 +31,7 @@ namespace firebolt::rialto::server::ipc
  * After admission, CAPABILITIES_NOT_AVAILABLE_YET is a Rialto or vendor bug: it is logged and answered
  * FATAL_ERROR. INVALID_ARGUMENT is also logged and passed on. Every other status maps by name.
  */
-::firebolt::rialto::VideoFrameCaptureStatus toWireStatus(capture::CaptureStatus status);
+::firebolt::rialto::VideoFrameCaptureWireStatus toWireStatus(capture::CaptureStatus status);
 } // namespace firebolt::rialto::server::ipc
 
 #endif // FIREBOLT_RIALTO_SERVER_IPC_VIDEO_FRAME_CAPTURE_STATUS_H_
