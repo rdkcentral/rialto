@@ -46,7 +46,7 @@
 ## 4. Client query (D8)
 
 - [x] 4.1 Add `IVideoFrameCaptureIpc::getCapabilities()` and its implementation, mapping wire status one-to-one and IPC failure to `FATAL_ERROR`. Verify with `./build_ut.py -s clientipc`: each wire status maps across, the request carries the capture ID and API, and a failed controller maps to `FATAL_ERROR`.
-- [ ] 4.2 Implement `GLVideoFrameCapture::getCapabilities()`. Verify with `./build_ut.py -s client`:
+- [x] 4.2 Implement `GLVideoFrameCapture::getCapabilities()`. Verify with `./build_ut.py -s client`:
   - the returned value and `status` agree;
   - `out` is unchanged on `SESSION_NOT_READY` and `FATAL_ERROR`;
   - `OK` fills the common fields and every `size` field.

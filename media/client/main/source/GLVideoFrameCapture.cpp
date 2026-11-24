@@ -18,6 +18,7 @@
  */
 
 #include "GLVideoFrameCapture.h"
+#include "CaptureCapabilities.h"
 #include "RialtoClientLogging.h"
 
 namespace firebolt::rialto::client
@@ -38,6 +39,22 @@ GLVideoFrameCapture::~GLVideoFrameCapture()
     {
         RIALTO_CLIENT_LOG_DEBUG("Could not remove video frame capture %u from the server", m_captureId);
     }
+}
+
+VideoFrameCaptureStatus GLVideoFrameCapture::getCapabilities(GLVideoFrameCaptureCaps &out,
+                                                             VideoFrameCaptureStatus &status) const
+{
+    CaptureCapabilitiesReply reply;
+    status = m_videoFrameCaptureIpc ? m_videoFrameCaptureIpc->getCapabilities(m_captureId, GraphicsAPIType::GL, reply)
+                                    : VideoFrameCaptureStatus::FATAL_ERROR;
+    if (status == VideoFrameCaptureStatus::OK)
+    {
+        GLVideoFrameCaptureCaps caps{};
+        caps.size = sizeof(GLVideoFrameCaptureCaps);
+        caps.common = commonCapabilitiesOf(reply);
+        out = caps; // only on OK
+    }
+    return status;
 }
 
 GLFrameAcquisition GLVideoFrameCapture::acquireCurrentFrame()
