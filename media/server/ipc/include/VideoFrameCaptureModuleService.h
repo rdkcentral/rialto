@@ -59,6 +59,10 @@ public:
                          const ::firebolt::rialto::GetVideoFrameCaptureCapabilitiesRequest *request,
                          ::firebolt::rialto::GetVideoFrameCaptureCapabilitiesResponse *response,
                          ::google::protobuf::Closure *done) override;
+    void getPool(::google::protobuf::RpcController *controller,
+                 const ::firebolt::rialto::GetVideoFrameCapturePoolRequest *request,
+                 ::firebolt::rialto::GetVideoFrameCapturePoolResponse *response,
+                 ::google::protobuf::Closure *done) override;
 
     void acquireCurrentFrame(::google::protobuf::RpcController *controller,
                              const ::firebolt::rialto::AcquireCurrentVideoFrameRequest *request,

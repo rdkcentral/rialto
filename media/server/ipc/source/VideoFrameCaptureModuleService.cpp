@@ -30,18 +30,20 @@ namespace
 // The reply for an acquired frame (proposal 3.4): identity, timing, layout, colour and the descriptors.
 // The pool description sent when the frame description changes: identity, format, size, colour and the slot
 // layouts. Layouts carry no object IDs and no descriptors.
-void fillPoolMetadata(const firebolt::rialto::server::CaptureSessionRuntime &runtime,
-                      const firebolt::rialto::capture::CapturedFrame &frame,
-                      firebolt::rialto::GetVideoFrameCapturePoolResponse &metadata)
+// The frame-independent part of the pool metadata: identity, format, backing size, slot limits and slot layouts.
+void fillPoolLayout(const firebolt::rialto::server::CaptureSessionRuntime &runtime,
+                    const firebolt::rialto::capture::CaptureCapabilities &capabilities,
+                    const firebolt::rialto::capture::Size &backingSize,
+                    firebolt::rialto::GetVideoFrameCapturePoolResponse &metadata)
 {
     metadata.set_status(firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_OK);
     metadata.set_pool_id(runtime.poolId());
-    metadata.set_drm_fourcc(frame.capabilities.drmFormat);
-    metadata.set_drm_modifier(frame.capabilities.drmModifier);
-    metadata.set_texture_width(frame.backingSize.width);
-    metadata.set_texture_height(frame.backingSize.height);
-    metadata.set_minimum_slots(frame.capabilities.minimumSlots);
-    metadata.set_maximum_slots(frame.capabilities.maximumSlots);
+    metadata.set_drm_fourcc(capabilities.drmFormat);
+    metadata.set_drm_modifier(capabilities.drmModifier);
+    metadata.set_texture_width(backingSize.width);
+    metadata.set_texture_height(backingSize.height);
+    metadata.set_minimum_slots(capabilities.minimumSlots);
+    metadata.set_maximum_slots(capabilities.maximumSlots);
     for (const auto &kLayout : runtime.pool().slotLayouts)
     {
         auto *slot = metadata.add_slots();
@@ -55,6 +57,14 @@ void fillPoolMetadata(const firebolt::rialto::server::CaptureSessionRuntime &run
             plane->set_stride_bytes(kPlane.strideBytes);
         }
     }
+}
+
+// The pool metadata an acquisition carries when the frame description changed.
+void fillPoolMetadata(const firebolt::rialto::server::CaptureSessionRuntime &runtime,
+                      const firebolt::rialto::capture::CapturedFrame &frame,
+                      firebolt::rialto::GetVideoFrameCapturePoolResponse &metadata)
+{
+    fillPoolLayout(runtime, frame.capabilities, frame.backingSize, metadata);
     auto *colour = metadata.mutable_color_description();
     colour->set_ycbcr_color_space(
         static_cast<firebolt::rialto::VideoFrameCaptureYcbcrColorSpace>(frame.colorDescription.matrix));
@@ -331,6 +341,37 @@ void VideoFrameCaptureModuleService::getCapabilities(
         response->add_drm_fourccs(capabilities.drmFormat);
         response->add_drm_modifiers(capabilities.drmModifier);
     }
+    done->Run();
+}
+
+void VideoFrameCaptureModuleService::getPool(::google::protobuf::RpcController *controller,
+                                             const ::firebolt::rialto::GetVideoFrameCapturePoolRequest *request,
+                                             ::firebolt::rialto::GetVideoFrameCapturePoolResponse *response,
+                                             ::google::protobuf::Closure *done)
+{
+    service::VideoFrameCaptureClientId clientId{0};
+    if (!clientIdOf(controller, clientId))
+    {
+        controller->SetFailed("Unknown client");
+        done->Run();
+        return;
+    }
+    if (!m_videoFrameCaptureService.hasCapture(clientId, request->capture_id()))
+    {
+        response->set_status(VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT);
+        done->Run();
+        return;
+    }
+    std::shared_ptr<CaptureSessionRuntime> runtime{
+        m_videoFrameCaptureService.captureRuntime(clientId, request->capture_id())};
+    if (!runtime)
+    {
+        response->set_status(VIDEO_FRAME_CAPTURE_STATUS_SESSION_NOT_READY); // not committed, or retired
+        done->Run();
+        return;
+    }
+    // the admitted layout: no colour (that is per frame) and no descriptors
+    fillPoolLayout(*runtime, runtime->admittedCapabilities(), runtime->pool().backingSize, *response);
     done->Run();
 }
 

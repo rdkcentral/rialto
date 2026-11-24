@@ -37,7 +37,7 @@
   - `SESSION_NOT_READY` with no runtime;
   - `FATAL_ERROR` for a fatal runtime;
   - `OK` with N, 1, 0, 0 and the single fourcc and modifier.
-- [ ] 3.3 Add the `getPool` handler, sharing the frame-independent part of `fillPoolMetadata()`. Verify with `./build_ut.py -s serveripc`:
+- [x] 3.3 Add the `getPool` handler, sharing the frame-independent part of `fillPoolMetadata()`. Verify with `./build_ut.py -s serveripc`:
   - `OK` with three slot layouts, the pool ID, format, modifier, limits, no colour and no descriptors;
   - `SESSION_NOT_READY` before commit;
   - `INVALID_ARGUMENT` for an unknown capture;

@@ -95,6 +95,17 @@ protected:
         return response;
     }
 
+    GetVideoFrameCapturePoolResponse getPool(std::uint32_t captureId = kCaptureId)
+    {
+        GetVideoFrameCapturePoolRequest request;
+        request.set_capture_id(captureId);
+        GetVideoFrameCapturePoolResponse response;
+        EXPECT_CALL(m_controller, getClient()).WillOnce(Return(m_client));
+        EXPECT_CALL(m_closure, Run());
+        m_sut->getPool(&m_controller, &request, &response, &m_closure);
+        return response;
+    }
+
     void glCaptureExists()
     {
         EXPECT_CALL(m_service, captureApi(1, kCaptureId)).WillRepeatedly(Return(GraphicsAPIType::GL));
@@ -102,11 +113,13 @@ protected:
     void captureIsCommitted()
     {
         glCaptureExists();
+        EXPECT_CALL(m_service, hasCapture(1, kCaptureId)).WillRepeatedly(Return(true));
         EXPECT_CALL(m_service, captureRuntime(1, kCaptureId)).WillRepeatedly(Return(m_runtime));
     }
     void captureIsNotCommitted()
     {
         glCaptureExists();
+        EXPECT_CALL(m_service, hasCapture(1, kCaptureId)).WillRepeatedly(Return(true));
         EXPECT_CALL(m_service, captureRuntime(1, kCaptureId)).WillRepeatedly(Return(nullptr));
     }
 
@@ -189,4 +202,38 @@ TEST_F(VideoFrameCaptureQueryTests, OkReportsTheAdmittedSession)
     EXPECT_EQ(kResponse.drm_fourccs(0), capture::test::kDrmFormatNv12);
     ASSERT_EQ(kResponse.drm_modifiers_size(), 1);
     EXPECT_EQ(kResponse.drm_modifiers(0), kModifier);
+}
+
+TEST_F(VideoFrameCaptureQueryTests, PoolAfterCommitIsTheAdmittedLayout)
+{
+    captureIsCommitted();
+    EXPECT_CALL(*m_session, getCapabilities(_)).Times(0); // the admitted capabilities are used
+    const auto kResponse = getPool();
+    ASSERT_EQ(kResponse.status(), VIDEO_FRAME_CAPTURE_STATUS_OK);
+    EXPECT_EQ(kResponse.pool_id(), kPoolId);
+    EXPECT_EQ(kResponse.drm_fourcc(), capture::test::kDrmFormatNv12);
+    EXPECT_EQ(kResponse.drm_modifier(), kModifier);
+    EXPECT_EQ(kResponse.texture_width(), m_pool.backingSize.width);
+    EXPECT_EQ(kResponse.texture_height(), m_pool.backingSize.height);
+    EXPECT_EQ(kResponse.minimum_slots(), 1U);
+    EXPECT_EQ(kResponse.maximum_slots(), 4U);
+    ASSERT_EQ(kResponse.slots_size(), static_cast<int>(kSlots));
+    for (int slot = 0; slot < kResponse.slots_size(); ++slot)
+    {
+        EXPECT_EQ(kResponse.slots(slot).slot_index(), static_cast<std::uint32_t>(slot));
+        EXPECT_EQ(kResponse.slots(slot).planes_size(), static_cast<int>(m_pool.slotLayouts[slot].planes.size()));
+    }
+    EXPECT_FALSE(kResponse.has_color_description());
+}
+
+TEST_F(VideoFrameCaptureQueryTests, PoolBeforeCommitIsNotReady)
+{
+    captureIsNotCommitted();
+    EXPECT_EQ(getPool().status(), VIDEO_FRAME_CAPTURE_STATUS_SESSION_NOT_READY);
+}
+
+TEST_F(VideoFrameCaptureQueryTests, PoolOfAnUnknownCaptureIsAnInvalidArgument)
+{
+    EXPECT_CALL(m_service, hasCapture(1, 99)).WillOnce(Return(false));
+    EXPECT_EQ(getPool(99).status(), VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT);
 }
