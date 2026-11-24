@@ -1586,10 +1586,10 @@ const int64_t kMetricObservedAtUnixNs = 654321;
 void MediaPipelineTestMethods::shouldNotifyMetric()
 {
     EXPECT_CALL(*m_mediaPipelineClientMock,
-                notifyMetric(AllOf(Field(&MetricEvent::type, MetricType::VIDEO_FRAME_DROP),
-                                   Field(&MetricEvent::phase, MetricPhase::OCCURRENCE),
-                                   Field(&MetricEvent::sourceId, kVideoSourceId),
-                                   Field(&MetricEvent::count, Optional(kMetricCount)))))
+                notifyMetric(testing::AllOf(testing::Field(&MetricEvent::type, MetricType::VIDEO_FRAME_DROP),
+                                            testing::Field(&MetricEvent::phase, MetricPhase::OCCURRENCE),
+                                            testing::Field(&MetricEvent::sourceId, kVideoSourceId),
+                                            testing::Field(&MetricEvent::count, testing::Optional(kMetricCount)))))
         .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
 }
 

@@ -367,14 +367,13 @@ TEST_F(QosUpdatesTest, QosUpdates)
     getStats();
 
     // Playback metric message should be parsed and forwarded to the client.
-    willGetStats();
     ExpectMessage<firebolt::rialto::MediaPipelineMetricEvent> expectedMetricEvent{m_clientStub};
     sendVideoDecodeErrorMetric();
 
-    // The source element is not registered with the ElementToSourceMapper in this test, so ids default to 0.
+    // The source element is not registered with the ElementToSourceMapper in this test, so the source id defaults to 0.
     const auto receivedMetricEvent{expectedMetricEvent.getMessage()};
     ASSERT_TRUE(receivedMetricEvent);
-    EXPECT_EQ(receivedMetricEvent->session_id(), 0u);
+    EXPECT_EQ(receivedMetricEvent->session_id(), m_sessionId);
     EXPECT_EQ(receivedMetricEvent->source_id(), 0u);
     EXPECT_EQ(receivedMetricEvent->type(), firebolt::rialto::MediaPipelineMetricEvent::VIDEO_DECODE_ERROR);
     EXPECT_EQ(receivedMetricEvent->pts_ns(), kMetricPtsNs);

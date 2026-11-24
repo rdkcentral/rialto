@@ -1049,6 +1049,110 @@ TEST(ElementToSourceMapperTest, UnregisterAllElementsClearsEveryMapping)
     gst_object_unref(second);
 }
 
+TEST(ElementToSourceMapperTest, NullElementsAreIgnoredAndUnknownElementIsNoOp)
+{
+    gst_init(nullptr, nullptr);
+
+    GstElement *registered = gst_pipeline_new("registered-element");
+    GstElement *unknown = gst_pipeline_new("unknown-element");
+    ASSERT_NE(nullptr, registered);
+    ASSERT_NE(nullptr, unknown);
+
+    RialtoMetrics metrics;
+    ElementToSourceMapper *mapper = metrics.getElementToSourceMapper();
+    mapper->RegisterElement(nullptr, 1U, 2U);
+    mapper->RegisterElement(registered, 3U, 4U);
+
+    uint32_t sessionId{0};
+    uint32_t sourceId{0};
+    EXPECT_FALSE(mapper->MapElement(nullptr, sessionId, sourceId));
+    mapper->UnregisterElement(nullptr);
+    mapper->UnregisterElement(unknown);
+    EXPECT_TRUE(mapper->MapElement(registered, sessionId, sourceId));
+    EXPECT_EQ(3U, sessionId);
+    EXPECT_EQ(4U, sourceId);
+
+    gst_object_unref(registered);
+    gst_object_unref(unknown);
+}
+
+TEST(RialtoMetricsTest, OnMetricMessageIgnoresNullAndUnrelatedMessages)
+{
+    gst_init(nullptr, nullptr);
+
+    RialtoMetrics metrics;
+    EXPECT_FALSE(metrics.onMetricMessage(nullptr).has_value());
+
+    GstElement *source = gst_pipeline_new("metrics-source");
+    ASSERT_NE(nullptr, source);
+
+    GstMessage *eosMessage = gst_message_new_eos(GST_OBJECT(source));
+    ASSERT_NE(nullptr, eosMessage);
+    EXPECT_FALSE(metrics.onMetricMessage(eosMessage).has_value());
+    gst_message_unref(eosMessage);
+
+    GstMessage *otherMessage = gst_message_new_element(GST_OBJECT(source), gst_structure_new_empty("other-message"));
+    gst_object_unref(source);
+    ASSERT_NE(nullptr, otherMessage);
+    EXPECT_FALSE(metrics.onMetricMessage(otherMessage).has_value());
+    gst_message_unref(otherMessage);
+}
+
+TEST(RialtoMetricsTest, FutureMessageTimestampFallsBackToCurrentTime)
+{
+    gst_init(nullptr, nullptr);
+
+    auto monotonicNowNs = []()
+    {
+        return static_cast<std::uint64_t>(
+            std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch())
+                .count());
+    };
+
+    GstElement *source = gst_pipeline_new("metrics-source");
+    ASSERT_NE(nullptr, source);
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 3U, "observation-kind",
+                                                 G_TYPE_UINT, 2U, nullptr);
+    GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
+    gst_object_unref(source);
+    ASSERT_NE(nullptr, message);
+
+    constexpr std::uint64_t kOneHourNs{3600000000000ULL};
+    const std::uint64_t beforeNs = monotonicNowNs();
+    GST_MESSAGE_TIMESTAMP(message) = beforeNs + kOneHourNs;
+
+    RialtoMetrics metrics;
+    const auto parsed = metrics.onMetricMessage(message);
+    const std::uint64_t afterNs = monotonicNowNs();
+    gst_message_unref(message);
+
+    ASSERT_TRUE(parsed.has_value());
+    EXPECT_GE(parsed->observedAtMonotonicNs, beforeNs);
+    EXPECT_LE(parsed->observedAtMonotonicNs, afterNs);
+}
+
+TEST(RialtoMetricsTest, MetricFromNonElementSourceKeepsDefaultSessionAndSource)
+{
+    gst_init(nullptr, nullptr);
+
+    GstObject *bus = GST_OBJECT(gst_bus_new());
+    ASSERT_NE(nullptr, bus);
+    GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, 1U, "observation-kind",
+                                                 G_TYPE_UINT, 1U, nullptr);
+    GstMessage *message = gst_message_new_application(bus, structure);
+    gst_object_unref(bus);
+    ASSERT_NE(nullptr, message);
+
+    RialtoMetrics metrics;
+    metrics.setSessionId(7);
+    const auto parsed = metrics.onMetricMessage(message);
+    gst_message_unref(message);
+
+    ASSERT_TRUE(parsed.has_value());
+    EXPECT_EQ(0, parsed->sourceId);
+    EXPECT_EQ(MetricType::VIDEO_FRAME_DROP, parsed->type);
+}
+
 TEST(ValidateMediaPipelineMetricTest, RejectsCountValueZero)
 {
     gst_init(nullptr, nullptr);
