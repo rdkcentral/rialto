@@ -396,6 +396,40 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetFrameCounters)
     sendGetFrameCountersRequestAndReceiveFail(sessionId);
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetFrameCountersWhenSessionNotOwnedByClient)
+{
+    mediaPipelineServiceWillCreateSession();
+    const int sessionId = sendCreateSessionRequestAndReceiveResponse();
+    EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
+    expectRequestFailure();
+    sendGetFrameCountersRequestAndReceiveFail(sessionId + 1);
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetMetricSubscription)
+{
+    mediaPipelineServiceWillCreateSession();
+    const int sessionId = sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillSetMetricSubscription(sessionId);
+    sendSetMetricSubscriptionRequestAndReceiveResponse(sessionId);
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetMetricSubscription)
+{
+    mediaPipelineServiceWillCreateSession();
+    const int sessionId = sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToSetMetricSubscription(sessionId);
+    sendSetMetricSubscriptionRequestAndReceiveFail(sessionId);
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetMetricSubscriptionWhenSessionNotOwnedByClient)
+{
+    mediaPipelineServiceWillCreateSession();
+    const int sessionId = sendCreateSessionRequestAndReceiveResponse();
+    EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
+    expectRequestFailure();
+    sendSetMetricSubscriptionRequestAndReceiveFail(sessionId + 1);
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldSendPlaybackStateChangedEvent)
 {
     mediaPipelineServiceWillCreateSession();
