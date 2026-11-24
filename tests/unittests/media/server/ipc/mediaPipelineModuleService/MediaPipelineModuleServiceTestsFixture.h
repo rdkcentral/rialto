@@ -231,7 +231,7 @@ public:
     void sendPlaybackInfoEvent();
     void sendRenderFrameRequestAndReceiveResponse();
 
-private:
+protected:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ServerMock>> m_serverMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClosureMock>> m_closureMock;
