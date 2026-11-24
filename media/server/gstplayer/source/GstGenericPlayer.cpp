@@ -31,6 +31,7 @@
 #include <optional>
 #include <stdexcept>
 
+#include "CaptureConfiguration.h"
 #include "FlushWatcher.h"
 #include "GstDispatcherThread.h"
 #include "GstGenericPlayer.h"
@@ -185,28 +186,6 @@ namespace firebolt::rialto::server
 {
 namespace
 {
-constexpr std::chrono::milliseconds kDefaultCaptureReadyTimeout{5000};
-
-/**
- * @brief The capture sink READY timeout: RIALTO_VIDEO_FRAME_CAPTURE_READY_TIMEOUT_MS if it is a positive number of
- *        milliseconds, else 5000. Read at each commit so it can be changed for tests.
- */
-std::chrono::milliseconds captureReadyTimeout()
-{
-    const char *kValue = std::getenv("RIALTO_VIDEO_FRAME_CAPTURE_READY_TIMEOUT_MS");
-    if (kValue && *kValue)
-    {
-        char *end{nullptr};
-        const long long kMs = std::strtoll(kValue, &end, 10);
-        if (end && *end == '\0' && kMs > 0)
-        {
-            return std::chrono::milliseconds{kMs};
-        }
-        RIALTO_SERVER_LOG_WARN("Ignoring RIALTO_VIDEO_FRAME_CAPTURE_READY_TIMEOUT_MS='%s'", kValue);
-    }
-    return kDefaultCaptureReadyTimeout;
-}
-
 /**
  * @brief A worker thread task that runs a function.
  */
