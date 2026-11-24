@@ -822,10 +822,12 @@ bool MediaPipelineIpc::getFrameCounters(int32_t sourceId, uint64_t &renderedFram
     droppedFrames = response.dropped_frames();
     corruptedFrames = response.corrupted_frames();
     timestamp = response.timestamp();
-    RIALTO_CLIENT_LOG_DEBUG(
-        "Received playback metrics sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, timestamp: %llu",
-        sourceId, static_cast<unsigned long long>(renderedFrames), static_cast<unsigned long long>(droppedFrames),
-        static_cast<unsigned long long>(corruptedFrames), static_cast<unsigned long long>(timestamp));
+    RIALTO_CLIENT_LOG_DEBUG("Received playback metrics sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, "
+                            "timestamp: %llu",
+                            sourceId, static_cast<unsigned long long>(renderedFrames), // NOLINT(runtime/int)
+                            static_cast<unsigned long long>(droppedFrames),            // NOLINT(runtime/int)
+                            static_cast<unsigned long long>(corruptedFrames),          // NOLINT(runtime/int)
+                            static_cast<unsigned long long>(timestamp));               // NOLINT(runtime/int)
     return true;
 }
 
@@ -1708,12 +1710,13 @@ void MediaPipelineIpc::handleMetricEvent(const std::shared_ptr<firebolt::rialto:
     metric.observedAtMonotonicNs = event->observed_at_monotonic_ns();
     metric.observedAtUnixNs = event->observed_at_unix_ns();
 
-    RIALTO_CLIENT_LOG_DEBUG(
-        "Dispatching playback metric event sessionId: %d, sourceId: %d, ptsNs: %lld, metric: %u, observationKind: %u, count: %llu, durationNs: %llu",
-        sessionId, metric.sourceId, static_cast<long long>(metric.presentationTimeStampNs.value_or(0)),
-        static_cast<uint32_t>(metric.type), static_cast<uint32_t>(metric.phase),
-        static_cast<unsigned long long>(metric.count.value_or(0)),
-        static_cast<unsigned long long>(metric.durationNs.value_or(0)));
+    RIALTO_CLIENT_LOG_DEBUG("Dispatching playback metric event sessionId: %d, sourceId: %d, ptsNs: %lld, metric: %u, "
+                            "observationKind: %u, count: %llu, durationNs: %llu",
+                            sessionId, metric.sourceId,
+                            static_cast<long long>(metric.presentationTimeStampNs.value_or(0)), // NOLINT(runtime/int)
+                            static_cast<uint32_t>(metric.type), static_cast<uint32_t>(metric.phase),
+                            static_cast<unsigned long long>(metric.count.value_or(0)),       // NOLINT(runtime/int)
+                            static_cast<unsigned long long>(metric.durationNs.value_or(0))); // NOLINT(runtime/int)
     if (sessionId == m_sessionId)
     {
         m_mediaPipelineIpcClient->notifyMetric(metric);

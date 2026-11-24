@@ -94,7 +94,8 @@ TEST_F(RialtoClientMediaPipelineGetStatsTest, GetFrameCountersFailure)
 {
     uint64_t renderedFrames{1234}, droppedFrames{5}, corruptedFrames{2}, timestamp{9876543210ULL};
     EXPECT_CALL(*m_mediaPipelineIpcMock, getFrameCounters(m_kSourceId, _, _, _, _)).WillOnce(Return(false));
-    EXPECT_FALSE(m_mediaPipeline->getFrameCounters(m_kSourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp));
+    EXPECT_FALSE(
+        m_mediaPipeline->getFrameCounters(m_kSourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp));
     EXPECT_EQ(renderedFrames, 1234u);
     EXPECT_EQ(droppedFrames, 5u);
     EXPECT_EQ(corruptedFrames, 2u);

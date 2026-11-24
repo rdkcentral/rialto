@@ -506,9 +506,9 @@ enum class MetricType : uint32_t
  */
 enum class MetricPhase : uint32_t
 {
-    OCCURRENCE = 1,        /**< A single occurrence */
-    EPISODE_STARTED = 2,   /**< Start of an episode */
-    EPISODE_RESOLVED = 3   /**< End of an episode */
+    OCCURRENCE = 1,      /**< A single occurrence */
+    EPISODE_STARTED = 2, /**< Start of an episode */
+    EPISODE_RESOLVED = 3 /**< End of an episode */
 };
 
 /**
@@ -518,14 +518,14 @@ enum class MetricPhase : uint32_t
  */
 struct MetricEvent
 {
-    MetricType type{MetricType::VIDEO_FRAME_DROP};     /**< The metric type */
-    MetricPhase phase{MetricPhase::OCCURRENCE};        /**< The observation phase */
-    int32_t sourceId{-1};                              /**< The source the metric belongs to */
-    std::optional<int64_t> presentationTimeStampNs;    /**< Presentation timestamp in nanoseconds, if known */
-    std::optional<uint64_t> count;                     /**< Count associated with the event, if known */
-    std::optional<uint64_t> durationNs;                /**< Duration in nanoseconds, if known */
-    uint64_t observedAtMonotonicNs{0};                 /**< Monotonic time of observation in nanoseconds */
-    int64_t observedAtUnixNs{0};                       /**< Unix time of observation in nanoseconds */
+    MetricType type{MetricType::VIDEO_FRAME_DROP};  /**< The metric type */
+    MetricPhase phase{MetricPhase::OCCURRENCE};     /**< The observation phase */
+    int32_t sourceId{-1};                           /**< The source the metric belongs to */
+    std::optional<int64_t> presentationTimeStampNs; /**< Presentation timestamp in nanoseconds, if known */
+    std::optional<uint64_t> count;                  /**< Count associated with the event, if known */
+    std::optional<uint64_t> durationNs;             /**< Duration in nanoseconds, if known */
+    uint64_t observedAtMonotonicNs{0};              /**< Monotonic time of observation in nanoseconds */
+    int64_t observedAtUnixNs{0};                    /**< Unix time of observation in nanoseconds */
 };
 
 /**

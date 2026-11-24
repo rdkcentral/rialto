@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_METRICS_RIALTO_METRICS_H_
-#define FIREBOLT_RIALTO_SERVER_METRICS_RIALTO_METRICS_H_
+#ifndef FIREBOLT_RIALTO_SERVER_RIALTO_METRICS_H_
+#define FIREBOLT_RIALTO_SERVER_RIALTO_METRICS_H_
 
 #include "IRialtoMetrics.h"
 #include <map>
-#include <mutex>
 #include <memory>
+#include <mutex>
 
 namespace firebolt::rialto::server
 {
@@ -41,7 +41,7 @@ public:
                          std::uint64_t droppedFrames) override;
     bool getFrameCounters(int32_t sessionId, int32_t sourceId, const MediaSourceType &mediaSourceType,
                           CounterSnapshot &snapshot) override;
-    ElementToSourceMapper* getElementToSourceMapper() override;
+    ElementToSourceMapper *getElementToSourceMapper() override;
 
 private:
     using CounterKey = std::pair<int32_t, int32_t>;
@@ -56,4 +56,4 @@ private:
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_METRICS_RIALTO_METRICS_H_
+#endif // FIREBOLT_RIALTO_SERVER_RIALTO_METRICS_H_

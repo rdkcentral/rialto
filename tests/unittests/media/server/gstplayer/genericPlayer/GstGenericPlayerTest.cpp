@@ -29,6 +29,9 @@
 #include "TimerMock.h"
 #include <gst/gst.h>
 
+using firebolt::rialto::MetricEvent;
+using firebolt::rialto::MetricPhase;
+using firebolt::rialto::MetricType;
 using testing::_;
 using testing::AllOf;
 using testing::ByMove;
@@ -40,9 +43,6 @@ using testing::Ref;
 using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrEq;
-using firebolt::rialto::MetricEvent;
-using firebolt::rialto::MetricPhase;
-using firebolt::rialto::MetricType;
 
 class GstGenericPlayerTest : public GstGenericPlayerTestCommon
 {
@@ -301,12 +301,14 @@ TEST_F(GstGenericPlayerTest, shouldRegisterVideoSinkWithMetricIdsWhenCreated)
     m_sut->attachSource(source);
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_element)).Times(3).WillRepeatedly(Return(m_factory));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, GST_ELEMENT_FACTORY_TYPE_DECODER |
+                                                                              GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
         .WillOnce(Return(FALSE));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, GST_ELEMENT_FACTORY_TYPE_DECODER |
+                                                                              GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
         .WillOnce(Return(FALSE));
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstElementFactoryListIsType(m_factory, GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, GST_ELEMENT_FACTORY_TYPE_SINK |
+                                                                              GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
         .WillOnce(Return(TRUE));
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
@@ -375,6 +377,20 @@ TEST_F(GstGenericPlayerTest, shouldAddDeepElement)
     EXPECT_CALL(m_taskFactoryMock, createDeepElementAdded(_, _, _, _, &element)).WillOnce(Return(ByMove(std::move(task))));
 
     triggerDeepElementAdded(&element);
+}
+
+TEST_F(GstGenericPlayerTest, shouldUnregisterRemovedDeepElementFromMapper)
+{
+    constexpr int32_t kSessionId{7};
+    constexpr int32_t kSourceId{11};
+    auto mapper = m_sut->getRialtoMetrics()->getElementToSourceMapper();
+    mapper->RegisterElement(m_element, kSessionId, kSourceId);
+
+    triggerDeepElementRemoved(m_element);
+
+    uint32_t sessionId{0};
+    uint32_t sourceId{0};
+    EXPECT_FALSE(mapper->MapElement(m_element, sessionId, sourceId));
 }
 
 TEST_F(GstGenericPlayerTest, shouldReturnInvalidPositionWhenPipelineIsNull)
@@ -1279,17 +1295,15 @@ TEST_F(GstGenericPlayerTest, shouldCountAndNotifyWesterosMetricMessages)
 
     const auto makeMetricMessage = [&](guint metricType, guint observationKind)
     {
-        GstStructure *structure =
-            gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, metricType, "observation-kind",
-                              G_TYPE_UINT, observationKind, "pts-ns", G_TYPE_INT64, static_cast<gint64>(kPtsNs),
-                              nullptr);
+        GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, metricType,
+                                                    "observation-kind", G_TYPE_UINT, observationKind, "pts-ns",
+                                                    G_TYPE_INT64, static_cast<gint64>(kPtsNs), nullptr);
         return gst_message_new_element(GST_OBJECT(m_element), structure);
     };
 
     const auto metricEvent = [&](MetricType metric, MetricPhase phase)
     {
-        return AllOf(Field(&MetricEvent::sourceId, static_cast<int32_t>(kSourceId)),
-                     Field(&MetricEvent::type, metric),
+        return AllOf(Field(&MetricEvent::sourceId, static_cast<int32_t>(kSourceId)), Field(&MetricEvent::type, metric),
                      Field(&MetricEvent::phase, phase),
                      Field(&MetricEvent::presentationTimeStampNs, Optional(static_cast<int64_t>(kPtsNs))));
     };
@@ -1300,8 +1314,7 @@ TEST_F(GstGenericPlayerTest, shouldCountAndNotifyWesterosMetricMessages)
     dispatcherClient->handleMetricMessage(dropMessage);
     gst_message_unref(dropMessage);
 
-    EXPECT_CALL(m_gstPlayerClient,
-                notifyMetric(metricEvent(MetricType::BUFFER_UNDERFLOW, MetricPhase::EPISODE_STARTED)));
+    EXPECT_CALL(m_gstPlayerClient, notifyMetric(metricEvent(MetricType::BUFFER_UNDERFLOW, MetricPhase::EPISODE_STARTED)));
     GstMessage *underflowMessage =
         makeMetricMessage(kBufferUnderflowMetric, static_cast<guint>(MetricPhase::EPISODE_STARTED));
     ASSERT_NE(nullptr, underflowMessage);

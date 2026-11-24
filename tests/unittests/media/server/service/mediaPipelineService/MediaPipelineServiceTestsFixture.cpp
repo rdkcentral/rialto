@@ -804,8 +804,7 @@ void MediaPipelineServiceTests::getFrameCountersShouldSucceed()
     std::uint64_t droppedFrames;
     std::uint64_t corruptedFrames;
     std::uint64_t timestamp;
-    EXPECT_TRUE(m_sut->getFrameCounters(kSessionId, kSourceId, renderedFrames, droppedFrames, corruptedFrames,
-                                        timestamp));
+    EXPECT_TRUE(m_sut->getFrameCounters(kSessionId, kSourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp));
     EXPECT_EQ(kRenderedFrames, renderedFrames);
     EXPECT_EQ(kDroppedFrames, droppedFrames);
     EXPECT_EQ(kCorruptedFrames, corruptedFrames);
@@ -818,8 +817,8 @@ void MediaPipelineServiceTests::getFrameCountersShouldFail()
     std::uint64_t droppedFrames;
     std::uint64_t corruptedFrames;
     std::uint64_t timestamp;
-    EXPECT_FALSE(m_sut->getFrameCounters(kSessionId, kSourceId, renderedFrames, droppedFrames, corruptedFrames,
-                                         timestamp));
+    EXPECT_FALSE(
+        m_sut->getFrameCounters(kSessionId, kSourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp));
 }
 
 void MediaPipelineServiceTests::setImmediateOutputShouldSucceed()

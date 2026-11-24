@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_METRICS_I_RIALTO_METRICS_H_
-#define FIREBOLT_RIALTO_SERVER_METRICS_I_RIALTO_METRICS_H_
+#ifndef FIREBOLT_RIALTO_SERVER_I_RIALTO_METRICS_H_
+#define FIREBOLT_RIALTO_SERVER_I_RIALTO_METRICS_H_
 
 #include <MediaCommon.h>
 #include <gst/gst.h>
@@ -55,27 +55,25 @@ public:
     virtual std::optional<MetricEvent> onMetricMessage(GstMessage *message) = 0;
     virtual void updateFrameCounters(int32_t sessionId, int32_t sourceId, const CounterSnapshot &snapshot) = 0;
     virtual void updateSinkStats(int32_t sessionId, int32_t sourceId, std::uint64_t renderedFrames,
-                                std::uint64_t droppedFrames) = 0;
+                                 std::uint64_t droppedFrames) = 0;
     virtual bool getFrameCounters(int32_t sessionId, int32_t sourceId, const MediaSourceType &mediaSourceType,
                                   CounterSnapshot &snapshot) = 0;
-    virtual ElementToSourceMapper* getElementToSourceMapper() = 0;
+    virtual ElementToSourceMapper *getElementToSourceMapper() = 0;
 };
 
 class ElementToSourceMapper
 {
 public:
     virtual ~ElementToSourceMapper() = default;
-    virtual void RegisterElement(GstElement* element, uint32_t session_id, uint32_t source_id) = 0;
-    virtual bool MapElement(GstElement* element, uint32_t& out_session_id, uint32_t& out_source_id) = 0;
-    virtual void UnregisterElement(GstElement* element) = 0;
+    virtual void RegisterElement(GstElement *element, uint32_t session_id, uint32_t source_id) = 0;
+    virtual bool MapElement(GstElement *element, uint32_t &out_session_id, uint32_t &out_source_id) = 0;
+    virtual void UnregisterElement(GstElement *element) = 0;
     virtual void UnregisterAllElements() = 0;
 };
 
-GstFlowReturn ValidateMediaPipelineMetric(const GstStructure* msg, MetricEvent& out,
-										   GstMessage* gstMessage = nullptr, 
-										   ElementToSourceMapper* mapper = nullptr,
-										   int32_t* outSessionId = nullptr);
+GstFlowReturn ValidateMediaPipelineMetric(const GstStructure *msg, MetricEvent &out, GstMessage *gstMessage = nullptr,
+                                          ElementToSourceMapper *mapper = nullptr, int32_t *outSessionId = nullptr);
 
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_METRICS_I_RIALTO_METRICS_H_
+#endif // FIREBOLT_RIALTO_SERVER_I_RIALTO_METRICS_H_

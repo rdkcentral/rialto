@@ -73,13 +73,13 @@ void MediaPipelineMetricsClient::notifyQos(int32_t sourceId, const QosInfo &qosI
 }
 void MediaPipelineMetricsClient::notifyMetric(const MetricEvent &metric)
 {
-    RIALTO_SERVER_LOG_DEBUG(
-        "Relaying playback metric event sessionId: %d, sourceId: %d, ptsNs: %llu, metric: %u, observationKind: %u, count: %llu, durationNs: %llu",
-        m_sessionId, metric.sourceId,
-        static_cast<unsigned long long>(metric.presentationTimeStampNs.value_or(0)),
-        static_cast<uint32_t>(metric.type), static_cast<uint32_t>(metric.phase),
-        static_cast<unsigned long long>(metric.count.value_or(0)),
-        static_cast<unsigned long long>(metric.durationNs.value_or(0)));
+    RIALTO_SERVER_LOG_DEBUG("Relaying playback metric event sessionId: %d, sourceId: %d, ptsNs: %llu, metric: %u, "
+                            "observationKind: %u, count: %llu, durationNs: %llu",
+                            m_sessionId, metric.sourceId,
+                            static_cast<unsigned long long>(metric.presentationTimeStampNs.value_or(0)), // NOLINT(runtime/int)
+                            static_cast<uint32_t>(metric.type), static_cast<uint32_t>(metric.phase),
+                            static_cast<unsigned long long>(metric.count.value_or(0)),       // NOLINT(runtime/int)
+                            static_cast<unsigned long long>(metric.durationNs.value_or(0))); // NOLINT(runtime/int)
     m_client->notifyMetric(metric);
 }
 void MediaPipelineMetricsClient::notifyBufferUnderflow(int32_t sourceId)

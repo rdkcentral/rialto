@@ -42,8 +42,7 @@ TEST_F(RialtoClientMediaPipelineIpcGetFrameCountersTest, ReturnsCounterSnapshot)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock,
-                CallMethod(methodMatcher("getFrameCounters"), m_controllerMock.get(), _, _,
-                           m_blockingClosureMock.get()))
+                CallMethod(methodMatcher("getFrameCounters"), m_controllerMock.get(), _, _, m_blockingClosureMock.get()))
         .WillOnce(Invoke(
             [this](const google::protobuf::MethodDescriptor *, google::protobuf::RpcController *,
                    const google::protobuf::Message *request, google::protobuf::Message *response,
@@ -71,8 +70,8 @@ TEST_F(RialtoClientMediaPipelineIpcGetFrameCountersTest, ReturnsCounterSnapshot)
     uint64_t droppedFrames{0};
     uint64_t corruptedFrames{0};
     uint64_t timestamp{0};
-    ASSERT_TRUE(m_mediaPipelineIpc->getFrameCounters(m_sourceId, renderedFrames, droppedFrames, corruptedFrames,
-                                                     timestamp));
+    ASSERT_TRUE(
+        m_mediaPipelineIpc->getFrameCounters(m_sourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp));
     EXPECT_EQ(101U, renderedFrames);
     EXPECT_EQ(7U, droppedFrames);
     EXPECT_EQ(3U, corruptedFrames);
@@ -88,6 +87,6 @@ TEST_F(RialtoClientMediaPipelineIpcGetFrameCountersTest, ReturnsFalseWhenRpcFail
     uint64_t droppedFrames{0};
     uint64_t corruptedFrames{0};
     uint64_t timestamp{0};
-    EXPECT_FALSE(m_mediaPipelineIpc->getFrameCounters(m_sourceId, renderedFrames, droppedFrames, corruptedFrames,
-                                                      timestamp));
+    EXPECT_FALSE(
+        m_mediaPipelineIpc->getFrameCounters(m_sourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp));
 }

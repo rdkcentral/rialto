@@ -362,8 +362,7 @@ bool MediaPipelineService::getStats(int sessionId, int32_t sourceId, uint64_t &r
 }
 
 bool MediaPipelineService::getFrameCounters(int sessionId, int32_t sourceId, uint64_t &renderedFrames,
-                                            uint64_t &droppedFrames, uint64_t &corruptedFrames,
-                                            uint64_t &timestamp)
+                                            uint64_t &droppedFrames, uint64_t &corruptedFrames, uint64_t &timestamp)
 {
     RIALTO_SERVER_LOG_DEBUG("Looking up playback metrics sessionId: %d, sourceId: %d", sessionId, sourceId);
 
@@ -375,8 +374,8 @@ bool MediaPipelineService::getFrameCounters(int sessionId, int32_t sourceId, uin
                                 sourceId);
         return false;
     }
-    const bool success = mediaPipelineIter->second->getFrameCounters(sessionId, sourceId, renderedFrames,
-                                                                      droppedFrames, corruptedFrames, timestamp);
+    const bool success = mediaPipelineIter->second->getFrameCounters(sessionId, sourceId, renderedFrames, droppedFrames,
+                                                                     corruptedFrames, timestamp);
     RIALTO_SERVER_LOG_DEBUG("Playback metrics lookup %s for sessionId: %d, sourceId: %d",
                             success ? "succeeded" : "failed", sessionId, sourceId);
     return success;

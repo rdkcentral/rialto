@@ -352,9 +352,9 @@ GstGenericPlayer::GstGenericPlayer(
     }
 
     RIALTO_SERVER_LOG_DEBUG("Creating playback metrics handler");
-    m_metrics = std::make_shared<RialtoMetrics>([this](const MediaSourceType &mediaSourceType, uint64_t &renderedFrames,
-                                                       uint64_t &droppedFrames)
-                                                { return getStats(mediaSourceType, renderedFrames, droppedFrames); });
+    m_metrics = std::make_shared<RialtoMetrics>(
+        [this](const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames)
+        { return getStats(mediaSourceType, renderedFrames, droppedFrames); });
     m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline,
                                                                                   m_context.flushOnPrerollController,
                                                                                   m_gstWrapper, m_glibWrapper);
@@ -547,7 +547,7 @@ void GstGenericPlayer::setupSource(GstElement *pipeline, GstElement *source, Gst
 void GstGenericPlayer::setupElement(GstElement *pipeline, GstElement *element, GstGenericPlayer *self)
 {
     RIALTO_SERVER_LOG_DEBUG("Element %s added to the pipeline", GST_ELEMENT_NAME(element));
-    
+
     // Register decoder and output elements with ElementToSourceMapper for metrics enrichment
     if (self->m_metrics)
     {
@@ -556,20 +556,20 @@ void GstGenericPlayer::setupElement(GstElement *pipeline, GstElement *element, G
         {
             int32_t sessionId = self->m_metricSessionId.load();
             int32_t sourceId = self->m_metricSourceId.load();
-            
+
             if (sessionId >= 0 && sourceId >= 0 &&
                 (isVideoDecoder(*self->m_gstWrapper, element) || isAudioDecoder(*self->m_gstWrapper, element) ||
                  isVideoSink(*self->m_gstWrapper, element) || isAudioSink(*self->m_gstWrapper, element)))
             {
                 // Defensive unregister: remove any stale entry at this address before re-registering
                 mapper->UnregisterElement(element);
-                
+
                 mapper->RegisterElement(element, static_cast<uint32_t>(sessionId), static_cast<uint32_t>(sourceId));
                 RIALTO_SERVER_LOG_DEBUG("Registered element %s with mapper for enrichment", GST_ELEMENT_NAME(element));
             }
         }
     }
-    
+
     self->m_gstWrapper->gstObjectRef(element);
     if (self->m_workerThread)
     {
@@ -591,7 +591,7 @@ void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElemen
 void GstGenericPlayer::deepElementRemoved(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self)
 {
     RIALTO_SERVER_LOG_DEBUG("Deep element %s removed from pipeline", GST_ELEMENT_NAME(element));
-    
+
     // Unregister element from metrics mapper to prevent stale address reuse
     if (self->m_metrics && self->m_metrics->getElementToSourceMapper())
     {
@@ -733,10 +733,10 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
                 if (m_metrics && m_metrics->getElementToSourceMapper())
                 {
                     m_metrics->getElementToSourceMapper()->UnregisterElement(sink);
-                    RIALTO_SERVER_LOG_DEBUG("Unregistered auto-sink wrapper %s, using child %s", 
-                                           GST_ELEMENT_NAME(sink), GST_ELEMENT_NAME(autoSink));
+                    RIALTO_SERVER_LOG_DEBUG("Unregistered auto-sink wrapper %s, using child %s", GST_ELEMENT_NAME(sink),
+                                            GST_ELEMENT_NAME(autoSink));
                 }
-                
+
                 m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
 
                 // increase the reference count of the auto sink
@@ -1476,8 +1476,8 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
                 droppedFrames = droppedFramesTmp;
                 returnValue = true;
                 RIALTO_SERVER_LOG_DEBUG("Sink stats from '%s' rendered: %llu, dropped: %llu", GST_ELEMENT_NAME(sink),
-                                        static_cast<unsigned long long>(renderedFrames),
-                                        static_cast<unsigned long long>(droppedFrames));
+                                        static_cast<unsigned long long>(renderedFrames), // NOLINT(runtime/int)
+                                        static_cast<unsigned long long>(droppedFrames)); // NOLINT(runtime/int)
             }
             else
             {
@@ -3300,11 +3300,13 @@ void GstGenericPlayer::handleMetricMessage(GstMessage *message)
     const uint64_t count = parsedMetric->count.value_or(0);
     const uint64_t durationNs = parsedMetric->durationNs.value_or(0);
 
-    RIALTO_SERVER_LOG_DEBUG(
-        "Parsed playback metric sourceId: %d, sessionId: %d, metric: %u, observation_kind: %u, ptsNs: %llu, count: %llu, durationNs: %llu",
-        parsedMetric->sourceId, m_metricSessionId.load(), static_cast<uint32_t>(parsedMetric->type),
-        static_cast<uint32_t>(parsedMetric->phase), static_cast<unsigned long long>(ptsNs),
-        static_cast<unsigned long long>(count), static_cast<unsigned long long>(durationNs));
+    RIALTO_SERVER_LOG_DEBUG("Parsed playback metric sourceId: %d, sessionId: %d, metric: %u, observation_kind: %u, "
+                            "ptsNs: %llu, count: %llu, durationNs: %llu",
+                            parsedMetric->sourceId, m_metricSessionId.load(), static_cast<uint32_t>(parsedMetric->type),
+                            static_cast<uint32_t>(parsedMetric->phase),
+                            static_cast<unsigned long long>(ptsNs),       // NOLINT(runtime/int)
+                            static_cast<unsigned long long>(count),       // NOLINT(runtime/int)
+                            static_cast<unsigned long long>(durationNs)); // NOLINT(runtime/int)
     if (!m_gstPlayerClient)
     {
         RIALTO_SERVER_LOG_WARN("Cannot forward playback metric - player client is unavailable");

@@ -93,9 +93,8 @@ public:
     {
         EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
             .Times(testing::AtLeast(0))
-            .WillRepeatedly(Invoke(
-                [&](gpointer, const gchar *, void *element)
-                { *reinterpret_cast<GstElement **>(element) = m_videoSink; }));
+            .WillRepeatedly(Invoke([&](gpointer, const gchar *, void *element)
+                                   { *reinterpret_cast<GstElement **>(element) = m_videoSink; }));
         EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink)))
             .Times(testing::AtLeast(0))
             .WillRepeatedly(Return(kElementTypeName.c_str()));

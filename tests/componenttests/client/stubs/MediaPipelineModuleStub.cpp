@@ -147,7 +147,8 @@ void MediaPipelineModuleStub::notifyPlaybackInfo(int sessionId, const firebolt::
     getClient()->sendEvent(event);
 }
 
-void MediaPipelineModuleStub::notifyMetricEvent(int sessionId, const firebolt::rialto::MediaPipelineMetricEvent &metricEvent)
+void MediaPipelineModuleStub::notifyMetricEvent(int sessionId,
+                                                const firebolt::rialto::MediaPipelineMetricEvent &metricEvent)
 {
     waitForClientConnect();
 

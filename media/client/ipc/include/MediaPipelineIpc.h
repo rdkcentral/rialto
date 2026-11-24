@@ -26,6 +26,7 @@
 #include <IMediaPipeline.h>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "mediapipelinemodule.pb.h"
 

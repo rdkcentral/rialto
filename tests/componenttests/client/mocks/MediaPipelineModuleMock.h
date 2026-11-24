@@ -80,8 +80,7 @@ public:
                  const ::firebolt::rialto::SetReportDecodeErrorsRequest *request,
                  ::firebolt::rialto::SetReportDecodeErrorsResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, setMetricSubscription,
-                (::google::protobuf::RpcController * controller,
-                 const ::firebolt::rialto::SetMediaMetricsRequest *request,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::SetMediaMetricsRequest *request,
                  ::firebolt::rialto::SetMediaMetricsResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, getQueuedFrames,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetQueuedFramesRequest *request,
@@ -158,7 +157,8 @@ public:
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::IsVideoMasterRequest *request,
                  ::firebolt::rialto::IsVideoMasterResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, getFrameCounters,
-                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetFrameCountersRequest *request,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::GetFrameCountersRequest *request,
                  ::firebolt::rialto::GetFrameCountersResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)

@@ -290,20 +290,22 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricMapsEveryOptionalField
 
         const std::optional<int64_t> expectedPts = (mask & 1) ? std::optional<int64_t>{kPtsNs} : std::nullopt;
         const std::optional<uint64_t> expectedCount = (mask & 2) ? std::optional<uint64_t>{kCount} : std::nullopt;
-        const std::optional<uint64_t> expectedDuration =
-            (mask & 4) ? std::optional<uint64_t>{kDurationNs} : std::nullopt;
+        const std::optional<uint64_t> expectedDuration = (mask & 4) ? std::optional<uint64_t>{kDurationNs} : std::nullopt;
 
         mainThreadWillEnqueueTask();
         EXPECT_CALL(*m_mediaPipelineClientMock,
-                    notifyMetric(::testing::AllOf(
-                        ::testing::Field(&firebolt::rialto::MetricEvent::sourceId, kSourceId),
-                        ::testing::Field(&firebolt::rialto::MetricEvent::type, metricType),
-                        ::testing::Field(&firebolt::rialto::MetricEvent::phase, metricPhase),
-                        ::testing::Field(&firebolt::rialto::MetricEvent::presentationTimeStampNs, expectedPts),
-                        ::testing::Field(&firebolt::rialto::MetricEvent::count, expectedCount),
-                        ::testing::Field(&firebolt::rialto::MetricEvent::durationNs, expectedDuration),
-                        ::testing::Field(&firebolt::rialto::MetricEvent::observedAtMonotonicNs, kObservedAtMonotonicNs),
-                        ::testing::Field(&firebolt::rialto::MetricEvent::observedAtUnixNs, kObservedAtUnixNs))));
+                    notifyMetric(
+                        ::testing::AllOf(::testing::Field(&firebolt::rialto::MetricEvent::sourceId, kSourceId),
+                                         ::testing::Field(&firebolt::rialto::MetricEvent::type, metricType),
+                                         ::testing::Field(&firebolt::rialto::MetricEvent::phase, metricPhase),
+                                         ::testing::Field(&firebolt::rialto::MetricEvent::presentationTimeStampNs,
+                                                          expectedPts),
+                                         ::testing::Field(&firebolt::rialto::MetricEvent::count, expectedCount),
+                                         ::testing::Field(&firebolt::rialto::MetricEvent::durationNs, expectedDuration),
+                                         ::testing::Field(&firebolt::rialto::MetricEvent::observedAtMonotonicNs,
+                                                          kObservedAtMonotonicNs),
+                                         ::testing::Field(&firebolt::rialto::MetricEvent::observedAtUnixNs,
+                                                          kObservedAtUnixNs))));
 
         m_gstPlayerCallback->notifyMetric(metric);
     }
@@ -320,8 +322,8 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricDeliveredByDefaultSubs
     metric.phase = firebolt::rialto::MetricPhase::OCCURRENCE;
 
     mainThreadWillEnqueueTask();
-    EXPECT_CALL(*m_mediaPipelineClientMock,
-                notifyMetric(::testing::Field(&firebolt::rialto::MetricEvent::type, firebolt::rialto::MetricType::AUDIO_GAP)));
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyMetric(::testing::Field(&firebolt::rialto::MetricEvent::type,
+                                                                          firebolt::rialto::MetricType::AUDIO_GAP)));
 
     m_gstPlayerCallback->notifyMetric(metric);
 }

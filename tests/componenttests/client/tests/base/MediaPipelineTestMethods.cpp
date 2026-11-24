@@ -1554,11 +1554,10 @@ void MediaPipelineTestMethods::shouldGetFrameCounters(uint64_t renderedFrames, u
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
                 getFrameCounters(_, getFrameCountersRequestMatcher(kSessionId, kVideoSourceId), _, _))
-        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getFrameCountersResponse(renderedFrames,
-                                                                                             droppedFrames,
-                                                                                             corruptedFrames,
-                                                                                             timestamp)),
-                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+        .WillOnce(
+            DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getFrameCountersResponse(renderedFrames, droppedFrames,
+                                                                                       corruptedFrames, timestamp)),
+                  WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
 }
 
 void MediaPipelineTestMethods::getFrameCounters(uint64_t expectedRendered, uint64_t expectedDropped,

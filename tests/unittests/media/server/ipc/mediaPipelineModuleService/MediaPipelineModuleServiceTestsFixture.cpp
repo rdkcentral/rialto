@@ -761,8 +761,7 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetFrameCoun
 {
     expectRequestFailure();
     EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
-    EXPECT_CALL(m_mediaPipelineServiceMock, getFrameCounters(sessionId, _, _, _, _, _))
-        .WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getFrameCounters(sessionId, _, _, _, _, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetMetricSubscription(int sessionId)

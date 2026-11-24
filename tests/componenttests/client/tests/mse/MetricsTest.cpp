@@ -91,8 +91,7 @@ TEST_F(MetricsTest, setSubscriptionGetFrameCountersAndNotifyMetric)
         const uint64_t kDroppedFrames = 20;
         const uint64_t kCorruptedFrames = 3;
         const uint64_t kTimestamp = 123456789;
-        MediaPipelineTestMethods::shouldGetFrameCounters(kRenderedFrames, kDroppedFrames, kCorruptedFrames,
-                                                         kTimestamp);
+        MediaPipelineTestMethods::shouldGetFrameCounters(kRenderedFrames, kDroppedFrames, kCorruptedFrames, kTimestamp);
         MediaPipelineTestMethods::getFrameCounters(kRenderedFrames, kDroppedFrames, kCorruptedFrames, kTimestamp);
     }
 

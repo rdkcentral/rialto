@@ -178,8 +178,8 @@ TEST_F(GstDispatcherThreadTest, ApplicationMessageIsForwardedToMetricsClient)
     gst_init(nullptr, nullptr);
     GstElement *source = gst_pipeline_new("metric-source");
     ASSERT_NE(nullptr, source);
-    GstMessage *message = gst_message_new_application(
-        GST_OBJECT(source), gst_structure_new_empty("media-pipeline-metric"));
+    GstMessage *message =
+        gst_message_new_application(GST_OBJECT(source), gst_structure_new_empty("media-pipeline-metric"));
     gst_object_unref(source);
     ASSERT_NE(nullptr, message);
 
@@ -203,11 +203,12 @@ TEST_F(GstDispatcherThreadTest, MetricMessageWithAllFieldsIsForwardedUnmodified)
 {
     auto sut = createSut();
 
-    GstMessage *message = createMetricMessage(gst_structure_new(
-        "media-pipeline-metric", "metric", G_TYPE_UINT,
-        static_cast<guint>(firebolt::rialto::MetricType::AUDIO_GAP), "observation-kind", G_TYPE_UINT,
-        static_cast<guint>(firebolt::rialto::MetricPhase::EPISODE_RESOLVED), "pts-ns", G_TYPE_INT64, gint64{1000},
-        "duration-ns", G_TYPE_UINT64, guint64{500}, "count", G_TYPE_UINT64, guint64{4}, nullptr));
+    GstMessage *message = createMetricMessage(
+        gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT,
+                          static_cast<guint>(firebolt::rialto::MetricType::AUDIO_GAP), "observation-kind", G_TYPE_UINT,
+                          static_cast<guint>(firebolt::rialto::MetricPhase::EPISODE_RESOLVED), "pts-ns", G_TYPE_INT64,
+                          gint64{1000}, "duration-ns", G_TYPE_UINT64, guint64{500}, "count", G_TYPE_UINT64, guint64{4},
+                          nullptr));
     ASSERT_NE(nullptr, message);
 
     EXPECT_CALL(m_client, handleMetricMessage(message))
@@ -250,10 +251,10 @@ TEST_F(GstDispatcherThreadTest, MetricMessageWithoutOptionalFieldsStaysWithoutTh
 {
     auto sut = createSut();
 
-    GstMessage *message = createMetricMessage(gst_structure_new(
-        "media-pipeline-metric", "metric", G_TYPE_UINT,
-        static_cast<guint>(firebolt::rialto::MetricType::VIDEO_FRAME_DROP), "observation-kind", G_TYPE_UINT,
-        static_cast<guint>(firebolt::rialto::MetricPhase::OCCURRENCE), nullptr));
+    GstMessage *message = createMetricMessage(
+        gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT,
+                          static_cast<guint>(firebolt::rialto::MetricType::VIDEO_FRAME_DROP), "observation-kind",
+                          G_TYPE_UINT, static_cast<guint>(firebolt::rialto::MetricPhase::OCCURRENCE), nullptr));
     ASSERT_NE(nullptr, message);
 
     EXPECT_CALL(m_client, handleMetricMessage(message))

@@ -76,8 +76,7 @@ public:
                 gint val = va_arg(args, gint);
                 gObjectSetIntStub(object, kProperty, val);
             }
-            else if (g_strcmp0(kProperty, "metrics-session-id") == 0 ||
-                     g_strcmp0(kProperty, "metrics-source-id") == 0)
+            else if (g_strcmp0(kProperty, "metrics-session-id") == 0 || g_strcmp0(kProperty, "metrics-source-id") == 0)
             {
                 guint val = va_arg(args, guint);
                 gObjectSetUintStub(object, kProperty, val);

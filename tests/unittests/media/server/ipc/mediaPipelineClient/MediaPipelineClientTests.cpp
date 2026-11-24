@@ -27,9 +27,9 @@
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server::ipc;
-using ::testing::StrictMock;
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::StrictMock;
 
 TEST(MediaPipelineClientTests, NotifyMetricEventSerializesAndPreservesPayload)
 {

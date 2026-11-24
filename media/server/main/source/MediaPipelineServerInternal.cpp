@@ -24,10 +24,10 @@
 #include "DataReaderFactory.h"
 #include "IDataReader.h"
 #include "IRdkGstreamerUtilsWrapper.h"
+#include "IRialtoMetrics.h"
 #include "ISharedMemoryBuffer.h"
 #include "MediaPipelineServerInternal.h"
 #include "NeedMediaData.h"
-#include "IRialtoMetrics.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
 
@@ -69,7 +69,7 @@ std::set<MetricType> defaultMetricSubscription()
     std::set<MetricType> types;
     if (kSubscribeAllMetricsByDefault)
     {
-        types = {MetricType::VIDEO_FRAME_DROP, MetricType::AUDIO_FRAME_DROP, MetricType::VIDEO_DECODE_ERROR,
+        types = {MetricType::VIDEO_FRAME_DROP,   MetricType::AUDIO_FRAME_DROP,   MetricType::VIDEO_DECODE_ERROR,
                  MetricType::AUDIO_DECODE_ERROR, MetricType::VIDEO_FRAME_REPEAT, MetricType::AUDIO_GAP,
                  MetricType::BUFFER_UNDERFLOW};
     }
@@ -560,24 +560,25 @@ bool MediaPipelineServerInternal::getStatsInternal(int32_t sourceId, uint64_t &r
 }
 
 bool MediaPipelineServerInternal::getFrameCounters(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
-                                                    uint64_t &corruptedFrames, uint64_t &timestamp)
+                                                   uint64_t &corruptedFrames, uint64_t &timestamp)
 {
     return getFrameCounters(m_sessionId, sourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp);
 }
 
 bool MediaPipelineServerInternal::getFrameCounters(int32_t sessionId, int32_t sourceId, uint64_t &renderedFrames,
-                                                    uint64_t &droppedFrames, uint64_t &corruptedFrames,
-                                                    uint64_t &timestamp)
+                                                   uint64_t &droppedFrames, uint64_t &corruptedFrames,
+                                                   uint64_t &timestamp)
 {
     RIALTO_SERVER_LOG_DEBUG("Querying playback metrics sessionId: %d, sourceId: %d", sessionId, sourceId);
 
     bool result;
-    auto task = [&]()
-    { result = getFrameCountersInternal(sessionId, sourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp); };
+    auto task = [&]() {
+        result = getFrameCountersInternal(sessionId, sourceId, renderedFrames, droppedFrames, corruptedFrames, timestamp);
+    };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    RIALTO_SERVER_LOG_DEBUG("Playback metrics query %s for sessionId: %d, sourceId: %d", result ? "succeeded" : "failed",
-                            sessionId, sourceId);
+    RIALTO_SERVER_LOG_DEBUG("Playback metrics query %s for sessionId: %d, sourceId: %d",
+                            result ? "succeeded" : "failed", sessionId, sourceId);
     return result;
 }
 
@@ -599,9 +600,8 @@ bool MediaPipelineServerInternal::getFrameCountersInternal(int32_t sessionId, in
         return false;
     }
 
-    const auto sourceIter =
-        std::find_if(m_attachedSources.begin(), m_attachedSources.end(), [sourceId](const auto &source)
-                     { return source.second == sourceId; });
+    const auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                         [sourceId](const auto &source) { return source.second == sourceId; });
     if (sourceIter == m_attachedSources.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - sourceId: %d is not attached", sourceId);
@@ -627,11 +627,12 @@ bool MediaPipelineServerInternal::getFrameCountersInternal(int32_t sessionId, in
     droppedFrames = counters.counters.droppedFrames;
     corruptedFrames = counters.counters.corruptedFrames;
     timestamp = counters.timestamp;
-    RIALTO_SERVER_LOG_DEBUG(
-        "Returning playback metrics sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, timestamp: %llu",
-        sessionId, sourceId, static_cast<unsigned long long>(renderedFrames),
-        static_cast<unsigned long long>(droppedFrames), static_cast<unsigned long long>(corruptedFrames),
-        static_cast<unsigned long long>(timestamp));
+    RIALTO_SERVER_LOG_DEBUG("Returning playback metrics sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, "
+                            "corrupted: %llu, timestamp: %llu",
+                            sessionId, sourceId, static_cast<unsigned long long>(renderedFrames), // NOLINT(runtime/int)
+                            static_cast<unsigned long long>(droppedFrames),                       // NOLINT(runtime/int)
+                            static_cast<unsigned long long>(corruptedFrames),                     // NOLINT(runtime/int)
+                            static_cast<unsigned long long>(timestamp));                          // NOLINT(runtime/int)
     return true;
 }
 
@@ -1789,13 +1790,15 @@ void MediaPipelineServerInternal::notifyMetric(const MetricEvent &metric)
         }
     }
 
-    RIALTO_SERVER_LOG_DEBUG(
-        "Queueing playback metric event sourceId: %d, ptsNs: %llu, metric: %u, observationKind: %u, count: %llu, durationNs: %llu, observedAtMonotonicNs: %llu, observedAtUnixNs: %lld",
-        metric.sourceId, static_cast<unsigned long long>(metric.presentationTimeStampNs.value_or(0)),
-        static_cast<uint32_t>(metric.type), static_cast<uint32_t>(metric.phase),
-        static_cast<unsigned long long>(metric.count.value_or(0)),
-        static_cast<unsigned long long>(metric.durationNs.value_or(0)),
-        static_cast<unsigned long long>(metric.observedAtMonotonicNs), static_cast<long long>(metric.observedAtUnixNs));
+    RIALTO_SERVER_LOG_DEBUG("Queueing playback metric event sourceId: %d, ptsNs: %llu, metric: %u, observationKind: "
+                            "%u, count: %llu, durationNs: %llu, observedAtMonotonicNs: %llu, observedAtUnixNs: %lld",
+                            metric.sourceId,
+                            static_cast<unsigned long long>(metric.presentationTimeStampNs.value_or(0)), // NOLINT(runtime/int)
+                            static_cast<uint32_t>(metric.type), static_cast<uint32_t>(metric.phase),
+                            static_cast<unsigned long long>(metric.count.value_or(0)),      // NOLINT(runtime/int)
+                            static_cast<unsigned long long>(metric.durationNs.value_or(0)), // NOLINT(runtime/int)
+                            static_cast<unsigned long long>(metric.observedAtMonotonicNs),  // NOLINT(runtime/int)
+                            static_cast<long long>(metric.observedAtUnixNs));               // NOLINT(runtime/int)
     auto task = [&, metric]()
     {
         if (m_mediaPipelineClient)

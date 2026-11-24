@@ -1050,11 +1050,13 @@ void MediaPipelineModuleService::getFrameCounters(::google::protobuf::RpcControl
         response->set_dropped_frames(droppedFrames);
         response->set_corrupted_frames(corruptedFrames);
         response->set_timestamp(timestamp);
-        RIALTO_SERVER_LOG_DEBUG(
-            "GetFrameCounters response sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, corrupted: %llu, timestamp: %llu",
-            request->session_id(), request->source_id(), static_cast<unsigned long long>(renderedFrames),
-            static_cast<unsigned long long>(droppedFrames), static_cast<unsigned long long>(corruptedFrames),
-            static_cast<unsigned long long>(timestamp));
+        RIALTO_SERVER_LOG_DEBUG("GetFrameCounters response sessionId: %d, sourceId: %d, rendered: %llu, dropped: %llu, "
+                                "corrupted: %llu, timestamp: %llu",
+                                request->session_id(), request->source_id(),
+                                static_cast<unsigned long long>(renderedFrames),  // NOLINT(runtime/int)
+                                static_cast<unsigned long long>(droppedFrames),   // NOLINT(runtime/int)
+                                static_cast<unsigned long long>(corruptedFrames), // NOLINT(runtime/int)
+                                static_cast<unsigned long long>(timestamp));      // NOLINT(runtime/int)
     }
     done->Run();
 }
