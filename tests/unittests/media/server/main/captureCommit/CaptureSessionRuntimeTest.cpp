@@ -194,6 +194,64 @@ TEST_F(CaptureSessionRuntimeDeliveryTest, RetiredSessionAnswersNoFrameWithoutAsk
     EXPECT_TRUE(m_runtime->isSlotLocked(0)); // the frame the client holds stays locked
 }
 
+TEST_F(CaptureSessionRuntimeDeliveryTest, CapabilitiesQueryReturnsTheHalAnswer)
+{
+    capture::CaptureCapabilities halAnswer{};
+    halAnswer.drmFormat = 0x3231564e;
+    halAnswer.maximumSlots = 4;
+    EXPECT_CALL(*m_session, getCapabilities(_))
+        .WillOnce(Invoke(
+            [&halAnswer](capture::CaptureCapabilities &out)
+            {
+                out = halAnswer;
+                return capture::CaptureStatus::OK;
+            }));
+    capture::CaptureCapabilities out{};
+    EXPECT_EQ(m_runtime->capabilities(out), capture::CaptureStatus::OK);
+    EXPECT_EQ(out.drmFormat, 0x3231564eu);
+    EXPECT_EQ(out.maximumSlots, 4u);
+}
+
+TEST_F(CaptureSessionRuntimeDeliveryTest, FailedCapabilitiesQueryChangesNoSessionState)
+{
+    EXPECT_CALL(*m_session, getCapabilities(_)).WillOnce(Return(capture::CaptureStatus::NO_RESOURCES));
+    capture::CaptureCapabilities out{};
+    out.maximumSlots = 77;
+    EXPECT_EQ(m_runtime->capabilities(out), capture::CaptureStatus::NO_RESOURCES);
+    EXPECT_EQ(out.maximumSlots, 77u); // unchanged
+    EXPECT_FALSE(m_runtime->isFatal());
+
+    CaptureSessionRuntime::DeliveryTicket ticket;
+    acquire(0, 1, false, ticket); // the next acquisition still calls the HAL
+}
+
+TEST_F(CaptureSessionRuntimeDeliveryTest, RetiredSessionIsNotQueried)
+{
+    m_runtime->retire();
+    EXPECT_CALL(*m_session, getCapabilities(_)).Times(0);
+    capture::CaptureCapabilities out{};
+    EXPECT_EQ(m_runtime->capabilities(out), capture::CaptureStatus::NO_FRAME);
+}
+
+TEST_F(CaptureSessionRuntimeDeliveryTest, FatalSessionIsNotQueried)
+{
+    EXPECT_CALL(*m_session, acquireCurrentFrame(_))
+        .WillOnce(Invoke(
+            [](capture::CapturedFrame &frame)
+            {
+                frame.slotIndex = 99; // outside the pool: invalid, so the session becomes capture-fatal
+                frame.acquisitionToken = 1;
+                return capture::CaptureStatus::OK;
+            }));
+    CaptureSessionRuntime::DeliveryTicket ticket;
+    EXPECT_EQ(m_runtime->acquire([](const capture::CapturedFrame &, bool, bool) {}, ticket),
+              capture::CaptureStatus::FATAL_ERROR);
+    ASSERT_TRUE(m_runtime->isFatal());
+    EXPECT_CALL(*m_session, getCapabilities(_)).Times(0);
+    capture::CaptureCapabilities out{};
+    EXPECT_EQ(m_runtime->capabilities(out), capture::CaptureStatus::FATAL_ERROR);
+}
+
 class CaptureSessionRuntimeDeletionTest : public ::testing::Test
 {
 protected:

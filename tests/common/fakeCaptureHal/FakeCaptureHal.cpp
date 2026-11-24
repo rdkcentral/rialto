@@ -162,6 +162,8 @@ public:
 
     CaptureStatus getCapabilities(CaptureCapabilities &out) const override
     {
+        CallScope scope{m_callsInProgress}; // a query after admission must be serialized with acquisitions too
+        std::this_thread::sleep_for(std::chrono::microseconds{200}); // widens any overlap window
         std::lock_guard<std::mutex> lock{state().mutex};
         if (auto scripted = takeScripted(FAKE_CAPTURE_HAL_GET_CAPABILITIES))
             return *scripted;
@@ -275,7 +277,7 @@ private:
         return caps;
     }
 
-    std::atomic<int> m_callsInProgress{0};
+    mutable std::atomic<int> m_callsInProgress{0};
     uint32_t m_slotCount{0};
     std::vector<uint64_t> m_lockedTokens;
     uint64_t m_tokenCounter{0};

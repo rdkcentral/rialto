@@ -147,6 +147,15 @@ public:
     capture::CaptureStatus release(std::uint32_t slotIndex, std::uint64_t acquisitionToken);
 
     /**
+     * @brief Queries the HAL capabilities of the admitted session, serialized with its other HAL calls (R8 design
+     *        D5). It changes no session state: a failed query does not make the session capture-fatal.
+     *
+     * @retval NO_FRAME on a retired session and FATAL_ERROR on a capture-fatal one, without a HAL call; otherwise
+     *         the HAL result. \a out is changed only on OK.
+     */
+    capture::CaptureStatus capabilities(capture::CaptureCapabilities &out) const;
+
+    /**
      * @brief Retires the session (R10 design D1): it takes no new acquisitions, which answer NO_FRAME without a
      *        HAL call (the final acquisition is abandoned, D2), but still accepts releases.
      */

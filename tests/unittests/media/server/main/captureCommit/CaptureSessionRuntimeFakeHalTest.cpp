@@ -26,7 +26,10 @@
 #include <dlfcn.h>
 #include <unistd.h>
 
+#include <atomic>
+#include <chrono>
 #include <string>
+#include <thread>
 #include <vector>
 
 using namespace firebolt::rialto;
@@ -69,7 +72,16 @@ protected:
         m_setInvalid = reinterpret_cast<FakeCaptureHalSetNextFrameInvalidFunction>(
             dlsym(m_hal, "fakeCaptureHalSetNextFrameInvalid"));
         m_callCount = reinterpret_cast<FakeCaptureHalCallCountFunction>(dlsym(m_hal, "fakeCaptureHalCallCount"));
-        ASSERT_TRUE(create && m_reset && m_setInvalid && m_callCount);
+        m_blockNextAcquire =
+            reinterpret_cast<FakeCaptureHalBlockNextAcquireFunction>(dlsym(m_hal, "fakeCaptureHalBlockNextAcquire"));
+        m_waitUntilAcquireBlocked = reinterpret_cast<FakeCaptureHalWaitUntilAcquireBlockedFunction>(
+            dlsym(m_hal, "fakeCaptureHalWaitUntilAcquireBlocked"));
+        m_unblockAcquire =
+            reinterpret_cast<FakeCaptureHalUnblockAcquireFunction>(dlsym(m_hal, "fakeCaptureHalUnblockAcquire"));
+        m_overlapDetected =
+            reinterpret_cast<FakeCaptureHalOverlapDetectedFunction>(dlsym(m_hal, "fakeCaptureHalOverlapDetected"));
+        ASSERT_TRUE(create && m_reset && m_setInvalid && m_callCount && m_blockNextAcquire &&
+                    m_waitUntilAcquireBlocked && m_unblockAcquire && m_overlapDetected);
         m_reset();
 
         capture::ICaptureSession *session{create()};
@@ -108,6 +120,10 @@ protected:
     FakeCaptureHalResetFunction m_reset{nullptr};
     FakeCaptureHalSetNextFrameInvalidFunction m_setInvalid{nullptr};
     FakeCaptureHalCallCountFunction m_callCount{nullptr};
+    FakeCaptureHalBlockNextAcquireFunction m_blockNextAcquire{nullptr};
+    FakeCaptureHalWaitUntilAcquireBlockedFunction m_waitUntilAcquireBlocked{nullptr};
+    FakeCaptureHalUnblockAcquireFunction m_unblockAcquire{nullptr};
+    FakeCaptureHalOverlapDetectedFunction m_overlapDetected{nullptr};
     std::unique_ptr<CaptureSessionRuntime> m_runtime;
     std::vector<int> m_replyFds;
 };
@@ -139,4 +155,29 @@ TEST_F(CaptureSessionRuntimeFakeHalTest, InvalidFrameIsReleasedClosedAndMakesThe
     EXPECT_TRUE(m_runtime->isSlotLocked(earlier.slotIndex));
     EXPECT_EQ(m_runtime->release(earlier.slotIndex, earlier.acquisitionToken), capture::CaptureStatus::OK);
     EXPECT_EQ(m_callCount(FAKE_CAPTURE_HAL_RELEASE_FRAME), 2);
+}
+
+TEST_F(CaptureSessionRuntimeFakeHalTest, CapabilitiesQueryWaitsForABlockedAcquisition)
+{
+    m_blockNextAcquire();
+    CaptureSessionRuntime::DeliveryTicket ticket;
+    std::thread acquirer{[&]() { EXPECT_EQ(acquire(ticket), capture::CaptureStatus::OK); }};
+    ASSERT_TRUE(m_waitUntilAcquireBlocked(2000));
+
+    std::atomic<bool> queried{false};
+    std::thread querier{[&]()
+                        {
+                            capture::CaptureCapabilities out{};
+                            EXPECT_EQ(m_runtime->capabilities(out), capture::CaptureStatus::OK);
+                            EXPECT_EQ(out.maximumSlots, 4u);
+                            queried = true;
+                        }};
+    std::this_thread::sleep_for(std::chrono::milliseconds{50});
+    EXPECT_FALSE(queried); // waits for the acquisition inside the HAL
+    m_unblockAcquire();
+    acquirer.join();
+    querier.join();
+    EXPECT_TRUE(queried);
+    EXPECT_FALSE(m_overlapDetected());
+    m_runtime->onDelivery(ticket, true);
 }

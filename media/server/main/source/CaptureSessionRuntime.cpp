@@ -80,6 +80,26 @@ CaptureFrameDescription CaptureFrameDescription::of(const capture::CapturedFrame
     return description;
 }
 
+capture::CaptureStatus CaptureSessionRuntime::capabilities(capture::CaptureCapabilities &out) const
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+    if (m_retired)
+    {
+        return capture::CaptureStatus::NO_FRAME; // the session may already be gone
+    }
+    if (m_fatal)
+    {
+        return capture::CaptureStatus::FATAL_ERROR;
+    }
+    capture::CaptureCapabilities answer{};
+    const capture::CaptureStatus kStatus{m_guard.getCapabilities(answer)};
+    if (kStatus == capture::CaptureStatus::OK)
+    {
+        out = answer;
+    }
+    return kStatus;
+}
+
 capture::CaptureStatus CaptureSessionRuntime::acquire(const FrameReplyFiller &fillReply)
 {
     DeliveryTicket ticket;

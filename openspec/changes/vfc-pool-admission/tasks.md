@@ -29,7 +29,7 @@
 
 ## 3. Server queries (D5, D6)
 
-- [ ] 3.1 Add `CaptureSessionRuntime::capabilities()`, which calls the HAL under the runtime lock and leaves the session state unchanged. Verify with `./build_ut.py -s servermain`:
+- [x] 3.1 Add `CaptureSessionRuntime::capabilities()`, which calls the HAL under the runtime lock and leaves the session state unchanged. Verify with `./build_ut.py -s servermain`:
   - a `NO_RESOURCES` answer leaves the next acquire calling the HAL;
   - a query made while an acquire is blocked inside the fake HAL waits for it, and no overlap is detected.
 - [ ] 3.2 Add the `getCapabilities` handler to `VideoFrameCaptureModuleService`: unknown capture or wrong API, no runtime, fatal runtime, the live query and the reply values. Verify with `./build_ut.py -s serveripc`:
