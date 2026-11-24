@@ -45,8 +45,7 @@ struct CaptureSessionHandle
 /**
  * @brief The hand-over from the capture commit to pool admission (proposal 3.3 step 7 onwards).
  *
- * Admission queries capabilities, chooses the slot count, creates the pool and records the commit. It is
- * implemented by R8; until then UnavailableCaptureAdmission refuses every session.
+ * Admission queries capabilities, chooses the slot count and creates the pool (CaptureAdmission).
  */
 class ICaptureAdmission
 {
@@ -77,23 +76,13 @@ public:
     virtual ~ICaptureAdmissionFactory() = default;
 
     /**
-     * @brief The factory used for new pipelines. Pool admission (R8) installs its own; component tests replace it.
-     *        Until then it creates UnavailableCaptureAdmission.
+     * @brief The factory used for new pipelines. It creates CaptureAdmission; component tests may replace it.
      */
     static std::shared_ptr<ICaptureAdmissionFactory> &instance();
 
     virtual std::shared_ptr<ICaptureAdmission> createCaptureAdmission() const = 0;
 };
 
-/**
- * @brief The admission used until pool admission (R8) exists: it refuses every session, so capture commits fail
- *        cleanly and are rolled back.
- */
-class UnavailableCaptureAdmission : public ICaptureAdmission
-{
-public:
-    bool admit(CaptureSessionHandle &handle) override;
-};
 } // namespace firebolt::rialto::server
 
 #endif // FIREBOLT_RIALTO_SERVER_I_CAPTURE_ADMISSION_H_
