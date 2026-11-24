@@ -10,7 +10,7 @@
   - add `GetVideoFrameCaptureCapabilitiesRequest { api = 1; capture_id = 2; }`, the interim response and `rpc getCapabilities`.
 
   Rename the type's uses in the server status mapping, the service, the client IPC and their tests. Verify: the full build and `./build_ut.py -s serveripc`, `-s clientipc` pass unchanged.
-- [ ] 1.2 Add `VideoFrameCaptureStatus`, `VideoFrameCaptureCaps`, `GLVideoFrameCaptureCaps`, `VulkanVideoFrameCaptureCaps` and the two pure virtual `getCapabilities(out, status)` declarations to `media/public/include/IVideoFrameCapture.h`, as the interim header has them. Add stub overrides in `GLVideoFrameCapture`/`VulkanVideoFrameCapture` that return `FATAL_ERROR`, and update any mocks. Verify: the full build passes and `./build_ut.py -s client` passes.
+- [x] 1.2 Add `VideoFrameCaptureStatus`, `VideoFrameCaptureCaps`, `GLVideoFrameCaptureCaps`, `VulkanVideoFrameCaptureCaps` and the two pure virtual `getCapabilities(out, status)` declarations to `media/public/include/IVideoFrameCapture.h`, as the interim header has them. Add stub overrides in `GLVideoFrameCapture`/`VulkanVideoFrameCapture` that return `FATAL_ERROR`, and update any mocks. Verify: the full build passes and `./build_ut.py -s client` passes.
 
 ## 2. Admission (D1–D4)
 

@@ -103,6 +103,74 @@ enum class GraphicsTextureLayout
 };
 
 /**
+ * @brief Result of a Video Frame Capture operation.
+ */
+/// @since V1.1
+enum class VideoFrameCaptureStatus
+{
+    OK,               /**< Success. */
+    NO_NEW_FRAME,     /**< The current selection was already returned. */
+    NO_FRAME,         /**< No valid selection exists. */
+    UNSUPPORTED,      /**< The operation is not supported. */
+    INVALID_ARGUMENT, /**< An argument or the call order is invalid. */
+    NO_RESOURCES,     /**< A transient resource failure; the call may be retried. */
+    FATAL_ERROR,      /**< Capture is unavailable for the rest of the session, or the server cannot be reached. */
+    SESSION_NOT_READY /**< The capture has no admitted session: it is not attached, not committed, or stopped. */
+};
+
+/**
+ * @brief Describes common Video Frame Capture support and resource limits.
+ */
+/// @since V1.1
+struct VideoFrameCaptureCaps
+{
+    /** Structure size for versioned capability queries. */
+    uint32_t size{sizeof(VideoFrameCaptureCaps)};
+    /** Number of simultaneously retained frame slots: the slot count admitted for the capture's session. */
+    uint32_t maxConcurrentFrames;
+    /** Maximum number of graphics resources exposed by one frame. */
+    uint32_t maxResourcesPerFrame;
+    /** Non-zero when protected-content capture is supported. V1.1 capture is clear-content only. */
+    uint32_t supportsProtectedContent;
+    /** Non-zero when HDR capture is supported. */
+    uint32_t supportsHdr;
+    /** Reserved for future compatible extensions; set to zero. */
+    uint32_t reserved_0;
+};
+
+/**
+ * @brief Describes GL Video Frame Capture support and resource limits.
+ */
+/// @since V1.1
+struct GLVideoFrameCaptureCaps
+{
+    /** Structure size for versioned capability queries. */
+    uint32_t size{sizeof(GLVideoFrameCaptureCaps)};
+    /** Common capture capabilities and limits. */
+    VideoFrameCaptureCaps common;
+    /** Reserved for future compatible extensions; set to zero. */
+    uint32_t reserved_0;
+    /** Reserved for future compatible extensions; set to zero. */
+    uint32_t reserved_1;
+};
+
+/**
+ * @brief Describes Vulkan Video Frame Capture support and resource limits.
+ */
+/// @since V1.1
+struct VulkanVideoFrameCaptureCaps
+{
+    /** Structure size for versioned capability queries. */
+    uint32_t size{sizeof(VulkanVideoFrameCaptureCaps)};
+    /** Common capture capabilities and limits. */
+    VideoFrameCaptureCaps common;
+    /** Vulkan formats supported by this capture implementation, as VkFormat values. */
+    std::vector<int32_t> supportedFormats;
+    /** Reserved for future compatible extensions; set to zero. */
+    uint32_t reserved_0;
+};
+
+/**
  * @brief Represents a retained decoded video frame and its common metadata.
  *
  * Holding a shared frame handle retains the selected frame and its graphics resources,
@@ -244,6 +312,18 @@ class IGLVideoFrameCapture : public IVideoFrameCapture
 {
 public:
     /**
+     * @brief Returns GL capture support and resource limits by invoking the HAL via the server.
+     *
+     * This call requires the capture to be attached to a pipeline whose allSourcesAttached() succeeded; before
+     * that, and after the pipeline stopped, it returns SESSION_NOT_READY. Querying capabilities does not reserve
+     * frame slots or create graphics resources. On any result other than OK, out is left unchanged.
+     * @param[out] out Receives the common limits.
+     * @param[out] status Receives the result status of the query, the same value as returned.
+     * @retval The result status of the query.
+     */
+    virtual VideoFrameCaptureStatus getCapabilities(GLVideoFrameCaptureCaps &out,
+                                                    VideoFrameCaptureStatus &status) const = 0;
+    /**
      * @brief Acquires the current STC-selected GL frame.
      *
      * A newly selected frame returns changed=true. NO_NEW_FRAME returns the cached
@@ -270,6 +350,17 @@ public:
 class IVulkanVideoFrameCapture : public IVideoFrameCapture
 {
 public:
+    /**
+     * @brief Returns Vulkan capture support and resource limits by invoking the HAL via the server.
+     *
+     * As IGLVideoFrameCapture::getCapabilities(). supportedFormats lists the formats Rialto can import that the
+     * capture's physical device supports with the platform's format modifier.
+     * @param[out] out Receives supported Vulkan formats and common limits.
+     * @param[out] status Receives the result status of the query, the same value as returned.
+     * @retval The result status of the query.
+     */
+    virtual VideoFrameCaptureStatus getCapabilities(VulkanVideoFrameCaptureCaps &out,
+                                                    VideoFrameCaptureStatus &status) const = 0;
     /**
      * @brief Acquires the current STC-selected Vulkan frame, as IGLVideoFrameCapture does for GL.
      *

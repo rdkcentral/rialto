@@ -46,6 +46,11 @@ public:
     ~GLVideoFrameCapture() override;
 
     GraphicsAPIType apiType() const override { return GraphicsAPIType::GL; }
+    VideoFrameCaptureStatus getCapabilities(GLVideoFrameCaptureCaps &, VideoFrameCaptureStatus &status) const override
+    {
+        status = VideoFrameCaptureStatus::FATAL_ERROR; // not implemented yet
+        return status;
+    }
     GLFrameAcquisition acquireCurrentFrame() override;
 
     std::uint32_t captureId() const override { return m_captureId; }
