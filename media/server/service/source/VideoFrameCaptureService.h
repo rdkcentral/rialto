@@ -43,6 +43,7 @@ public:
                                                  std::uint32_t &captureId) override;
     bool destroyCapture(VideoFrameCaptureClientId clientId, std::uint32_t captureId) override;
     bool hasCapture(VideoFrameCaptureClientId clientId, std::uint32_t captureId) const override;
+    std::optional<GraphicsAPIType> captureApi(VideoFrameCaptureClientId clientId, std::uint32_t captureId) const override;
     void removeClient(VideoFrameCaptureClientId clientId) override;
     bool bindCapture(VideoFrameCaptureClientId clientId, std::uint32_t captureId, int sessionId) override;
     void unbindCapture(VideoFrameCaptureClientId clientId, std::uint32_t captureId) override;

@@ -282,6 +282,58 @@ void VideoFrameCaptureModuleService::destroyVideoFrameCapture(
     done->Run();
 }
 
+void VideoFrameCaptureModuleService::getCapabilities(
+    ::google::protobuf::RpcController *controller,
+    const ::firebolt::rialto::GetVideoFrameCaptureCapabilitiesRequest *request,
+    ::firebolt::rialto::GetVideoFrameCaptureCapabilitiesResponse *response, ::google::protobuf::Closure *done)
+{
+    service::VideoFrameCaptureClientId clientId{0};
+    if (!clientIdOf(controller, clientId))
+    {
+        controller->SetFailed("Unknown client");
+        done->Run();
+        return;
+    }
+    const std::optional<GraphicsAPIType> kCaptureApi{
+        m_videoFrameCaptureService.captureApi(clientId, request->capture_id())};
+    if (!kCaptureApi || toGraphicsApi(request->api()) != kCaptureApi)
+    {
+        response->set_status(VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT); // unknown capture, or another API
+        done->Run();
+        return;
+    }
+    std::shared_ptr<CaptureSessionRuntime> runtime{
+        m_videoFrameCaptureService.captureRuntime(clientId, request->capture_id())};
+    if (!runtime)
+    {
+        response->set_status(VIDEO_FRAME_CAPTURE_STATUS_SESSION_NOT_READY); // not committed, or retired
+        done->Run();
+        return;
+    }
+
+    capture::CaptureCapabilities capabilities{};
+    const capture::CaptureStatus kStatus{runtime->capabilities(capabilities)};
+    if (kStatus == capture::CaptureStatus::NO_FRAME)
+    {
+        response->set_status(VIDEO_FRAME_CAPTURE_STATUS_SESSION_NOT_READY); // retired meanwhile
+    }
+    else if (kStatus != capture::CaptureStatus::OK)
+    {
+        response->set_status(toWireStatus(kStatus));
+    }
+    else
+    {
+        response->set_status(VIDEO_FRAME_CAPTURE_STATUS_OK);
+        response->set_max_concurrent_frames(runtime->slotCount()); // the admitted N
+        response->set_max_resources_per_frame(1);
+        response->set_supports_protected_content(0);
+        response->set_supports_hdr(0);
+        response->add_drm_fourccs(capabilities.drmFormat);
+        response->add_drm_modifiers(capabilities.drmModifier);
+    }
+    done->Run();
+}
+
 void VideoFrameCaptureModuleService::acquireCurrentFrame(::google::protobuf::RpcController *controller,
                                                          const ::firebolt::rialto::AcquireCurrentVideoFrameRequest *request,
                                                          ::firebolt::rialto::AcquireCurrentVideoFrameResponse *response,

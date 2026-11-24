@@ -33,6 +33,8 @@ public:
                 (override));
     MOCK_METHOD(bool, destroyCapture, (VideoFrameCaptureClientId clientId, std::uint32_t captureId), (override));
     MOCK_METHOD(bool, hasCapture, (VideoFrameCaptureClientId clientId, std::uint32_t captureId), (const, override));
+    MOCK_METHOD(std::optional<GraphicsAPIType>, captureApi,
+                (VideoFrameCaptureClientId clientId, std::uint32_t captureId), (const, override));
     MOCK_METHOD(void, removeClient, (VideoFrameCaptureClientId clientId), (override));
     MOCK_METHOD(bool, bindCapture, (VideoFrameCaptureClientId clientId, std::uint32_t captureId, int sessionId),
                 (override));

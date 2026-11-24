@@ -87,6 +87,18 @@ TEST(VideoFrameCaptureServiceTest, ShouldRegisterCapturesPerClient)
     EXPECT_TRUE(service.hasCapture(kClientA, second));
 }
 
+TEST(VideoFrameCaptureServiceTest, ShouldReportTheApiOfACapture)
+{
+    VideoFrameCaptureService service{halFactory(true)};
+    std::uint32_t gl{0}, vulkan{0};
+    ASSERT_EQ(service.createCapture(kClientA, GraphicsAPIType::GL, gl), VideoFrameCaptureServiceStatus::OK);
+    ASSERT_EQ(service.createCapture(kClientA, GraphicsAPIType::VULKAN, vulkan), VideoFrameCaptureServiceStatus::OK);
+    EXPECT_EQ(service.captureApi(kClientA, gl), GraphicsAPIType::GL);
+    EXPECT_EQ(service.captureApi(kClientA, vulkan), GraphicsAPIType::VULKAN);
+    EXPECT_EQ(service.captureApi(kClientB, gl), std::nullopt);
+    EXPECT_EQ(service.captureApi(kClientA, 999), std::nullopt);
+}
+
 TEST(VideoFrameCaptureServiceTest, ShouldNotFindCaptureOfAnotherClient)
 {
     VideoFrameCaptureService service{halFactory(true)};

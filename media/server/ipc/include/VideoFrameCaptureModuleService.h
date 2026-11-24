@@ -55,6 +55,11 @@ public:
                                   ::firebolt::rialto::DestroyVideoFrameCaptureResponse *response,
                                   ::google::protobuf::Closure *done) override;
 
+    void getCapabilities(::google::protobuf::RpcController *controller,
+                         const ::firebolt::rialto::GetVideoFrameCaptureCapabilitiesRequest *request,
+                         ::firebolt::rialto::GetVideoFrameCaptureCapabilitiesResponse *response,
+                         ::google::protobuf::Closure *done) override;
+
     void acquireCurrentFrame(::google::protobuf::RpcController *controller,
                              const ::firebolt::rialto::AcquireCurrentVideoFrameRequest *request,
                              ::firebolt::rialto::AcquireCurrentVideoFrameResponse *response,

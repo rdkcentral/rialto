@@ -97,6 +97,15 @@ bool VideoFrameCaptureService::hasCapture(VideoFrameCaptureClientId clientId, st
     return it != m_registries.end() && it->second.find(captureId) != nullptr;
 }
 
+std::optional<GraphicsAPIType> VideoFrameCaptureService::captureApi(VideoFrameCaptureClientId clientId,
+                                                                    std::uint32_t captureId) const
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+    auto it = m_registries.find(clientId);
+    const VideoFrameCaptureEntry *kEntry{it == m_registries.end() ? nullptr : it->second.find(captureId)};
+    return kEntry ? std::optional<GraphicsAPIType>{kEntry->api} : std::nullopt;
+}
+
 void VideoFrameCaptureService::removeClient(VideoFrameCaptureClientId clientId)
 {
     std::map<std::uint32_t, int> bound;

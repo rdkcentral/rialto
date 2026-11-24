@@ -80,6 +80,7 @@ add_gtests (
         videoFrameCaptureModuleService/VideoFrameCaptureModuleServiceTests.cpp
         videoFrameCaptureModuleService/VideoFrameCaptureStatusTests.cpp
         videoFrameCaptureModuleService/VideoFrameCaptureAcquireTests.cpp
+        videoFrameCaptureModuleService/VideoFrameCaptureQueryTests.cpp
         ${CMAKE_SOURCE_DIR}/tests/unittests/media/server/capture/CaptureRecordFixtures.cpp
         )
 

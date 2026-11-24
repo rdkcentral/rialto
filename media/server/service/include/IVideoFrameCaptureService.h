@@ -84,6 +84,12 @@ public:
     virtual bool hasCapture(VideoFrameCaptureClientId clientId, std::uint32_t captureId) const = 0;
 
     /**
+     * @brief The graphics API a client's capture was created for, or nothing if the client has no such capture.
+     */
+    virtual std::optional<GraphicsAPIType> captureApi(VideoFrameCaptureClientId clientId,
+                                                      std::uint32_t captureId) const = 0;
+
+    /**
      * @brief Removes every capture registration of a client, when its connection closes.
      */
     virtual void removeClient(VideoFrameCaptureClientId clientId) = 0;
