@@ -77,6 +77,7 @@ add_gtests (
         webAudio/WebAudioTest.cpp
         webAudio/WebAudioTestMethods.cpp
         videoFrameCapture/VideoFrameCaptureRegistryTest.cpp
+        videoFrameCapture/VideoFrameCaptureAdmissionTest.cpp
         videoFrameCapture/VideoFrameCaptureAttachTest.cpp
         videoFrameCapture/VideoFrameCaptureDeliveryTest.cpp
         )

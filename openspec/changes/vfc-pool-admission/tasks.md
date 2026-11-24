@@ -57,7 +57,7 @@
 
 ## 5. Integration
 
-- [ ] 5.1 Add server component tests with the fake HAL and the real admission. Verify with `./build_ct.py`:
+- [x] 5.1 Add server component tests with the fake HAL and the real admission. Verify with `./build_ct.py`:
   - commit succeeds, and the first acquire reports the admitted pool ID;
   - `RIALTO_VIDEO_FRAME_CAPTURE_TARGET_SLOTS=2` gives `createPool(2)`;
   - a `[1,1]` HAL fails `allSourcesAttached()`, rolls back, and a retry with `[1,4]` succeeds;
