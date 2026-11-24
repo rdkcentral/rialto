@@ -33,7 +33,8 @@ CaptureCommit::CaptureCommit(const std::shared_ptr<wrappers::ICaptureHalLibraryF
 }
 
 bool CaptureCommit::run(IGstGenericPlayer &player, int sessionId, std::uint32_t captureId,
-                        const std::unique_ptr<IMediaPipeline::MediaSource> &videoSource, CaptureSessionHandle &committed)
+                        const std::unique_ptr<IMediaPipeline::MediaSource> &videoSource,
+                        const VideoRequirements &videoRequirements, CaptureSessionHandle &committed)
 {
     // 1. a clear video source
     if (!videoSource)
@@ -75,6 +76,7 @@ bool CaptureCommit::run(IGstGenericPlayer &player, int sessionId, std::uint32_t 
 
     // 7 onwards. admission
     CaptureSessionHandle handle{sessionId, captureId, std::move(session)};
+    handle.videoRequirements = videoRequirements;
     if (!m_admission || !m_admission->admit(handle))
     {
         RIALTO_SERVER_LOG_ERROR("Video frame capture %u: session %d was not admitted", captureId, sessionId);

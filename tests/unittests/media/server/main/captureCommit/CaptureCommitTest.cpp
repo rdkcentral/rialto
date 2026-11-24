@@ -70,7 +70,7 @@ protected:
                 }));
     }
 
-    bool run() { return m_sut.run(m_player, kSessionId, kCaptureId, m_videoSource, m_committed); }
+    bool run() { return m_sut.run(m_player, kSessionId, kCaptureId, m_videoSource, m_videoRequirements, m_committed); }
 
     std::shared_ptr<StrictMock<CaptureHalLibraryFactoryMock>> m_halFactory{
         std::make_shared<StrictMock<CaptureHalLibraryFactoryMock>>()};
@@ -80,6 +80,7 @@ protected:
     CaptureCommit m_sut{m_halFactory, m_admission};
     std::unique_ptr<IMediaPipeline::MediaSource> m_videoSource{
         std::make_unique<IMediaPipeline::MediaSourceVideo>("video/h264", false)};
+    VideoRequirements m_videoRequirements{1920, 1080};
     CaptureSessionHandle m_committed;
     capture::ICaptureSession *m_session{nullptr};
     std::vector<std::string> m_events;
@@ -110,6 +111,26 @@ TEST_F(CaptureCommitTest, WesterossinkOverrideIsAccepted)
     EXPECT_CALL(m_player, configureCaptureSink(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*m_admission, admit(_)).WillOnce(Return(true));
     EXPECT_TRUE(run());
+}
+
+TEST_F(CaptureCommitTest, AdmissionReceivesThePipelineVideoRequirements)
+{
+    m_videoRequirements = VideoRequirements{3840, 2160};
+    halWillCreateSession();
+    EXPECT_CALL(m_player, configureCaptureSink(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*m_admission, admit(_))
+        .WillOnce(Invoke(
+            [this](CaptureSessionHandle &handle)
+            {
+                EXPECT_EQ(handle.sessionId, kSessionId);
+                EXPECT_EQ(handle.captureId, kCaptureId);
+                EXPECT_EQ(handle.session.get(), m_session);
+                EXPECT_EQ(handle.videoRequirements.maxWidth, 3840u);
+                EXPECT_EQ(handle.videoRequirements.maxHeight, 2160u);
+                return true;
+            }));
+    EXPECT_TRUE(run());
+    EXPECT_EQ(m_committed.videoRequirements.maxWidth, 3840u);
 }
 
 TEST_F(CaptureCommitTest, NoHalSessionFails)

@@ -27,9 +27,10 @@
 namespace firebolt::rialto::server
 {
 CaptureSessionRuntime::CaptureSessionRuntime(wrappers::CaptureSessionPtr &&session, std::uint32_t poolId,
-                                             const capture::CapturePool &pool)
+                                             const capture::CapturePool &pool,
+                                             const capture::CaptureCapabilities &capabilities)
     : m_session{std::move(session)}, m_guard{*m_session}, m_poolId{poolId}, m_pool{pool},
-      m_slots(pool.slotLayouts.size())
+      m_admittedCapabilities{capabilities}, m_slots(pool.slotLayouts.size())
 {
 }
 

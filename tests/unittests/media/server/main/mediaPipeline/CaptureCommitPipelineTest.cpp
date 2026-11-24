@@ -67,7 +67,7 @@ TEST_F(RialtoServerMediaPipelineCaptureCommitTest, SuccessfulCaptureCommitIsFoll
     loadGstPlayer();
     attachCapture();
     testing::Sequence commitThenSetup;
-    EXPECT_CALL(*m_captureCommitMock, run(_, m_kSessionId, kCaptureId, _, _))
+    EXPECT_CALL(*m_captureCommitMock, run(_, m_kSessionId, kCaptureId, _, _, _))
         .InSequence(commitThenSetup)
         .WillOnce(Return(true));
     EXPECT_CALL(*m_gstPlayerMock, allSourcesAttached()).InSequence(commitThenSetup);
@@ -78,7 +78,7 @@ TEST_F(RialtoServerMediaPipelineCaptureCommitTest, FailedCaptureCommitReturnsFal
 {
     loadGstPlayer();
     attachCapture();
-    EXPECT_CALL(*m_captureCommitMock, run(_, m_kSessionId, kCaptureId, _, _)).WillOnce(Return(false));
+    EXPECT_CALL(*m_captureCommitMock, run(_, m_kSessionId, kCaptureId, _, _, _)).WillOnce(Return(false));
     EXPECT_FALSE(allSourcesAttached()); // no shipping setup: the strict player mock would flag it
 }
 
@@ -87,11 +87,13 @@ TEST_F(RialtoServerMediaPipelineCaptureCommitTest, CommitGetsTheAttachedVideoSou
     loadGstPlayer();
     attachSource(MediaSourceType::VIDEO, "video/h264");
     attachCapture();
-    EXPECT_CALL(*m_captureCommitMock, run(_, m_kSessionId, kCaptureId, _, _))
+    EXPECT_CALL(*m_captureCommitMock, run(_, m_kSessionId, kCaptureId, _, _, _))
         .WillOnce(Invoke(
-            [](IGstGenericPlayer &, int, std::uint32_t, const std::unique_ptr<IMediaPipeline::MediaSource> &source,
-               CaptureSessionHandle &)
+            [this](IGstGenericPlayer &, int, std::uint32_t, const std::unique_ptr<IMediaPipeline::MediaSource> &source,
+                   const VideoRequirements &videoRequirements, CaptureSessionHandle &)
             {
+                EXPECT_EQ(videoRequirements.maxWidth, m_videoReq.maxWidth);
+                EXPECT_EQ(videoRequirements.maxHeight, m_videoReq.maxHeight);
                 EXPECT_NE(source, nullptr);
                 EXPECT_EQ(source->getMimeType(), "video/h264");
                 return false;
@@ -103,7 +105,9 @@ TEST_F(RialtoServerMediaPipelineCaptureCommitTest, RetryWithTheCaptureRunsTheWho
 {
     loadGstPlayer();
     attachCapture();
-    EXPECT_CALL(*m_captureCommitMock, run(_, m_kSessionId, kCaptureId, _, _)).WillOnce(Return(false)).WillOnce(Return(true));
+    EXPECT_CALL(*m_captureCommitMock, run(_, m_kSessionId, kCaptureId, _, _, _))
+        .WillOnce(Return(false))
+        .WillOnce(Return(true));
     EXPECT_FALSE(allSourcesAttached());
 
     EXPECT_CALL(*m_gstPlayerMock, allSourcesAttached());
@@ -114,7 +118,7 @@ TEST_F(RialtoServerMediaPipelineCaptureCommitTest, RetryAfterDetachCommitsWithou
 {
     loadGstPlayer();
     attachCapture();
-    EXPECT_CALL(*m_captureCommitMock, run(_, _, _, _, _)).WillOnce(Return(false));
+    EXPECT_CALL(*m_captureCommitMock, run(_, _, _, _, _, _)).WillOnce(Return(false));
     EXPECT_FALSE(allSourcesAttached());
 
     mainThreadWillEnqueueTaskAndWait();
@@ -132,10 +136,10 @@ TEST_F(RialtoServerMediaPipelineCaptureCommitTest, CommitCreatesTheSessionRuntim
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_EQ(m_mediaPipeline->captureRuntime(), nullptr);
 
-    EXPECT_CALL(*m_captureCommitMock, run(_, m_kSessionId, kCaptureId, _, _))
+    EXPECT_CALL(*m_captureCommitMock, run(_, m_kSessionId, kCaptureId, _, _, _))
         .WillOnce(Invoke(
             [](IGstGenericPlayer &, int, std::uint32_t, const std::unique_ptr<IMediaPipeline::MediaSource> &,
-               CaptureSessionHandle &committed)
+               const VideoRequirements &, CaptureSessionHandle &committed)
             {
                 committed.session =
                     firebolt::rialto::wrappers::CaptureSessionPtr{new testing::NiceMock<
@@ -144,6 +148,7 @@ TEST_F(RialtoServerMediaPipelineCaptureCommitTest, CommitCreatesTheSessionRuntim
                                                                   { delete session; }};
                 committed.poolId = 6;
                 committed.pool.slotLayouts.resize(2);
+                committed.capabilities.maximumSlots = 4;
                 return true;
             }));
     EXPECT_CALL(*m_gstPlayerMock, allSourcesAttached());
@@ -154,6 +159,7 @@ TEST_F(RialtoServerMediaPipelineCaptureCommitTest, CommitCreatesTheSessionRuntim
     ASSERT_NE(runtime, nullptr);
     EXPECT_EQ(runtime->poolId(), 6U);
     EXPECT_EQ(runtime->slotCount(), 2U);
+    EXPECT_EQ(runtime->admittedCapabilities().maximumSlots, 4U);
 }
 
 class RialtoServerMediaPipelineCaptureRetireTest : public RialtoServerMediaPipelineCaptureCommitTest
@@ -164,10 +170,10 @@ protected:
     {
         loadGstPlayer();
         attachCapture();
-        EXPECT_CALL(*m_captureCommitMock, run(_, _, _, _, _))
+        EXPECT_CALL(*m_captureCommitMock, run(_, _, _, _, _, _))
             .WillOnce(Invoke(
                 [](IGstGenericPlayer &, int, std::uint32_t, const std::unique_ptr<IMediaPipeline::MediaSource> &,
-                   CaptureSessionHandle &committed)
+                   const VideoRequirements &, CaptureSessionHandle &committed)
                 {
                     committed.session = firebolt::rialto::wrappers::
                         CaptureSessionPtr{new testing::NiceMock<firebolt::rialto::capture::CaptureSessionMock>(),

@@ -51,13 +51,14 @@ public:
      * @param[in]  sessionId   : The pipeline session.
      * @param[in]  captureId   : The attached capture.
      * @param[in]  videoSource : The attached video source, or null if there is none.
+     * @param[in]  videoRequirements : The pipeline's video requirements, which admission checks.
      * @param[out] committed   : The admitted session, on success.
      *
      * @retval true on success.
      */
     virtual bool run(IGstGenericPlayer &player, int sessionId, std::uint32_t captureId,
                      const std::unique_ptr<IMediaPipeline::MediaSource> &videoSource,
-                     CaptureSessionHandle &committed) = 0;
+                     const VideoRequirements &videoRequirements, CaptureSessionHandle &committed) = 0;
 };
 } // namespace firebolt::rialto::server
 

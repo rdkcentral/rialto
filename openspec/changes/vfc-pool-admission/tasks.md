@@ -15,7 +15,7 @@
 ## 2. Admission (D1–D4)
 
 - [x] 2.1 Move the READY timeout parser into a shared server helper, `captureReadyTimeout()`, used by `GstGenericPlayer`. Verify: `./build_ut.py -s servergstplayer` passes unchanged, including the configured-timeout test.
-- [ ] 2.2 Add `videoRequirements`, `capabilities` and `slotCount` to `CaptureSessionHandle`. Pass `m_kVideoRequirements` through `CaptureCommit::run()`. Add the capabilities to the `CaptureSessionRuntime` constructor. Verify: `./build_ut.py -s servermain` and `-s servercapture` pass, and a commit test checks that the handle passed to admission carries the pipeline's requirements.
+- [x] 2.2 Add `videoRequirements`, `capabilities` and `slotCount` to `CaptureSessionHandle`. Pass `m_kVideoRequirements` through `CaptureCommit::run()`. Add the capabilities to the `CaptureSessionRuntime` constructor. Verify: `./build_ut.py -s servermain` and `-s servercapture` pass, and a commit test checks that the handle passed to admission carries the pipeline's requirements.
 - [ ] 2.3 Add the pure function `chooseSlotCount()` and the T parser. Verify with unit tests covering every row of the Spec A slot-count table, the invalid-target scenario with its warning, and the `[1,1]` failure.
 - [ ] 2.4 Implement `CaptureAdmission::admit()` with an injected clock and sleep: the capabilities query with the retry window, validation, the size check, slot selection, `createPool` once, pool validation, the pool ID counter, the handle outputs and the info log. Install it as the default factory and delete `UnavailableCaptureAdmission`. Verify with `./build_ut.py -s servermain` against every Spec A scenario:
   - ready on the third try;

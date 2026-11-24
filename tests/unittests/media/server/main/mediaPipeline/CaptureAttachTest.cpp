@@ -33,7 +33,7 @@ protected:
     RialtoServerMediaPipelineCaptureAttachTest()
     {
         // commits with a capture succeed here; the commit itself is tested in CaptureCommitTest
-        ON_CALL(*m_captureCommitMock, run(_, _, _, _, _)).WillByDefault(Return(true));
+        ON_CALL(*m_captureCommitMock, run(_, _, _, _, _, _)).WillByDefault(Return(true));
         m_captureCommit = m_captureCommitMock;
         createMediaPipeline();
     }

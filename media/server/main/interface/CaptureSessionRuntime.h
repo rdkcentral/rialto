@@ -73,8 +73,10 @@ public:
      * @param[in] session : The admitted HAL session.
      * @param[in] poolId  : The admitted pool's ID.
      * @param[in] pool    : The admitted pool; one record slot is kept per slot layout.
+     * @param[in] capabilities : The capabilities the session was admitted with.
      */
-    CaptureSessionRuntime(wrappers::CaptureSessionPtr &&session, std::uint32_t poolId, const capture::CapturePool &pool);
+    CaptureSessionRuntime(wrappers::CaptureSessionPtr &&session, std::uint32_t poolId, const capture::CapturePool &pool,
+                          const capture::CaptureCapabilities &capabilities = {});
     ~CaptureSessionRuntime();
 
     CaptureSessionRuntime(const CaptureSessionRuntime &) = delete;
@@ -83,6 +85,8 @@ public:
     std::uint32_t poolId() const { return m_poolId; }
     std::uint32_t slotCount() const { return static_cast<std::uint32_t>(m_slots.size()); }
     const capture::CapturePool &pool() const { return m_pool; }
+    /** The capabilities the session was admitted with. */
+    const capture::CaptureCapabilities &admittedCapabilities() const { return m_admittedCapabilities; }
 
     /**
      * @brief Called under the session lock with an acquired, validated frame, to fill the reply.
@@ -183,6 +187,7 @@ private:
     capture::CaptureSessionGuard m_guard;
     const std::uint32_t m_poolId;
     const capture::CapturePool m_pool;
+    const capture::CaptureCapabilities m_admittedCapabilities;
     std::vector<std::unique_ptr<capture::CapturedFrame>> m_slots; /**< Records are not movable: one per slot. */
     bool m_pendingFlush{false};
     std::uint64_t m_flushGeneration{0}; /**< Counts invalidations seen, so a delivery clears only what it carried. */

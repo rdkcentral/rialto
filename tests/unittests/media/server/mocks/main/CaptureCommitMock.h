@@ -30,7 +30,8 @@ class CaptureCommitMock : public ICaptureCommit
 public:
     MOCK_METHOD(bool, run,
                 (IGstGenericPlayer & player, int sessionId, std::uint32_t captureId,
-                 const std::unique_ptr<IMediaPipeline::MediaSource> &videoSource, CaptureSessionHandle &committed),
+                 const std::unique_ptr<IMediaPipeline::MediaSource> &videoSource,
+                 const VideoRequirements &videoRequirements, CaptureSessionHandle &committed),
                 (override));
 };
 } // namespace firebolt::rialto::server

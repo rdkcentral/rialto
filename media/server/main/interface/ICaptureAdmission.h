@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_I_CAPTURE_ADMISSION_H_
 
 #include "ICaptureHalLibrary.h"
+#include "MediaCommon.h"
 
 #include <cstdint>
 #include <memory>
@@ -32,11 +33,13 @@ namespace firebolt::rialto::server
  */
 struct CaptureSessionHandle
 {
-    int sessionId{-1};                   /**< The pipeline session. */
-    std::uint32_t captureId{0};          /**< The attached capture. */
-    wrappers::CaptureSessionPtr session; /**< The HAL session, whose sink has reached configured READY. */
-    std::uint32_t poolId{0};             /**< Set by admission: the admitted pool's ID. */
-    capture::CapturePool pool{};         /**< Set by admission: the admitted pool. */
+    int sessionId{-1};                           /**< The pipeline session. */
+    std::uint32_t captureId{0};                  /**< The attached capture. */
+    wrappers::CaptureSessionPtr session;         /**< The HAL session, whose sink has reached configured READY. */
+    VideoRequirements videoRequirements{};       /**< The pipeline's video requirements, checked by admission. */
+    std::uint32_t poolId{0};                     /**< Set by admission: the admitted pool's ID. */
+    capture::CapturePool pool{};                 /**< Set by admission: the admitted pool, one layout per slot. */
+    capture::CaptureCapabilities capabilities{}; /**< Set by admission: the capabilities it was admitted with. */
 };
 
 /**

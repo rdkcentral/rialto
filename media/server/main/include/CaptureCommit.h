@@ -38,7 +38,8 @@ public:
     ~CaptureCommit() override = default;
 
     bool run(IGstGenericPlayer &player, int sessionId, std::uint32_t captureId,
-             const std::unique_ptr<IMediaPipeline::MediaSource> &videoSource, CaptureSessionHandle &committed) override;
+             const std::unique_ptr<IMediaPipeline::MediaSource> &videoSource,
+             const VideoRequirements &videoRequirements, CaptureSessionHandle &committed) override;
 
 private:
     std::shared_ptr<wrappers::ICaptureHalLibraryFactory> m_captureHalLibraryFactory;

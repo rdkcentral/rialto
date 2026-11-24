@@ -366,12 +366,13 @@ bool MediaPipelineServerInternal::allSourcesAttachedInternal()
     if (m_attachedCaptureId)
     {
         CaptureSessionHandle committed;
-        if (!m_captureCommit->run(*m_gstPlayer, m_sessionId, *m_attachedCaptureId, m_videoSource, committed))
+        if (!m_captureCommit->run(*m_gstPlayer, m_sessionId, *m_attachedCaptureId, m_videoSource, m_kVideoRequirements,
+                                  committed))
         {
             return false;
         }
-        m_captureRuntime =
-            std::make_shared<CaptureSessionRuntime>(std::move(committed.session), committed.poolId, committed.pool);
+        m_captureRuntime = std::make_shared<CaptureSessionRuntime>(std::move(committed.session), committed.poolId,
+                                                                   committed.pool, committed.capabilities);
     }
 
     m_gstPlayer->allSourcesAttached();
