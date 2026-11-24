@@ -27,6 +27,7 @@
 #include <thread>
 #include <vector>
 
+using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
 using firebolt::rialto::MetricEvent;
 using firebolt::rialto::MetricPhase;

@@ -77,6 +77,47 @@ jobs:
           path: build/coverage-servermain.info
           key: ${{ runner.os }}-servermain-coverage-${{ github.run_id }}-${{ github.run_number }}
 
+  # This job sets up the repo with the dependancies then runs the servermetrics tests
+  run-servermetrics:
+    name: Build and test servermetrics unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-24.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v4
+
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
+
+      # Run the build script for servermetrics
+      - name: build_ut.py script servermetrics
+        run: |
+              python build_ut.py -c -xml -f -cov -s servermetrics
+
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
+        with:
+          suite: 'servermetrics'
+
+      # Cache lcov output
+      - name: Cache servermetrics coverage
+        id: cache-servermetrics-coverage
+        uses: actions/cache@v4
+        if: success()
+        with:
+          path: build/coverage-servermetrics.info
+          key: ${{ runner.os }}-servermetrics-coverage-${{ github.run_id }}-${{ github.run_number }}
+
   # This job sets up the repo with the dependancies then runs the servergstplayer tests
   run-servergstplayer:
     name: Build and test servergstplayer unittests
@@ -498,7 +539,7 @@ jobs:
     # Timeout after
     timeout-minutes: 10
 
-    needs: [run-servermain, run-servergstplayer, run-serveripc, run-serverservice, run-client, run-clientipc, run-common, run-playercommon, run-logging, run-manager, run-ipc]
+    needs: [run-servermain, run-servermetrics, run-servergstplayer, run-serveripc, run-serverservice, run-client, run-clientipc, run-common, run-playercommon, run-logging, run-manager, run-ipc]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -524,6 +565,15 @@ jobs:
         with:
           path: build/coverage-servermain.info
           key: ${{ runner.os }}-servermain-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+      # Get cached lcov servermetrics output
+      - name: Get servermetrics coverage
+        id: cache-servermetrics-coverage
+        uses: actions/cache@v4
+        if: success()
+        with:
+          path: build/coverage-servermetrics.info
+          key: ${{ runner.os }}-servermetrics-coverage-${{ github.run_id }}-${{ github.run_number }}
 
       # Get cached lcov servergstplayer output
       - name: Get servergstplayer coverage
@@ -619,7 +669,7 @@ jobs:
       - name: Combine coverage reports
         run: |
           cd build
-          lcov -a coverage-servermain.info -a coverage-servergstplayer.info -a coverage-serveripc.info -a coverage-serverservice.info \
+          lcov -a coverage-servermain.info -a coverage-servermetrics.info -a coverage-servergstplayer.info -a coverage-serveripc.info -a coverage-serverservice.info \
           -a coverage-client.info -a coverage-clientipc.info -a coverage-common.info -a coverage-playercommon.info -a coverage-logging.info -a coverage-manager.info \
           -a coverage-ipc.info -o coverage.info --filter brace,function,trivial
 

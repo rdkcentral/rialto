@@ -627,7 +627,6 @@ TEST_F(QosUpdatesTest, PlaybackMetricMatrixIsParsedAndForwardedThroughIpc)
                 }
             }
 
-            willGetStats();
             ExpectMessage<firebolt::rialto::MediaPipelineMetricEvent> expectedMetricEvent{m_clientStub};
             m_gstreamerStub.sendMetric(&m_src, metric, observationKind, kMetricPtsNs, count, durationNs);
 
