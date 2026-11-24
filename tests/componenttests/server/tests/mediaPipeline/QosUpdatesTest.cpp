@@ -181,7 +181,7 @@ public:
         ConfigureAction<GetStats>(m_clientStub).send(req).expectFailure();
     }
 
-private:
+protected:
     GstElement *m_videoSink{nullptr};
     GstElement m_src{};
     GstStructure m_testStructure;
