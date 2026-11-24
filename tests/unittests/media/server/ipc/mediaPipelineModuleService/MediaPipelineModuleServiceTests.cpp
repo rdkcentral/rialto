@@ -383,17 +383,17 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetStats)
 TEST_F(MediaPipelineModuleServiceTests, shouldGetFrameCounters)
 {
     mediaPipelineServiceWillCreateSession();
-    sendCreateSessionRequestAndReceiveResponse();
-    mediaPipelineServiceWillGetFrameCounters();
-    sendGetFrameCountersRequestAndReceiveResponse();
+    const int sessionId = sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillGetFrameCounters(sessionId);
+    sendGetFrameCountersRequestAndReceiveResponse(sessionId);
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetFrameCounters)
 {
     mediaPipelineServiceWillCreateSession();
-    sendCreateSessionRequestAndReceiveResponse();
-    mediaPipelineServiceWillFailToGetFrameCounters();
-    sendGetFrameCountersRequestAndReceiveFail();
+    const int sessionId = sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToGetFrameCounters(sessionId);
+    sendGetFrameCountersRequestAndReceiveFail(sessionId);
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldSendPlaybackStateChangedEvent)

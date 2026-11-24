@@ -740,10 +740,11 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetStats()
     EXPECT_CALL(m_mediaPipelineServiceMock, getStats(kHardcodedSessionId, _, _, _)).WillOnce(Return(false));
 }
 
-void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetFrameCounters()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetFrameCounters(int sessionId)
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, getFrameCounters(kHardcodedSessionId, _, _, _, _, _))
+    EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getFrameCounters(sessionId, _, _, _, _, _))
         .WillOnce(Invoke(
             [&](int, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames, uint64_t &corruptedFrames,
                 uint64_t &timestamp)
@@ -756,10 +757,11 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetFrameCounters()
             }));
 }
 
-void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetFrameCounters()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetFrameCounters(int sessionId)
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, getFrameCounters(kHardcodedSessionId, _, _, _, _, _))
+    EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getFrameCounters(sessionId, _, _, _, _, _))
         .WillOnce(Return(false));
 }
 
@@ -1517,12 +1519,12 @@ void MediaPipelineModuleServiceTests::sendGetStatsRequestAndReceiveResponseWitho
     m_service->getStats(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
-void MediaPipelineModuleServiceTests::sendGetFrameCountersRequestAndReceiveResponse()
+void MediaPipelineModuleServiceTests::sendGetFrameCountersRequestAndReceiveResponse(int sessionId)
 {
     firebolt::rialto::GetFrameCountersRequest request;
     firebolt::rialto::GetFrameCountersResponse response;
 
-    request.set_session_id(kHardcodedSessionId);
+    request.set_session_id(sessionId);
     request.set_source_id(kSourceId);
 
     m_service->getFrameCounters(m_controllerMock.get(), &request, &response, m_closureMock.get());
@@ -1533,12 +1535,12 @@ void MediaPipelineModuleServiceTests::sendGetFrameCountersRequestAndReceiveRespo
     EXPECT_EQ(kFrameCountersTimestamp, response.timestamp());
 }
 
-void MediaPipelineModuleServiceTests::sendGetFrameCountersRequestAndReceiveFail()
+void MediaPipelineModuleServiceTests::sendGetFrameCountersRequestAndReceiveFail(int sessionId)
 {
     firebolt::rialto::GetFrameCountersRequest request;
     firebolt::rialto::GetFrameCountersResponse response;
 
-    request.set_session_id(kHardcodedSessionId);
+    request.set_session_id(sessionId);
     request.set_source_id(kSourceId);
 
     m_service->getFrameCounters(m_controllerMock.get(), &request, &response, m_closureMock.get());
