@@ -50,7 +50,7 @@
   - the returned value and `status` agree;
   - `out` is unchanged on `SESSION_NOT_READY` and `FATAL_ERROR`;
   - `OK` fills the common fields and every `size` field.
-- [ ] 4.3 Expose the fourcc→VkFormat mapping from `VulkanFrameImporter` and implement `VulkanVideoFrameCapture::getCapabilities()` with the device check. Verify with `./build_ut.py -s client` and the Vulkan API mock:
+- [x] 4.3 Expose the fourcc→VkFormat mapping from `VulkanFrameImporter` and implement `VulkanVideoFrameCapture::getCapabilities()` with the device check. Verify with `./build_ut.py -s client` and the Vulkan API mock:
   - NV12 linear and supported gives `[VK_FORMAT_G8_B8R8_2PLANE_420_UNORM]`;
   - an unsupported device or modifier gives an empty list with `OK`;
   - an unknown fourcc is omitted.

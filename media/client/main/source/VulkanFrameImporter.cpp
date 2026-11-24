@@ -166,6 +166,12 @@ std::optional<VkFormat> vulkanFormatForDrmFormat(std::uint32_t drmFormat)
     }
 }
 
+bool vulkanFormatSupported(IVulkanApi &api, VkPhysicalDevice physicalDevice, VkFormat format, std::uint64_t modifier)
+{
+    return modifierProperties(api, physicalDevice, format, modifier).has_value() &&
+           imageFormatSupported(api, physicalDevice, format, modifier, 0U);
+}
+
 VulkanFrameImporter::VulkanFrameImporter(const std::shared_ptr<VulkanDeviceContext> &context)
     : m_context{context}, m_inFlight(context->ring().size())
 {

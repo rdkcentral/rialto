@@ -18,8 +18,12 @@
  */
 
 #include "VulkanVideoFrameCapture.h"
+#include "CaptureCapabilities.h"
 #include "RialtoClientLogging.h"
+#include "VulkanFrameImporter.h"
 #include "VulkanVideoFrame.h"
+
+#include <algorithm>
 
 namespace firebolt::rialto::client
 {
@@ -40,6 +44,45 @@ VulkanVideoFrameCapture::~VulkanVideoFrameCapture()
     {
         RIALTO_CLIENT_LOG_DEBUG("Could not remove video frame capture %u from the server", m_captureId);
     }
+}
+
+VideoFrameCaptureStatus VulkanVideoFrameCapture::getCapabilities(VulkanVideoFrameCaptureCaps &out,
+                                                                 VideoFrameCaptureStatus &status) const
+{
+    CaptureCapabilitiesReply reply;
+    status = m_videoFrameCaptureIpc
+                 ? m_videoFrameCaptureIpc->getCapabilities(m_captureId, GraphicsAPIType::VULKAN, reply)
+                 : VideoFrameCaptureStatus::FATAL_ERROR;
+    if (status != VideoFrameCaptureStatus::OK)
+    {
+        return status;
+    }
+
+    VulkanVideoFrameCaptureCaps caps{};
+    caps.size = sizeof(VulkanVideoFrameCaptureCaps);
+    caps.common = commonCapabilitiesOf(reply);
+    // the formats Rialto can import that this device supports with the reported modifier
+    for (std::size_t i = 0; i < reply.drmFourccs.size(); ++i)
+    {
+        const std::uint64_t kModifier{i < reply.drmModifiers.size() ? reply.drmModifiers[i]
+                                      : reply.drmModifiers.empty()  ? 0U
+                                                                    : reply.drmModifiers.back()};
+        const std::optional<VkFormat> kFormat{vulkanFormatForDrmFormat(reply.drmFourccs[i])};
+        if (!kFormat || !m_context ||
+            !vulkanFormatSupported(m_context->api(), m_context->physicalDevice(), *kFormat, kModifier))
+        {
+            RIALTO_CLIENT_LOG_INFO("Video frame capture %u: format 0x%08x with modifier 0x%llx is not supported",
+                                   m_captureId, reply.drmFourccs[i], static_cast<unsigned long long>(kModifier));
+            continue;
+        }
+        const auto kValue{static_cast<int32_t>(*kFormat)};
+        if (std::find(caps.supportedFormats.begin(), caps.supportedFormats.end(), kValue) == caps.supportedFormats.end())
+        {
+            caps.supportedFormats.push_back(kValue);
+        }
+    }
+    out = std::move(caps); // only on OK
+    return status;
 }
 
 VulkanFrameAcquisition VulkanVideoFrameCapture::acquireCurrentFrame()

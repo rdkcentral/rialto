@@ -168,6 +168,7 @@ if(RIALTO_TEST_VULKAN_INCLUDE_DIR)
             PRIVATE
             videoFrameCapture/VulkanApiBeforeTest.cpp
             videoFrameCapture/VulkanApiAfterTest.cpp
+            videoFrameCapture/VulkanCaptureCapabilitiesTest.cpp
             videoFrameCapture/VulkanCaptureCreationTest.cpp
             videoFrameCapture/VulkanLibraryTest.cpp
             videoFrameCapture/VulkanFrameImporterTest.cpp

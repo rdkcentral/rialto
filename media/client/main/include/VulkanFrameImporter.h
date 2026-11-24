@@ -95,6 +95,11 @@ private:
 std::optional<VkFormat> vulkanFormatForDrmFormat(std::uint32_t drmFormat);
 
 /**
+ * @brief Whether the device can sample a DMA-BUF image of this format and modifier, as the importer checks it.
+ */
+bool vulkanFormatSupported(IVulkanApi &api, VkPhysicalDevice physicalDevice, VkFormat format, std::uint64_t modifier);
+
+/**
  * @brief Imports captured frames as Vulkan images (R13 design D2).
  */
 class VulkanFrameImporter : public IFrameImporter

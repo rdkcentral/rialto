@@ -48,11 +48,8 @@ public:
     ~VulkanVideoFrameCapture() override;
 
     GraphicsAPIType apiType() const override { return GraphicsAPIType::VULKAN; }
-    VideoFrameCaptureStatus getCapabilities(VulkanVideoFrameCaptureCaps &, VideoFrameCaptureStatus &status) const override
-    {
-        status = VideoFrameCaptureStatus::FATAL_ERROR; // not implemented yet
-        return status;
-    }
+    VideoFrameCaptureStatus getCapabilities(VulkanVideoFrameCaptureCaps &out,
+                                            VideoFrameCaptureStatus &status) const override;
     VulkanFrameAcquisition acquireCurrentFrame() override;
 
     std::uint32_t captureId() const override { return m_captureId; }
