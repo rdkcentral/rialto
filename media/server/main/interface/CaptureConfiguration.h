@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_CAPTURE_CONFIGURATION_H_
 
 #include <chrono>
+#include <cstdint>
 
 namespace firebolt::rialto::server
 {
@@ -31,6 +32,19 @@ namespace firebolt::rialto::server
  * It bounds the capture sink's READY wait and, separately, pool admission's capabilities retries.
  */
 std::chrono::milliseconds captureReadyTimeout();
+
+/**
+ * @brief The target slot count T: RIALTO_VIDEO_FRAME_CAPTURE_TARGET_SLOTS if it is a whole number of at least 2,
+ *        else 3. A set but unparsable value, or one below 2, logs a warning. Read at each call, so tests can change it.
+ */
+std::uint32_t captureTargetSlots();
+
+/**
+ * @brief Chooses the admitted slot count N = clamp(T, max(2, minimumSlots), maximumSlots).
+ *
+ * @retval The slot count, or 0 if maximumSlots is below 2 (the session cannot be admitted).
+ */
+std::uint32_t chooseCaptureSlotCount(std::uint32_t minimumSlots, std::uint32_t maximumSlots, std::uint32_t target);
 } // namespace firebolt::rialto::server
 
 #endif // FIREBOLT_RIALTO_SERVER_CAPTURE_CONFIGURATION_H_

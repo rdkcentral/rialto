@@ -50,6 +50,7 @@ add_gtests (
         captureCommit/CaptureCommitTest.cpp
         captureCommit/CaptureSessionRuntimeTest.cpp
         captureCommit/CaptureSessionRuntimeFakeHalTest.cpp
+        captureCommit/CaptureSlotCountTest.cpp
         ${CMAKE_SOURCE_DIR}/tests/unittests/media/server/capture/CaptureRecordFixtures.cpp
         mediaPipeline/CaptureCommitPipelineTest.cpp
 
