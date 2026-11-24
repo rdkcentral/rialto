@@ -56,7 +56,7 @@ TEST(RialtoMetricsTest, ParsesElementMetricMessageWithMappedSessionAndSource)
     gst_object_unref(source);
     ASSERT_NE(nullptr, message);
 
-    const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
+    const auto parsed = metrics.onMetricMessage(message);
     gst_message_unref(message);
 
     ASSERT_TRUE(parsed.has_value());
@@ -82,7 +82,7 @@ TEST(RialtoMetricsTest, UnmappedElementDefaultsSessionAndSourceToZero)
     gst_object_unref(source);
     ASSERT_NE(nullptr, message);
 
-    const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
+    const auto parsed = metrics.onMetricMessage(message);
     gst_message_unref(message);
 
     ASSERT_TRUE(parsed.has_value());
@@ -111,7 +111,7 @@ TEST(RialtoMetricsTest, ObservedAtUsesGstMessageTimestamp)
     const auto unixBefore = std::chrono::duration_cast<std::chrono::nanoseconds>(
                                 std::chrono::system_clock::now().time_since_epoch())
                                 .count();
-    const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
+    const auto parsed = metrics.onMetricMessage(message);
     gst_message_unref(message);
 
     ASSERT_TRUE(parsed.has_value());
@@ -126,7 +126,7 @@ TEST(RialtoMetricsTest, IgnoresMalformedElementMetricMessage)
 
     GstElement *source = gst_pipeline_new("metrics-source");
     ASSERT_NE(nullptr, source);
-    GstStructure *structure = gst_structure_new("media-pipeline-metric", nullptr);
+    GstStructure *structure = gst_structure_new_empty("media-pipeline-metric");
     ASSERT_NE(nullptr, structure);
     GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
     gst_object_unref(source);
@@ -134,12 +134,12 @@ TEST(RialtoMetricsTest, IgnoresMalformedElementMetricMessage)
 
     RialtoMetrics metrics;
     metrics.setSessionId(7);
-    const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
+    const auto parsed = metrics.onMetricMessage(message);
     gst_message_unref(message);
 
     EXPECT_FALSE(parsed.has_value());
     CounterSnapshot counters;
-    EXPECT_FALSE(metrics.getFrameCounters(7, 11, counters));
+    EXPECT_FALSE(metrics.getFrameCounters(7, 11, MediaSourceType::VIDEO, counters));
 }
 
 TEST(RialtoMetricsTest, AcceptsValidMessageAfterRejectedMessage)
@@ -157,7 +157,7 @@ TEST(RialtoMetricsTest, AcceptsValidMessageAfterRejectedMessage)
         GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, metric,
                                                      "observation-kind", G_TYPE_UINT, observationKind, nullptr);
         GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
-        const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
+        const auto parsed = metrics.onMetricMessage(message);
         gst_message_unref(message);
         return parsed;
     };
@@ -187,7 +187,7 @@ TEST(RialtoMetricsTest, CountsVideoDecodeErrorOccurrencesAsCorrupted)
         ASSERT_NE(nullptr, structure);
         GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
         ASSERT_NE(nullptr, message);
-        const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
+        const auto parsed = metrics.onMetricMessage(message);
         gst_message_unref(message);
         EXPECT_TRUE(parsed.has_value());
     };
@@ -199,7 +199,7 @@ TEST(RialtoMetricsTest, CountsVideoDecodeErrorOccurrencesAsCorrupted)
 
     gst_object_unref(source);
     CounterSnapshot counters;
-    ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
+    ASSERT_TRUE(metrics.getFrameCounters(7, 11, MediaSourceType::VIDEO, counters));
     EXPECT_EQ(2U, counters.counters.corruptedFrames);
     EXPECT_EQ(0U, counters.counters.droppedFrames);
 }
@@ -223,7 +223,7 @@ TEST(RialtoMetricsTest, RepeatedMessagesWithIncreasingPtsDoNotChangeOrDuplicateC
         ASSERT_NE(nullptr, structure);
         GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
         ASSERT_NE(nullptr, message);
-        const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
+        const auto parsed = metrics.onMetricMessage(message);
         gst_message_unref(message);
         ASSERT_TRUE(parsed.has_value());
         EXPECT_EQ(static_cast<std::int64_t>(nextPts), parsed->presentationTimeStampNs.value());
@@ -236,7 +236,7 @@ TEST(RialtoMetricsTest, RepeatedMessagesWithIncreasingPtsDoNotChangeOrDuplicateC
         postMetric(1U, 1U);
     }
     CounterSnapshot counters;
-    EXPECT_FALSE(metrics.getFrameCounters(7, 11, counters));
+    EXPECT_FALSE(metrics.getFrameCounters(7, 11, MediaSourceType::VIDEO, counters));
 
     // Each decode error must increment corrupted exactly once, regardless of interleaved drops.
     postMetric(3U, 1U);
@@ -244,7 +244,7 @@ TEST(RialtoMetricsTest, RepeatedMessagesWithIncreasingPtsDoNotChangeOrDuplicateC
     postMetric(3U, 1U);
     postMetric(3U, 1U);
 
-    ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
+    ASSERT_TRUE(metrics.getFrameCounters(7, 11, MediaSourceType::VIDEO, counters));
     EXPECT_EQ(3U, counters.counters.corruptedFrames);
     EXPECT_EQ(0U, counters.counters.droppedFrames);
 
@@ -259,12 +259,12 @@ TEST(RialtoMetricsTest, ReturnsLatestSnapshotForSessionAndSource)
     metrics.updateFrameCounters(7, 11, CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 5, 6, 7}, 8});
 
     CounterSnapshot counters;
-    ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
+    ASSERT_TRUE(metrics.getFrameCounters(7, 11, MediaSourceType::VIDEO, counters));
     EXPECT_EQ(5U, counters.counters.renderedFrames);
     EXPECT_EQ(6U, counters.counters.droppedFrames);
     EXPECT_EQ(7U, counters.counters.corruptedFrames);
     EXPECT_EQ(8U, counters.timestamp);
-    EXPECT_FALSE(metrics.getFrameCounters(7, 12, counters));
+    EXPECT_FALSE(metrics.getFrameCounters(7, 12, MediaSourceType::VIDEO, counters));
 }
 
 TEST(RialtoMetricsTest, UpdatingSinkStatsUsesServerTimestampAndPreservesCorruption)
@@ -274,7 +274,7 @@ TEST(RialtoMetricsTest, UpdatingSinkStatsUsesServerTimestampAndPreservesCorrupti
     metrics.updateSinkStats(7, 11, 9, 6);
 
     CounterSnapshot counters;
-    ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
+    ASSERT_TRUE(metrics.getFrameCounters(7, 11, MediaSourceType::VIDEO, counters));
     EXPECT_EQ(9U, counters.counters.renderedFrames);
     EXPECT_EQ(6U, counters.counters.droppedFrames);
     EXPECT_EQ(3U, counters.counters.corruptedFrames);
@@ -282,7 +282,7 @@ TEST(RialtoMetricsTest, UpdatingSinkStatsUsesServerTimestampAndPreservesCorrupti
 
     const std::uint64_t lastTimestamp{counters.timestamp};
     metrics.updateSinkStats(7, 11, 0, 0);
-    ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
+    ASSERT_TRUE(metrics.getFrameCounters(7, 11, MediaSourceType::VIDEO, counters));
     EXPECT_EQ(9U, counters.counters.renderedFrames);
     EXPECT_EQ(6U, counters.counters.droppedFrames);
     EXPECT_EQ(3U, counters.counters.corruptedFrames);
@@ -291,7 +291,7 @@ TEST(RialtoMetricsTest, UpdatingSinkStatsUsesServerTimestampAndPreservesCorrupti
 
 TEST(RialtoMetricsTest, GetFrameCountersRefreshesCacheFromSinkStatsAndKeepsCorruptedFrames)
 {
-    RialtoMetrics metrics([](std::uint64_t &rendered, std::uint64_t &dropped)
+    RialtoMetrics metrics([](const MediaSourceType &, std::uint64_t &rendered, std::uint64_t &dropped)
                           {
                               rendered = 20;
                               dropped = 5;
@@ -300,19 +300,36 @@ TEST(RialtoMetricsTest, GetFrameCountersRefreshesCacheFromSinkStatsAndKeepsCorru
     metrics.updateFrameCounters(7, 11, CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 1, 2, 3}, 4});
 
     CounterSnapshot counters;
-    ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
+    ASSERT_TRUE(metrics.getFrameCounters(7, 11, MediaSourceType::VIDEO, counters));
     EXPECT_EQ(20U, counters.counters.renderedFrames);
     EXPECT_EQ(5U, counters.counters.droppedFrames);
     EXPECT_EQ(3U, counters.counters.corruptedFrames);
 }
 
-TEST(RialtoMetricsTest, GetFrameCountersRetainsCachedCountsWhenSinkStatsUnavailable)
+TEST(RialtoMetricsTest, GetFrameCountersRequestsSinkStatsForRequestedSourceType)
 {
-    RialtoMetrics metrics([](std::uint64_t &, std::uint64_t &) { return false; });
+    MediaSourceType requestedType{MediaSourceType::UNKNOWN};
+    RialtoMetrics metrics([&requestedType](const MediaSourceType &type, std::uint64_t &rendered, std::uint64_t &dropped)
+                          {
+                              requestedType = type;
+                              rendered = 20;
+                              dropped = 5;
+                              return true;
+                          });
     metrics.updateFrameCounters(7, 11, CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 1, 2, 3}, 4});
 
     CounterSnapshot counters;
-    ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
+    ASSERT_TRUE(metrics.getFrameCounters(7, 11, MediaSourceType::AUDIO, counters));
+    EXPECT_EQ(MediaSourceType::AUDIO, requestedType);
+}
+
+TEST(RialtoMetricsTest, GetFrameCountersRetainsCachedCountsWhenSinkStatsUnavailable)
+{
+    RialtoMetrics metrics([](const MediaSourceType &, std::uint64_t &, std::uint64_t &) { return false; });
+    metrics.updateFrameCounters(7, 11, CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 1, 2, 3}, 4});
+
+    CounterSnapshot counters;
+    ASSERT_TRUE(metrics.getFrameCounters(7, 11, MediaSourceType::VIDEO, counters));
     EXPECT_EQ(1U, counters.counters.renderedFrames);
     EXPECT_EQ(2U, counters.counters.droppedFrames);
 }
@@ -325,7 +342,7 @@ TEST(RialtoMetricsTest, FrameCountersNeverDecrease)
     metrics.updateSinkStats(7, 11, 7, 3);
 
     CounterSnapshot counters;
-    ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
+    ASSERT_TRUE(metrics.getFrameCounters(7, 11, MediaSourceType::VIDEO, counters));
     EXPECT_EQ(10U, counters.counters.renderedFrames);
     EXPECT_EQ(5U, counters.counters.droppedFrames);
     EXPECT_EQ(3U, counters.counters.corruptedFrames);
@@ -359,7 +376,7 @@ TEST(RialtoMetricsTest, ConcurrentQueriesReadConsistentSnapshots)
                                  for (std::uint64_t i = 0; i < kIterations; ++i)
                                  {
                                      CounterSnapshot counters;
-                                     if (!metrics.getFrameCounters(kSessionId, kSourceId, counters) ||
+                                     if (!metrics.getFrameCounters(kSessionId, kSourceId, MediaSourceType::VIDEO, counters) ||
                                          counters.counters.droppedFrames != counters.counters.renderedFrames + 1 ||
                                          counters.counters.corruptedFrames != counters.counters.renderedFrames + 2 ||
                                          counters.timestamp != counters.counters.renderedFrames + 3)
@@ -436,7 +453,7 @@ TEST(RialtoMetricsTest, RapidBusBurstOfValidAndInvalidMessagesLeavesStateConsist
     while (GstMessage *message = gst_bus_timed_pop_filtered(bus, 0, GST_MESSAGE_ELEMENT))
     {
         const bool isValid = (receivedCount % 2 == 0);
-        const auto parsed = metrics.onMetricMessage(message, std::nullopt, std::nullopt);
+        const auto parsed = metrics.onMetricMessage(message);
         gst_message_unref(message);
         EXPECT_EQ(isValid, parsed.has_value());
         if (parsed.has_value())
@@ -450,7 +467,7 @@ TEST(RialtoMetricsTest, RapidBusBurstOfValidAndInvalidMessagesLeavesStateConsist
     EXPECT_EQ(kMessageCount / 2, parsedCount);
 
     CounterSnapshot counters;
-    ASSERT_TRUE(metrics.getFrameCounters(7, 11, counters));
+    ASSERT_TRUE(metrics.getFrameCounters(7, 11, MediaSourceType::VIDEO, counters));
     EXPECT_EQ(static_cast<std::uint64_t>(kMessageCount / 2), counters.counters.corruptedFrames);
     EXPECT_EQ(0U, counters.counters.droppedFrames);
 
@@ -465,7 +482,7 @@ TEST(ValidateMediaPipelineMetricTest, AcceptsValidMediaPipelineMetricStructureNa
     GstElement *source = gst_pipeline_new("test-source");
     ASSERT_NE(nullptr, source);
 
-    GstStructure *structure = gst_structure_new("media-pipeline-metric", nullptr);
+    GstStructure *structure = gst_structure_new_empty("media-pipeline-metric");
     ASSERT_NE(nullptr, structure);
 
     GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
@@ -517,7 +534,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsStructureNamedMetric)
     GstElement *source = gst_pipeline_new("test-source");
     ASSERT_NE(nullptr, source);
 
-    GstStructure *structure = gst_structure_new("metric", nullptr);
+    GstStructure *structure = gst_structure_new_empty("metric");
     ASSERT_NE(nullptr, structure);
 
     GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
@@ -542,7 +559,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsStructureNamedLegacyMetric)
     GstElement *source = gst_pipeline_new("test-source");
     ASSERT_NE(nullptr, source);
 
-    GstStructure *structure = gst_structure_new("legacy-metric", nullptr);
+    GstStructure *structure = gst_structure_new_empty("legacy-metric");
     ASSERT_NE(nullptr, structure);
 
     GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
@@ -575,7 +592,7 @@ TEST(ValidateMediaPipelineMetricTest, RejectsMissingMetricField)
     GstElement *source = gst_pipeline_new("test-source");
     ASSERT_NE(nullptr, source);
 
-    GstStructure *structure = gst_structure_new("media-pipeline-metric", nullptr);
+    GstStructure *structure = gst_structure_new_empty("media-pipeline-metric");
     ASSERT_NE(nullptr, structure);
 
     GstMessage *message = gst_message_new_element(GST_OBJECT(source), structure);
@@ -870,21 +887,21 @@ namespace
 std::string validateAndCaptureWarnings(GstStructure *structure, GstFlowReturn &result)
 {
     std::string logs;
-    setLogHandler(RIALTO_COMPONENT_SERVER,
-                  [&logs](RIALTO_DEBUG_LEVEL level, const char *, int, const char *, const char *message,
-                          std::size_t messageLen)
-                  {
-                      if (level == RIALTO_DEBUG_LEVEL_WARNING)
-                      {
-                          logs.append(message, messageLen);
-                          logs.append("\n");
-                      }
-                  },
-                  true);
+    firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_SERVER,
+                                             [&logs](RIALTO_DEBUG_LEVEL level, const char *, int, const char *, const char *message,
+                                                     std::size_t messageLen)
+                                             {
+                                                 if (level == RIALTO_DEBUG_LEVEL_WARNING)
+                                                 {
+                                                     logs.append(message, messageLen);
+                                                     logs.append("\n");
+                                                 }
+                                             },
+                                             true);
 
     MetricEvent out;
     result = ValidateMediaPipelineMetric(structure, out);
-    setLogHandler(RIALTO_COMPONENT_SERVER, nullptr, false);
+    firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_SERVER, nullptr, false);
     return logs;
 }
 void expectRejectedWithWarning(GstStructure *structure)
@@ -902,7 +919,7 @@ TEST(ValidateMediaPipelineMetricLoggingTest, EveryRejectionPathLogsWarning)
 {
     gst_init(nullptr, nullptr);
 
-    expectRejectedWithWarning(gst_structure_new("metric", nullptr));
+    expectRejectedWithWarning(gst_structure_new_empty("metric"));
     expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "observation-kind", G_TYPE_UINT, 1U, nullptr));
     expectRejectedWithWarning(gst_structure_new("media-pipeline-metric", "metric", G_TYPE_STRING, "1",
                                                 "observation-kind", G_TYPE_UINT, 1U, nullptr));

@@ -601,10 +601,10 @@ bool MediaPipelineServerInternal::getFrameCountersInternal(int32_t sessionId, in
 
     const auto sourceIter =
         std::find_if(m_attachedSources.begin(), m_attachedSources.end(), [sourceId](const auto &source)
-                     { return source.first == MediaSourceType::VIDEO && source.second == sourceId; });
+                     { return source.second == sourceId; });
     if (sourceIter == m_attachedSources.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - video sourceId: %d is not attached", sourceId);
+        RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - sourceId: %d is not attached", sourceId);
         return false;
     }
 
@@ -616,7 +616,7 @@ bool MediaPipelineServerInternal::getFrameCountersInternal(int32_t sessionId, in
     }
 
     CounterSnapshot counters;
-    if (!metrics->getFrameCounters(sessionId, sourceId, counters))
+    if (!metrics->getFrameCounters(sessionId, sourceId, sourceIter->first, counters))
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get frame counters - no cached metrics for sessionId: %d, sourceId: %d",
                                 sessionId, sourceId);

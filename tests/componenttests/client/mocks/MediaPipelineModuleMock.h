@@ -157,6 +157,9 @@ public:
     MOCK_METHOD(void, isVideoMaster,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::IsVideoMasterRequest *request,
                  ::firebolt::rialto::IsVideoMasterResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getFrameCounters,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetFrameCountersRequest *request,
+                 ::firebolt::rialto::GetFrameCountersResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {
@@ -265,11 +268,31 @@ public:
         return response;
     }
 
+    ::firebolt::rialto::SetMediaMetricsResponse setMetricSubscriptionResponse(const bool result)
+    {
+        firebolt::rialto::SetMediaMetricsResponse response;
+        response.set_result(result);
+        return response;
+    }
+
     ::firebolt::rialto::GetStatsResponse getStatsResponse(const uint64_t renderedFrames, const uint64_t droppedFrames)
     {
         firebolt::rialto::GetStatsResponse response;
         response.set_rendered_frames(renderedFrames);
         response.set_dropped_frames(droppedFrames);
+        return response;
+    }
+
+    ::firebolt::rialto::GetFrameCountersResponse getFrameCountersResponse(const uint64_t renderedFrames,
+                                                                          const uint64_t droppedFrames,
+                                                                          const uint64_t corruptedFrames,
+                                                                          const uint64_t timestamp)
+    {
+        firebolt::rialto::GetFrameCountersResponse response;
+        response.set_rendered_frames(renderedFrames);
+        response.set_dropped_frames(droppedFrames);
+        response.set_corrupted_frames(corruptedFrames);
+        response.set_timestamp(timestamp);
         return response;
     }
 

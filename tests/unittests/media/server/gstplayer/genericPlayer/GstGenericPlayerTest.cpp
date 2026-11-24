@@ -1294,29 +1294,12 @@ TEST_F(GstGenericPlayerTest, shouldCountAndNotifyWesterosMetricMessages)
                      Field(&MetricEvent::presentationTimeStampNs, Optional(static_cast<int64_t>(kPtsNs))));
     };
 
-    GstStructure stats;
-    const auto expectStats = [&](guint64 renderedFrames, guint64 droppedFrames)
-    {
-        expectGetAVSink(kVideoSinkStr, m_element);
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _))
-            .WillOnce(Invoke([&](gpointer, const gchar *, void *value)
-                             { *reinterpret_cast<GstStructure **>(value) = &stats; }));
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&stats, StrEq("rendered"), _))
-            .WillOnce(DoAll(SetArgumentPointee<2>(renderedFrames), Return(true)));
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&stats, StrEq("dropped"), _))
-            .WillOnce(DoAll(SetArgumentPointee<2>(droppedFrames), Return(true)));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureFree(&stats)).Times(1);
-    };
-
-    expectStats(101U, 7U);
     EXPECT_CALL(m_gstPlayerClient, notifyMetric(metricEvent(MetricType::VIDEO_FRAME_DROP, MetricPhase::OCCURRENCE)));
     GstMessage *dropMessage = makeMetricMessage(kVideoFrameDropMetric, static_cast<guint>(MetricPhase::OCCURRENCE));
     ASSERT_NE(nullptr, dropMessage);
     dispatcherClient->handleMetricMessage(dropMessage);
     gst_message_unref(dropMessage);
 
-    expectStats(102U, 9U);
     EXPECT_CALL(m_gstPlayerClient,
                 notifyMetric(metricEvent(MetricType::BUFFER_UNDERFLOW, MetricPhase::EPISODE_STARTED)));
     GstMessage *underflowMessage =
@@ -1324,15 +1307,4 @@ TEST_F(GstGenericPlayerTest, shouldCountAndNotifyWesterosMetricMessages)
     ASSERT_NE(nullptr, underflowMessage);
     dispatcherClient->handleMetricMessage(underflowMessage);
     gst_message_unref(underflowMessage);
-
-    expectGetAVSink(kVideoSinkStr, m_element);
-    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _))
-        .WillOnce(Invoke([](gpointer, const gchar *, void *value)
-                         { *reinterpret_cast<GstStructure **>(value) = nullptr; }));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
-    EXPECT_CALL(m_gstPlayerClient, notifyMetric(metricEvent(MetricType::VIDEO_FRAME_DROP, MetricPhase::OCCURRENCE)));
-    GstMessage *dropWithoutStats = makeMetricMessage(kVideoFrameDropMetric, static_cast<guint>(MetricPhase::OCCURRENCE));
-    ASSERT_NE(nullptr, dropWithoutStats);
-    dispatcherClient->handleMetricMessage(dropWithoutStats);
-    gst_message_unref(dropWithoutStats);
 }

@@ -53,6 +53,7 @@ add_gtests (
         tests/mse/FlushTest.cpp
         tests/mse/FirstFrameNotificationTest.cpp
         tests/mse/MediaPipelineCapabilitiesTest.cpp
+        tests/mse/MetricsTest.cpp
         tests/mse/MuteTest.cpp
         tests/mse/PipelinePropertyTest.cpp
         tests/mse/PlayPauseStopFailuresTest.cpp

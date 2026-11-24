@@ -35,19 +35,18 @@ public:
     RialtoMetrics(SinkStatsGetter getSinkStats = nullptr);
     ~RialtoMetrics() override;
     void setSessionId(int32_t sessionId) override;
-    std::optional<MetricEvent> onMetricMessage(
-        GstMessage *message, const std::optional<std::uint64_t> &renderedFrames,
-        const std::optional<std::uint64_t> &droppedFrames) override;
+    std::optional<MetricEvent> onMetricMessage(GstMessage *message) override;
     void updateFrameCounters(int32_t sessionId, int32_t sourceId, const CounterSnapshot &snapshot) override;
     void updateSinkStats(int32_t sessionId, int32_t sourceId, std::uint64_t renderedFrames,
                          std::uint64_t droppedFrames) override;
-    bool getFrameCounters(int32_t sessionId, int32_t sourceId, CounterSnapshot &snapshot) override;
+    bool getFrameCounters(int32_t sessionId, int32_t sourceId, const MediaSourceType &mediaSourceType,
+                          CounterSnapshot &snapshot) override;
     ElementToSourceMapper* getElementToSourceMapper() override;
 
 private:
     using CounterKey = std::pair<int32_t, int32_t>;
 
-    bool refreshFrameCounters(int32_t sessionId, int32_t sourceId);
+    bool refreshFrameCounters(int32_t sessionId, int32_t sourceId, const MediaSourceType &mediaSourceType);
 
     mutable std::mutex m_counterMutex;
     int32_t m_sessionId{-1};

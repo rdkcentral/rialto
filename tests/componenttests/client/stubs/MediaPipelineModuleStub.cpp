@@ -146,4 +146,13 @@ void MediaPipelineModuleStub::notifyPlaybackInfo(int sessionId, const firebolt::
     event->set_volume(playbackInfo.volume);
     getClient()->sendEvent(event);
 }
+
+void MediaPipelineModuleStub::notifyMetricEvent(int sessionId, const firebolt::rialto::MediaPipelineMetricEvent &metricEvent)
+{
+    waitForClientConnect();
+
+    auto event = std::make_shared<firebolt::rialto::MediaPipelineMetricEvent>(metricEvent);
+    event->set_session_id(sessionId);
+    getClient()->sendEvent(event);
+}
 } // namespace firebolt::rialto::client::ct

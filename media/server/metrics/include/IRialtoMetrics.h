@@ -47,17 +47,17 @@ public:
     /**
      * Reads the current rendered/dropped counts from a sink. Returns false if they are unavailable.
      */
-    using SinkStatsGetter = std::function<bool(std::uint64_t &renderedFrames, std::uint64_t &droppedFrames)>;
+    using SinkStatsGetter = std::function<bool(const MediaSourceType &mediaSourceType, std::uint64_t &renderedFrames,
+                                               std::uint64_t &droppedFrames)>;
 
     virtual ~IRialtoMetrics() = default;
     virtual void setSessionId(int32_t sessionId) = 0;
-    virtual std::optional<MetricEvent> onMetricMessage(
-        GstMessage *message, const std::optional<std::uint64_t> &renderedFrames,
-        const std::optional<std::uint64_t> &droppedFrames) = 0;
+    virtual std::optional<MetricEvent> onMetricMessage(GstMessage *message) = 0;
     virtual void updateFrameCounters(int32_t sessionId, int32_t sourceId, const CounterSnapshot &snapshot) = 0;
     virtual void updateSinkStats(int32_t sessionId, int32_t sourceId, std::uint64_t renderedFrames,
                                 std::uint64_t droppedFrames) = 0;
-    virtual bool getFrameCounters(int32_t sessionId, int32_t sourceId, CounterSnapshot &snapshot) = 0;
+    virtual bool getFrameCounters(int32_t sessionId, int32_t sourceId, const MediaSourceType &mediaSourceType,
+                                  CounterSnapshot &snapshot) = 0;
     virtual ElementToSourceMapper* getElementToSourceMapper() = 0;
 };
 

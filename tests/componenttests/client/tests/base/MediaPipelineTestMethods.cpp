@@ -1535,6 +1535,77 @@ void MediaPipelineTestMethods::getStats(uint64_t expectedFrames, uint64_t expect
     EXPECT_EQ(returnDropped, expectedDropped);
 }
 
+void MediaPipelineTestMethods::shouldSetMetricSubscription(const std::vector<MetricType> &types)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setMetricSubscription(_, setMetricSubscriptionRequestMatcher(kSessionId, static_cast<int>(types.size())),
+                                      _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->setMetricSubscriptionResponse(true)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::setMetricSubscription(const std::vector<MetricType> &types)
+{
+    EXPECT_TRUE(m_mediaPipeline->setMetricSubscription(types));
+}
+
+void MediaPipelineTestMethods::shouldGetFrameCounters(uint64_t renderedFrames, uint64_t droppedFrames,
+                                                      uint64_t corruptedFrames, uint64_t timestamp)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                getFrameCounters(_, getFrameCountersRequestMatcher(kSessionId, kVideoSourceId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getFrameCountersResponse(renderedFrames,
+                                                                                             droppedFrames,
+                                                                                             corruptedFrames,
+                                                                                             timestamp)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getFrameCounters(uint64_t expectedRendered, uint64_t expectedDropped,
+                                                uint64_t expectedCorrupted, uint64_t expectedTimestamp)
+{
+    uint64_t returnRendered;
+    uint64_t returnDropped;
+    uint64_t returnCorrupted;
+    uint64_t returnTimestamp;
+    EXPECT_TRUE(m_mediaPipeline->getFrameCounters(kVideoSourceId, returnRendered, returnDropped, returnCorrupted,
+                                                  returnTimestamp));
+    EXPECT_EQ(returnRendered, expectedRendered);
+    EXPECT_EQ(returnDropped, expectedDropped);
+    EXPECT_EQ(returnCorrupted, expectedCorrupted);
+    EXPECT_EQ(returnTimestamp, expectedTimestamp);
+}
+
+namespace
+{
+const uint64_t kMetricCount = 3;
+const uint64_t kMetricObservedAtMonotonicNs = 123456;
+const int64_t kMetricObservedAtUnixNs = 654321;
+} // namespace
+
+void MediaPipelineTestMethods::shouldNotifyMetric()
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock,
+                notifyMetric(AllOf(Field(&MetricEvent::type, MetricType::VIDEO_FRAME_DROP),
+                                   Field(&MetricEvent::phase, MetricPhase::OCCURRENCE),
+                                   Field(&MetricEvent::sourceId, kVideoSourceId),
+                                   Field(&MetricEvent::count, Optional(kMetricCount)))))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
+void MediaPipelineTestMethods::sendNotifyMetric()
+{
+    firebolt::rialto::MediaPipelineMetricEvent metricEvent;
+    metricEvent.set_type(firebolt::rialto::MediaPipelineMetricEvent::VIDEO_FRAME_DROP);
+    metricEvent.set_phase(firebolt::rialto::MediaPipelineMetricEvent::OCCURRENCE);
+    metricEvent.set_source_id(kVideoSourceId);
+    metricEvent.set_count(kMetricCount);
+    metricEvent.set_observed_at_monotonic_ns(kMetricObservedAtMonotonicNs);
+    metricEvent.set_observed_at_unix_ns(kMetricObservedAtUnixNs);
+    getServerStub()->notifyMetricEvent(kSessionId, metricEvent);
+    waitEvent();
+}
+
 void MediaPipelineTestMethods::shouldFlush()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock, flush(_, flushRequestMatcher(kSessionId, kAudioSourceId, kResetTime), _, _))

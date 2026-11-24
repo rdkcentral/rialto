@@ -163,9 +163,7 @@ void RialtoMetrics::setSessionId(int32_t sessionId)
 	m_sessionId = sessionId;
 }
 
-std::optional<MetricEvent> RialtoMetrics::onMetricMessage(
-	GstMessage *message, const std::optional<std::uint64_t> &renderedFrames,
-	const std::optional<std::uint64_t> &droppedFrames)
+std::optional<MetricEvent> RialtoMetrics::onMetricMessage(GstMessage *message)
 {
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, "RialtoMetrics::onMetricMessage received message: %p", message);
 	if (!message)
@@ -259,11 +257,12 @@ void RialtoMetrics::updateSinkStats(int32_t sessionId, int32_t sourceId, std::ui
 	counters.timestamp = getMonotonicTimestampNs();
 }
 
-bool RialtoMetrics::getFrameCounters(int32_t sessionId, int32_t sourceId, CounterSnapshot &snapshot)
+bool RialtoMetrics::getFrameCounters(int32_t sessionId, int32_t sourceId, const MediaSourceType &mediaSourceType,
+									 CounterSnapshot &snapshot)
 {
 	RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER,
 					 "RialtoMetrics::getFrameCounters sessionId: %d, sourceId: %d", sessionId, sourceId);
-	refreshFrameCounters(sessionId, sourceId);
+	refreshFrameCounters(sessionId, sourceId, mediaSourceType);
 
 	bool found = false;
 	{
@@ -290,11 +289,11 @@ bool RialtoMetrics::getFrameCounters(int32_t sessionId, int32_t sourceId, Counte
 	return true;
 }
 
-bool RialtoMetrics::refreshFrameCounters(int32_t sessionId, int32_t sourceId)
+bool RialtoMetrics::refreshFrameCounters(int32_t sessionId, int32_t sourceId, const MediaSourceType &mediaSourceType)
 {
 	uint64_t renderedFrames{0};
 	uint64_t droppedFrames{0};
-	if (m_getSinkStats && m_getSinkStats(renderedFrames, droppedFrames))
+	if (m_getSinkStats && m_getSinkStats(mediaSourceType, renderedFrames, droppedFrames))
 	{
 		updateSinkStats(sessionId, sourceId, renderedFrames, droppedFrames);
 		return true;

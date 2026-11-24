@@ -352,8 +352,9 @@ GstGenericPlayer::GstGenericPlayer(
     }
 
     RIALTO_SERVER_LOG_DEBUG("Creating playback metrics handler");
-    m_metrics = std::make_shared<RialtoMetrics>([this](uint64_t &renderedFrames, uint64_t &droppedFrames)
-                                                { return getStats(MediaSourceType::VIDEO, renderedFrames, droppedFrames); });
+    m_metrics = std::make_shared<RialtoMetrics>([this](const MediaSourceType &mediaSourceType, uint64_t &renderedFrames,
+                                                       uint64_t &droppedFrames)
+                                                { return getStats(mediaSourceType, renderedFrames, droppedFrames); });
     m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline,
                                                                                   m_context.flushOnPrerollController,
                                                                                   m_gstWrapper, m_glibWrapper);
@@ -3288,21 +3289,7 @@ void GstGenericPlayer::handleMetricMessage(GstMessage *message)
         return;
     }
 
-    std::optional<uint64_t> renderedFrames;
-    std::optional<uint64_t> droppedFrames;
-    uint64_t currentRenderedFrames{0};
-    uint64_t currentDroppedFrames{0};
-    if (getStats(MediaSourceType::VIDEO, currentRenderedFrames, currentDroppedFrames))
-    {
-        renderedFrames = currentRenderedFrames;
-        droppedFrames = currentDroppedFrames;
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_WARN("Playback metric sink stats unavailable - retaining cached rendered and dropped counts");
-    }
-
-    const auto parsedMetric = m_metrics->onMetricMessage(message, renderedFrames, droppedFrames);
+    const auto parsedMetric = m_metrics->onMetricMessage(message);
     if (!parsedMetric)
     {
         RIALTO_SERVER_LOG_DEBUG("Playback metric message was ignored by RialtoMetrics");

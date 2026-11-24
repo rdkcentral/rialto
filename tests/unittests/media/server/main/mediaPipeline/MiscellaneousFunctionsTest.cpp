@@ -558,26 +558,41 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersSucc
     EXPECT_EQ(1234U, timestamp);
 }
 
-TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersFailsForAudioSource)
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersReadsSinkStatsForAudioSource)
 {
     loadGstPlayer();
     const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::AUDIO, "audio/x-opus");
+    auto metrics = std::make_shared<RialtoMetrics>([this](const MediaSourceType &mediaSourceType, uint64_t &rendered, uint64_t &dropped)
+                                                   { return m_gstPlayerMock->getStats(mediaSourceType, rendered, dropped); });
+
     mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getRialtoMetrics()).WillOnce(Return(metrics));
+    EXPECT_CALL(*m_gstPlayerMock, getStats(MediaSourceType::AUDIO, _, _))
+        .WillOnce(Invoke([](const MediaSourceType &, uint64_t &rendered, uint64_t &dropped)
+                         {
+                             rendered = 55;
+                             dropped = 3;
+                             return true;
+                         }));
 
     uint64_t renderedFrames{0};
     uint64_t droppedFrames{0};
     uint64_t corruptedFrames{0};
     uint64_t timestamp{0};
-    EXPECT_FALSE(m_mediaPipeline->getFrameCounters(m_kSessionId, sourceId, renderedFrames, droppedFrames,
-                                                   corruptedFrames, timestamp));
+    EXPECT_TRUE(m_mediaPipeline->getFrameCounters(m_kSessionId, sourceId, renderedFrames, droppedFrames,
+                                                  corruptedFrames, timestamp));
+    EXPECT_EQ(55U, renderedFrames);
+    EXPECT_EQ(3U, droppedFrames);
+    EXPECT_EQ(0U, corruptedFrames);
+    EXPECT_GT(timestamp, 0U);
 }
 
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersRefreshesSinkStats)
 {
     loadGstPlayer();
     const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
-    auto metrics = std::make_shared<RialtoMetrics>([this](uint64_t &rendered, uint64_t &dropped)
-                                                   { return m_gstPlayerMock->getStats(MediaSourceType::VIDEO, rendered, dropped); });
+    auto metrics = std::make_shared<RialtoMetrics>([this](const MediaSourceType &mediaSourceType, uint64_t &rendered, uint64_t &dropped)
+                                                   { return m_gstPlayerMock->getStats(mediaSourceType, rendered, dropped); });
     metrics->updateFrameCounters(m_kSessionId, sourceId,
                                  CounterSnapshot{{static_cast<uint32_t>(sizeof(VideoFrameCounters)), 3141, 95, 7}, 1234});
 
@@ -603,7 +618,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersRefr
     EXPECT_GT(timestamp, 1234U);
 
     CounterSnapshot snapshot;
-    ASSERT_TRUE(metrics->getFrameCounters(m_kSessionId, sourceId, snapshot));
+    ASSERT_TRUE(metrics->getFrameCounters(m_kSessionId, sourceId, MediaSourceType::VIDEO, snapshot));
     EXPECT_EQ(4000U, snapshot.counters.renderedFrames);
     EXPECT_EQ(120U, snapshot.counters.droppedFrames);
     EXPECT_EQ(7U, snapshot.counters.corruptedFrames);
@@ -614,8 +629,8 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetFrameCountersRead
 {
     loadGstPlayer();
     const int32_t sourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
-    auto metrics = std::make_shared<RialtoMetrics>([this](uint64_t &rendered, uint64_t &dropped)
-                                                   { return m_gstPlayerMock->getStats(MediaSourceType::VIDEO, rendered, dropped); });
+    auto metrics = std::make_shared<RialtoMetrics>([this](const MediaSourceType &mediaSourceType, uint64_t &rendered, uint64_t &dropped)
+                                                   { return m_gstPlayerMock->getStats(mediaSourceType, rendered, dropped); });
 
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getRialtoMetrics()).WillOnce(Return(metrics));
