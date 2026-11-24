@@ -265,3 +265,72 @@ TEST_F(VideoFrameCaptureIpcTest, ShouldGetPool)
     EXPECT_EQ(pool.poolId, 4u);
     EXPECT_EQ(pool.slotCount, 2u);
 }
+
+TEST_F(VideoFrameCaptureIpcTest, ShouldGetCapabilities)
+{
+    createVideoFrameCaptureIpc();
+    expectIpcApiCallSuccess();
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("getCapabilities"), m_controllerMock.get(), _, _, m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<2, 3>(Invoke(
+            [](const google::protobuf::Message *message, google::protobuf::Message *reply)
+            {
+                auto *request = dynamic_cast<const firebolt::rialto::GetVideoFrameCaptureCapabilitiesRequest *>(message);
+                EXPECT_EQ(request->capture_id(), 7u);
+                EXPECT_EQ(request->api(), firebolt::rialto::GRAPHICS_API_TYPE_VULKAN);
+                auto *response = dynamic_cast<firebolt::rialto::GetVideoFrameCaptureCapabilitiesResponse *>(reply);
+                response->set_status(firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_OK);
+                response->set_max_concurrent_frames(3);
+                response->set_max_resources_per_frame(1);
+                response->set_supports_protected_content(0);
+                response->set_supports_hdr(0);
+                response->add_drm_fourccs(0x3231564e);
+                response->add_drm_modifiers(5);
+            })));
+    CaptureCapabilitiesReply reply;
+    EXPECT_EQ(m_sut->getCapabilities(7, GraphicsAPIType::VULKAN, reply), VideoFrameCaptureStatus::OK);
+    EXPECT_EQ(reply.maxConcurrentFrames, 3u);
+    EXPECT_EQ(reply.maxResourcesPerFrame, 1u);
+    EXPECT_EQ(reply.drmFourccs, std::vector<std::uint32_t>{0x3231564e});
+    EXPECT_EQ(reply.drmModifiers, std::vector<std::uint64_t>{5});
+}
+
+TEST_F(VideoFrameCaptureIpcTest, ShouldMapCapabilitiesStatuses)
+{
+    createVideoFrameCaptureIpc();
+    const std::vector<std::pair<firebolt::rialto::VideoFrameCaptureWireStatus, VideoFrameCaptureStatus>> kCases{
+        {firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_NO_NEW_FRAME, VideoFrameCaptureStatus::NO_NEW_FRAME},
+        {firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_NO_FRAME, VideoFrameCaptureStatus::NO_FRAME},
+        {firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_UNSUPPORTED, VideoFrameCaptureStatus::UNSUPPORTED},
+        {firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT, VideoFrameCaptureStatus::INVALID_ARGUMENT},
+        {firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_NO_RESOURCES, VideoFrameCaptureStatus::NO_RESOURCES},
+        {firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR, VideoFrameCaptureStatus::FATAL_ERROR},
+        {firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_SESSION_NOT_READY, VideoFrameCaptureStatus::SESSION_NOT_READY},
+    };
+    for (const auto &kCase : kCases)
+    {
+        expectIpcApiCallSuccess();
+        EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getCapabilities"), m_controllerMock.get(), _, _,
+                                               m_blockingClosureMock.get()))
+            .WillOnce(WithArgs<3>(Invoke(
+                [&](google::protobuf::Message *message)
+                {
+                    auto *response = dynamic_cast<firebolt::rialto::GetVideoFrameCaptureCapabilitiesResponse *>(message);
+                    response->set_status(kCase.first);
+                    response->set_max_concurrent_frames(9); // ignored when not OK
+                })));
+        CaptureCapabilitiesReply reply;
+        EXPECT_EQ(m_sut->getCapabilities(7, GraphicsAPIType::GL, reply), kCase.second);
+        EXPECT_EQ(reply.maxConcurrentFrames, 0u);
+    }
+}
+
+TEST_F(VideoFrameCaptureIpcTest, ShouldMapFailedCapabilitiesCallToFatalError)
+{
+    createVideoFrameCaptureIpc();
+    expectIpcApiCallFailure();
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("getCapabilities"), m_controllerMock.get(), _, _, m_blockingClosureMock.get()));
+    CaptureCapabilitiesReply reply;
+    EXPECT_EQ(m_sut->getCapabilities(7, GraphicsAPIType::GL, reply), VideoFrameCaptureStatus::FATAL_ERROR);
+}

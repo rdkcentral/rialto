@@ -30,6 +30,19 @@
 namespace firebolt::rialto::client
 {
 /**
+ * @brief The server's answer to a capabilities query, before graphics-specific limits are added.
+ */
+struct CaptureCapabilitiesReply
+{
+    std::uint32_t maxConcurrentFrames{0};
+    std::uint32_t maxResourcesPerFrame{0};
+    std::uint32_t supportsProtectedContent{0};
+    std::uint32_t supportsHdr{0};
+    std::vector<std::uint32_t> drmFourccs;
+    std::vector<std::uint64_t> drmModifiers;
+};
+
+/**
  * @brief One DMA-BUF object of an acquired frame.
  */
 struct CaptureObject
@@ -211,6 +224,15 @@ public:
      * @retval false if the call failed or the capture has no pool.
      */
     virtual bool getPool(std::uint32_t captureId, CapturePoolDescription &pool) = 0;
+
+    /**
+     * @brief Queries the capabilities of the capture's admitted session.
+     *
+     * @param[out] reply : Set only on OK.
+     * @retval The server's status, mapped one to one; FATAL_ERROR if the call itself failed.
+     */
+    virtual VideoFrameCaptureStatus getCapabilities(std::uint32_t captureId, GraphicsAPIType api,
+                                                    CaptureCapabilitiesReply &reply) = 0;
 };
 } // namespace firebolt::rialto::client
 

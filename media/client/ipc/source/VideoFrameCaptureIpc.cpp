@@ -27,6 +27,31 @@
 
 namespace
 {
+firebolt::rialto::VideoFrameCaptureStatus toPublicStatus(firebolt::rialto::VideoFrameCaptureWireStatus status)
+{
+    using firebolt::rialto::VideoFrameCaptureStatus;
+    switch (status)
+    {
+    case firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_OK:
+        return VideoFrameCaptureStatus::OK;
+    case firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_NO_NEW_FRAME:
+        return VideoFrameCaptureStatus::NO_NEW_FRAME;
+    case firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_NO_FRAME:
+        return VideoFrameCaptureStatus::NO_FRAME;
+    case firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_UNSUPPORTED:
+        return VideoFrameCaptureStatus::UNSUPPORTED;
+    case firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_INVALID_ARGUMENT:
+        return VideoFrameCaptureStatus::INVALID_ARGUMENT;
+    case firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_NO_RESOURCES:
+        return VideoFrameCaptureStatus::NO_RESOURCES;
+    case firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_FATAL_ERROR:
+        return VideoFrameCaptureStatus::FATAL_ERROR;
+    case firebolt::rialto::VIDEO_FRAME_CAPTURE_STATUS_SESSION_NOT_READY:
+        return VideoFrameCaptureStatus::SESSION_NOT_READY;
+    }
+    return VideoFrameCaptureStatus::FATAL_ERROR; // a value this client does not know
+}
+
 firebolt::rialto::client::CaptureAcquireStatus toAcquireStatus(firebolt::rialto::VideoFrameCaptureWireStatus status)
 {
     using firebolt::rialto::client::CaptureAcquireStatus;
@@ -286,5 +311,43 @@ bool VideoFrameCaptureIpc::getPool(std::uint32_t captureId, CapturePoolDescripti
     }
     pool = CapturePoolDescription{response.pool_id(), static_cast<std::uint32_t>(response.slots_size())};
     return true;
+}
+
+VideoFrameCaptureStatus VideoFrameCaptureIpc::getCapabilities(std::uint32_t captureId, GraphicsAPIType api,
+                                                              CaptureCapabilitiesReply &reply)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return VideoFrameCaptureStatus::FATAL_ERROR;
+    }
+
+    firebolt::rialto::GetVideoFrameCaptureCapabilitiesRequest request;
+    request.set_capture_id(captureId);
+    request.set_api(api == GraphicsAPIType::VULKAN ? firebolt::rialto::GRAPHICS_API_TYPE_VULKAN
+                                                   : firebolt::rialto::GRAPHICS_API_TYPE_GL);
+    firebolt::rialto::GetVideoFrameCaptureCapabilitiesResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_videoFrameCaptureStub->getCapabilities(ipcController.get(), &request, &response, blockingClosure.get());
+    blockingClosure->wait();
+
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_WARN("Failed to get the capabilities of video frame capture %u due to '%s'", captureId,
+                               ipcController->ErrorText().c_str());
+        return VideoFrameCaptureStatus::FATAL_ERROR;
+    }
+    const VideoFrameCaptureStatus kStatus{toPublicStatus(response.status())};
+    if (kStatus == VideoFrameCaptureStatus::OK)
+    {
+        reply.maxConcurrentFrames = response.max_concurrent_frames();
+        reply.maxResourcesPerFrame = response.max_resources_per_frame();
+        reply.supportsProtectedContent = response.supports_protected_content();
+        reply.supportsHdr = response.supports_hdr();
+        reply.drmFourccs.assign(response.drm_fourccs().begin(), response.drm_fourccs().end());
+        reply.drmModifiers.assign(response.drm_modifiers().begin(), response.drm_modifiers().end());
+    }
+    return kStatus;
 }
 } // namespace firebolt::rialto::client
