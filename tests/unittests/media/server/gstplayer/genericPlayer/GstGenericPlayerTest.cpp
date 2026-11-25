@@ -278,6 +278,8 @@ TEST_F(GstGenericPlayerTest, shouldSetupSource)
 TEST_F(GstGenericPlayerTest, shouldSetupElement)
 {
     GstElement element{};
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(&element)).Times(4).WillRepeatedly(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, _)).Times(4).WillRepeatedly(Return(FALSE));
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&element));
@@ -367,6 +369,8 @@ TEST_F(GstGenericPlayerTest, shouldNotRegisterElementWithoutMetricSourceId)
 {
     m_sut->setMetricSessionId(7);
 
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_element)).Times(4).WillRepeatedly(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, _)).Times(4).WillRepeatedly(Return(FALSE));
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element));
