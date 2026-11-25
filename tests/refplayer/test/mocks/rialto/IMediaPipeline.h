@@ -92,8 +92,11 @@ enum class SegmentAlignment
 enum class StreamFormat
 {
     UNDEFINED,
+    RAW,
     AVC,
-    HEVC
+    BYTE_STREAM,
+    HVC1,
+    HEV1
 };
 
 enum class CodecDataType
@@ -189,6 +192,7 @@ public:
         void setId(int32_t id) { m_id = id; }
         int32_t getId() const { return m_id; }
         virtual MediaSourceType getType() const { return MediaSourceType::UNKNOWN; }
+        const std::string &getMimeType() const { return m_mimeType; }
 
     protected:
         MediaSource(SourceConfigType configType, const std::string &mimeType, bool hasDrm)
@@ -215,6 +219,9 @@ public:
         MediaSourceType getType() const override { return MediaSourceType::VIDEO; }
         int32_t getWidth() const { return m_width; }
         int32_t getHeight() const { return m_height; }
+        SegmentAlignment getSegmentAlignment() const { return m_alignment; }
+        StreamFormat getStreamFormat() const { return m_format; }
+        const std::shared_ptr<CodecData> &getCodecData() const { return m_codecData; }
 
     private:
         int32_t m_width{0};
@@ -228,15 +235,23 @@ public:
     {
     public:
         MediaSourceAudio(const std::string &mimeType, bool hasDrm, const AudioConfig &config,
-                         SegmentAlignment alignment)
-            : MediaSource(SourceConfigType::AUDIO, mimeType, hasDrm), m_config(config), m_alignment(alignment)
+                         SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
+                         StreamFormat format = StreamFormat::UNDEFINED, std::shared_ptr<CodecData> codecData = nullptr)
+            : MediaSource(SourceConfigType::AUDIO, mimeType, hasDrm), m_config(config), m_alignment(alignment),
+              m_format(format), m_codecData(std::move(codecData))
         {
         }
         MediaSourceType getType() const override { return MediaSourceType::AUDIO; }
+        const AudioConfig &getAudioConfig() const { return m_config; }
+        SegmentAlignment getSegmentAlignment() const { return m_alignment; }
+        StreamFormat getStreamFormat() const { return m_format; }
+        const std::shared_ptr<CodecData> &getCodecData() const { return m_codecData; }
 
     private:
         AudioConfig m_config;
         SegmentAlignment m_alignment{SegmentAlignment::UNDEFINED};
+        StreamFormat m_format{StreamFormat::UNDEFINED};
+        std::shared_ptr<CodecData> m_codecData;
     };
 
     class MediaSegment
@@ -346,6 +361,22 @@ struct MockPipelineCounters
 };
 inline MockPipelineCounters g_mockPipelineCounters;
 
+// What attachSource() received, so a test can check the MIME type, stream format and codec data
+// that reach the server caps.
+struct MockAttachedSource
+{
+    MediaSourceType type{MediaSourceType::UNKNOWN};
+    std::string mimeType;
+    SegmentAlignment alignment{SegmentAlignment::UNDEFINED};
+    StreamFormat format{StreamFormat::UNDEFINED};
+    std::vector<uint8_t> capsCodecData; // empty when no CodecData was passed
+    uint32_t channels{0};
+    uint32_t sampleRate{0};
+    std::vector<uint8_t> audioConfigData;
+};
+inline std::mutex g_mockAttachedMutex;
+inline std::vector<MockAttachedSource> g_mockAttachedSources;
+
 class MockMediaPipeline final : public IMediaPipeline
 {
 public:
@@ -385,6 +416,34 @@ public:
             return false;
         }
         source->setId(++m_nextSourceId);
+        {
+            MockAttachedSource record;
+            record.type = source->getType();
+            record.mimeType = source->getMimeType();
+            if (const auto *video = dynamic_cast<const MediaSourceVideo *>(source.get()))
+            {
+                record.alignment = video->getSegmentAlignment();
+                record.format = video->getStreamFormat();
+                if (video->getCodecData())
+                {
+                    record.capsCodecData = video->getCodecData()->data;
+                }
+            }
+            else if (const auto *audio = dynamic_cast<const MediaSourceAudio *>(source.get()))
+            {
+                record.alignment = audio->getSegmentAlignment();
+                record.format = audio->getStreamFormat();
+                if (audio->getCodecData())
+                {
+                    record.capsCodecData = audio->getCodecData()->data;
+                }
+                record.channels = audio->getAudioConfig().numberOfChannels;
+                record.sampleRate = audio->getAudioConfig().sampleRate;
+                record.audioConfigData = audio->getAudioConfig().codecSpecificConfig;
+            }
+            std::lock_guard<std::mutex> attachedLock(g_mockAttachedMutex);
+            g_mockAttachedSources.push_back(std::move(record));
+        }
         std::lock_guard<std::mutex> lock(m_mutex);
         m_sourceIds.push_back(source->getId());
         return true;

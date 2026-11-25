@@ -67,7 +67,7 @@ struct RunSummary
 void printUsage(std::ostream &out)
 {
     out << "Usage: rialto_reference_player [options]\n"
-           "  --url <url>                 Media URL; a local file:// .mp4 (H.264) is demuxed and fed over MSE\n"
+           "  --url <url>                 Media URL; a local file:// .mp4 (H.264, H.265, VP9 or AV1) is demuxed and fed over MSE\n"
            "  --mime <mime>               MIME type for the capability probes (default: video/mp4); phase 1 plays\n"
            "                              only video/mp4 MP4 files, so playback ignores this value\n"
            "  --live                      CLI only: do not wait for end of stream after PLAYING\n"

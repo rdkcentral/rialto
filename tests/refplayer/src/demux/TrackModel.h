@@ -14,10 +14,27 @@ struct Sample
     int64_t durationNs{0};
 };
 
+// Codec of a track. Unknown means "the legacy default for the slot": H.264 for video, AAC for audio.
+enum class Codec
+{
+    Unknown,
+    H264,
+    H265Hvc1, // parameter sets only in the hvcC record
+    H265Hev1, // parameter sets may also appear in the stream
+    Vp9,
+    Av1,
+    Aac,
+    Opus,
+    Eac3
+};
+
 struct Track
 {
     std::vector<Sample> samples;
-    std::vector<uint8_t> codecData; // avcC for video, AudioSpecificConfig for audio
+    // Video: avcC (H.264), hvcC (H.265), vpcC record without its FullBox header (VP9), av1C (AV1).
+    // Audio: AudioSpecificConfig (AAC), OpusHead (Opus), dec3 payload (E-AC-3).
+    std::vector<uint8_t> codecData;
+    Codec codec{Codec::Unknown};
     int32_t width{0};               // video
     int32_t height{0};              // video
     int32_t sampleRate{0};          // audio

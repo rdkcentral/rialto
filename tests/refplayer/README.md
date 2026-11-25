@@ -2,7 +2,7 @@
 
 A playback library over the public Rialto client API (`IControl`, `IMediaPipeline`), with an AAMP-compatible JavaScript binding for the WPE WebProcess and a command-line front-end for debugging outside a browser.
 
-It was built to the phase-1 component design, `REFERENCE_PLAYER_COMPONENT_DESIGN.md` one level up. Phase 1 plays local H.264/AAC MP4 files over MSE. Phases 2 to 5 are declared in the API and answer `NotSupported` until they are implemented.
+It was built to the phase-1 component design, `REFERENCE_PLAYER_COMPONENT_DESIGN.md` one level up. Phase 1 plays local non-fragmented MP4 files over MSE: H.264, H.265, VP9 or AV1 video, and AAC, Opus or E-AC-3 audio. Phases 2 to 5 are declared in the API and answer `NotSupported` until they are implemented.
 
 ## Layout
 
@@ -10,7 +10,7 @@ It was built to the phase-1 component design, `REFERENCE_PLAYER_COMPONENT_DESIGN
 |------|----------|
 | `include/rialto_refplayer/` | Public library API: `IRefPlayer`, `RefPlayerTypes.h` (`PlayerState`, `Result`, `Options`), `RefPlayerEvent.h` (`Event`, `IRefPlayerClient`) |
 | `src/core/` | `libRialtoRefPlayer` internals: `RefPlayer` (command validation), `CommandWorker`, `PlayerStateMachine`, `EventBus`, `PositionTracker`, `RialtoSession`, `SourceManager`, `MediaFeeder`, `PipelineCallbacks`, `Logger` |
-| `src/demux/` | `IDemuxer` seam, `TrackModel`, `DemuxerRegistry.cpp` (MP4 adapter), `Mp4Demuxer.{h,cpp}` (parser, unchanged) |
+| `src/demux/` | `IDemuxer` seam, `TrackModel`, `DemuxerRegistry.cpp` (MP4 adapter), `Mp4Demuxer.{h,cpp}` (parser) |
 | `src/frontend/cli/` | `rialto_reference_player`: option parsing and driver (`main.cpp`), contract checks (`ContractValidator`), negative API suite (`NegativeChecks`), and the log helper (`CliLog.h`) |
 | `src/frontend/jsbinding/` | `libRialtoPlayerJSBindings.so`: JavaScriptCore class `RialtoMediaPlayer`, exports `RialtoPlayer_LoadJS` and `RialtoPlayer_UnloadJS` only |
 | `test/mocks/rialto/` | Mock Rialto headers for building without the client (mock mode) |
@@ -102,7 +102,7 @@ rialto_reference_player --negative-runs            # contract checks only, no pl
 
 | Option | Default | Meaning |
 |--------|---------|---------|
-| `--url <url>` | none | Media URL. A local `file://` `.mp4` (H.264, optional AAC) is demuxed and fed over MSE. Without it, only the checks that do not need a player run; the pipeline checks are skipped |
+| `--url <url>` | none | Media URL. A local `file://` `.mp4` (H.264, H.265, VP9 or AV1, with optional AAC, Opus or E-AC-3) is demuxed and fed over MSE. Without it, only the checks that do not need a player run; the pipeline checks are skipped |
 | `--mime <mime>` | `video/mp4` | MIME type for the capability probes. Phase 1 plays only `video/mp4`, so playback ignores this value |
 | `--live` | off | CLI only: do not wait for end of stream after PLAYING. The library loads as non-live in phase 1 |
 | `--web-audio` | off | Create an `IWebAudioPlayer` and validate the PCM API |

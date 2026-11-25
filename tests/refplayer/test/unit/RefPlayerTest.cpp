@@ -8,6 +8,8 @@
 
 #include "IDemuxer.h"
 #include "IMediaPipeline.h"
+#include "Mp4Demuxer.h"
+#include "SourceManager.h"
 
 #include <chrono>
 #include <cstdio>
@@ -442,8 +444,402 @@ void testRunOnPipelineUsesLivePipeline()
 
 } // namespace
 
+
+// ---- Codec support: MP4 parsing and the source description sent to the server ----
+
+using Bytes = std::vector<uint8_t>;
+
+void put32(Bytes &out, uint32_t v)
+{
+    for (int shift = 24; shift >= 0; shift -= 8)
+    {
+        out.push_back(static_cast<uint8_t>((v >> shift) & 0xFF));
+    }
+}
+
+void put16(Bytes &out, uint16_t v)
+{
+    out.push_back(static_cast<uint8_t>(v >> 8));
+    out.push_back(static_cast<uint8_t>(v & 0xFF));
+}
+
+Bytes box(const char (&type)[5], const Bytes &payload)
+{
+    Bytes out;
+    put32(out, static_cast<uint32_t>(8 + payload.size()));
+    out.insert(out.end(), type, type + 4);
+    out.insert(out.end(), payload.begin(), payload.end());
+    return out;
+}
+
+Bytes cat(std::initializer_list<Bytes> parts)
+{
+    Bytes out;
+    for (const auto &part : parts)
+    {
+        out.insert(out.end(), part.begin(), part.end());
+    }
+    return out;
+}
+
+Bytes fullBoxPayload(const Bytes &body)
+{
+    Bytes out(4, 0); // version and flags
+    out.insert(out.end(), body.begin(), body.end());
+    return out;
+}
+
+// Visual sample entry: the 78-byte header, then the codec configuration box.
+Bytes visualEntry(const char (&type)[5], const Bytes &configBox)
+{
+    Bytes payload(24, 0); // reserved, data reference index, pre-defined
+    put16(payload, 640);
+    put16(payload, 360);
+    payload.resize(78, 0);
+    return box(type, cat({payload, configBox}));
+}
+
+// Audio sample entry (version 0): 28-byte header, then the codec configuration box.
+Bytes audioEntry(const char (&type)[5], uint16_t channels, uint32_t rate, const Bytes &configBox)
+{
+    Bytes payload(8, 0);
+    put32(payload, 0); // version, revision
+    put32(payload, 0); // vendor
+    put16(payload, channels);
+    put16(payload, 16);
+    put32(payload, 0);
+    put32(payload, rate << 16);
+    return box(type, cat({payload, configBox}));
+}
+
+Bytes aacEsds(const Bytes &asc)
+{
+    Bytes decoderConfig = {0x40, 0x15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    decoderConfig.push_back(0x05);
+    decoderConfig.push_back(static_cast<uint8_t>(asc.size()));
+    decoderConfig.insert(decoderConfig.end(), asc.begin(), asc.end());
+    Bytes es = {0, 1, 0, 0x04, static_cast<uint8_t>(decoderConfig.size())};
+    es.insert(es.end(), decoderConfig.begin(), decoderConfig.end());
+    Bytes body = {0x03, static_cast<uint8_t>(es.size())};
+    body.insert(body.end(), es.begin(), es.end());
+    return box("esds", fullBoxPayload(body));
+}
+
+// One track holding a single 100-byte sample.
+Bytes trak(const char (&handler)[5], const Bytes &sampleEntry)
+{
+    Bytes hdlrBody(4, 0);
+    hdlrBody.insert(hdlrBody.end(), handler, handler + 4);
+    hdlrBody.resize(hdlrBody.size() + 12, 0);
+    Bytes mdhdBody(8, 0);
+    put32(mdhdBody, 1000);
+    put32(mdhdBody, 1000);
+    put32(mdhdBody, 0);
+    Bytes stsdBody;
+    put32(stsdBody, 1);
+    stsdBody.insert(stsdBody.end(), sampleEntry.begin(), sampleEntry.end());
+    Bytes stts, stsz, stsc, stco;
+    put32(stts, 1); put32(stts, 1); put32(stts, 1000);
+    put32(stsz, 100); put32(stsz, 1);
+    put32(stsc, 1); put32(stsc, 1); put32(stsc, 1); put32(stsc, 1);
+    put32(stco, 1); put32(stco, 4096);
+    const Bytes stbl = box("stbl", cat({box("stsd", fullBoxPayload(stsdBody)), box("stts", fullBoxPayload(stts)),
+                                        box("stsz", fullBoxPayload(stsz)), box("stsc", fullBoxPayload(stsc)),
+                                        box("stco", fullBoxPayload(stco))}));
+    return box("trak", box("mdia", cat({box("mdhd", mdhdBody), box("hdlr", fullBoxPayload(hdlrBody)),
+                                        box("minf", stbl)})));
+}
+
+Bytes mp4Of(std::initializer_list<Bytes> traks)
+{
+    Bytes moov;
+    for (const auto &t : traks)
+    {
+        moov.insert(moov.end(), t.begin(), t.end());
+    }
+    return box("moov", moov);
+}
+
+bool parseMp4(const Bytes &file, reference_player::mp4_demuxer::Tracks &tracks, std::string &error)
+{
+    std::istringstream input(std::string(file.begin(), file.end()));
+    return reference_player::mp4_demuxer::parse(input, tracks, error);
+}
+
+namespace mp4 = reference_player::mp4_demuxer;
+
+const Bytes kAvcC = {1, 0x64, 0, 0x1f};
+const Bytes kHvcC = {1, 1, 0x60, 0, 0, 0, 0x90};
+const Bytes kVpcRecord = {2, 10, 0x80, 2, 2, 2};
+const Bytes kAv1C = {0x81, 0, 0x0c, 0};
+const Bytes kAsc = {0x12, 0x10};
+
+Bytes videoTrack(const char (&entry)[5], const char (&config)[5], const Bytes &record, bool fullBox = false)
+{
+    return trak("vide", visualEntry(entry, box(config, fullBox ? fullBoxPayload(record) : record)));
+}
+
+Bytes aacTrack()
+{
+    return trak("soun", audioEntry("mp4a", 2, 48000, aacEsds(kAsc)));
+}
+
+// Video codecs: each sample entry reports its codec and hands over its configuration record.
+void testMp4VideoCodecs()
+{
+    struct Case
+    {
+        Bytes file;
+        mp4::Codec codec;
+        Bytes data;
+    };
+    const std::vector<Case> cases = {
+        {mp4Of({videoTrack("avc1", "avcC", kAvcC)}), mp4::Codec::H264, kAvcC},
+        {mp4Of({videoTrack("avc3", "avcC", kAvcC)}), mp4::Codec::H264, kAvcC},
+        {mp4Of({videoTrack("hvc1", "hvcC", kHvcC)}), mp4::Codec::H265Hvc1, kHvcC},
+        {mp4Of({videoTrack("hev1", "hvcC", kHvcC)}), mp4::Codec::H265Hev1, kHvcC},
+        {mp4Of({videoTrack("vp09", "vpcC", kVpcRecord, true)}), mp4::Codec::Vp9, kVpcRecord},
+        {mp4Of({videoTrack("av01", "av1C", kAv1C)}), mp4::Codec::Av1, kAv1C},
+    };
+    for (const auto &c : cases)
+    {
+        mp4::Tracks tracks;
+        std::string error;
+        CHECK(parseMp4(c.file, tracks, error));
+        CHECK(tracks.video.codec == c.codec);
+        CHECK(tracks.video.codecData == c.data);
+        CHECK(tracks.video.width == 640 && tracks.video.height == 360);
+        CHECK(tracks.video.samples.size() == 1);
+        CHECK(!tracks.hasAudio);
+    }
+
+    // A video entry that has no configuration box is rejected, not played with empty codec data.
+    mp4::Tracks tracks;
+    std::string error;
+    CHECK(!parseMp4(mp4Of({trak("vide", visualEntry("hvc1", Bytes()))}), tracks, error));
+    CHECK(!error.empty());
+    CHECK(!parseMp4(mp4Of({videoTrack("vp09", "vpcC", Bytes{0, 0, 0, 0}, false)}), tracks, error));
+}
+
+// Audio codecs. Opus gets an OpusHead built from dOps; E-AC-3 gets its channels from dec3.
+void testMp4AudioCodecs()
+{
+    const Bytes video = videoTrack("avc1", "avcC", kAvcC);
+
+    mp4::Tracks aac;
+    std::string error;
+    CHECK(parseMp4(mp4Of({video, aacTrack()}), aac, error));
+    CHECK(aac.hasAudio && aac.audio.codec == mp4::Codec::Aac);
+    CHECK(aac.audio.codecData == kAsc);
+    CHECK(aac.audio.channels == 2 && aac.audio.sampleRate == 48000);
+
+    // dOps: version 0, 6 channels, pre-skip 312, input rate 44100, gain -1, mapping family 1,
+    // 4 streams, 2 coupled, mapping table 0 4 1 2 3 5.
+    Bytes dops = {0, 6};
+    put16(dops, 312);
+    put32(dops, 44100);
+    put16(dops, 0xFFFF);
+    const Bytes mapping = {1, 4, 2, 0, 4, 1, 2, 3, 5};
+    dops.insert(dops.end(), mapping.begin(), mapping.end());
+    mp4::Tracks opus;
+    CHECK(parseMp4(mp4Of({video, trak("soun", audioEntry("Opus", 2, 48000, box("dOps", dops)))}), opus, error));
+    CHECK(opus.hasAudio && opus.audio.codec == mp4::Codec::Opus);
+    CHECK(opus.audio.channels == 6 && opus.audio.sampleRate == 48000);
+    const Bytes expectedHead = {'O', 'p', 'u', 's', 'H', 'e', 'a', 'd', 1, 6, 0x38, 0x01, 0x44, 0xAC, 0, 0, 0xFF, 0xFF,
+                                1, 4, 2, 0, 4, 1, 2, 3, 5};
+    CHECK(opus.audio.codecData == expectedHead);
+
+    // Mapping family 0 carries no table.
+    Bytes stereo = {0, 2};
+    put16(stereo, 0);
+    put32(stereo, 48000);
+    put16(stereo, 0);
+    stereo.push_back(0);
+    mp4::Tracks opusStereo;
+    CHECK(parseMp4(mp4Of({video, trak("soun", audioEntry("Opus", 2, 48000, box("dOps", stereo)))}), opusStereo,
+                   error));
+    CHECK(opusStereo.audio.codecData.size() == 19 && opusStereo.audio.channels == 2);
+
+    // dec3: data rate 768, one independent substream, 48 kHz, acmod 7 (3/2) with LFE = 6 channels.
+    const Bytes dec3 = {0x30, 0x00, 0x10, 0x0F, 0x00};
+    mp4::Tracks eac3;
+    CHECK(parseMp4(mp4Of({video, trak("soun", audioEntry("ec-3", 2, 48000, box("dec3", dec3)))}), eac3, error));
+    CHECK(eac3.hasAudio && eac3.audio.codec == mp4::Codec::Eac3);
+    CHECK(eac3.audio.channels == 6 && eac3.audio.sampleRate == 48000);
+    CHECK(eac3.audio.codecData == dec3);
+
+    // Malformed configuration boxes drop the audio track, and the video still plays.
+    mp4::Tracks broken;
+    CHECK(parseMp4(mp4Of({video, trak("soun", audioEntry("Opus", 2, 48000, box("dOps", Bytes{0, 2})))}), broken,
+                   error));
+    CHECK(!broken.hasAudio);
+    mp4::Tracks noConfig;
+    CHECK(parseMp4(mp4Of({video, trak("soun", audioEntry("ec-3", 2, 48000, Bytes()))}), noConfig, error));
+    CHECK(!noConfig.hasAudio);
+}
+
+// The codecs that worked before keep their tracks when a file also holds a newer codec.
+void testMp4PrefersLegacyCodecs()
+{
+    const Bytes dec3 = {0x30, 0x00, 0x10, 0x0F, 0x00};
+    const Bytes eac3 = trak("soun", audioEntry("ec-3", 6, 48000, box("dec3", dec3)));
+    const Bytes hevc = videoTrack("hvc1", "hvcC", kHvcC);
+    const Bytes avc = videoTrack("avc1", "avcC", kAvcC);
+
+    for (const bool newerFirst : {true, false})
+    {
+        mp4::Tracks tracks;
+        std::string error;
+        const Bytes file = newerFirst ? mp4Of({hevc, avc, eac3, aacTrack()}) : mp4Of({avc, hevc, aacTrack(), eac3});
+        CHECK(parseMp4(file, tracks, error));
+        CHECK(tracks.video.codec == mp4::Codec::H264);
+        CHECK(tracks.audio.codec == mp4::Codec::Aac);
+        CHECK(tracks.audio.codecData == kAsc);
+    }
+
+    // Without H.264 or AAC the newer codecs are used.
+    mp4::Tracks tracks;
+    std::string error;
+    CHECK(parseMp4(mp4Of({hevc, eac3}), tracks, error));
+    CHECK(tracks.video.codec == mp4::Codec::H265Hvc1 && tracks.audio.codec == mp4::Codec::Eac3);
+}
+
+// Runs one parsed track model through SourceManager::attach() against the mock server.
+std::vector<firebolt::rialto::MockAttachedSource> attachModel(const rialto_refplayer::demux::TrackModel &model)
+{
+    class ModelDemuxer final : public rialto_refplayer::demux::IDemuxer
+    {
+    public:
+        explicit ModelDemuxer(const rialto_refplayer::demux::TrackModel &m) : m_model(m) {}
+        bool parse(std::istream &, rialto_refplayer::demux::TrackModel &model, std::string &) override
+        {
+            model = m_model;
+            return true;
+        }
+
+    private:
+        rialto_refplayer::demux::TrackModel m_model;
+    };
+
+    {
+        std::lock_guard<std::mutex> lock(firebolt::rialto::g_mockAttachedMutex);
+        firebolt::rialto::g_mockAttachedSources.clear();
+    }
+    rr::SourceManager::Dependencies deps;
+    deps.createDemuxer = [&model](const std::string &, const std::string &)
+        -> std::unique_ptr<rialto_refplayer::demux::IDemuxer> { return std::make_unique<ModelDemuxer>(model); };
+    deps.openStream = [](const std::string &) -> std::unique_ptr<std::istream> {
+        return std::make_unique<std::istringstream>(std::string());
+    };
+    rr::SourceManager manager(std::make_shared<rr::Logger>([](const std::string &) {}), deps);
+    std::string error;
+    CHECK(manager.open("file:///fake/codec.mp4", "video/mp4", error));
+    firebolt::rialto::MockMediaPipeline pipeline{std::weak_ptr<firebolt::rialto::IMediaPipelineClient>()};
+    CHECK(manager.attach(pipeline));
+    std::lock_guard<std::mutex> lock(firebolt::rialto::g_mockAttachedMutex);
+    return firebolt::rialto::g_mockAttachedSources;
+}
+
+rialto_refplayer::demux::TrackModel modelOf(rialto_refplayer::demux::Codec videoCodec, const Bytes &videoData,
+                                            bool hasAudio = false,
+                                            rialto_refplayer::demux::Codec audioCodec =
+                                                rialto_refplayer::demux::Codec::Unknown,
+                                            const Bytes &audioData = Bytes())
+{
+    rialto_refplayer::demux::TrackModel model;
+    model.video.codec = videoCodec;
+    model.video.codecData = videoData;
+    model.video.width = 640;
+    model.video.height = 360;
+    model.video.samples.push_back({0, 16, 0, 33000000});
+    model.hasAudio = hasAudio;
+    if (hasAudio)
+    {
+        model.audio.codec = audioCodec;
+        model.audio.codecData = audioData;
+        model.audio.channels = 2;
+        model.audio.sampleRate = 48000;
+        model.audio.samples.push_back({16, 16, 0, 21000000});
+    }
+    return model;
+}
+
+// What the server receives for each codec. A track with no codec set (the old behaviour of the
+// track model) and an explicit H.264/AAC track must both give the original H.264 and AAC sources.
+void testSourceDescriptionPerCodec()
+{
+    namespace rialto = firebolt::rialto;
+    using rialto_refplayer::demux::Codec;
+
+    for (const Codec videoCodec : {Codec::Unknown, Codec::H264})
+    {
+        for (const Codec audioCodec : {Codec::Unknown, Codec::Aac})
+        {
+            const auto sources = attachModel(modelOf(videoCodec, kAvcC, true, audioCodec, kAsc));
+            CHECK(sources.size() == 2);
+            if (sources.size() != 2)
+            {
+                continue;
+            }
+            CHECK(sources[0].type == rialto::MediaSourceType::VIDEO && sources[0].mimeType == "video/h264");
+            CHECK(sources[0].format == rialto::StreamFormat::AVC);
+            CHECK(sources[0].alignment == rialto::SegmentAlignment::AU && sources[0].capsCodecData == kAvcC);
+            CHECK(sources[1].type == rialto::MediaSourceType::AUDIO && sources[1].mimeType == "audio/mp4");
+            CHECK(sources[1].format == rialto::StreamFormat::RAW);
+            CHECK(sources[1].alignment == rialto::SegmentAlignment::AU);
+            CHECK(sources[1].capsCodecData == kAsc && sources[1].audioConfigData == kAsc);
+            CHECK(sources[1].channels == 2 && sources[1].sampleRate == 48000);
+        }
+    }
+
+    const auto hvc1 = attachModel(modelOf(Codec::H265Hvc1, kHvcC));
+    CHECK(hvc1.size() == 1);
+    if (hvc1.size() == 1)
+    {
+        CHECK(hvc1[0].mimeType == "video/h265" && hvc1[0].format == rialto::StreamFormat::HVC1);
+        CHECK(hvc1[0].alignment == rialto::SegmentAlignment::AU && hvc1[0].capsCodecData == kHvcC);
+    }
+    const auto hev1 = attachModel(modelOf(Codec::H265Hev1, kHvcC));
+    CHECK(hev1.size() == 1 && hev1[0].format == rialto::StreamFormat::HEV1 && hev1[0].capsCodecData == kHvcC);
+
+    const auto vp9 = attachModel(modelOf(Codec::Vp9, kVpcRecord));
+    CHECK(vp9.size() == 1);
+    if (vp9.size() == 1)
+    {
+        CHECK(vp9[0].mimeType == "video/x-vp9" && vp9[0].format == rialto::StreamFormat::UNDEFINED);
+        CHECK(vp9[0].alignment == rialto::SegmentAlignment::UNDEFINED && vp9[0].capsCodecData == kVpcRecord);
+    }
+    const auto av1 = attachModel(modelOf(Codec::Av1, kAv1C));
+    CHECK(av1.size() == 1 && av1[0].mimeType == "video/x-av1" && av1[0].capsCodecData == kAv1C);
+
+    // Opus: OpusHead travels in the audio config, which is where the server reads it.
+    const Bytes head = {'O', 'p', 'u', 's', 'H', 'e', 'a', 'd', 1, 2};
+    const auto opus = attachModel(modelOf(Codec::H264, kAvcC, true, Codec::Opus, head));
+    CHECK(opus.size() == 2);
+    if (opus.size() == 2)
+    {
+        CHECK(opus[1].mimeType == "audio/x-opus" && opus[1].format == rialto::StreamFormat::UNDEFINED);
+        CHECK(opus[1].audioConfigData == head && opus[1].capsCodecData.empty());
+        CHECK(opus[1].channels == 2 && opus[1].sampleRate == 48000);
+    }
+
+    const Bytes dec3 = {0x30, 0x00, 0x10, 0x0F, 0x00};
+    const auto eac3 = attachModel(modelOf(Codec::H264, kAvcC, true, Codec::Eac3, dec3));
+    CHECK(eac3.size() == 2);
+    if (eac3.size() == 2)
+    {
+        CHECK(eac3[1].mimeType == "audio/x-eac3" && eac3[1].format == rialto::StreamFormat::UNDEFINED);
+        CHECK(eac3[1].audioConfigData.empty() && eac3[1].capsCodecData.empty());
+        CHECK(eac3[1].channels == 2 && eac3[1].sampleRate == 48000);
+    }
+}
+
 int main()
 {
+    testMp4VideoCodecs();
+    testMp4AudioCodecs();
+    testMp4PrefersLegacyCodecs();
+    testSourceDescriptionPerCodec();
     testPlayPauseSeekStopReleases();
     testEndOfStreamReachesComplete();
     testReloadWithoutStop();

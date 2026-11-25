@@ -18,7 +18,34 @@ std::vector<Sample> toSamples(std::vector<reference_player::mp4_demuxer::Sample>
     return samples;
 }
 
-// Adapts the MP4 parser's own track types to the library's track model. The parser is not edited.
+Codec toCodec(reference_player::mp4_demuxer::Codec codec)
+{
+    using Parsed = reference_player::mp4_demuxer::Codec;
+    switch (codec)
+    {
+    case Parsed::H264:
+        return Codec::H264;
+    case Parsed::H265Hvc1:
+        return Codec::H265Hvc1;
+    case Parsed::H265Hev1:
+        return Codec::H265Hev1;
+    case Parsed::Vp9:
+        return Codec::Vp9;
+    case Parsed::Av1:
+        return Codec::Av1;
+    case Parsed::Aac:
+        return Codec::Aac;
+    case Parsed::Opus:
+        return Codec::Opus;
+    case Parsed::Eac3:
+        return Codec::Eac3;
+    case Parsed::Unknown:
+        break;
+    }
+    return Codec::Unknown;
+}
+
+// Adapts the MP4 parser's own track types to the library's track model.
 class Mp4DemuxerAdapter final : public IDemuxer
 {
 public:
@@ -32,6 +59,7 @@ public:
 
         model.video.samples = toSamples(std::move(tracks.video.samples));
         model.video.codecData = std::move(tracks.video.codecData);
+        model.video.codec = toCodec(tracks.video.codec);
         model.video.width = tracks.video.width;
         model.video.height = tracks.video.height;
 
@@ -41,6 +69,7 @@ public:
         {
             model.audio.samples = toSamples(std::move(tracks.audio.samples));
             model.audio.codecData = std::move(tracks.audio.codecData);
+            model.audio.codec = toCodec(tracks.audio.codec);
             model.audio.sampleRate = tracks.audio.sampleRate;
             model.audio.channels = tracks.audio.channels;
         }

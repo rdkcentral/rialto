@@ -145,7 +145,44 @@ int64_t ticksToNs(int64_t ticks, uint32_t timescale)
     return static_cast<int64_t>((t / timescale) * 1000000000ULL + (t % timescale) * 1000000000ULL / timescale);
 }
 
-// Reads an H.264 (avc1/avc3) track's configuration and sample table from a 'trak' box.
+struct VideoEntryKind
+{
+    Codec codec;
+    uint32_t configBox;
+    size_t configSkip; // bytes of FullBox header before the configuration record
+};
+
+// Maps a video sample-entry type to its codec and configuration box. H.264 stays first and unchanged.
+bool videoEntryKind(uint32_t entryType, VideoEntryKind &kind)
+{
+    if (entryType == fourcc("avc1") || entryType == fourcc("avc3"))
+    {
+        kind = {Codec::H264, fourcc("avcC"), 0};
+    }
+    else if (entryType == fourcc("hvc1"))
+    {
+        kind = {Codec::H265Hvc1, fourcc("hvcC"), 0};
+    }
+    else if (entryType == fourcc("hev1"))
+    {
+        kind = {Codec::H265Hev1, fourcc("hvcC"), 0};
+    }
+    else if (entryType == fourcc("vp09"))
+    {
+        kind = {Codec::Vp9, fourcc("vpcC"), 4};
+    }
+    else if (entryType == fourcc("av01"))
+    {
+        kind = {Codec::Av1, fourcc("av1C"), 0};
+    }
+    else
+    {
+        return false;
+    }
+    return true;
+}
+
+// Reads a video track's (H.264, H.265, VP9 or AV1) configuration and sample table from a 'trak' box.
 bool parseVideoTrack(const std::vector<uint8_t> &d, size_t trakBegin, size_t trakEnd, VideoTrack &out)
 {
     size_t mdiaB = 0, mdiaE = 0, p = 0, e = 0;
@@ -186,7 +223,7 @@ bool parseVideoTrack(const std::vector<uint8_t> &d, size_t trakBegin, size_t tra
         return false;
     }
 
-    // First sample entry must be H.264 and carry the avcC configuration record.
+    // First sample entry must be a supported video codec and carry its configuration record.
     if (!findBox(d, stblB, stblE, fourcc("stsd"), p, e))
     {
         return false;
@@ -199,7 +236,8 @@ bool parseVideoTrack(const std::vector<uint8_t> &d, size_t trakBegin, size_t tra
     }
     const uint32_t entrySize = stsd.u32();
     const uint32_t entryType = stsd.u32();
-    if (!stsd.ok || (entryType != fourcc("avc1") && entryType != fourcc("avc3")))
+    VideoEntryKind kind{};
+    if (!stsd.ok || !videoEntryKind(entryType, kind))
     {
         return false;
     }
@@ -212,12 +250,15 @@ bool parseVideoTrack(const std::vector<uint8_t> &d, size_t trakBegin, size_t tra
     const size_t entryEnd = entryPayload - 8 + entrySize;
     out.width = be16(&d[entryPayload + 24]);
     out.height = be16(&d[entryPayload + 26]);
-    size_t avcB = 0, avcE = 0;
-    if (!findBox(d, entryPayload + kVisualSampleEntryBytes, entryEnd, fourcc("avcC"), avcB, avcE))
+    size_t cfgB = 0, cfgE = 0;
+    if (!findBox(d, entryPayload + kVisualSampleEntryBytes, entryEnd, kind.configBox, cfgB, cfgE) ||
+        cfgE - cfgB <= kind.configSkip)
     {
         return false;
     }
-    out.codecData.assign(d.begin() + static_cast<std::ptrdiff_t>(avcB), d.begin() + static_cast<std::ptrdiff_t>(avcE));
+    out.codec = kind.codec;
+    out.codecData.assign(d.begin() + static_cast<std::ptrdiff_t>(cfgB + kind.configSkip),
+                         d.begin() + static_cast<std::ptrdiff_t>(cfgE));
 
     // Decoding time deltas.
     if (!findBox(d, stblB, stblE, fourcc("stts"), p, e))
@@ -622,7 +663,64 @@ bool parseSampleTable(const std::vector<uint8_t> &d, size_t stblB, size_t stblE,
     return sampleCount != 0;
 }
 
-// Reads an AAC (mp4a) track and its AudioSpecificConfig from an MP4 'trak'.
+// Builds an Ogg "OpusHead" identification header from the payload of an MP4 'dOps' box. 'dOps' is
+// big-endian and has no magic; OpusHead is little-endian. This is the form the server's Opus caps need.
+bool opusHeadFromDops(const uint8_t *dops, size_t size, std::vector<uint8_t> &head, int32_t &channels)
+{
+    constexpr size_t kFixedBytes = 11;
+    if (size < kFixedBytes || dops[0] != 0)
+    {
+        return false;
+    }
+    const uint8_t channelCount = dops[1];
+    const uint8_t mappingFamily = dops[10];
+    const size_t mappingBytes = mappingFamily != 0 ? 2 + static_cast<size_t>(channelCount) : 0;
+    if (channelCount == 0 || size < kFixedBytes + mappingBytes)
+    {
+        return false;
+    }
+    const uint16_t preSkip = be16(dops + 2);
+    const uint32_t inputRate = be32(dops + 4);
+    const uint16_t gain = be16(dops + 8);
+
+    head = {'O', 'p', 'u', 's', 'H', 'e', 'a', 'd', 1, channelCount};
+    head.push_back(static_cast<uint8_t>(preSkip & 0xFF));
+    head.push_back(static_cast<uint8_t>(preSkip >> 8));
+    for (int shift = 0; shift < 32; shift += 8)
+    {
+        head.push_back(static_cast<uint8_t>((inputRate >> shift) & 0xFF));
+    }
+    head.push_back(static_cast<uint8_t>(gain & 0xFF));
+    head.push_back(static_cast<uint8_t>(gain >> 8));
+    head.push_back(mappingFamily);
+    head.insert(head.end(), dops + kFixedBytes, dops + kFixedBytes + mappingBytes);
+    channels = channelCount;
+    return true;
+}
+
+// Reads the channel count and sample rate from the first independent substream of a 'dec3' box.
+bool eac3FromDec3(const uint8_t *dec3, size_t size, int32_t &channels, int32_t &sampleRate)
+{
+    // Bytes 0-1: data_rate(13) num_ind_sub(3). Byte 2: fscod(2) bsid(5) reserved(1).
+    // Byte 3: asvc(1) bsmod(3) acmod(3) lfeon(1). Dependent substreams are not counted.
+    constexpr size_t kMinBytes = 5;
+    static constexpr int32_t kAcmodChannels[8] = {2, 1, 2, 3, 3, 4, 4, 5};
+    static constexpr int32_t kRates[3] = {48000, 44100, 32000};
+    if (size < kMinBytes)
+    {
+        return false;
+    }
+    const uint32_t fscod = dec3[2] >> 6;
+    if (fscod > 2)
+    {
+        return false;
+    }
+    channels = kAcmodChannels[(dec3[3] >> 1) & 0x7] + static_cast<int32_t>(dec3[3] & 0x1);
+    sampleRate = kRates[fscod];
+    return true;
+}
+
+// Reads an audio track (AAC, Opus or E-AC-3) and its codec data from an MP4 'trak'.
 bool parseAudioTrack(const std::vector<uint8_t> &d, size_t trakBegin, size_t trakEnd, AudioTrack &out)
 {
     size_t p = 0, e = 0, mdiaB = 0, mdiaE = 0;
@@ -650,17 +748,50 @@ bool parseAudioTrack(const std::vector<uint8_t> &d, size_t trakBegin, size_t tra
     if (stsd.u32() < 1) return false;
     const uint32_t entrySize = stsd.u32();
     const uint32_t entryType = stsd.u32();
-    if (!stsd.ok || entryType != fourcc("mp4a")) return false;
+    const bool isAac = entryType == fourcc("mp4a");
+    const bool isOpus = entryType == fourcc("Opus");
+    const bool isEac3 = entryType == fourcc("ec-3");
+    if (!stsd.ok || !(isAac || isOpus || isEac3)) return false;
     const size_t entryPayload = stsd.pos;
     if (entrySize < 8 + 28 || entryPayload - 8 + entrySize > e || be16(&d[entryPayload + 8]) != 0) return false;
     const size_t entryEnd = entryPayload - 8 + entrySize;
     out.channels = be16(&d[entryPayload + 16]);
     out.sampleRate = static_cast<int32_t>(be32(&d[entryPayload + 24]) >> 16);
 
-    size_t esdsB = 0, esdsE = 0;
-    if (!findBox(d, entryPayload + 28, entryEnd, fourcc("esds"), esdsB, esdsE) || esdsE - esdsB < 4 ||
-        !findAudioSpecificConfig(d, esdsB + 4, esdsE, 0, out.codecData) ||
-        out.channels <= 0 || out.sampleRate <= 0) return false;
+    if (isAac)
+    {
+        size_t esdsB = 0, esdsE = 0;
+        if (!findBox(d, entryPayload + 28, entryEnd, fourcc("esds"), esdsB, esdsE) || esdsE - esdsB < 4 ||
+            !findAudioSpecificConfig(d, esdsB + 4, esdsE, 0, out.codecData) ||
+            out.channels <= 0 || out.sampleRate <= 0) return false;
+        out.codec = Codec::Aac;
+    }
+    else if (isOpus)
+    {
+        size_t dopsB = 0, dopsE = 0;
+        if (!findBox(d, entryPayload + 28, entryEnd, fourcc("dOps"), dopsB, dopsE) ||
+            !opusHeadFromDops(&d[dopsB], dopsE - dopsB, out.codecData, out.channels)) return false;
+        if (out.sampleRate <= 0)
+        {
+            out.sampleRate = 48000; // Opus always decodes at 48 kHz
+        }
+        out.codec = Codec::Opus;
+    }
+    else
+    {
+        size_t dec3B = 0, dec3E = 0;
+        int32_t channels = 0, sampleRate = 0;
+        if (!findBox(d, entryPayload + 28, entryEnd, fourcc("dec3"), dec3B, dec3E) ||
+            !eac3FromDec3(&d[dec3B], dec3E - dec3B, channels, sampleRate)) return false;
+        out.channels = channels;
+        if (out.sampleRate <= 0)
+        {
+            out.sampleRate = sampleRate;
+        }
+        out.codecData.assign(d.begin() + static_cast<std::ptrdiff_t>(dec3B),
+                             d.begin() + static_cast<std::ptrdiff_t>(dec3E));
+        out.codec = Codec::Eac3;
+    }
 
     return parseSampleTable(d, stblB, stblE, timescale, out.samples);
 }
@@ -736,6 +867,8 @@ bool parse(std::istream &file, Tracks &tracks, std::string &error)
         return false;
     }
 
+    // H.264 and AAC win over the newer codecs, so files that played before pick the same tracks.
+    // Otherwise the first supported track of each kind is used.
     bool foundVideo = false;
     forEachBox(moov, 0, moov.size(),
                [&tracks, &foundVideo, &moov](uint32_t type, size_t payload, size_t end)
@@ -744,19 +877,21 @@ bool parse(std::istream &file, Tracks &tracks, std::string &error)
                    {
                        return;
                    }
-                   if (!foundVideo)
+                   if (!foundVideo || tracks.video.codec != Codec::H264)
                    {
                        VideoTrack candidate;
-                       if (parseVideoTrack(moov, payload, end, candidate))
+                       if (parseVideoTrack(moov, payload, end, candidate) &&
+                           (!foundVideo || candidate.codec == Codec::H264))
                        {
                            tracks.video = std::move(candidate);
                            foundVideo = true;
                        }
                    }
-                   if (!tracks.hasAudio)
+                   if (!tracks.hasAudio || tracks.audio.codec != Codec::Aac)
                    {
                        AudioTrack candidate;
-                       if (parseAudioTrack(moov, payload, end, candidate))
+                       if (parseAudioTrack(moov, payload, end, candidate) &&
+                           (!tracks.hasAudio || candidate.codec == Codec::Aac))
                        {
                            tracks.audio = std::move(candidate);
                            tracks.hasAudio = true;
@@ -765,7 +900,7 @@ bool parse(std::istream &file, Tracks &tracks, std::string &error)
                });
     if (!foundVideo || tracks.video.samples.empty())
     {
-        error = "No H.264 (avc1/avc3) video track found";
+        error = "No supported video track found (H.264, H.265, VP9 or AV1)";
         return false;
     }
     return true;
