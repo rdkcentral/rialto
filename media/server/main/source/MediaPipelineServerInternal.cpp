@@ -1801,6 +1801,16 @@ void MediaPipelineServerInternal::notifyMetric(const MetricEvent &metric)
                             static_cast<long long>(metric.observedAtUnixNs));               // NOLINT(runtime/int)
     auto task = [&, metric]()
     {
+        {
+            std::lock_guard<std::mutex> lock{m_metricSubscriptionMutex};
+            if (m_metricSubscription.find(metric.type) == m_metricSubscription.end())
+            {
+                RIALTO_SERVER_LOG_DEBUG("Dropping queued metric type %u - unsubscribed before delivery",
+                                        static_cast<uint32_t>(metric.type));
+                return;
+            }
+        }
+
         if (m_mediaPipelineClient)
         {
             RIALTO_SERVER_LOG_DEBUG("Forwarding queued playback metric event for sourceId: %d, observationKind: %u",

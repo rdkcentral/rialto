@@ -43,9 +43,9 @@ target_link_libraries(
 
         PUBLIC
         RialtoPlayerPublic
+        PkgConfig::RialtoMetricsGStreamer
 
         PRIVATE
-        PkgConfig::RialtoMetricsGStreamer
         protobuf::libprotobuf
         RialtoLogging
 )

@@ -353,6 +353,28 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricFilteredBySubscription
 }
 
 /**
+ * Test a queued metric is dropped when its type is unsubscribed before the queued task runs.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricDroppedWhenUnsubscribedBeforeDelivery)
+{
+    firebolt::rialto::MetricEvent metric;
+    metric.sourceId = 1;
+    metric.type = firebolt::rialto::MetricType::AUDIO_GAP;
+    metric.phase = firebolt::rialto::MetricPhase::OCCURRENCE;
+
+    firebolt::rialto::server::IMainThread::Task queuedTask;
+    EXPECT_CALL(*m_mainThreadMock, enqueueTask(m_kMainThreadClientId, _)).WillOnce(SaveArg<1>(&queuedTask));
+    m_gstPlayerCallback->notifyMetric(metric);
+    ASSERT_TRUE(queuedTask);
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_TRUE(m_mediaPipeline->setMetricSubscription({}));
+
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyMetric(_)).Times(0);
+    queuedTask();
+}
+
+/**
  * Test a notification of playback error is forwarded to the registered client.
  */
 TEST_F(RialtoServerMediaPipelineCallbackTest, notifyPlaybackError)

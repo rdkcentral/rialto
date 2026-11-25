@@ -487,6 +487,8 @@ void GstGenericPlayer::termPipeline()
     // Session close: no element of this pipeline may be mapped once its references are released
     if (m_metrics && m_metrics->getElementToSourceMapper())
     {
+        std::lock_guard<std::mutex> lock(m_metricMutex);
+        m_pendingMetricElements.clear();
         m_metrics->getElementToSourceMapper()->UnregisterAllElements();
     }
 
@@ -548,26 +550,12 @@ void GstGenericPlayer::setupElement(GstElement *pipeline, GstElement *element, G
 {
     RIALTO_SERVER_LOG_DEBUG("Element %s added to the pipeline", GST_ELEMENT_NAME(element));
 
-    // Register decoder and output elements with ElementToSourceMapper for metrics enrichment
-    if (self->m_metrics)
+    // Track decoder and output elements for ElementToSourceMapper metrics enrichment
+    if (self->m_metrics && self->m_metrics->getElementToSourceMapper() &&
+        (isVideoDecoder(*self->m_gstWrapper, element) || isAudioDecoder(*self->m_gstWrapper, element) ||
+         isVideoSink(*self->m_gstWrapper, element) || isAudioSink(*self->m_gstWrapper, element)))
     {
-        ElementToSourceMapper *mapper = self->m_metrics->getElementToSourceMapper();
-        if (mapper)
-        {
-            int32_t sessionId = self->m_metricSessionId.load();
-            int32_t sourceId = self->m_metricSourceId.load();
-
-            if (sessionId >= 0 && sourceId >= 0 &&
-                (isVideoDecoder(*self->m_gstWrapper, element) || isAudioDecoder(*self->m_gstWrapper, element) ||
-                 isVideoSink(*self->m_gstWrapper, element) || isAudioSink(*self->m_gstWrapper, element)))
-            {
-                // Defensive unregister: remove any stale entry at this address before re-registering
-                mapper->UnregisterElement(element);
-
-                mapper->RegisterElement(element, static_cast<uint32_t>(sessionId), static_cast<uint32_t>(sourceId));
-                RIALTO_SERVER_LOG_DEBUG("Registered element %s with mapper for enrichment", GST_ELEMENT_NAME(element));
-            }
-        }
+        self->trackMetricElement(element);
     }
 
     self->m_gstWrapper->gstObjectRef(element);
@@ -575,6 +563,68 @@ void GstGenericPlayer::setupElement(GstElement *pipeline, GstElement *element, G
     {
         self->m_workerThread->enqueueTask(self->m_taskFactory->createSetupElement(self->m_context, *self, element));
     }
+}
+
+void GstGenericPlayer::trackMetricElement(GstElement *element)
+{
+    std::lock_guard<std::mutex> lock(m_metricMutex);
+    int32_t sessionId = m_metricSessionId.load();
+    int32_t sourceId = m_metricSourceId.load();
+
+    if (sessionId >= 0 && sourceId >= 0)
+    {
+        registerMetricElement(element, sessionId, sourceId);
+    }
+    else if (std::find(m_pendingMetricElements.begin(), m_pendingMetricElements.end(), element) ==
+             m_pendingMetricElements.end())
+    {
+        // Session or source ID not yet known; registered once both are set
+        m_pendingMetricElements.push_back(element);
+        RIALTO_SERVER_LOG_DEBUG("Element %s pending metric registration", GST_ELEMENT_NAME(element));
+    }
+}
+
+void GstGenericPlayer::untrackMetricElement(GstElement *element)
+{
+    if (!m_metrics || !m_metrics->getElementToSourceMapper())
+    {
+        return;
+    }
+
+    std::lock_guard<std::mutex> lock(m_metricMutex);
+    m_pendingMetricElements.erase(std::remove(m_pendingMetricElements.begin(), m_pendingMetricElements.end(), element),
+                                  m_pendingMetricElements.end());
+    m_metrics->getElementToSourceMapper()->UnregisterElement(element);
+}
+
+void GstGenericPlayer::registerMetricElement(GstElement *element, int32_t sessionId, int32_t sourceId)
+{
+    if (!m_metrics || !m_metrics->getElementToSourceMapper())
+    {
+        return;
+    }
+
+    ElementToSourceMapper *mapper = m_metrics->getElementToSourceMapper();
+    // Defensive unregister: remove any stale entry at this address before re-registering
+    mapper->UnregisterElement(element);
+    mapper->RegisterElement(element, static_cast<uint32_t>(sessionId), static_cast<uint32_t>(sourceId));
+    RIALTO_SERVER_LOG_DEBUG("Registered element %s with mapper for enrichment", GST_ELEMENT_NAME(element));
+}
+
+void GstGenericPlayer::registerPendingMetricElements()
+{
+    int32_t sessionId = m_metricSessionId.load();
+    int32_t sourceId = m_metricSourceId.load();
+    if (sessionId < 0 || sourceId < 0)
+    {
+        return;
+    }
+
+    for (GstElement *element : m_pendingMetricElements)
+    {
+        registerMetricElement(element, sessionId, sourceId);
+    }
+    m_pendingMetricElements.clear();
 }
 
 void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self)
@@ -593,11 +643,7 @@ void GstGenericPlayer::deepElementRemoved(GstBin *pipeline, GstBin *bin, GstElem
     RIALTO_SERVER_LOG_DEBUG("Deep element %s removed from pipeline", GST_ELEMENT_NAME(element));
 
     // Unregister element from metrics mapper to prevent stale address reuse
-    if (self->m_metrics && self->m_metrics->getElementToSourceMapper())
-    {
-        self->m_metrics->getElementToSourceMapper()->UnregisterElement(element);
-        RIALTO_SERVER_LOG_DEBUG("Unregistered element %s from mapper", GST_ELEMENT_NAME(element));
-    }
+    self->untrackMetricElement(element);
 }
 
 void GstGenericPlayer::attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &attachedSource)
@@ -730,12 +776,9 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
             if (autoSink != sink)
             {
                 // Cleanup: unregister the auto-sink wrapper since we're using the actual sink child
-                if (m_metrics && m_metrics->getElementToSourceMapper())
-                {
-                    m_metrics->getElementToSourceMapper()->UnregisterElement(sink);
-                    RIALTO_SERVER_LOG_DEBUG("Unregistered auto-sink wrapper %s, using child %s", GST_ELEMENT_NAME(sink),
-                                            GST_ELEMENT_NAME(autoSink));
-                }
+                untrackMetricElement(sink);
+                RIALTO_SERVER_LOG_DEBUG("Unregistered auto-sink wrapper %s, using child %s", GST_ELEMENT_NAME(sink),
+                                        GST_ELEMENT_NAME(autoSink));
 
                 m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
 
@@ -1194,10 +1237,7 @@ bool GstGenericPlayer::switchAudioCodec(bool isAudioAAC, GstCaps *newAudioCaps)
                                    m_context.playbackGroup.m_curAudioDecoder) == TRUE)
     {
         RIALTO_SERVER_LOG_DEBUG("OTF -> Removed AudioDecoder = %p", m_context.playbackGroup.m_curAudioDecoder);
-        if (m_metrics && m_metrics->getElementToSourceMapper())
-        {
-            m_metrics->getElementToSourceMapper()->UnregisterElement(m_context.playbackGroup.m_curAudioDecoder);
-        }
+        untrackMetricElement(m_context.playbackGroup.m_curAudioDecoder);
         m_context.playbackGroup.m_curAudioDecoder = NULL;
     }
     // Remove Audio Parser From Decodebin
@@ -3267,12 +3307,16 @@ std::shared_ptr<IRialtoMetrics> GstGenericPlayer::getRialtoMetrics() const
 
 void GstGenericPlayer::setMetricSessionId(int32_t sessionId)
 {
+    std::lock_guard<std::mutex> lock(m_metricMutex);
     m_metricSessionId = sessionId;
+    registerPendingMetricElements();
 }
 
 void GstGenericPlayer::setMetricSourceId(int32_t sourceId)
 {
+    std::lock_guard<std::mutex> lock(m_metricMutex);
     m_metricSourceId = sourceId;
+    registerPendingMetricElements();
 }
 
 void GstGenericPlayer::handleBusMessage(GstMessage *message)

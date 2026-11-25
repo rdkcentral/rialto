@@ -38,6 +38,7 @@
 #include <IMediaPipeline.h>
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -217,8 +218,14 @@ private:
 
 private:
     void setMetricSourceId(int32_t sourceId);
+    void trackMetricElement(GstElement *element);
+    void untrackMetricElement(GstElement *element);
+    void registerMetricElement(GstElement *element, int32_t sessionId, int32_t sourceId);
+    void registerPendingMetricElements();
     std::atomic_int32_t m_metricSessionId{-1};
     std::atomic_int32_t m_metricSourceId{-1};
+    std::mutex m_metricMutex;
+    std::vector<GstElement *> m_pendingMetricElements; // Guarded by m_metricMutex
 
     /**
      * @brief Initialises the player pipeline for MSE playback.
