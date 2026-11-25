@@ -41,6 +41,8 @@ add_gtests (
         mediaPipelineIpc/SetReportDecodeErrorsTest.cpp
         mediaPipelineIpc/GetQueuedFramesTest.cpp
         mediaPipelineIpc/GetStatsTest.cpp
+        mediaPipelineIpc/GetFrameCountersTest.cpp
+        mediaPipelineIpc/SetMetricSubscriptionTest.cpp
         mediaPipelineIpc/RenderFrameTest.cpp
         mediaPipelineIpc/GetVolumeTest.cpp
         mediaPipelineIpc/SetVolumeTest.cpp

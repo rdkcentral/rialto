@@ -134,11 +134,17 @@ public:
 
     bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) override;
 
+    bool setMetricSubscription(const std::vector<MetricType> &types) override;
+
     bool getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames) override;
 
     bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override;
 
     bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
+
+    bool getFrameCounters(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
+                          uint64_t &corruptedFrames, uint64_t &timestamp) override;
+
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
     bool haveData(MediaSourceStatus status, uint32_t needDataRequestId) override;
@@ -157,6 +163,8 @@ public:
                              const std::shared_ptr<MediaPlayerShmInfo> &shmInfo) override;
 
     void notifyQos(int32_t sourceId, const QosInfo &qosInfo) override;
+
+    void notifyMetric(const MetricEvent &metric) override;
 
     void notifyBufferUnderflow(int32_t sourceId) override;
 

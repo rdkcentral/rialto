@@ -37,6 +37,7 @@
 #include "IGstTextTrackSinkFactory.h"
 #include "IMediaPipeline.h"
 #include "ITimer.h"
+#include "RialtoMetrics.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
 #include "Utils.h"
@@ -350,6 +351,10 @@ GstGenericPlayer::GstGenericPlayer(
         RIALTO_SERVER_LOG_MIL("Primary video playback selected");
     }
 
+    RIALTO_SERVER_LOG_DEBUG("Creating playback metrics handler");
+    m_metrics = std::make_shared<RialtoMetrics>(
+        [this](const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames)
+        { return getStats(mediaSourceType, renderedFrames, droppedFrames); });
     m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline,
                                                                                   m_context.flushOnPrerollController,
                                                                                   m_gstWrapper, m_glibWrapper);
@@ -416,6 +421,8 @@ void GstGenericPlayer::initMsePipeline()
     m_glibWrapper->gSignalConnect(m_context.pipeline, "element-setup", G_CALLBACK(&GstGenericPlayer::setupElement), this);
     m_glibWrapper->gSignalConnect(m_context.pipeline, "deep-element-added",
                                   G_CALLBACK(&GstGenericPlayer::deepElementAdded), this);
+    m_glibWrapper->gSignalConnect(m_context.pipeline, "deep-element-removed",
+                                  G_CALLBACK(&GstGenericPlayer::deepElementRemoved), this);
 
     // Set uri
     m_glibWrapper->gObjectSet(m_context.pipeline, "uri", "rialto://", nullptr);
@@ -477,6 +484,14 @@ void GstGenericPlayer::termPipeline()
     m_gstWrapper->gstBusSetSyncHandler(bus, nullptr, nullptr, nullptr);
     m_gstWrapper->gstObjectUnref(bus);
 
+    // Session close: no element of this pipeline may be mapped once its references are released
+    if (m_metrics && m_metrics->getElementToSourceMapper())
+    {
+        std::lock_guard<std::mutex> lock(m_metricMutex);
+        m_pendingMetricElements.clear();
+        m_metrics->getElementToSourceMapper()->UnregisterAllElements();
+    }
+
     if (m_context.source)
     {
         m_gstWrapper->gstObjectUnref(m_context.source);
@@ -534,11 +549,82 @@ void GstGenericPlayer::setupSource(GstElement *pipeline, GstElement *source, Gst
 void GstGenericPlayer::setupElement(GstElement *pipeline, GstElement *element, GstGenericPlayer *self)
 {
     RIALTO_SERVER_LOG_DEBUG("Element %s added to the pipeline", GST_ELEMENT_NAME(element));
+
+    // Track decoder and output elements for ElementToSourceMapper metrics enrichment
+    if (self->m_metrics && self->m_metrics->getElementToSourceMapper() &&
+        (isVideoDecoder(*self->m_gstWrapper, element) || isAudioDecoder(*self->m_gstWrapper, element) ||
+         isVideoSink(*self->m_gstWrapper, element) || isAudioSink(*self->m_gstWrapper, element)))
+    {
+        self->trackMetricElement(element);
+    }
+
     self->m_gstWrapper->gstObjectRef(element);
     if (self->m_workerThread)
     {
         self->m_workerThread->enqueueTask(self->m_taskFactory->createSetupElement(self->m_context, *self, element));
     }
+}
+
+void GstGenericPlayer::trackMetricElement(GstElement *element)
+{
+    std::lock_guard<std::mutex> lock(m_metricMutex);
+    int32_t sessionId = m_metricSessionId.load();
+    int32_t sourceId = m_metricSourceId.load();
+
+    if (sessionId >= 0 && sourceId >= 0)
+    {
+        registerMetricElement(element, sessionId, sourceId);
+    }
+    else if (std::find(m_pendingMetricElements.begin(), m_pendingMetricElements.end(), element) ==
+             m_pendingMetricElements.end())
+    {
+        // Session or source ID not yet known; registered once both are set
+        m_pendingMetricElements.push_back(element);
+        RIALTO_SERVER_LOG_DEBUG("Element %s pending metric registration", GST_ELEMENT_NAME(element));
+    }
+}
+
+void GstGenericPlayer::untrackMetricElement(GstElement *element) const
+{
+    if (!m_metrics || !m_metrics->getElementToSourceMapper())
+    {
+        return;
+    }
+
+    std::lock_guard<std::mutex> lock(m_metricMutex);
+    m_pendingMetricElements.erase(std::remove(m_pendingMetricElements.begin(), m_pendingMetricElements.end(), element),
+                                  m_pendingMetricElements.end());
+    m_metrics->getElementToSourceMapper()->UnregisterElement(element);
+}
+
+void GstGenericPlayer::registerMetricElement(GstElement *element, int32_t sessionId, int32_t sourceId)
+{
+    if (!m_metrics || !m_metrics->getElementToSourceMapper())
+    {
+        return;
+    }
+
+    ElementToSourceMapper *mapper = m_metrics->getElementToSourceMapper();
+    // Defensive unregister: remove any stale entry at this address before re-registering
+    mapper->UnregisterElement(element);
+    mapper->RegisterElement(element, static_cast<uint32_t>(sessionId), static_cast<uint32_t>(sourceId));
+    RIALTO_SERVER_LOG_DEBUG("Registered element %s with mapper for enrichment", GST_ELEMENT_NAME(element));
+}
+
+void GstGenericPlayer::registerPendingMetricElements()
+{
+    int32_t sessionId = m_metricSessionId.load();
+    int32_t sourceId = m_metricSourceId.load();
+    if (sessionId < 0 || sourceId < 0)
+    {
+        return;
+    }
+
+    for (GstElement *element : m_pendingMetricElements)
+    {
+        registerMetricElement(element, sessionId, sourceId);
+    }
+    m_pendingMetricElements.clear();
 }
 
 void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self)
@@ -552,10 +638,22 @@ void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElemen
     }
 }
 
+void GstGenericPlayer::deepElementRemoved(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self)
+{
+    RIALTO_SERVER_LOG_DEBUG("Deep element %s removed from pipeline", GST_ELEMENT_NAME(element));
+
+    // Unregister element from metrics mapper to prevent stale address reuse
+    self->untrackMetricElement(element);
+}
+
 void GstGenericPlayer::attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &attachedSource)
 {
     if (m_workerThread)
     {
+        if (attachedSource->getType() == MediaSourceType::VIDEO && attachedSource->getId() > 0)
+        {
+            setMetricSourceId(attachedSource->getId());
+        }
         m_workerThread->enqueueTask(m_taskFactory->createAttachSource(m_context, *this, attachedSource));
     }
 }
@@ -677,6 +775,11 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
             // Is this an auto-sink?...
             if (autoSink != sink)
             {
+                // Cleanup: unregister the auto-sink wrapper since we're using the actual sink child
+                untrackMetricElement(sink);
+                RIALTO_SERVER_LOG_DEBUG("Unregistered auto-sink wrapper %s, using child %s", GST_ELEMENT_NAME(sink),
+                                        GST_ELEMENT_NAME(autoSink));
+
                 m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
 
                 // increase the reference count of the auto sink
@@ -1134,6 +1237,7 @@ bool GstGenericPlayer::switchAudioCodec(bool isAudioAAC, GstCaps *newAudioCaps)
                                    m_context.playbackGroup.m_curAudioDecoder) == TRUE)
     {
         RIALTO_SERVER_LOG_DEBUG("OTF -> Removed AudioDecoder = %p", m_context.playbackGroup.m_curAudioDecoder);
+        untrackMetricElement(m_context.playbackGroup.m_curAudioDecoder);
         m_context.playbackGroup.m_curAudioDecoder = NULL;
     }
     // Remove Audio Parser From Decodebin
@@ -1411,6 +1515,9 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
                 renderedFrames = renderedFramesTmp;
                 droppedFrames = droppedFramesTmp;
                 returnValue = true;
+                RIALTO_SERVER_LOG_DEBUG("Sink stats from '%s' rendered: %llu, dropped: %llu", GST_ELEMENT_NAME(sink),
+                                        static_cast<unsigned long long>(renderedFrames), // NOLINT(runtime/int)
+                                        static_cast<unsigned long long>(droppedFrames)); // NOLINT(runtime/int)
             }
             else
             {
@@ -3192,9 +3299,67 @@ void GstGenericPlayer::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
     }
 }
 
+std::shared_ptr<IRialtoMetrics> GstGenericPlayer::getRialtoMetrics() const
+{
+    RIALTO_SERVER_LOG_DEBUG("Returning RialtoMetrics instance, available: %s", m_metrics ? "true" : "false");
+    return m_metrics;
+}
+
+void GstGenericPlayer::setMetricSessionId(int32_t sessionId)
+{
+    std::lock_guard<std::mutex> lock(m_metricMutex);
+    m_metricSessionId = sessionId;
+    registerPendingMetricElements();
+}
+
+void GstGenericPlayer::setMetricSourceId(int32_t sourceId)
+{
+    std::lock_guard<std::mutex> lock(m_metricMutex);
+    m_metricSourceId = sourceId;
+    registerPendingMetricElements();
+}
+
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
     m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message, *m_flushWatcher));
+}
+
+void GstGenericPlayer::handleMetricMessage(GstMessage *message)
+{
+    RIALTO_SERVER_LOG_DEBUG("Handling playback metric message");
+    if (!m_metrics)
+    {
+        RIALTO_SERVER_LOG_WARN("Cannot handle playback metric message - RialtoMetrics is unavailable");
+        return;
+    }
+
+    const auto parsedMetric = m_metrics->onMetricMessage(message);
+    if (!parsedMetric)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Playback metric message was ignored by RialtoMetrics");
+        return;
+    }
+
+    const uint64_t ptsNs = parsedMetric->presentationTimeStampNs.value_or(0);
+    const uint64_t count = parsedMetric->count.value_or(0);
+    const uint64_t durationNs = parsedMetric->durationNs.value_or(0);
+
+    RIALTO_SERVER_LOG_DEBUG("Parsed playback metric sourceId: %d, sessionId: %d, metric: %u, observation_kind: %u, "
+                            "ptsNs: %llu, count: %llu, durationNs: %llu",
+                            parsedMetric->sourceId, m_metricSessionId.load(), static_cast<uint32_t>(parsedMetric->type),
+                            static_cast<uint32_t>(parsedMetric->phase),
+                            static_cast<unsigned long long>(ptsNs),       // NOLINT(runtime/int)
+                            static_cast<unsigned long long>(count),       // NOLINT(runtime/int)
+                            static_cast<unsigned long long>(durationNs)); // NOLINT(runtime/int)
+    if (!m_gstPlayerClient)
+    {
+        RIALTO_SERVER_LOG_WARN("Cannot forward playback metric - player client is unavailable");
+        return;
+    }
+
+    RIALTO_SERVER_LOG_DEBUG("Forwarding playback metric event for sourceId: %d, observation_kind: %u",
+                            parsedMetric->sourceId, static_cast<uint32_t>(parsedMetric->phase));
+    m_gstPlayerClient->notifyMetric(*parsedMetric);
 }
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)

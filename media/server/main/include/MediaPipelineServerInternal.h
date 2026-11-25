@@ -25,10 +25,13 @@
 #include "IGstGenericPlayer.h"
 #include "IMainThread.h"
 #include "IMediaPipelineServerInternal.h"
+#include "IRialtoMetrics.h"
 #include "ITimer.h"
 #include "NeedDataDelayCalculator.h"
 #include <map>
 #include <memory>
+#include <mutex>
+#include <set>
 #include <shared_mutex>
 #include <string>
 #include <unordered_map>
@@ -117,11 +120,18 @@ public:
 
     bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) override;
 
+    bool setMetricSubscription(const std::vector<MetricType> &types) override;
+
     bool getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames) override;
 
     bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override;
 
     bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
+
+    bool getFrameCounters(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
+                          uint64_t &corruptedFrames, uint64_t &timestamp) override;
+    bool getFrameCounters(int32_t sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
+                          uint64_t &corruptedFrames, uint64_t &timestamp) override;
 
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
@@ -197,6 +207,8 @@ public:
     void invalidateActiveRequests(const MediaSourceType &type) override;
 
     void notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo) override;
+
+    void notifyMetric(const MetricEvent &metric) override;
 
     void notifyBufferUnderflow(MediaSourceType mediaSourceType) override;
 
@@ -320,6 +332,16 @@ protected:
     NeedDataDelayCalculator m_needDataDelayCalculator;
 
     /**
+     * @brief The metric types the client is notified about. Initialised in the constructor from the default subscription.
+     */
+    std::set<MetricType> m_metricSubscription;
+
+    /**
+     * @brief Guards m_metricSubscription, which is read on the caller thread of notifyMetric().
+     */
+    std::mutex m_metricSubscriptionMutex;
+
+    /**
      * @brief Load internally, only to be called on the main thread.
      *
      * @param[in] type     : The media type.
@@ -422,6 +444,15 @@ protected:
     bool setReportDecodeErrorsInternal(int32_t sourceId, bool reportDecodeErrors);
 
     /**
+     * @brief Replaces the set of metric types the client is notified about, only to be called on the main thread.
+     *
+     * @param[in] types : The metric types to subscribe to. An empty vector disables metric notifications.
+     *
+     * @retval true on success.
+     */
+    bool setMetricSubscriptionInternal(const std::vector<MetricType> &types);
+
+    /**
      * @brief Gets the queued frames for this source.
      *
      * This method is asynchronous
@@ -457,6 +488,9 @@ protected:
      * @retval true on success.
      */
     bool getStatsInternal(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames);
+
+    bool getFrameCountersInternal(int32_t sessionId, int32_t sourceId, uint64_t &renderedFrames,
+                                  uint64_t &droppedFrames, uint64_t &corruptedFrames, uint64_t &timestamp);
 
     /**
      * @brief Set video window internally, only to be called on the main thread.

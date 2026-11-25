@@ -38,12 +38,15 @@
 #include <IMediaPipeline.h>
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <utility>
 #include <vector>
 
 namespace firebolt::rialto::server
 {
+class IRialtoMetrics;
+
 constexpr uint32_t kMinPrimaryVideoWidth{1920};
 constexpr uint32_t kMinPrimaryVideoHeight{1080};
 
@@ -107,6 +110,9 @@ public:
      * @brief Virtual destructor.
      */
     virtual ~GstGenericPlayer();
+
+    std::shared_ptr<IRialtoMetrics> getRialtoMetrics() const override;
+    void setMetricSessionId(int32_t sessionId) override;
 
     void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
     void removeSource(const MediaSourceType &mediaSourceType) override;
@@ -196,6 +202,7 @@ private:
     void setPendingPlaybackRate() override;
     void renderFrame() override;
     void handleBusMessage(GstMessage *message) override;
+    void handleMetricMessage(GstMessage *message) override;
     void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) override;
 
     void addAutoVideoSinkChild(GObject *object) override;
@@ -210,6 +217,16 @@ private:
     void notifyPlaybackInfo() override;
 
 private:
+    void setMetricSourceId(int32_t sourceId);
+    void trackMetricElement(GstElement *element);
+    void untrackMetricElement(GstElement *element) const;
+    void registerMetricElement(GstElement *element, int32_t sessionId, int32_t sourceId);
+    void registerPendingMetricElements();
+    std::atomic_int32_t m_metricSessionId{-1};
+    std::atomic_int32_t m_metricSourceId{-1};
+    mutable std::mutex m_metricMutex;
+    mutable std::vector<GstElement *> m_pendingMetricElements; // Guarded by m_metricMutex
+
     /**
      * @brief Initialises the player pipeline for MSE playback.
      */
@@ -251,6 +268,17 @@ private:
      * @param[in] self      : Reference to the calling object.
      */
     static void deepElementAdded(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self);
+
+    /**
+     * @brief Callback on deep-element-removed. Called by the Gstreamer thread
+     * Unregisters elements from the metrics mapper to prevent stale address reuse
+     *
+     * @param[in] pipeline  : The pipeline the signal was fired from.
+     * @param[in] bin       : the GstBin the element was removed from
+     * @param[in] element   : an element that was removed from the playbin hierarchy
+     * @param[in] self      : Reference to the calling object.
+     */
+    static void deepElementRemoved(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self);
 
     /**
      * @brief Creates a Westeros sink and sets the res-usage flag for a secondary video.
@@ -458,6 +486,8 @@ private:
      * @brief Thread for handling player tasks.
      */
     std::unique_ptr<IWorkerThread> m_workerThread;
+
+    std::shared_ptr<IRialtoMetrics> m_metrics;
 
     /**
      * @brief Thread for handling gst bus callbacks

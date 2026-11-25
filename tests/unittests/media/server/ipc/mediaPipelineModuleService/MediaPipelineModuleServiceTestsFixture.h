@@ -94,6 +94,10 @@ public:
     void mediaPipelineServiceWillFailToGetQueuedFrames();
     void mediaPipelineServiceWillGetStats();
     void mediaPipelineServiceWillFailToGetStats();
+    void mediaPipelineServiceWillGetFrameCounters(int sessionId);
+    void mediaPipelineServiceWillFailToGetFrameCounters(int sessionId);
+    void mediaPipelineServiceWillSetMetricSubscription(int sessionId);
+    void mediaPipelineServiceWillFailToSetMetricSubscription(int sessionId);
     void mediaPipelineServiceWillRenderFrame();
     void mediaPipelineServiceWillFailToRenderFrame();
     void mediaPipelineServiceWillSetVolume();
@@ -182,6 +186,10 @@ public:
     void sendGetQueuedFramesRequestAndReceiveFail();
     void sendGetStatsRequestAndReceiveResponse();
     void sendGetStatsRequestAndReceiveResponseWithoutStatsMatch();
+    void sendGetFrameCountersRequestAndReceiveResponse(int sessionId);
+    void sendGetFrameCountersRequestAndReceiveFail(int sessionId);
+    void sendSetMetricSubscriptionRequestAndReceiveResponse(int sessionId);
+    void sendSetMetricSubscriptionRequestAndReceiveFail(int sessionId);
     void sendHaveDataRequestAndReceiveResponse();
     void sendSetPlaybackRateRequestAndReceiveResponse();
     void sendSetVideoWindowRequestAndReceiveResponse();
@@ -223,7 +231,7 @@ public:
     void sendPlaybackInfoEvent();
     void sendRenderFrameRequestAndReceiveResponse();
 
-private:
+protected:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ServerMock>> m_serverMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClosureMock>> m_closureMock;

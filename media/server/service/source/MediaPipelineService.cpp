@@ -305,6 +305,20 @@ bool MediaPipelineService::setReportDecodeErrors(int sessionId, int32_t sourceId
     return mediaPipelineIter->second->setReportDecodeErrors(sourceId, reportDecodeErrors);
 }
 
+bool MediaPipelineService::setMetricSubscription(int sessionId, const std::vector<MetricType> &types)
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to setMetricSubscription, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setMetricSubscription(types);
+}
+
 bool MediaPipelineService::getQueuedFrames(int sessionId, int32_t sourceId, uint32_t &queuedFrames)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to getQueuedFrames, session id: %d", sessionId);
@@ -345,6 +359,26 @@ bool MediaPipelineService::getStats(int sessionId, int32_t sourceId, uint64_t &r
         return false;
     }
     return mediaPipelineIter->second->getStats(sourceId, renderedFrames, droppedFrames);
+}
+
+bool MediaPipelineService::getFrameCounters(int sessionId, int32_t sourceId, uint64_t &renderedFrames,
+                                            uint64_t &droppedFrames, uint64_t &corruptedFrames, uint64_t &timestamp)
+{
+    RIALTO_SERVER_LOG_DEBUG("Looking up playback metrics sessionId: %d, sourceId: %d", sessionId, sourceId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("No session for playback metrics request, sessionId: %d, sourceId: %d", sessionId,
+                                sourceId);
+        return false;
+    }
+    const bool success = mediaPipelineIter->second->getFrameCounters(sessionId, sourceId, renderedFrames, droppedFrames,
+                                                                     corruptedFrames, timestamp);
+    RIALTO_SERVER_LOG_DEBUG("Playback metrics lookup %s for sessionId: %d, sourceId: %d",
+                            success ? "succeeded" : "failed", sessionId, sourceId);
+    return success;
 }
 
 bool MediaPipelineService::setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,

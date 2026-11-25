@@ -20,17 +20,25 @@
 #include "DataReaderMock.h"
 #include "GstGenericPlayerTestCommon.h"
 #include "HeartbeatHandlerMock.h"
+#include "IGstDispatcherThreadClient.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IMediaPipeline.h"
 #include "MatchersGenericPlayer.h"
 #include "MediaSourceUtil.h"
 #include "PlayerTaskMock.h"
 #include "TimerMock.h"
+#include <gst/gst.h>
 
+using firebolt::rialto::MetricEvent;
+using firebolt::rialto::MetricPhase;
+using firebolt::rialto::MetricType;
 using testing::_;
+using testing::AllOf;
 using testing::ByMove;
 using testing::DoAll;
+using testing::Field;
 using testing::Invoke;
+using testing::Optional;
 using testing::Ref;
 using testing::Return;
 using testing::SetArgumentPointee;
@@ -270,12 +278,137 @@ TEST_F(GstGenericPlayerTest, shouldSetupSource)
 TEST_F(GstGenericPlayerTest, shouldSetupElement)
 {
     GstElement element{};
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(&element)).Times(4).WillRepeatedly(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, _)).Times(4).WillRepeatedly(Return(FALSE));
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&element));
     EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, &element)).WillOnce(Return(ByMove(std::move(task))));
 
     triggerSetupElement(&element);
+}
+
+TEST_F(GstGenericPlayerTest, shouldRegisterVideoSinkWithMetricIdsWhenCreated)
+{
+    constexpr int32_t kSessionId{7};
+    constexpr int32_t kSourceId{11};
+    m_sut->setMetricSessionId(kSessionId);
+
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/mpeg");
+    source->setId(kSourceId);
+    std::unique_ptr<IPlayerTask> attachTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*attachTask), execute());
+    EXPECT_CALL(m_taskFactoryMock, createAttachSource(_, _, Ref(source))).WillOnce(Return(ByMove(std::move(attachTask))));
+    m_sut->attachSource(source);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_element)).Times(3).WillRepeatedly(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, GST_ELEMENT_FACTORY_TYPE_DECODER |
+                                                                              GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(FALSE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, GST_ELEMENT_FACTORY_TYPE_DECODER |
+                                                                              GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+        .WillOnce(Return(FALSE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, GST_ELEMENT_FACTORY_TYPE_SINK |
+                                                                              GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(TRUE));
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element));
+    EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, m_element)).WillOnce(Return(ByMove(std::move(task))));
+
+    triggerSetupElement(m_element);
+
+    uint32_t sessionId{0};
+    uint32_t sourceId{0};
+    ASSERT_TRUE(m_sut->getRialtoMetrics()->getElementToSourceMapper()->MapElement(m_element, sessionId, sourceId));
+    EXPECT_EQ(static_cast<uint32_t>(kSessionId), sessionId);
+    EXPECT_EQ(static_cast<uint32_t>(kSourceId), sourceId);
+}
+
+TEST_F(GstGenericPlayerTest, shouldRegisterElementSetUpBeforeMetricSourceIdIsKnown)
+{
+    constexpr int32_t kSessionId{7};
+    constexpr int32_t kSourceId{11};
+    m_sut->setMetricSessionId(kSessionId);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_element)).Times(3).WillRepeatedly(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, GST_ELEMENT_FACTORY_TYPE_DECODER |
+                                                                              GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(FALSE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, GST_ELEMENT_FACTORY_TYPE_DECODER |
+                                                                              GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+        .WillOnce(Return(FALSE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, GST_ELEMENT_FACTORY_TYPE_SINK |
+                                                                              GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(TRUE));
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element));
+    EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, m_element)).WillOnce(Return(ByMove(std::move(task))));
+    triggerSetupElement(m_element);
+
+    uint32_t sessionId{0};
+    uint32_t sourceId{0};
+    EXPECT_FALSE(m_sut->getRialtoMetrics()->getElementToSourceMapper()->MapElement(m_element, sessionId, sourceId));
+
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/mpeg");
+    source->setId(kSourceId);
+    std::unique_ptr<IPlayerTask> attachTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*attachTask), execute());
+    EXPECT_CALL(m_taskFactoryMock, createAttachSource(_, _, Ref(source))).WillOnce(Return(ByMove(std::move(attachTask))));
+    m_sut->attachSource(source);
+
+    ASSERT_TRUE(m_sut->getRialtoMetrics()->getElementToSourceMapper()->MapElement(m_element, sessionId, sourceId));
+    EXPECT_EQ(static_cast<uint32_t>(kSessionId), sessionId);
+    EXPECT_EQ(static_cast<uint32_t>(kSourceId), sourceId);
+}
+
+TEST_F(GstGenericPlayerTest, shouldNotRegisterElementWithoutMetricSourceId)
+{
+    m_sut->setMetricSessionId(7);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_element)).Times(4).WillRepeatedly(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, _)).Times(4).WillRepeatedly(Return(FALSE));
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element));
+    EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, m_element)).WillOnce(Return(ByMove(std::move(task))));
+
+    triggerSetupElement(m_element);
+
+    uint32_t sessionId{0};
+    uint32_t sourceId{0};
+    EXPECT_FALSE(m_sut->getRialtoMetrics()->getElementToSourceMapper()->MapElement(m_element, sessionId, sourceId));
+}
+
+TEST_F(GstGenericPlayerTest, shouldNotRegisterUnsupportedElementWithMetricIds)
+{
+    constexpr int32_t kSessionId{7};
+    constexpr int32_t kSourceId{11};
+    m_sut->setMetricSessionId(kSessionId);
+
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/mpeg");
+    source->setId(kSourceId);
+    std::unique_ptr<IPlayerTask> attachTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*attachTask), execute());
+    EXPECT_CALL(m_taskFactoryMock, createAttachSource(_, _, Ref(source))).WillOnce(Return(ByMove(std::move(attachTask))));
+    m_sut->attachSource(source);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_element)).Times(4).WillRepeatedly(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, _)).Times(4).WillRepeatedly(Return(FALSE));
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element));
+    EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, m_element)).WillOnce(Return(ByMove(std::move(task))));
+
+    triggerSetupElement(m_element);
+
+    uint32_t sessionId{0};
+    uint32_t sourceId{0};
+    EXPECT_FALSE(m_sut->getRialtoMetrics()->getElementToSourceMapper()->MapElement(m_element, sessionId, sourceId));
 }
 
 TEST_F(GstGenericPlayerTest, shouldAddDeepElement)
@@ -287,6 +420,20 @@ TEST_F(GstGenericPlayerTest, shouldAddDeepElement)
     EXPECT_CALL(m_taskFactoryMock, createDeepElementAdded(_, _, _, _, &element)).WillOnce(Return(ByMove(std::move(task))));
 
     triggerDeepElementAdded(&element);
+}
+
+TEST_F(GstGenericPlayerTest, shouldUnregisterRemovedDeepElementFromMapper)
+{
+    constexpr int32_t kSessionId{7};
+    constexpr int32_t kSourceId{11};
+    auto mapper = m_sut->getRialtoMetrics()->getElementToSourceMapper();
+    mapper->RegisterElement(m_element, kSessionId, kSourceId);
+
+    triggerDeepElementRemoved(m_element);
+
+    uint32_t sessionId{0};
+    uint32_t sourceId{0};
+    EXPECT_FALSE(mapper->MapElement(m_element, sessionId, sourceId));
 }
 
 TEST_F(GstGenericPlayerTest, shouldReturnInvalidPositionWhenPipelineIsNull)
@@ -1171,4 +1318,49 @@ TEST_F(GstGenericPlayerTest, shouldReturnDuration)
             }));
     EXPECT_TRUE(m_sut->getDuration(targetDuration));
     EXPECT_EQ(kExpectedDuration, targetDuration);
+}
+
+TEST_F(GstGenericPlayerTest, shouldCountAndNotifyWesterosMetricMessages)
+{
+    constexpr guint kVideoFrameDropMetric{1};
+    constexpr guint kBufferUnderflowMetric{7};
+    constexpr guint kSourceId{11};
+    constexpr guint kSessionId{7};
+    constexpr guint64 kPtsNs{9001};
+
+    const auto metrics = m_sut->getRialtoMetrics();
+    ASSERT_NE(nullptr, metrics);
+    metrics->setSessionId(kSessionId);
+    metrics->getElementToSourceMapper()->RegisterElement(m_element, kSessionId, kSourceId);
+
+    auto *dispatcherClient = dynamic_cast<IGstDispatcherThreadClient *>(m_sut.get());
+    ASSERT_NE(nullptr, dispatcherClient);
+
+    const auto makeMetricMessage = [&](guint metricType, guint observationKind)
+    {
+        GstStructure *structure = gst_structure_new("media-pipeline-metric", "metric", G_TYPE_UINT, metricType,
+                                                    "observation-kind", G_TYPE_UINT, observationKind, "pts-ns",
+                                                    G_TYPE_INT64, static_cast<gint64>(kPtsNs), nullptr);
+        return gst_message_new_element(GST_OBJECT(m_element), structure);
+    };
+
+    const auto metricEvent = [&](MetricType metric, MetricPhase phase)
+    {
+        return AllOf(Field(&MetricEvent::sourceId, static_cast<int32_t>(kSourceId)), Field(&MetricEvent::type, metric),
+                     Field(&MetricEvent::phase, phase),
+                     Field(&MetricEvent::presentationTimeStampNs, Optional(static_cast<int64_t>(kPtsNs))));
+    };
+
+    EXPECT_CALL(m_gstPlayerClient, notifyMetric(metricEvent(MetricType::VIDEO_FRAME_DROP, MetricPhase::OCCURRENCE)));
+    GstMessage *dropMessage = makeMetricMessage(kVideoFrameDropMetric, static_cast<guint>(MetricPhase::OCCURRENCE));
+    ASSERT_NE(nullptr, dropMessage);
+    dispatcherClient->handleMetricMessage(dropMessage);
+    gst_message_unref(dropMessage);
+
+    EXPECT_CALL(m_gstPlayerClient, notifyMetric(metricEvent(MetricType::BUFFER_UNDERFLOW, MetricPhase::EPISODE_STARTED)));
+    GstMessage *underflowMessage =
+        makeMetricMessage(kBufferUnderflowMetric, static_cast<guint>(MetricPhase::EPISODE_STARTED));
+    ASSERT_NE(nullptr, underflowMessage);
+    dispatcherClient->handleMetricMessage(underflowMessage);
+    gst_message_unref(underflowMessage);
 }

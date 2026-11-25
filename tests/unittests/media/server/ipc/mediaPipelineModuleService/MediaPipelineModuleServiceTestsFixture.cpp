@@ -83,6 +83,8 @@ constexpr firebolt::rialto::Format kFormat{firebolt::rialto::Format::S16LE};
 constexpr uint64_t kChannelMask{0x0000000000000003};
 constexpr uint64_t kRenderedFrames{987654};
 constexpr uint64_t kDroppedFrames{321};
+constexpr uint64_t kCorruptedFrames{17};
+constexpr uint64_t kFrameCountersTimestamp{123456789};
 constexpr uint32_t kDuration{30};
 constexpr bool kImmediateOutputVal1{false};
 constexpr bool kImmediateOutputVal2{true};
@@ -736,6 +738,47 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetStats()
 {
     expectRequestFailure();
     EXPECT_CALL(m_mediaPipelineServiceMock, getStats(kHardcodedSessionId, _, _, _)).WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetFrameCounters(int sessionId)
+{
+    expectRequestSuccess();
+    EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getFrameCounters(sessionId, _, _, _, _, _))
+        .WillOnce(Invoke(
+            [&](int, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames, uint64_t &corruptedFrames,
+                uint64_t &timestamp)
+            {
+                renderedFrames = kRenderedFrames;
+                droppedFrames = kDroppedFrames;
+                corruptedFrames = kCorruptedFrames;
+                timestamp = kFrameCountersTimestamp;
+                return true;
+            }));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetFrameCounters(int sessionId)
+{
+    expectRequestFailure();
+    EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getFrameCounters(sessionId, _, _, _, _, _)).WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetMetricSubscription(int sessionId)
+{
+    expectRequestSuccess();
+    EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
+    EXPECT_CALL(m_mediaPipelineServiceMock,
+                setMetricSubscription(sessionId, ::testing::ElementsAre(firebolt::rialto::MetricType::VIDEO_FRAME_DROP,
+                                                                        firebolt::rialto::MetricType::AUDIO_GAP)))
+        .WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetMetricSubscription(int sessionId)
+{
+    expectRequestFailure();
+    EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setMetricSubscription(sessionId, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillRenderFrame()
@@ -1490,6 +1533,59 @@ void MediaPipelineModuleServiceTests::sendGetStatsRequestAndReceiveResponseWitho
     request.set_session_id(kHardcodedSessionId);
 
     m_service->getStats(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendGetFrameCountersRequestAndReceiveResponse(int sessionId)
+{
+    firebolt::rialto::GetFrameCountersRequest request;
+    firebolt::rialto::GetFrameCountersResponse response;
+
+    request.set_session_id(sessionId);
+    request.set_source_id(kSourceId);
+
+    m_service->getFrameCounters(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(kRenderedFrames, response.rendered_frames());
+    EXPECT_EQ(kDroppedFrames, response.dropped_frames());
+    EXPECT_EQ(kCorruptedFrames, response.corrupted_frames());
+    EXPECT_EQ(kFrameCountersTimestamp, response.timestamp());
+}
+
+void MediaPipelineModuleServiceTests::sendGetFrameCountersRequestAndReceiveFail(int sessionId)
+{
+    firebolt::rialto::GetFrameCountersRequest request;
+    firebolt::rialto::GetFrameCountersResponse response;
+
+    request.set_session_id(sessionId);
+    request.set_source_id(kSourceId);
+
+    m_service->getFrameCounters(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendSetMetricSubscriptionRequestAndReceiveResponse(int sessionId)
+{
+    firebolt::rialto::SetMediaMetricsRequest request;
+    firebolt::rialto::SetMediaMetricsResponse response;
+
+    request.set_session_id(sessionId);
+    request.add_types(firebolt::rialto::MediaPipelineMetricEvent::VIDEO_FRAME_DROP);
+    request.add_types(firebolt::rialto::MediaPipelineMetricEvent::AUDIO_GAP);
+
+    m_service->setMetricSubscription(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_TRUE(response.result());
+}
+
+void MediaPipelineModuleServiceTests::sendSetMetricSubscriptionRequestAndReceiveFail(int sessionId)
+{
+    firebolt::rialto::SetMediaMetricsRequest request;
+    firebolt::rialto::SetMediaMetricsResponse response;
+
+    request.set_session_id(sessionId);
+    request.add_types(firebolt::rialto::MediaPipelineMetricEvent::VIDEO_FRAME_DROP);
+    request.add_types(firebolt::rialto::MediaPipelineMetricEvent::AUDIO_GAP);
+
+    m_service->setMetricSubscription(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void MediaPipelineModuleServiceTests::sendHaveDataRequestAndReceiveResponse()

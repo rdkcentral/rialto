@@ -164,7 +164,7 @@ TEST_F(RialtoServerMediaPipelineSourceTest, UpdateSourceIdNotChanged)
     mediaSource->setId(-1);
 
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource))).Times(0);
     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), false);
 }
 

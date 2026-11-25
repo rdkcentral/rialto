@@ -71,12 +71,16 @@ public:
     void mediaPipelineWillFailToSetImmediateOutput();
     void mediaPipelineWillSetReportDecodeErrors();
     void mediaPipelineWillFailToSetReportDecodeErrors();
+    void mediaPipelineWillSetMetricSubscription();
+    void mediaPipelineWillFailToSetMetricSubscription();
     void mediaPipelineWillGetImmediateOutput();
     void mediaPipelineWillFailToGetImmediateOutput();
     void mediaPipelineWillGetQueuedFrames();
     void mediaPipelineWillFailToGetQueuedFrames();
     void mediaPipelineWillGetStats();
     void mediaPipelineWillFailToGetStats();
+    void mediaPipelineWillGetFrameCounters();
+    void mediaPipelineWillFailToGetFrameCounters();
     void mediaPipelineWillRenderFrame();
     void mediaPipelineWillFailToRenderFrame();
     void mediaPipelineWillSetVolume();
@@ -167,6 +171,8 @@ public:
     void getDurationShouldFail();
     void setReportDecodeErrorsShouldSucceed();
     void setReportDecodeErrorsShouldFail();
+    void setMetricSubscriptionShouldSucceed();
+    void setMetricSubscriptionShouldFail();
     void setImmediateOutputShouldSucceed();
     void setImmediateOutputShouldFail();
     void getImmediateOutputShouldSucceed();
@@ -175,6 +181,8 @@ public:
     void getQueuedFramesShouldFail();
     void getStatsShouldSucceed();
     void getStatsShouldFail();
+    void getFrameCountersShouldSucceed();
+    void getFrameCountersShouldFail();
     void getSupportedMimeTypesSucceed();
     void isMimeTypeSupportedSucceed();
     void getSupportedPropertiesSucceed();

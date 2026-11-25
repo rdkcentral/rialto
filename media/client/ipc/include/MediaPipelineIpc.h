@@ -26,6 +26,7 @@
 #include <IMediaPipeline.h>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "mediapipelinemodule.pb.h"
 
@@ -94,12 +95,16 @@ public:
     bool setImmediateOutput(int32_t sourceId, bool immediateOutput) override;
 
     bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) override;
+    bool setMetricSubscription(const std::vector<MetricType> &types) override;
 
     bool getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames) override;
 
     bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override;
 
     bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
+
+    bool getFrameCounters(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
+                          uint64_t &corruptedFrames, uint64_t &timestamp) override;
 
     bool setPlaybackRate(double rate) override;
 
@@ -211,6 +216,8 @@ private:
      * @param[in] event : The qos event structure.
      */
     void onQos(const std::shared_ptr<firebolt::rialto::QosEvent> &event);
+
+    void handleMetricEvent(const std::shared_ptr<firebolt::rialto::MediaPipelineMetricEvent> &event);
 
     /**
      * @brief Handler for a buffer underflow notification from the server.

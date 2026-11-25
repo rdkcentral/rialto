@@ -24,6 +24,7 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::client
 {
@@ -49,8 +50,13 @@ public:
     MOCK_METHOD(bool, setImmediateOutput, (int32_t sourceId, bool immediateOutput), (override));
     MOCK_METHOD(bool, getImmediateOutput, (int32_t sourceId, bool &immediateOutput), (override));
     MOCK_METHOD(bool, setReportDecodeErrors, (int32_t sourceId, bool reportDecodeErrors), (override));
+    MOCK_METHOD(bool, setMetricSubscription, (const std::vector<MetricType> &types), (override));
     MOCK_METHOD(bool, getQueuedFrames, (int32_t sourceId, uint32_t &queuedFrames), (override));
     MOCK_METHOD(bool, getStats, (int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames), (override));
+    MOCK_METHOD(bool, getFrameCounters,
+                (int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames, uint64_t &corruptedFrames,
+                 uint64_t &timestamp),
+                (override));
     MOCK_METHOD(bool, setPlaybackRate, (double rate), (override));
     MOCK_METHOD(bool, renderFrame, (), (override));
     MOCK_METHOD(bool, setVolume, (double targetVolume, uint32_t volumeDuration, EaseType easeType), (override));

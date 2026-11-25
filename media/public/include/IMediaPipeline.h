@@ -1217,6 +1217,22 @@ public:
     virtual bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
 
     /**
+     * @brief Get frame counters for this source.
+     *
+     * This method is synchronous, it returns rendered, dropped, and corrupted frame counts
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[out] renderedFrames : The number of rendered frames
+     * @param[out] droppedFrames : The number of dropped frames
+     * @param[out] corruptedFrames : The number of corrupted frames (decode errors)
+     * @param[out] timestamp : Server timestamp in nanoseconds
+     *
+     * @retval true on success.
+     */
+    virtual bool getFrameCounters(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames,
+                                  uint64_t &corruptedFrames, uint64_t &timestamp) = 0;
+
+    /**
      * @brief Sets the "Immediate Output" property for this source.
      *
      * This method is asynchronous, it will set the "Immediate Output" property
@@ -1239,6 +1255,18 @@ public:
      * @retval true on success.
      */
     virtual bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) = 0;
+
+    /**
+     * @brief Sets the metric types the client is notified about.
+     *
+     * Replace-all semantics: the given set becomes the full subscription. An empty vector means no metric
+     * notifications are delivered. All metric types are subscribed by default.
+     *
+     * @param[in] types : The metric types to subscribe to
+     *
+     * @retval true on success.
+     */
+    virtual bool setMetricSubscription(const std::vector<MetricType> &types) = 0;
 
     /**
      * @brief Gets the queued frames for this source.

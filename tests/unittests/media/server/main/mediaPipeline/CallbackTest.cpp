@@ -260,6 +260,120 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyQosFailureSourceIdNotFound)
     m_gstPlayerCallback->notifyQos(mediaSourceType, qosInfo);
 }
 
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricMapsEveryOptionalFieldPresence)
+{
+    constexpr int32_t kSourceId{11};
+    constexpr int64_t kPtsNs{9001};
+    constexpr uint64_t kCount{4};
+    constexpr uint64_t kDurationNs{5000};
+    constexpr uint64_t kObservedAtMonotonicNs{42};
+    constexpr int64_t kObservedAtUnixNs{1700000000};
+    const auto metricType = firebolt::rialto::MetricType::AUDIO_GAP;
+    const auto metricPhase = firebolt::rialto::MetricPhase::EPISODE_STARTED;
+
+    // Bit 0: presentationTimeStampNs, bit 1: count, bit 2: durationNs. Absent fields stay unset.
+    for (uint32_t mask = 0; mask < 8; ++mask)
+    {
+        SCOPED_TRACE("optional field mask " + std::to_string(mask));
+        firebolt::rialto::MetricEvent metric;
+        metric.sourceId = kSourceId;
+        metric.type = metricType;
+        metric.phase = metricPhase;
+        if (mask & 1)
+            metric.presentationTimeStampNs = kPtsNs;
+        if (mask & 2)
+            metric.count = kCount;
+        if (mask & 4)
+            metric.durationNs = kDurationNs;
+        metric.observedAtMonotonicNs = kObservedAtMonotonicNs;
+        metric.observedAtUnixNs = kObservedAtUnixNs;
+
+        const std::optional<int64_t> expectedPts = (mask & 1) ? std::optional<int64_t>{kPtsNs} : std::nullopt;
+        const std::optional<uint64_t> expectedCount = (mask & 2) ? std::optional<uint64_t>{kCount} : std::nullopt;
+        const std::optional<uint64_t> expectedDuration = (mask & 4) ? std::optional<uint64_t>{kDurationNs} : std::nullopt;
+
+        mainThreadWillEnqueueTask();
+        EXPECT_CALL(*m_mediaPipelineClientMock,
+                    notifyMetric(
+                        ::testing::AllOf(::testing::Field(&firebolt::rialto::MetricEvent::sourceId, kSourceId),
+                                         ::testing::Field(&firebolt::rialto::MetricEvent::type, metricType),
+                                         ::testing::Field(&firebolt::rialto::MetricEvent::phase, metricPhase),
+                                         ::testing::Field(&firebolt::rialto::MetricEvent::presentationTimeStampNs,
+                                                          expectedPts),
+                                         ::testing::Field(&firebolt::rialto::MetricEvent::count, expectedCount),
+                                         ::testing::Field(&firebolt::rialto::MetricEvent::durationNs, expectedDuration),
+                                         ::testing::Field(&firebolt::rialto::MetricEvent::observedAtMonotonicNs,
+                                                          kObservedAtMonotonicNs),
+                                         ::testing::Field(&firebolt::rialto::MetricEvent::observedAtUnixNs,
+                                                          kObservedAtUnixNs))));
+
+        m_gstPlayerCallback->notifyMetric(metric);
+    }
+}
+
+/**
+ * Test a metric is delivered to the client when no subscription has been set (all types subscribed by default).
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricDeliveredByDefaultSubscription)
+{
+    firebolt::rialto::MetricEvent metric;
+    metric.sourceId = 1;
+    metric.type = firebolt::rialto::MetricType::AUDIO_GAP;
+    metric.phase = firebolt::rialto::MetricPhase::OCCURRENCE;
+
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyMetric(::testing::Field(&firebolt::rialto::MetricEvent::type,
+                                                                          firebolt::rialto::MetricType::AUDIO_GAP)));
+
+    m_gstPlayerCallback->notifyMetric(metric);
+}
+
+/**
+ * Test that only metric types in the subscription set are delivered to the client.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricFilteredBySubscription)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_TRUE(m_mediaPipeline->setMetricSubscription({firebolt::rialto::MetricType::VIDEO_FRAME_DROP}));
+
+    firebolt::rialto::MetricEvent unsubscribedMetric;
+    unsubscribedMetric.sourceId = 1;
+    unsubscribedMetric.type = firebolt::rialto::MetricType::AUDIO_GAP;
+    unsubscribedMetric.phase = firebolt::rialto::MetricPhase::OCCURRENCE;
+    // No enqueueTask expectation: the StrictMock main thread fails the test if the dropped metric is queued.
+    m_gstPlayerCallback->notifyMetric(unsubscribedMetric);
+
+    firebolt::rialto::MetricEvent subscribedMetric = unsubscribedMetric;
+    subscribedMetric.type = firebolt::rialto::MetricType::VIDEO_FRAME_DROP;
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaPipelineClientMock,
+                notifyMetric(::testing::Field(&firebolt::rialto::MetricEvent::type,
+                                              firebolt::rialto::MetricType::VIDEO_FRAME_DROP)));
+    m_gstPlayerCallback->notifyMetric(subscribedMetric);
+}
+
+/**
+ * Test a queued metric is dropped when its type is unsubscribed before the queued task runs.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyMetricDroppedWhenUnsubscribedBeforeDelivery)
+{
+    firebolt::rialto::MetricEvent metric;
+    metric.sourceId = 1;
+    metric.type = firebolt::rialto::MetricType::AUDIO_GAP;
+    metric.phase = firebolt::rialto::MetricPhase::OCCURRENCE;
+
+    firebolt::rialto::server::IMainThread::Task queuedTask;
+    EXPECT_CALL(*m_mainThreadMock, enqueueTask(m_kMainThreadClientId, _)).WillOnce(SaveArg<1>(&queuedTask));
+    m_gstPlayerCallback->notifyMetric(metric);
+    ASSERT_TRUE(queuedTask);
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_TRUE(m_mediaPipeline->setMetricSubscription({}));
+
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyMetric(_)).Times(0);
+    queuedTask();
+}
+
 /**
  * Test a notification of playback error is forwarded to the registered client.
  */

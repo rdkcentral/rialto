@@ -109,6 +109,13 @@ void GstGenericPlayerTestCommon::triggerDeepElementAdded(GstElement *element)
         m_deepElementAddedFunc)(&m_bin, &m_bin, element, reinterpret_cast<GstGenericPlayer *>(m_setupElementUserData));
 }
 
+void GstGenericPlayerTestCommon::triggerDeepElementRemoved(GstElement *element)
+{
+    ASSERT_TRUE(m_deepElementRemovedFunc);
+    reinterpret_cast<void (*)(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self)>(
+        m_deepElementRemovedFunc)(&m_bin, &m_bin, element, reinterpret_cast<GstGenericPlayer *>(m_setupElementUserData));
+}
+
 void GstGenericPlayerTestCommon::setPipelineState(const GstState &state)
 {
     GST_STATE(&m_pipeline) = state;
@@ -186,6 +193,15 @@ void GstGenericPlayerTestCommon::expectSetSignalCallbacks()
                 m_deepElementAddedFunc = c_handler;
                 m_deepElementAddedUserData = data;
                 return m_deepElementAddedSignalId;
+            }));
+    EXPECT_CALL(*m_glibWrapperMock,
+                gSignalConnect(&m_pipeline, StrEq("deep-element-removed"), NotNullMatcher(), NotNullMatcher()))
+        .WillOnce(Invoke(
+            [this](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
+            {
+                m_deepElementRemovedFunc = c_handler;
+                m_deepElementRemovedUserData = data;
+                return m_deepElementRemovedSignalId;
             }));
 }
 
