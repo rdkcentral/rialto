@@ -1037,10 +1037,24 @@ message SetLogLevelsEvent {
     optional uint32 commonLogLevels = 4;
 }
 
+/**
+ * @brief Event sent periodically by the server with the current playback information.
+ *
+ * @param session_id        The id of the A/V session the event is for.
+ * @param current_position  The current playback position.
+ * @param volume            The current volume.
+ * @param video_position    The current playback position reported by the video sink. -1 if unavailable.
+ * @param audio_position    The current playback position reported by the audio sink. -1 if unavailable.
+ * @param video_pts         The current video PTS reported by the video sink, in 90 kHz ticks. -1 if unavailable.
+ *
+ */
 message PlaybackInfoEvent {
     optional int32 session_id = 1 [default = -1];
     optional int64 current_position = 2 [default = -1];
     optional double volume = 3 [default = 1.0];
+    optional int64 video_position = 4 [default = -1];
+    optional int64 audio_position = 5 [default = -1];
+    optional int64 video_pts = 6 [default = -1];
 }
 
 /**

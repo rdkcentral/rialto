@@ -475,6 +475,9 @@ struct PlaybackInfo
 {
     int64_t currentPosition{-1}; /**< The current playback position */
     double volume{1.0};          /**< The current volume */
+    int64_t videoPosition{-1};   /**< The current playback position reported by the video sink, -1 if unavailable */
+    int64_t audioPosition{-1};   /**< The current playback position reported by the audio sink, -1 if unavailable */
+    int64_t videoPts{-1};        /**< The current video sink PTS in 90 kHz ticks, -1 if unavailable */
 };
 
 /**

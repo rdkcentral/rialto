@@ -705,7 +705,43 @@ void GstGenericPlayer::notifyPlaybackInfo()
     {
         getVolume(info.volume);
     }
+    info.videoPosition = getSinkPosition(MediaSourceType::VIDEO);
+    info.audioPosition = getSinkPosition(MediaSourceType::AUDIO);
+    info.videoPts = getSinkPts(MediaSourceType::VIDEO, "video-pts");
     m_gstPlayerClient->notifyPlaybackInfo(info);
+}
+
+int64_t GstGenericPlayer::getSinkPosition(const MediaSourceType &mediaSourceType)
+{
+    GstElement *sink{getSink(mediaSourceType)};
+    if (!sink)
+    {
+        return -1;
+    }
+    const int64_t kPosition{getPosition(sink)};
+    m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+    return kPosition;
+}
+
+int64_t GstGenericPlayer::getSinkPts(const MediaSourceType &mediaSourceType, const char *propertyName) const
+{
+    int64_t pts{-1};
+    GstElement *sink{getSink(mediaSourceType)};
+    if (!sink)
+    {
+        return pts;
+    }
+
+    GParamSpec *paramSpec{m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), propertyName)};
+    if (paramSpec && G_TYPE_INT64 == G_PARAM_SPEC_VALUE_TYPE(paramSpec))
+    {
+        gint64 value{-1};
+        m_glibWrapper->gObjectGet(sink, propertyName, &value, nullptr);
+        pts = static_cast<int64_t>(value);
+    }
+
+    m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+    return pts;
 }
 
 GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
@@ -2091,7 +2127,7 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
     m_gstWrapper->gstStateUnlock(element);
 
     gint64 position = -1;
-    if (!m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position))
+    if (!m_gstWrapper->gstElementQueryPosition(element, GST_FORMAT_TIME, &position))
     {
         RIALTO_SERVER_LOG_WARN("Failed to query position");
         return -1;

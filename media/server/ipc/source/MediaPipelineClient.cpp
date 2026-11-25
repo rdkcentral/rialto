@@ -286,6 +286,9 @@ void MediaPipelineClient::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
     event->set_session_id(m_sessionId);
     event->set_current_position(playbackInfo.currentPosition);
     event->set_volume(playbackInfo.volume);
+    event->set_video_position(playbackInfo.videoPosition);
+    event->set_audio_position(playbackInfo.audioPosition);
+    event->set_video_pts(playbackInfo.videoPts);
 
     m_ipcClient->sendEvent(event);
 }

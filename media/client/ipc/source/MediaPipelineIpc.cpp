@@ -1655,6 +1655,9 @@ void MediaPipelineIpc::onPlaybackInfo(const std::shared_ptr<firebolt::rialto::Pl
         PlaybackInfo playbackInfo;
         playbackInfo.currentPosition = event->current_position();
         playbackInfo.volume = event->volume();
+        playbackInfo.videoPosition = event->video_position();
+        playbackInfo.audioPosition = event->audio_position();
+        playbackInfo.videoPts = event->video_pts();
         m_mediaPipelineIpcClient->notifyPlaybackInfo(playbackInfo);
     }
 }
