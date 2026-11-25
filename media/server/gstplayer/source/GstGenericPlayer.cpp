@@ -584,7 +584,7 @@ void GstGenericPlayer::trackMetricElement(GstElement *element)
     }
 }
 
-void GstGenericPlayer::untrackMetricElement(GstElement *element)
+void GstGenericPlayer::untrackMetricElement(GstElement *element) const
 {
     if (!m_metrics || !m_metrics->getElementToSourceMapper())
     {

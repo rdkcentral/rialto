@@ -145,17 +145,36 @@ struct MetricEvent {
 ```
 
 ### After (0.7 Contract)
+
+Northbound (public API, `media/public/include/MediaCommon.h`). This is the implemented `MetricEvent`:
 ```cpp
-struct MetricEvent {
-    uint32_t metric;                            // required
-    uint32_t observation_kind;                  // required
-    std::optional<int64_t> pts_ns;             // optional
-    std::optional<uint64_t> duration_ns;       // optional
-    std::optional<uint64_t> count;             // optional
-    uint32_t session_id;                        // enriched by Rialto
-    uint32_t source_id;                         // enriched by Rialto
+struct MetricEvent
+{
+    MetricType type{MetricType::VIDEO_FRAME_DROP};
+    MetricPhase phase{MetricPhase::OCCURRENCE};
+    int32_t sourceId{-1};
+    std::optional<int64_t> presentationTimeStampNs;
+    std::optional<uint64_t> count;
+    std::optional<uint64_t> durationNs;
+    uint64_t observedAtMonotonicNs{0};
+    int64_t observedAtUnixNs{0};
 };
 ```
+
+`MetricEvent` has no session-ID member. The session is carried by the IPC envelope: `MediaPipelineMetricEvent.session_id`
+(optional `uint32` in `proto/mediapipelinemodule.proto`) is set by the server for routing and is not part of the public struct.
+
+Southbound (Westeros `media-pipeline-metric` GstStructure fields, which Rialto validates and maps):
+
+| GstStructure field | Northbound `MetricEvent` / wire field |
+|---|---|
+| `metric` | `type` / `MediaPipelineMetricEvent.type` |
+| `observation-kind` | `phase` / `MediaPipelineMetricEvent.phase` |
+| (element registration, not a field) | `sourceId` / `source_id` |
+| `pts-ns` | `presentationTimeStampNs` / `pts_ns` |
+| `count` | `count` |
+| `duration-ns` | `durationNs` / `duration_ns` |
+| (set by Rialto on receipt) | `observedAtMonotonicNs` / `observed_at_monotonic_ns`, `observedAtUnixNs` / `observed_at_unix_ns` |
 
 ## Key Checkpoints for Integration
 

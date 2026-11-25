@@ -10,10 +10,11 @@ The Broadcom Westeros sink posts `media-pipeline-metric` element messages with t
 [Bus Message Fields](#bus-message-fields). Rialto validates the message fields and enriches the event with the session and source IDs registered
 for the posting element in the `ElementToSourceMapper`. If the element is not registered, Rialto logs a warning and
 uses `0` for both IDs instead of rejecting the message.
-Snapshot queries are restricted to the active pipeline and an attached video source. Rialto interprets occurrence (`observation-kind` 1)
+Snapshot queries are restricted to the active pipeline and an attached source (video or audio). Rialto interprets occurrence (`observation-kind` 1)
 video-decode-error messages as one corrupted frame. Started/resolved episode messages do not increment that counter.
-Rendered and dropped frame counts are read from the sink's existing `stats` property via `getStats` when processing a
-metric message and refreshing a snapshot query. Video-frame-drop messages are still forwarded with their observation kind, but
+Rendered and dropped frame counts are read from the sink's existing `stats` property via `getStats` only when a
+snapshot query (`GetFrameCounters`) refreshes the cache. Processing a metric message does not read sink stats; it only
+validates and enriches the event and updates the corruption count. Video-frame-drop messages are still forwarded with their observation kind, but
 do not increment the dropped count. If sink stats are unavailable, Rialto logs a warning and retains the cached rendered
 and dropped counts (zero until stats are first available).
 
@@ -29,10 +30,10 @@ corruption count or the last metric PTS.
 The implementation gaps were mismatches between the producer contract, the query response, and the GStreamer
 consumer tests:
 
-- **Source scope:** The producer identity is attached to the video sink, so `GetFrameCounters` supports an attached
-    video source only. Audio metric categories may appear in the protocol, but audio snapshot queries are not supported.
-    Rejecting an audio source is preferable to returning video sink statistics under an audio source ID. Supporting
-    audio snapshots would require producer-side audio identity and a defined audio counter source.
+- **Source scope:** `GetFrameCounters` supports an attached video or audio source. The query passes the attached
+    source's media type to the sink stats getter, so each source reads its own sink's `stats`. Rendered and dropped
+    counts for an audio source therefore come from the audio sink. Corruption counts are only incremented by
+    occurrence `video-decode-error` messages, so an audio snapshot always reports `corrupted_frames` as 0.
 - **Timestamp meaning:** A producer PTS and a server snapshot time are different values. `GetFrameCountersResponse`
     returns the Rialto server's monotonic timestamp for when the cached snapshot was updated. Push notifications retain
     the producer PTS in `pts_ns`.
@@ -48,7 +49,7 @@ synchronous `GetFrameCounters` query; Rialto does not poll that property automat
 asynchronous push path. In the GStreamer client, the event is converted to a `media-pipeline-metric` application-bus
 message for consumers that handle pipeline bus messages. Receiving a push event does not invoke the query property.
 
-The focused regression coverage checks rejection of audio snapshot queries, preservation of counters across stale
+The focused regression coverage checks audio snapshot queries reading the audio sink's stats, preservation of counters across stale
 sink-stat values, separate PTS and query timestamp values, and the GStreamer bus-message field types.
 
 ## Snapshot Query
@@ -62,7 +63,7 @@ sink-stat values, separate PTS and query timestamp values, and the GStreamer bus
 | `corrupted_frames` | `uint64` | Corrupted frame count |
 | `timestamp` | `uint64` | Server monotonic time when the cached snapshot was last updated, in nanoseconds |
 
-The query timestamp is sampled from the server's monotonic clock when metric data or sink stats update the cache. It is not the producer PTS. An unknown session or non-video source, or an unavailable metrics cache, fails the RPC.
+The query timestamp is sampled from the server's monotonic clock when metric data or sink stats update the cache. It is not the producer PTS. An unknown session or unattached source, or an unavailable metrics cache, fails the RPC.
 
 The client IPC stub is:
 
