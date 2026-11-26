@@ -22,6 +22,8 @@ set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
+find_package(Systemd REQUIRED)
+
 add_subdirectory(public)
 add_subdirectory(common)
 add_subdirectory(client)
