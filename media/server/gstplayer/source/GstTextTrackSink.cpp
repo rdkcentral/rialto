@@ -60,7 +60,7 @@ struct _GstRialtoTextTrackSink
 
 struct _GstRialtoTextTrackSinkClass
 {
-    GstBaseSink parentClass;
+    GstBaseSinkClass parentClass;
 };
 
 G_END_DECLS
@@ -387,8 +387,6 @@ gst_rialto_text_track_sink_change_state(GstElement *element, GstStateChange tran
     {
     case GST_STATE_CHANGE_READY_TO_PAUSED:
     {
-        // playsink sets sync=TRUE on the text sink after NULL->READY (try_element), before activating the text chain.
-        // Pads are not active yet, so this always happens before the first buffer. Timing is owned by TextTrack.
         gst_base_sink_set_sync(GST_BASE_SINK(element), FALSE);
         break;
     }
