@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_SERVICE_SOURCE_SERVER_PROFILING_H_
-#define FIREBOLT_RIALTO_SERVER_SERVICE_SOURCE_SERVER_PROFILING_H_
+#ifndef FIREBOLT_RIALTO_SERVER_COMMON_SERVER_PROFILING_H_
+#define FIREBOLT_RIALTO_SERVER_COMMON_SERVER_PROFILING_H_
 
 #include <optional>
 #include <string>
@@ -74,4 +74,4 @@ inline Scope makeScope(ProfileInterface profileInterface, const char *operationN
 
 } // namespace firebolt::rialto::server::service::profiling
 
-#endif // FIREBOLT_RIALTO_SERVER_SERVICE_SOURCE_SERVER_PROFILING_H_
+#endif // FIREBOLT_RIALTO_SERVER_COMMON_SERVER_PROFILING_H_

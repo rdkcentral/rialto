@@ -124,7 +124,7 @@ bool MediaPipelineService::load(int sessionId, MediaType type, const std::string
                                 bool isLive)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to load session with id: %d", sessionId);
-    RIALTO_SERVER_PROFILE_SCOPE("load");
+    RIALTO_SERVER_PROFILE_SCOPE("PipelineCreation::MediaPipelineService::load");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);

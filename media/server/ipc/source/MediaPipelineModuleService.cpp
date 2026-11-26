@@ -21,11 +21,17 @@
 #include "IMediaPipelineService.h"
 #include "MediaPipelineClient.h"
 #include "RialtoCommonModule.h"
+#include "ServerProfiling.h"
 #include "RialtoServerLogging.h"
 #include <IIpcController.h>
 #include <algorithm>
 #include <cstdint>
 #include <unordered_map>
+
+#define RIALTO_SERVER_PROFILE_SCOPE(operationName)                                                                 \
+    [[maybe_unused]] auto profileScope =                                                                           \
+        firebolt::rialto::server::service::profiling::makeScope(                                                  \
+            firebolt::rialto::server::service::profiling::ProfileInterface::MediaPipeline, operationName)
 
 namespace
 {
@@ -394,6 +400,7 @@ void MediaPipelineModuleService::load(::google::protobuf::RpcController *control
                                       ::firebolt::rialto::LoadResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    RIALTO_SERVER_PROFILE_SCOPE("PipelineCreation::MediaPipelineModuleService::load");
     if (!m_mediaPipelineService.load(request->session_id(), convertMediaType(request->type()), request->mime_type(),
                                      request->url(), request->is_live()))
     {

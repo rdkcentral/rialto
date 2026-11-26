@@ -25,10 +25,16 @@
 #include "IDataReader.h"
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ISharedMemoryBuffer.h"
+#include "ServerProfiling.h"
 #include "MediaPipelineServerInternal.h"
 #include "NeedMediaData.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
+
+#define RIALTO_SERVER_PROFILE_SCOPE(operationName)                                                                 \
+    [[maybe_unused]] auto profileScope =                                                                           \
+        firebolt::rialto::server::service::profiling::makeScope(                                                  \
+            firebolt::rialto::server::service::profiling::ProfileInterface::MediaPipeline, operationName)
 
 namespace
 {
@@ -197,6 +203,7 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
 bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    RIALTO_SERVER_PROFILE_SCOPE("PipelineCreation::MediaPipelineServerInternal::load");
 
     bool result;
     auto task = [&]() { result = loadInternal(type, mimeType, url, isLive); };
@@ -208,6 +215,7 @@ bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeTy
 bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string &mimeType, const std::string &url,
                                                bool isLive)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("PipelineCreation::MediaPipelineServerInternal::loadInternal");
     std::unique_lock lock{m_getPropertyMutex};
     /* If gstreamer player already created, destroy the old one first */
     if (m_gstPlayer)

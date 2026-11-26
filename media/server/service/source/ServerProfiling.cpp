@@ -215,8 +215,7 @@ bool isEnabledForInterface(ProfileInterface profileInterface)
 
 std::string createScopeName(ProfileInterface profileInterface, const char *operationName)
 {
-    std::string scopeName{"RialtoServer::"};
-    scopeName += toString(profileInterface);
+    std::string scopeName{toString(profileInterface)};
     scopeName += "::";
     scopeName += (operationName != nullptr) ? operationName : "unknown";
     return scopeName;

@@ -24,6 +24,7 @@
 #include <malloc.h>
 #include <stdexcept>
 
+#include "ServerProfiling.h"
 #include "FlushWatcher.h"
 #include "GstDispatcherThread.h"
 #include "GstGenericPlayer.h"
@@ -37,6 +38,11 @@
 #include "Utils.h"
 #include "WorkerThread.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
+
+#define RIALTO_SERVER_PROFILE_SCOPE(operationName)                                                                 \
+    [[maybe_unused]] auto profileScope =                                                                           \
+        firebolt::rialto::server::service::profiling::makeScope(                                                  \
+            firebolt::rialto::server::service::profiling::ProfileInterface::MediaPipeline, operationName)
 
 namespace
 {
@@ -144,6 +150,7 @@ GstGenericPlayer::GstGenericPlayer(
       m_timerFactory{timerFactory}, m_taskFactory{std::move(taskFactory)}, m_flushWatcher{std::move(flushWatcher)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is constructed.");
+    RIALTO_SERVER_PROFILE_SCOPE("PipelineCreation::GstGenericPlayer::GstGenericPlayer");
 
     gstInitialiser.waitForInitialisation();
 
@@ -231,6 +238,7 @@ GstGenericPlayer::~GstGenericPlayer()
 
 void GstGenericPlayer::initMsePipeline()
 {
+    RIALTO_SERVER_PROFILE_SCOPE("PipelineCreation::GstGenericPlayer::initMsePipeline");
     // Make playbin
     m_context.pipeline = m_gstWrapper->gstElementFactoryMake("playbin", "media_pipeline");
     // Set pipeline flags
@@ -1508,7 +1516,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourc
                               "], rate: %f, appliedRate %f, reset_time: %d\n",
                               common::convertMediaSourceType(mediaSourceType), GST_TIME_ARGS(segment->start),
                               GST_TIME_ARGS(segment->stop), segment->rate, segment->applied_rate, resetTime);
-        auto recordId = m_context.gstProfiler->createRecord("First Segment Received", typeStr);
+        auto recordId = m_context.gstProfiler->createRecord("First Segment Received", common::convertMediaSourceType(mediaSourceType));
         if (recordId)
             m_context.gstProfiler->logRecord(recordId.value());
         GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(source));
