@@ -714,6 +714,23 @@ message SetReportDecodeErrorsRequest {
 message SetReportDecodeErrorsResponse {
 }
 
+/**
+ * @fn void setZorder(int session_id, int source_id, float zorder)
+ * @brief Sets the "zorder" property of the video sink for this source.
+ *
+ * @param[in] session_id   The id of the A/V session.
+ * @param[in] source_id    The id of the media source.
+ * @param[in] zorder       The z-order of the video plane (0.0 - 1.0).
+ */
+message SetZorderRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id  = 2 [default = -1];
+    optional float zorder     = 3 [default = 0.0];
+}
+
+message SetZorderResponse {
+}
+
 
 /**
  * @fn void getImmediateOutput(int session_id, int source_id, bool &immediate_output)
@@ -1152,6 +1169,13 @@ service MediaPipelineModule {
     */
     rpc setReportDecodeErrors(SetReportDecodeErrorsRequest)
         returns (SetReportDecodeErrorsResponse) {
+    }
+
+    /**
+    * @brief Sets the "zorder" property for this source.
+    * @see SetZorderRequest
+    */
+    rpc setZorder(SetZorderRequest) returns (SetZorderResponse) {
     }
 
     /**

@@ -71,6 +71,8 @@ public:
     void mediaPipelineWillFailToSetImmediateOutput();
     void mediaPipelineWillSetReportDecodeErrors();
     void mediaPipelineWillFailToSetReportDecodeErrors();
+    void mediaPipelineWillSetZorder();
+    void mediaPipelineWillFailToSetZorder();
     void mediaPipelineWillGetImmediateOutput();
     void mediaPipelineWillFailToGetImmediateOutput();
     void mediaPipelineWillGetQueuedFrames();
@@ -167,6 +169,8 @@ public:
     void getDurationShouldFail();
     void setReportDecodeErrorsShouldSucceed();
     void setReportDecodeErrorsShouldFail();
+    void setZorderShouldSucceed();
+    void setZorderShouldFail();
     void setImmediateOutputShouldSucceed();
     void setImmediateOutputShouldFail();
     void getImmediateOutputShouldSucceed();

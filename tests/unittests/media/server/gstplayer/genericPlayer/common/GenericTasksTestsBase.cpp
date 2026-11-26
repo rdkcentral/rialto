@@ -57,6 +57,7 @@
 #include "tasks/generic/SetUseBuffering.h"
 #include "tasks/generic/SetVideoGeometry.h"
 #include "tasks/generic/SetVolume.h"
+#include "tasks/generic/SetZorder.h"
 #include "tasks/generic/SetupElement.h"
 #include "tasks/generic/SetupSource.h"
 #include "tasks/generic/Shutdown.h"
@@ -104,6 +105,7 @@ constexpr int32_t kDolbyVisionProfile{5};
 constexpr gint64 kPosition{1234};
 constexpr gint64 kPositionOverUnderflowMargin{350 * 1000000 + 1};
 constexpr bool kMute{false};
+constexpr float kZorder{0.5f};
 constexpr bool kLowLatency{true};
 const std::string kLowLatencyStr{"low-latency"};
 constexpr bool kSync{true};
@@ -980,6 +982,21 @@ void GenericTasksTestsBase::shouldSetupVideoSinkElementWithPendingShowVideoWindo
 
     // This is the extra EXPECT caused by setting pendingShowVideoWindow...
     EXPECT_CALL(testContext->m_gstPlayer, setShowVideoWindow()).WillOnce(Return(true));
+    expectSetupVideoSinkElement();
+}
+
+void GenericTasksTestsBase::shouldSetupVideoSinkElementWithPendingZorder()
+{
+    testContext->m_context.pendingZorderForVideo = kZorder;
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
+
+    // This is the extra EXPECT caused by setting pendingZorderForVideo...
+    EXPECT_CALL(testContext->m_gstPlayer, setZorder()).WillOnce(Return(true));
     expectSetupVideoSinkElement();
 }
 
@@ -3839,6 +3856,29 @@ void GenericTasksTestsBase::triggerSetReportDecodeErrors()
     task.execute();
 
     EXPECT_EQ(testContext->m_context.pendingReportDecodeErrorsForVideo, true);
+}
+
+void GenericTasksTestsBase::shouldSetZorder()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, setZorder()).WillOnce(Return(true));
+}
+
+void GenericTasksTestsBase::triggerSetZorder()
+{
+    firebolt::rialto::server::tasks::generic::SetZorder task{testContext->m_context, testContext->m_gstPlayer,
+                                                             MediaSourceType::VIDEO, kZorder};
+    task.execute();
+
+    EXPECT_EQ(testContext->m_context.pendingZorderForVideo, kZorder);
+}
+
+void GenericTasksTestsBase::triggerSetZorderForAudioSource()
+{
+    firebolt::rialto::server::tasks::generic::SetZorder task{testContext->m_context, testContext->m_gstPlayer,
+                                                             MediaSourceType::AUDIO, kZorder};
+    task.execute();
+
+    EXPECT_FALSE(testContext->m_context.pendingZorderForVideo.has_value());
 }
 
 void GenericTasksTestsBase::shouldSetLowLatency()

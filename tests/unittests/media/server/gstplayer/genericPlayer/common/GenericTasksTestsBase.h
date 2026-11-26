@@ -105,6 +105,7 @@ protected:
     void shouldSetupAudioDecoderElementWithIsLiveParameter();
     void shouldSetupVideoSinkElementWithPendingRenderFrame();
     void shouldSetupVideoSinkElementWithPendingShowVideoWindow();
+    void shouldSetupVideoSinkElementWithPendingZorder();
     void shouldSetupAudioElementAmlhalasinkWhenNoVideo();
     void shouldSetupAudioElementAmlhalasinkWhenVideoExists();
     void shouldSetupAudioElementBrcmAudioSink();
@@ -310,6 +311,11 @@ protected:
     // report-decode-errors decoder property test method
     void shouldSetReportDecodeErrors();
     void triggerSetReportDecodeErrors();
+
+    // zorder video sink property test methods
+    void shouldSetZorder();
+    void triggerSetZorder();
+    void triggerSetZorderForAudioSource();
 
     // immediate-output sink property test methods
     void shouldSetImmediateOutput();

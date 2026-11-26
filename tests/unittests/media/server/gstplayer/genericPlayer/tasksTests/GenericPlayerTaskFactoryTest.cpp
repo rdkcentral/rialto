@@ -64,6 +64,7 @@
 #include "tasks/generic/SetUseBuffering.h"
 #include "tasks/generic/SetVideoGeometry.h"
 #include "tasks/generic/SetVolume.h"
+#include "tasks/generic/SetZorder.h"
 #include "tasks/generic/SetupElement.h"
 #include "tasks/generic/SetupSource.h"
 #include "tasks/generic/Shutdown.h"
@@ -372,6 +373,13 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetReportDecodeErrors)
     auto task = m_sut.createSetReportDecodeErrors(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::VIDEO, true);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetReportDecodeErrors &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetZorder)
+{
+    auto task = m_sut.createSetZorder(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::VIDEO, 0.5f);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetZorder &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetTextTrackIdentifier)

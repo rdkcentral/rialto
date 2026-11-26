@@ -887,6 +887,20 @@ void MediaPipelineModuleService::setReportDecodeErrors(::google::protobuf::RpcCo
     done->Run();
 }
 
+void MediaPipelineModuleService::setZorder(::google::protobuf::RpcController *controller,
+                                           const ::firebolt::rialto::SetZorderRequest *request,
+                                           ::firebolt::rialto::SetZorderResponse *response,
+                                           ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.setZorder(request->session_id(), request->source_id(), request->zorder()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set Zorder failed");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
 void MediaPipelineModuleService::getQueuedFrames(::google::protobuf::RpcController *controller,
                                                  const ::firebolt::rialto::GetQueuedFramesRequest *request,
                                                  ::firebolt::rialto::GetQueuedFramesResponse *response,

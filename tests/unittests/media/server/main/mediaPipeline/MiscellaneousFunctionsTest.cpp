@@ -417,6 +417,53 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetReportDecodeError
 }
 
 /**
+ * Test that SetZorder returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetZorderFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_FALSE(m_mediaPipeline->setZorder(m_kDummySourceId, 0.5f));
+}
+
+/**
+ * Test that SetZorder returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetZorderFailure)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setZorder(_, _)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->setZorder(videoSourceId, 0.5f));
+}
+
+/**
+ * Test that SetZorder fails if source is not present.
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetZorderNoSourcePresent)
+{
+    loadGstPlayer();
+    // No attachment of source
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_FALSE(m_mediaPipeline->setZorder(m_kDummySourceId, 0.5f));
+}
+
+/**
+ * Test that SetZorder returns success if the gstreamer API succeeds
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetZorderSuccess)
+{
+    constexpr float kZorder{0.5f};
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setZorder(firebolt::rialto::MediaSourceType::VIDEO, kZorder)).WillOnce(Return(true));
+    EXPECT_TRUE(m_mediaPipeline->setZorder(videoSourceId, kZorder));
+}
+
+/**
  * Test that GetQueuedFrames returns failure if the gstreamer player is not initialized
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetQueuedFramesFailureDueToUninitializedPlayer)

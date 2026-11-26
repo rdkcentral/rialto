@@ -638,6 +638,38 @@ bool MediaPipelineIpc::setReportDecodeErrors(int32_t sourceId, bool reportDecode
     return true;
 }
 
+bool MediaPipelineIpc::setZorder(int32_t sourceId, float zorder)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetZorderRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+    request.set_zorder(zorder);
+
+    firebolt::rialto::SetZorderResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setZorder(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set zorder due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
 bool MediaPipelineIpc::getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
 {
     if (!reattachChannelIfRequired())

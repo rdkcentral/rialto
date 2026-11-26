@@ -179,6 +179,14 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
     /////////////////////////////////////////////
 
     {
+        constexpr float kZorder{0.5f};
+        EXPECT_CALL(*mediaPipelineMock, setZorder(kSourceId, kZorder)).WillOnce(Return(true));
+        EXPECT_TRUE(proxy->setZorder(kSourceId, kZorder));
+    }
+
+    /////////////////////////////////////////////
+
+    {
         const uint32_t kQueuedFrames{123};
         uint32_t returnQueuedFrames;
         EXPECT_CALL(*mediaPipelineMock, getQueuedFrames(kSourceId, _))

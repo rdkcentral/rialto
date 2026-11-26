@@ -129,6 +129,9 @@ public:
                                                              IGstGenericPlayerPrivate &player,
                                                              const firebolt::rialto::MediaSourceType &type,
                                                              bool reportDecodeErrors) const override;
+    std::unique_ptr<IPlayerTask> createSetZorder(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                 const firebolt::rialto::MediaSourceType &type,
+                                                 float zorder) const override;
     std::unique_ptr<IPlayerTask> createSetBufferingLimit(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                          std::uint32_t limit) const override;
     std::unique_ptr<IPlayerTask> createSetUseBuffering(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,

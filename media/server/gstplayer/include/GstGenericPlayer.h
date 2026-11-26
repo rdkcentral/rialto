@@ -124,6 +124,7 @@ public:
     bool getDuration(std::int64_t &duration) override;
     bool setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutput) override;
     bool setReportDecodeErrors(const MediaSourceType &mediaSourceType, bool reportDecodeErrors) override;
+    bool setZorder(const MediaSourceType &mediaSourceType, float zorder) override;
     bool getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutput) override;
     bool getQueuedFrames(uint32_t &queuedFrames) override;
     bool getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
@@ -167,6 +168,7 @@ private:
     bool setLowLatencyAudioDecoder() override;
     bool setLowLatencyAudioSink() override;
     bool setReportDecodeErrors() override;
+    bool setZorder() override;
     bool setShowVideoWindow() override;
     bool setLowLatency() override;
     bool setSync() override;

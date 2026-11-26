@@ -53,6 +53,7 @@
 #include "tasks/generic/SetUseBuffering.h"
 #include "tasks/generic/SetVideoGeometry.h"
 #include "tasks/generic/SetVolume.h"
+#include "tasks/generic/SetZorder.h"
 #include "tasks/generic/SetupElement.h"
 #include "tasks/generic/SetupSource.h"
 #include "tasks/generic/Shutdown.h"
@@ -349,6 +350,14 @@ GenericPlayerTaskFactory::createSetReportDecodeErrors(GenericPlayerContext &cont
                                                       bool reportDecodeErrors) const
 {
     return std::make_unique<tasks::generic::SetReportDecodeErrors>(context, player, type, reportDecodeErrors);
+}
+
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetZorder(GenericPlayerContext &context,
+                                                                       IGstGenericPlayerPrivate &player,
+                                                                       const firebolt::rialto::MediaSourceType &type,
+                                                                       float zorder) const
+{
+    return std::make_unique<tasks::generic::SetZorder>(context, player, type, zorder);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetBufferingLimit(GenericPlayerContext &context,

@@ -117,6 +117,8 @@ public:
 
     bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) override;
 
+    bool setZorder(int32_t sourceId, float zorder) override;
+
     bool getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames) override;
 
     bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override;
@@ -420,6 +422,18 @@ protected:
      * @retval true on success.
      */
     bool setReportDecodeErrorsInternal(int32_t sourceId, bool reportDecodeErrors);
+
+    /**
+     * @brief Sets the "zorder" property for this source.
+     *
+     * This method is asynchronous
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] zorder   : The z-order of the video plane (0.0 - 1.0)
+     *
+     * @retval true on success.
+     */
+    bool setZorderInternal(int32_t sourceId, float zorder);
 
     /**
      * @brief Gets the queued frames for this source.

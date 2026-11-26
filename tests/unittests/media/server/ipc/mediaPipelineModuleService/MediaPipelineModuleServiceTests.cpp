@@ -348,6 +348,22 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetReportDecodeErrors)
     sendSetReportDecodeErrorsRequestAndReceiveFail();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldSetZorder)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillSetZorder();
+    sendSetZorderRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetZorder)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToSetZorder();
+    sendSetZorderRequestAndReceiveFail();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldGetQueuedFrames)
 {
     mediaPipelineServiceWillCreateSession();

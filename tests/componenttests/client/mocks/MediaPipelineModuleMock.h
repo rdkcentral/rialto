@@ -79,6 +79,9 @@ public:
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::SetReportDecodeErrorsRequest *request,
                  ::firebolt::rialto::SetReportDecodeErrorsResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setZorder,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::SetZorderRequest *request,
+                 ::firebolt::rialto::SetZorderResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, getQueuedFrames,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetQueuedFramesRequest *request,
                  ::firebolt::rialto::GetQueuedFramesResponse *response, ::google::protobuf::Closure *done));
@@ -251,6 +254,12 @@ public:
     ::firebolt::rialto::SetReportDecodeErrorsResponse SetReportDecodeErrorsResponse()
     {
         firebolt::rialto::SetReportDecodeErrorsResponse response;
+        return response;
+    }
+
+    ::firebolt::rialto::SetZorderResponse setZorderResponse()
+    {
+        firebolt::rialto::SetZorderResponse response;
         return response;
     }
 

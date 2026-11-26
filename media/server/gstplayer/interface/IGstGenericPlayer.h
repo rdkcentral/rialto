@@ -230,6 +230,16 @@ public:
     virtual bool setReportDecodeErrors(const MediaSourceType &mediaSourceType, bool reportDecodeErrors) = 0;
 
     /**
+     * @brief Sets the "zorder" property on the video sink.
+     *
+     * @param[in] mediaSourceType : The media source type
+     * @param[in] zorder          : The z-order of the video plane (0.0 - 1.0)
+     *
+     * @retval true on success.
+     */
+    virtual bool setZorder(const MediaSourceType &mediaSourceType, float zorder) = 0;
+
+    /**
      * @brief Gets the queued frames for this source.
      *
      * @param[out] queuedFrames : Get queued frames mode on the decoder

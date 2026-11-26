@@ -120,6 +120,10 @@ public:
  *   GetDuration
  *   Expect that GetDuration propagated to the server and gets the duration
  *
+ *  Step 16: Set Zorder
+ *   Set zorder
+ *   Expect that Set zorder propagated to the server and sets the property
+ *
  * Test Teardown:
  *  Terminate the media session.
  *  Memory region created for the shared buffer is closed.
@@ -201,5 +205,10 @@ TEST_F(PipelinePropertyTest, setAndGetPipelineProperties)
     uint32_t queuedFrames{123};
     MediaPipelineTestMethods::shouldGetQueuedFrames(queuedFrames);
     MediaPipelineTestMethods::getQueuedFrames(queuedFrames);
+
+    // Step 16: Set Zorder
+    constexpr float kZorder{0.5f};
+    MediaPipelineTestMethods::shouldSetZorder(kZorder);
+    MediaPipelineTestMethods::setZorder(kZorder);
 }
 } // namespace firebolt::rialto::client::ct

@@ -131,6 +131,13 @@ public:
     virtual bool setReportDecodeErrors() = 0;
 
     /**
+     * @brief Sets the pending zorder on the video sink. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setZorder() = 0;
+
+    /**
      * @brief Sets the low latency property. Called by the worker thread.
      *
      * @retval true on success.
