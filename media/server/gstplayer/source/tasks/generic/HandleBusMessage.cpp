@@ -21,7 +21,13 @@
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstWrapper.h"
+#include "ServerProfiling.h"
 #include "RialtoServerLogging.h"
+
+#define RIALTO_SERVER_PROFILE_SCOPE(operationName)                                                                 \
+    [[maybe_unused]] auto profileScope =                                                                           \
+        firebolt::rialto::server::service::profiling::makeScope(                                                  \
+            firebolt::rialto::server::service::profiling::ProfileInterface::MediaPipeline, operationName)
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -46,6 +52,7 @@ HandleBusMessage::~HandleBusMessage()
 void HandleBusMessage::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing HandleBusMessage");
+
     switch (GST_MESSAGE_TYPE(m_message))
     {
     case GST_MESSAGE_STATE_CHANGED:
@@ -57,6 +64,9 @@ void HandleBusMessage::execute() const
             const char *oldStateName = m_gstWrapper->gstElementStateGetName(oldState);
             const char *newStateName = m_gstWrapper->gstElementStateGetName(newState);
             const char *pendingStateName = m_gstWrapper->gstElementStateGetName(pending);
+            std::string operation{"StateChange::HandleBusMessage::execute::"};
+            operation += newStateName;
+            RIALTO_SERVER_PROFILE_SCOPE(operation.c_str());
             RIALTO_SERVER_LOG_MIL("State changed (old: %s, new: %s, pending: %s)", oldStateName, newStateName,
                                   pendingStateName);
             auto recordId = m_context.gstProfiler->createRecord("Pipeline State Changed", newStateName);

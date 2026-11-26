@@ -20,7 +20,13 @@
 #include "tasks/generic/DeepElementAdded.h"
 #include "RialtoServerLogging.h"
 #include "Utils.h"
+#include "ServerProfiling.h"
 
+#define RIALTO_SERVER_PROFILE_SCOPE(operationName)                                                                 \
+    [[maybe_unused]] auto profileScope =                                                                           \
+        firebolt::rialto::server::service::profiling::makeScope(                                                  \
+            firebolt::rialto::server::service::profiling::ProfileInterface::MediaPipeline, operationName)
+            
 namespace
 {
 void onHaveType(GstElement *typefind, guint probability, const GstCaps *caps, gpointer data)
@@ -41,6 +47,7 @@ DeepElementAdded::DeepElementAdded(GenericPlayerContext &context, IGstGenericPla
       m_bin{bin}, m_element{element}, m_elementName{nullptr}, m_callbackRegistered{false}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing DeepElementAdded");
+     RIALTO_SERVER_PROFILE_SCOPE("DeepElement::DeepElementAdded::DeepElementAdded");
     // Signal connection has to happen immediately (we cannot wait for thread switch)
     if (m_gstWrapper->gstObjectParent(m_element) == m_gstWrapper->gstObjectCast(m_bin))
     {
@@ -70,6 +77,7 @@ DeepElementAdded::~DeepElementAdded()
 void DeepElementAdded::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing DeepElementAdded");
+     RIALTO_SERVER_PROFILE_SCOPE("DeepElement::DeepElementAdded::execute");
     m_context.playbackGroup.m_gstPipeline = GST_ELEMENT(m_pipeline);
 
     RIALTO_SERVER_LOG_DEBUG("Element = %p Bin = %p Pipeline = %p", m_element, m_bin, m_pipeline);

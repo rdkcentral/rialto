@@ -24,8 +24,14 @@
 #include "IMediaPipeline.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
+#include "ServerProfiling.h"
 #include "Utils.h"
 #include <unordered_map>
+
+#define RIALTO_SERVER_PROFILE_SCOPE(operationName)                                                                 \
+    [[maybe_unused]] auto profileScope =                                                                           \
+        firebolt::rialto::server::service::profiling::makeScope(                                                  \
+            firebolt::rialto::server::service::profiling::ProfileInterface::MediaPipeline, operationName)
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -48,6 +54,7 @@ AttachSource::~AttachSource()
 void AttachSource::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing AttachSource %u", static_cast<uint32_t>(m_attachedSource->getType()));
+    RIALTO_SERVER_PROFILE_SCOPE("AddSource::AttachSource::execute");
 
     if (m_attachedSource->getType() == MediaSourceType::UNKNOWN)
     {
@@ -71,6 +78,7 @@ void AttachSource::execute() const
 
 void AttachSource::addSource() const
 {
+    RIALTO_SERVER_PROFILE_SCOPE("AddSource::AttachSource::addSource");
     GstCaps *caps = createCapsFromMediaSource(m_gstWrapper, m_glibWrapper, m_attachedSource);
     if (!caps)
     {

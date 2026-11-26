@@ -22,9 +22,15 @@
 #include "IGstGenericPlayerClient.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "RialtoServerLogging.h"
+#include "ServerProfiling.h"
 #include <gst/app/gstappsrc.h>
 #include <gst/gst.h>
 
+#define RIALTO_SERVER_PROFILE_SCOPE(operationName)                                                                 \
+    [[maybe_unused]] auto profileScope =                                                                           \
+        firebolt::rialto::server::service::profiling::makeScope(                                                  \
+            firebolt::rialto::server::service::profiling::ProfileInterface::MediaPipeline, operationName)
+            
 namespace
 {
 /**
@@ -87,6 +93,7 @@ FinishSetupSource::~FinishSetupSource()
 
 void FinishSetupSource::execute() const
 {
+    RIALTO_SERVER_PROFILE_SCOPE("FinishSourceSetup::FinishSetupSource::execute");
     RIALTO_SERVER_LOG_DEBUG("Executing FinishSetupSource");
     m_context.wereAllSourcesAttached = true;
 

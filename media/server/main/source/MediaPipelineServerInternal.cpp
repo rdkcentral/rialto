@@ -109,6 +109,7 @@ std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInterna
     std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements, int sessionId,
     const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService) const
 {
+    RIALTO_SERVER_PROFILE_SCOPE("PipelineCreation::MediaPipelineServerInternalFactory::createMediaPipelineServerInternal");
     std::shared_ptr<IMediaPipelineClient> sharedClient = client.lock();
     if (!sharedClient)
     {
@@ -148,7 +149,7 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
       m_currentPlaybackState{PlaybackState::UNKNOWN}, m_wasAllSourcesAttachedCalled{false}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
+    RIALTO_SERVER_PROFILE_SCOPE("PipelineCreation::MediaPipelineServerInternal::MediaPipelineServerInternal");
     m_mainThread = mainThreadFactory->getMainThread();
     if (!m_mainThread)
     {
@@ -241,6 +242,7 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
 bool MediaPipelineServerInternal::attachSource(const std::unique_ptr<MediaSource> &source)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    RIALTO_SERVER_PROFILE_SCOPE("AddSource::MediaPipelineServerInternal::attachSource");
 
     bool result;
     auto task = [&]() { result = attachSourceInternal(source); };
@@ -251,6 +253,7 @@ bool MediaPipelineServerInternal::attachSource(const std::unique_ptr<MediaSource
 
 bool MediaPipelineServerInternal::attachSourceInternal(const std::unique_ptr<MediaSource> &source)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("AddSource::MediaPipelineServerInternal::attachSourceInternal");
     source->setId(-1);
 
     if (!m_gstPlayer)
@@ -297,6 +300,7 @@ bool MediaPipelineServerInternal::removeSource(int32_t id)
 
 bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::removeSourceInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to remove source - Gstreamer player has not been loaded");
@@ -324,6 +328,7 @@ bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
 bool MediaPipelineServerInternal::allSourcesAttached()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    RIALTO_SERVER_PROFILE_SCOPE("FinishSourceSetup::MediaPipelineServerInternal::allSourcesAttached");
 
     bool result;
     auto task = [&]() { result = allSourcesAttachedInternal(); };
@@ -334,6 +339,8 @@ bool MediaPipelineServerInternal::allSourcesAttached()
 
 bool MediaPipelineServerInternal::allSourcesAttachedInternal()
 {
+    RIALTO_SERVER_PROFILE_SCOPE("FinishSourceSetup::MediaPipelineServerInternal::allSourcesAttachedInternal");
+
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to notify all sources attached - Gstreamer player has not been loaded");
@@ -354,7 +361,6 @@ bool MediaPipelineServerInternal::allSourcesAttachedInternal()
 bool MediaPipelineServerInternal::play(bool &async)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
     bool result;
     auto task = [&]() { result = playInternal(async); };
 
@@ -364,6 +370,7 @@ bool MediaPipelineServerInternal::play(bool &async)
 
 bool MediaPipelineServerInternal::playInternal(bool &async)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::playInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to play - Gstreamer player has not been loaded");
@@ -387,6 +394,7 @@ bool MediaPipelineServerInternal::pause()
 
 bool MediaPipelineServerInternal::pauseInternal()
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::pauseInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to pause - Gstreamer player has not been loaded");
@@ -410,6 +418,7 @@ bool MediaPipelineServerInternal::stop()
 
 bool MediaPipelineServerInternal::stopInternal()
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::stopInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to stop - Gstreamer player has not been loaded");
@@ -423,7 +432,6 @@ bool MediaPipelineServerInternal::stopInternal()
 bool MediaPipelineServerInternal::setPlaybackRate(double rate)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
     bool result;
     auto task = [&]() { result = setPlaybackRateInternal(rate); };
 
@@ -433,6 +441,7 @@ bool MediaPipelineServerInternal::setPlaybackRate(double rate)
 
 bool MediaPipelineServerInternal::setPlaybackRateInternal(double rate)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::setPlaybackRateInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set playback rate - Gstreamer player has not been loaded");
@@ -462,6 +471,7 @@ bool MediaPipelineServerInternal::setPosition(int64_t position)
 
 bool MediaPipelineServerInternal::setPositionInternal(int64_t position)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::setPositionInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set position - Gstreamer player has not been loaded");
@@ -508,6 +518,7 @@ bool MediaPipelineServerInternal::getStats(int32_t sourceId, uint64_t &renderedF
 
 bool MediaPipelineServerInternal::getStatsInternal(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::getStatsInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get stats - Gstreamer player has not been loaded");
@@ -536,6 +547,7 @@ bool MediaPipelineServerInternal::setImmediateOutput(int32_t sourceId, bool imme
 
 bool MediaPipelineServerInternal::setImmediateOutputInternal(int32_t sourceId, bool immediateOutput)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::setImmediateOutputInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed - Gstreamer player has not been loaded");
@@ -566,6 +578,7 @@ bool MediaPipelineServerInternal::getImmediateOutput(int32_t sourceId, bool &imm
 
 bool MediaPipelineServerInternal::getImmediateOutputInternal(int32_t sourceId, bool &immediateOutput)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::getImmediateOutputInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed - Gstreamer player has not been loaded");
@@ -594,6 +607,7 @@ bool MediaPipelineServerInternal::setVideoWindow(uint32_t x, uint32_t y, uint32_
 
 bool MediaPipelineServerInternal::setVideoWindowInternal(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::setVideoWindowInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set video window - Gstreamer player has not been loaded");
@@ -617,6 +631,7 @@ bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t ne
 
 bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uint32_t needDataRequestId)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("GetSegment::MediaPipelineServerInternal::haveDataInternal1");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("HaveData failed - Gstreamer player has not been loaded");
@@ -696,6 +711,7 @@ bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t nu
 bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uint32_t numFrames,
                                                    uint32_t needDataRequestId)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("GetSegment::MediaPipelineServerInternal::haveDataInternal2");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("HaveData failed - Gstreamer player has not been loaded");
@@ -794,6 +810,7 @@ void MediaPipelineServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&hear
 
 void MediaPipelineServerInternal::pingInternal(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::pingInternal");
     if (!m_gstPlayer)
     {
         // No need to check GstPlayer worker thread, we reached this function, so main thread is working fine.
@@ -817,6 +834,7 @@ bool MediaPipelineServerInternal::renderFrame()
 
 bool MediaPipelineServerInternal::renderFrameInternal()
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::renderFrameInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("renderFrame failed - Gstreamer player has not been loaded");
@@ -842,7 +860,7 @@ bool MediaPipelineServerInternal::setVolume(double targetVolume, uint32_t volume
 bool MediaPipelineServerInternal::setVolumeInternal(double targetVolume, uint32_t volumeDuration, EaseType easeType)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::setVolumeInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set volume - Gstreamer player has not been loaded");
@@ -872,7 +890,7 @@ bool MediaPipelineServerInternal::getVolume(double &currentVolume)
 bool MediaPipelineServerInternal::getVolumeInternal(double &currentVolume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::getVolumeInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get volume - Gstreamer player has not been loaded");
@@ -895,7 +913,7 @@ bool MediaPipelineServerInternal::setMute(std::int32_t sourceId, bool mute)
 bool MediaPipelineServerInternal::setMuteInternal(std::int32_t sourceId, bool mute)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::setMuteInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set mute - Gstreamer player has not been loaded");
@@ -929,7 +947,7 @@ bool MediaPipelineServerInternal::getMute(std::int32_t sourceId, bool &mute)
 bool MediaPipelineServerInternal::getMuteInternal(std::int32_t sourceId, bool &mute)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::getMuteInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get mute - Gstreamer player has not been loaded");
@@ -961,7 +979,7 @@ bool MediaPipelineServerInternal::setTextTrackIdentifier(const std::string &text
 bool MediaPipelineServerInternal::setTextTrackIdentifierInternal(const std::string &textTrackIdentifier)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::setTextTrackIdentifierInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set text track identifier - Gstreamer player has not been loaded");
@@ -987,7 +1005,7 @@ bool MediaPipelineServerInternal::getTextTrackIdentifier(std::string &textTrackI
 bool MediaPipelineServerInternal::getTextTrackIdentifierInternal(std::string &textTrackIdentifier)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::getTextTrackIdentifierInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get mute - Gstreamer player has not been loaded");
@@ -1022,7 +1040,7 @@ bool MediaPipelineServerInternal::setLowLatency(bool lowLatency)
 bool MediaPipelineServerInternal::setLowLatencyInternal(bool lowLatency)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::setLowLatencyInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set low latency - Gstreamer player has not been loaded");
@@ -1047,7 +1065,7 @@ bool MediaPipelineServerInternal::setSync(bool sync)
 bool MediaPipelineServerInternal::setSyncInternal(bool sync)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::setSyncInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set sync - Gstreamer player has not been loaded");
@@ -1070,7 +1088,7 @@ bool MediaPipelineServerInternal::getSync(bool &sync)
 bool MediaPipelineServerInternal::getSyncInternal(bool &sync)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::getSyncInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get sync - Gstreamer player has not been loaded");
@@ -1093,7 +1111,7 @@ bool MediaPipelineServerInternal::setSyncOff(bool syncOff)
 bool MediaPipelineServerInternal::setSyncOffInternal(bool syncOff)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::setSyncOffInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set sync off - Gstreamer player has not been loaded");
@@ -1116,7 +1134,7 @@ bool MediaPipelineServerInternal::setStreamSyncMode(int32_t sourceId, int32_t st
 bool MediaPipelineServerInternal::setStreamSyncModeInternal(int32_t sourceId, int32_t streamSyncMode)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::setStreamSyncModeInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set stream sync mode - Gstreamer player has not been loaded");
@@ -1148,7 +1166,7 @@ bool MediaPipelineServerInternal::getStreamSyncMode(int32_t &streamSyncMode)
 bool MediaPipelineServerInternal::getStreamSyncModeInternal(int32_t &streamSyncMode)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::getStreamSyncModeInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get stream sync mode - Gstreamer player has not been loaded");
@@ -1159,6 +1177,7 @@ bool MediaPipelineServerInternal::getStreamSyncModeInternal(int32_t &streamSyncM
 
 bool MediaPipelineServerInternal::flushInternal(int32_t sourceId, bool resetTime, bool &async)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::flushInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to flush - Gstreamer player has not been loaded");
@@ -1201,6 +1220,7 @@ bool MediaPipelineServerInternal::setSourcePosition(int32_t sourceId, int64_t po
 bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, int64_t position, bool resetTime,
                                                             double appliedRate, uint64_t stopPosition)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::setSourcePositionInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set source position - Gstreamer player has not been loaded");
@@ -1239,6 +1259,7 @@ bool MediaPipelineServerInternal::setSubtitleOffset(int32_t sourceId, int64_t po
 
 bool MediaPipelineServerInternal::setSubtitleOffsetInternal(int32_t sourceId, int64_t position)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::setSubtitleOffsetInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set subtitle offset - Gstreamer player has not been loaded");
@@ -1271,6 +1292,7 @@ bool MediaPipelineServerInternal::processAudioGap(int64_t position, uint32_t dur
 bool MediaPipelineServerInternal::processAudioGapInternal(int64_t position, uint32_t duration, int64_t discontinuityGap,
                                                           bool audioAac)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::processAudioGapInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to process audio gap - Gstreamer player has not been loaded");
@@ -1291,6 +1313,7 @@ bool MediaPipelineServerInternal::setBufferingLimit(uint32_t limitBufferingMs)
 
 bool MediaPipelineServerInternal::setBufferingLimitInternal(uint32_t limitBufferingMs)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::setBufferingLimitInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set buffering limit - Gstreamer player has not been loaded");
@@ -1311,6 +1334,7 @@ bool MediaPipelineServerInternal::getBufferingLimit(uint32_t &limitBufferingMs)
 
 bool MediaPipelineServerInternal::getBufferingLimitInternal(uint32_t &limitBufferingMs)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::getBufferingLimitInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get buffering limit - Gstreamer player has not been loaded");
@@ -1330,6 +1354,7 @@ bool MediaPipelineServerInternal::setUseBuffering(bool useBuffering)
 
 bool MediaPipelineServerInternal::setUseBufferingInternal(bool useBuffering)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::setUseBufferingInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set use buffering - Gstreamer player has not been loaded");
@@ -1350,6 +1375,7 @@ bool MediaPipelineServerInternal::getUseBuffering(bool &useBuffering)
 
 bool MediaPipelineServerInternal::getUseBufferingInternal(bool &useBuffering)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::getUseBufferingInternal");
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get use buffering - Gstreamer player has not been loaded");
@@ -1393,6 +1419,7 @@ AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataReques
 AddSegmentStatus MediaPipelineServerInternal::addSegmentInternal(uint32_t needDataRequestId,
                                                                  const std::unique_ptr<MediaSegment> &mediaSegment)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("MediaPipelineServerInternal::addSegmentInternal");
     AddSegmentStatus status = m_activeRequests->addSegment(needDataRequestId, mediaSegment);
     if (status != AddSegmentStatus::OK)
     {

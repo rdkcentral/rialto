@@ -385,6 +385,7 @@ void GstGenericPlayer::setupElement(GstElement *pipeline, GstElement *element, G
 
 void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("DeepElement::GstGenericPlayer::deepElementAdded");
     RIALTO_SERVER_LOG_DEBUG("Deep element %s added to the pipeline", GST_ELEMENT_NAME(element));
     if (self->m_workerThread)
     {
@@ -412,6 +413,7 @@ void GstGenericPlayer::removeSource(const MediaSourceType &mediaSourceType)
 
 void GstGenericPlayer::allSourcesAttached()
 {
+    RIALTO_SERVER_PROFILE_SCOPE("FinishSourceSetup::GstGenericPlayer::allSourcesAttached");
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createFinishSetupSource(m_context, *this));
@@ -1325,6 +1327,7 @@ void GstGenericPlayer::notifyNeedMediaDataWithDelay(const MediaSourceType mediaS
 
 void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaType)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("GetSegment::GstGenericPlayer::attachData");
     auto elem = m_context.streamInfo.find(mediaType);
     if (elem != m_context.streamInfo.end())
     {
@@ -1486,6 +1489,7 @@ bool GstGenericPlayer::setCodecData(GstCaps *caps, const std::shared_ptr<CodecDa
 
 void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourceType &mediaSourceType)
 {
+    RIALTO_SERVER_PROFILE_SCOPE("GetSegment::GstGenericPlayer::pushSampleIfRequired");
     auto initialPosition = m_context.initialPositions.find(source);
     if (m_context.initialPositions.end() == initialPosition)
     {

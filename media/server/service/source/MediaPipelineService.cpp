@@ -64,7 +64,8 @@ bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IM
                                          std::uint32_t maxWidth, std::uint32_t maxHeight)
 {
     RIALTO_SERVER_LOG_DEBUG("MediaPipelineService requested to create new session with id: %d", sessionId);
-    RIALTO_SERVER_PROFILE_SCOPE("createSession");
+    RIALTO_SERVER_PROFILE_SCOPE("PipelineCreation::MediaPipelineService::createSession");
+
     if (!m_playbackService.isActive())
     {
         RIALTO_SERVER_LOG_ERROR("Skip to create session with id: %d - Session Server in Inactive state", sessionId);
@@ -139,7 +140,7 @@ bool MediaPipelineService::load(int sessionId, MediaType type, const std::string
 bool MediaPipelineService::attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to attach source, session id: %d", sessionId);
-    RIALTO_SERVER_PROFILE_SCOPE("attachSource");
+    RIALTO_SERVER_PROFILE_SCOPE("AddSource::MediaPipelineService::attachSource");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
@@ -169,7 +170,7 @@ bool MediaPipelineService::removeSource(int sessionId, std::int32_t sourceId)
 bool MediaPipelineService::allSourcesAttached(int sessionId)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService notified that all sources were attached, session id: %d", sessionId);
-    RIALTO_SERVER_PROFILE_SCOPE("allSourcesAttached");
+    RIALTO_SERVER_PROFILE_SCOPE("FinishSourceSetup::MediaPipelineService::allSourcesAttached");
 
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);

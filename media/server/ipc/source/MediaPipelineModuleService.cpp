@@ -337,6 +337,7 @@ void MediaPipelineModuleService::createSession(::google::protobuf::RpcController
                                                ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    RIALTO_SERVER_PROFILE_SCOPE("PipelineCreation::MediaPipelineModuleService::createSession");
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
     if (!ipcController)
     {
@@ -431,6 +432,7 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
                                               ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("mime_type: %s", request->mime_type().c_str());
+    RIALTO_SERVER_PROFILE_SCOPE("AddSource::MediaPipelineModuleService::attachSource");
 
     std::shared_ptr<CodecData> codecData{};
     if (request->has_codec_data())
@@ -564,6 +566,7 @@ void MediaPipelineModuleService::allSourcesAttached(::google::protobuf::RpcContr
                                                     ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    RIALTO_SERVER_PROFILE_SCOPE("FinishSourceSetup::MediaPipelineModuleService::allSourcesAttached");
     if (!m_mediaPipelineService.allSourcesAttached(request->session_id()))
     {
         RIALTO_SERVER_LOG_ERROR("All sources attached failed");
