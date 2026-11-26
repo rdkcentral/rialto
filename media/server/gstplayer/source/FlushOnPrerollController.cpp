@@ -20,18 +20,38 @@
 #include "FlushOnPrerollController.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
+#include <chrono>
 #include <gst/gst.h>
 
 namespace firebolt::rialto::server
 {
+namespace
+{
+// Upper bound on how long a flush may wait for a previous async flush to settle.
+// Must stay well below the test's 10 s state-change timeout. To be tuned on device.
+constexpr std::chrono::milliseconds kMaxFlushWaitTime{1000};
+} // namespace
+
 void FlushOnPrerollController::waitIfRequired(const MediaSourceType &type)
 {
     std::unique_lock lock{m_mutex};
     RIALTO_SERVER_LOG_DEBUG("FlushOnPrerollController: Waiting if required for %s source entry",
                             common::convertMediaSourceType(type));
-    m_conditionVariable.wait(lock, [this, &type]()
-                             // coverity[MISSING_LOCK:FALSE]
-                             { return !m_isPrerolled || m_flushingSources.find(type) == m_flushingSources.end(); });
+    const bool settled = m_conditionVariable.wait_for(lock, kMaxFlushWaitTime,
+                                                      [this, &type]()
+                                                      // coverity[MISSING_LOCK:FALSE]
+                                                      {
+                                                          return !m_isPrerolled || m_flushingSources.find(type) ==
+                                                                                       m_flushingSources.end();
+                                                      });
+    if (!settled)
+    {
+        // The previous async flush never settled (target state was not reached in time). Drop the stale
+        // flag so this flush is not blocked again, and let the flush proceed instead of hanging the task thread.
+        RIALTO_SERVER_LOG_WARN("FlushOnPrerollController: timed out waiting for %s source, proceeding with flush",
+                               common::convertMediaSourceType(type));
+        m_flushingSources.erase(type);
+    }
     RIALTO_SERVER_LOG_DEBUG("FlushOnPrerollController: Waiting if required for %s source exit",
                             common::convertMediaSourceType(type));
 }

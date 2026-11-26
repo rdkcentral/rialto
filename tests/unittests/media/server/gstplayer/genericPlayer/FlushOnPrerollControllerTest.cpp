@@ -92,3 +92,24 @@ TEST_F(FlushOnPrerollControllerTest, shouldWaitForAudioFlushFinish)
     waitThread.join();
     // No deadlock here
 }
+
+TEST_F(FlushOnPrerollControllerTest, shouldNotBlockForeverWhenPreviousFlushNeverSettles)
+{
+    // Target PLAYING is never reached after the audio flush, which is the deadlock seen on device.
+    m_sut.setTargetState(GST_STATE_PLAYING);
+    m_sut.setFlushing(MediaSourceType::AUDIO);
+    m_sut.stateReached(GST_STATE_PAUSED);
+
+    const auto start = std::chrono::steady_clock::now();
+    m_sut.waitIfRequired(MediaSourceType::AUDIO);
+    const auto elapsed = std::chrono::steady_clock::now() - start;
+
+    // Returns after the bounded wait instead of hanging
+    EXPECT_GE(elapsed, std::chrono::milliseconds(900));
+    EXPECT_LT(elapsed, std::chrono::seconds(5));
+
+    // Stale flag was dropped, so a subsequent flush does not wait again
+    const auto start2 = std::chrono::steady_clock::now();
+    m_sut.waitIfRequired(MediaSourceType::AUDIO);
+    EXPECT_LT(std::chrono::steady_clock::now() - start2, std::chrono::milliseconds(500));
+}
