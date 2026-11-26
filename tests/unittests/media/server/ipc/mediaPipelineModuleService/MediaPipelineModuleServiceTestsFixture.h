@@ -90,6 +90,8 @@ public:
     void mediaPipelineServiceWillFailToGetImmediateOutput();
     void mediaPipelineServiceWillSetReportDecodeErrors();
     void mediaPipelineServiceWillFailToSetReportDecodeErrors();
+    void mediaPipelineServiceWillSetZorder();
+    void mediaPipelineServiceWillFailToSetZorder();
     void mediaPipelineServiceWillGetQueuedFrames();
     void mediaPipelineServiceWillFailToGetQueuedFrames();
     void mediaPipelineServiceWillGetStats();
@@ -178,6 +180,8 @@ public:
     void sendGetImmediateOutputRequestAndReceiveFail();
     void sendSetReportDecodeErrorsRequestAndReceiveResponse();
     void sendSetReportDecodeErrorsRequestAndReceiveFail();
+    void sendSetZorderRequestAndReceiveResponse();
+    void sendSetZorderRequestAndReceiveFail();
     void sendGetQueuedFramesRequestAndReceiveResponse();
     void sendGetQueuedFramesRequestAndReceiveFail();
     void sendGetStatsRequestAndReceiveResponse();

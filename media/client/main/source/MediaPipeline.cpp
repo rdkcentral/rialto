@@ -326,6 +326,11 @@ bool MediaPipeline::setReportDecodeErrors(int32_t sourceId, bool reportDecodeErr
     return m_mediaPipelineIpc->setReportDecodeErrors(sourceId, reportDecodeErrors);
 }
 
+bool MediaPipeline::setZorder(int32_t sourceId, float zorder)
+{
+    return m_mediaPipelineIpc->setZorder(sourceId, zorder);
+}
+
 bool MediaPipeline::getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
 {
     return m_mediaPipelineIpc->getQueuedFrames(sourceId, queuedFrames);

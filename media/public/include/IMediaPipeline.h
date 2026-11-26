@@ -1241,6 +1241,18 @@ public:
     virtual bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) = 0;
 
     /**
+     * @brief Sets the "zorder" property for this source.
+     *
+     * This method is asynchronous, it will set the "zorder" property on the video sink
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] zorder    : The z-order of the video plane (0.0 - 1.0)
+     *
+     * @retval true on success.
+     */
+    virtual bool setZorder(int32_t sourceId, float zorder) = 0;
+
+    /**
      * @brief Gets the queued frames for this source.
      *
      * This method is synchronous, it gets the queued frames property

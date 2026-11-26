@@ -39,6 +39,7 @@ using firebolt::rialto::MediaSourceType;
 namespace
 {
 constexpr int kSessionId{0};
+constexpr float kZorder{0.5f};
 const std::shared_ptr<firebolt::rialto::IMediaPipelineClient> kMediaPipelineClient; // nullptr as it's not used anywhere in tests
 constexpr std::uint32_t kWidth{1920};
 constexpr std::uint32_t kHeight{1080};
@@ -268,6 +269,16 @@ void MediaPipelineServiceTests::mediaPipelineWillSetReportDecodeErrors()
 void MediaPipelineServiceTests::mediaPipelineWillFailToSetReportDecodeErrors()
 {
     EXPECT_CALL(m_mediaPipelineMock, setReportDecodeErrors(_, _)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillSetZorder()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setZorder(kSourceId, kZorder)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToSetZorder()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setZorder(kSourceId, kZorder)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillGetQueuedFrames()
@@ -807,6 +818,16 @@ void MediaPipelineServiceTests::setReportDecodeErrorsShouldSucceed()
 void MediaPipelineServiceTests::setReportDecodeErrorsShouldFail()
 {
     EXPECT_FALSE(m_sut->setReportDecodeErrors(kSessionId, kSourceId, true));
+}
+
+void MediaPipelineServiceTests::setZorderShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->setZorder(kSessionId, kSourceId, kZorder));
+}
+
+void MediaPipelineServiceTests::setZorderShouldFail()
+{
+    EXPECT_FALSE(m_sut->setZorder(kSessionId, kSourceId, kZorder));
 }
 
 void MediaPipelineServiceTests::getQueuedFramesShouldSucceed()

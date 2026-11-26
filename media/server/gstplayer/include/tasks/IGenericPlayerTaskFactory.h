@@ -525,6 +525,21 @@ public:
                                                                      bool reportDecodeErrors) const = 0;
 
     /**
+     * @brief Creates a SetZorder task.
+     *
+     * @param[in] context         : The GstPlayer context
+     * @param[in] player          : The GstPlayer instance
+     * @param[in] type            : The media source type
+     * @param[in] zorder          : The z-order of the video plane (0.0 - 1.0)
+     *
+     * @retval the new SetZorder task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetZorder(GenericPlayerContext &context,
+                                                         IGstGenericPlayerPrivate &player,
+                                                         const firebolt::rialto::MediaSourceType &type,
+                                                         float zorder) const = 0;
+
+    /**
      * @brief Creates a SetBufferingLimit task.
      *
      * @param[in] context         : The GstPlayer context

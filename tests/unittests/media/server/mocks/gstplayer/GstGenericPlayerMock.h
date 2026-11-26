@@ -48,6 +48,7 @@ public:
     MOCK_METHOD(bool, getImmediateOutput, (const MediaSourceType &mediaSourceType, bool &immediateOutput), (override));
     MOCK_METHOD(bool, setReportDecodeErrors, (const MediaSourceType &mediaSourceType, bool reportDecodeErrors),
                 (override));
+    MOCK_METHOD(bool, setZorder, (const MediaSourceType &mediaSourceType, float zorder), (override));
     MOCK_METHOD(bool, getQueuedFrames, (uint32_t & queuedFrames), (override));
     MOCK_METHOD(bool, getStats,
                 (const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames), (override));

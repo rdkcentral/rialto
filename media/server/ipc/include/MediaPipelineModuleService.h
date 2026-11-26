@@ -94,6 +94,8 @@ public:
                                const ::firebolt::rialto::SetReportDecodeErrorsRequest *request,
                                ::firebolt::rialto::SetReportDecodeErrorsResponse *response,
                                ::google::protobuf::Closure *done) override;
+    void setZorder(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SetZorderRequest *request,
+                   ::firebolt::rialto::SetZorderResponse *response, ::google::protobuf::Closure *done) override;
     void getQueuedFrames(::google::protobuf::RpcController *controller,
                          const ::firebolt::rialto::GetQueuedFramesRequest *request,
                          ::firebolt::rialto::GetQueuedFramesResponse *response,

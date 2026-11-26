@@ -416,6 +416,10 @@ void SetupElement::execute() const
         {
             m_player.setShowVideoWindow();
         }
+        if (m_context.pendingZorderForVideo.has_value())
+        {
+            m_player.setZorder();
+        }
     }
     else if (isAudioDecoder(*m_gstWrapper, m_element))
     {

@@ -1339,6 +1339,15 @@ bool GstGenericPlayer::setReportDecodeErrors(const MediaSourceType &mediaSourceT
     return true;
 }
 
+bool GstGenericPlayer::setZorder(const MediaSourceType &mediaSourceType, float zorder)
+{
+    if (!m_workerThread)
+        return false;
+
+    m_workerThread->enqueueTask(m_taskFactory->createSetZorder(m_context, *this, mediaSourceType, zorder));
+    return true;
+}
+
 bool GstGenericPlayer::getQueuedFrames(uint32_t &queuedFrames)
 {
     bool returnValue{false};
@@ -2367,6 +2376,38 @@ bool GstGenericPlayer::setReportDecodeErrors()
     {
         RIALTO_SERVER_LOG_DEBUG("Pending report-decode-errors, decoder is NULL");
     }
+    return result;
+}
+
+bool GstGenericPlayer::setZorder()
+{
+    if (!m_context.pendingZorderForVideo.has_value())
+    {
+        RIALTO_SERVER_LOG_WARN("No zorder value to be set. Aborting...");
+        return false;
+    }
+
+    GstElement *videoSink{getSink(MediaSourceType::VIDEO)};
+    if (!videoSink)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Setting zorder queued. Video sink is NULL");
+        return false;
+    }
+
+    bool result{false};
+    const gfloat kZorder{m_context.pendingZorderForVideo.value()};
+    if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "zorder"))
+    {
+        RIALTO_SERVER_LOG_DEBUG("Set zorder to %f", kZorder);
+        m_glibWrapper->gObjectSet(videoSink, "zorder", kZorder, nullptr);
+        result = true;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set zorder property on sink '%s'", GST_ELEMENT_NAME(videoSink));
+    }
+    m_context.pendingZorderForVideo.reset();
+    m_gstWrapper->gstObjectUnref(videoSink);
     return result;
 }
 

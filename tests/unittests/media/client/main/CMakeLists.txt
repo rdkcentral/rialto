@@ -40,6 +40,7 @@ add_gtests (
         mediaPipeline/SetImmediateOutputTest.cpp
         mediaPipeline/GetImmediateOutputTest.cpp
         mediaPipeline/SetReportDecodeErrorsTest.cpp
+        mediaPipeline/SetZorderTest.cpp
         mediaPipeline/GetQueuedFramesTest.cpp
         mediaPipeline/GetStatsTest.cpp
         mediaPipeline/RenderFrameTest.cpp

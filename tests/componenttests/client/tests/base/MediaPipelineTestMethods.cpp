@@ -1504,6 +1504,19 @@ void MediaPipelineTestMethods::setReportDecodeErrors(bool reportDecodeErrors)
     EXPECT_TRUE(m_mediaPipeline->setReportDecodeErrors(kVideoSourceId, reportDecodeErrors));
 }
 
+void MediaPipelineTestMethods::shouldSetZorder(float zorder)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setZorder(_, setZorderRequestMatcher(kSessionId, kVideoSourceId, zorder), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->setZorderResponse()),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::setZorder(float zorder)
+{
+    EXPECT_TRUE(m_mediaPipeline->setZorder(kVideoSourceId, zorder));
+}
+
 void MediaPipelineTestMethods::shouldGetQueuedFrames(uint32_t queuedFrames)
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,

@@ -72,6 +72,7 @@ public:
     {
         return m_mediaPipeline->setReportDecodeErrors(sourceId, reportDecodeErrors);
     }
+    bool setZorder(int32_t sourceId, float zorder) { return m_mediaPipeline->setZorder(sourceId, zorder); }
     bool getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
     {
         return m_mediaPipeline->getQueuedFrames(sourceId, queuedFrames);

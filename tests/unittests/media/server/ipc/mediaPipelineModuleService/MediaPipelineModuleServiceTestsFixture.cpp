@@ -87,6 +87,7 @@ constexpr uint32_t kDuration{30};
 constexpr bool kImmediateOutputVal1{false};
 constexpr bool kImmediateOutputVal2{true};
 constexpr bool kReportDecodeErrorsVal{false};
+constexpr float kZorderVal{0.5f};
 constexpr uint32_t kQueuedFramesVal{123};
 constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
@@ -704,6 +705,18 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetReportDec
     expectRequestFailure();
     EXPECT_CALL(m_mediaPipelineServiceMock, setReportDecodeErrors(kHardcodedSessionId, _, kReportDecodeErrorsVal))
         .WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetZorder()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setZorder(kHardcodedSessionId, _, kZorderVal)).WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetZorder()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setZorder(kHardcodedSessionId, _, kZorderVal)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetQueuedFrames()
@@ -1445,6 +1458,28 @@ void MediaPipelineModuleServiceTests::sendSetReportDecodeErrorsRequestAndReceive
     request.set_report_decode_errors(kReportDecodeErrorsVal);
 
     m_service->setReportDecodeErrors(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendSetZorderRequestAndReceiveResponse()
+{
+    firebolt::rialto::SetZorderRequest request;
+    firebolt::rialto::SetZorderResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_zorder(kZorderVal);
+
+    m_service->setZorder(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendSetZorderRequestAndReceiveFail()
+{
+    firebolt::rialto::SetZorderRequest request;
+    firebolt::rialto::SetZorderResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_zorder(kZorderVal);
+
+    m_service->setZorder(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void MediaPipelineModuleServiceTests::sendGetQueuedFramesRequestAndReceiveResponse()

@@ -47,6 +47,7 @@ public:
     MOCK_METHOD(bool, setLowLatencyAudioDecoder, (), (override));
     MOCK_METHOD(bool, setLowLatencyAudioSink, (), (override));
     MOCK_METHOD(bool, setReportDecodeErrors, (), (override));
+    MOCK_METHOD(bool, setZorder, (), (override));
     MOCK_METHOD(bool, setLowLatency, (), (override));
     MOCK_METHOD(bool, setSync, (), (override));
     MOCK_METHOD(bool, setSyncOff, (), (override));

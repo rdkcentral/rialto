@@ -73,6 +73,8 @@ const std::string kAutoAudioSinkTypeName{"GstAutoAudioSink"};
 constexpr bool kResetTime{true};
 const std::string kImmediateOutputStr{"immediate-output"};
 const std::string kReportDecodeErrorsStr{"report-decode-errors"};
+const std::string kZorderStr{"zorder"};
+constexpr float kZorder{0.5f};
 const std::string kLowLatencyStr{"low-latency"};
 const std::string kSyncStr{"sync"};
 const std::string kSyncOffStr{"sync-off"};
@@ -557,6 +559,48 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetReportDecodeErrors)
 
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
     EXPECT_TRUE(m_sut->setReportDecodeErrors());
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldFailToSetZorderWhenNoValueIsPending)
+{
+    EXPECT_FALSE(m_sut->setZorder());
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldFailToSetZorderWhenVideoSinkIsNull)
+{
+    modifyContext([&](GenericPlayerContext &context) { context.pendingZorderForVideo = kZorder; });
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kVideoSinkStr.c_str()), _));
+    EXPECT_FALSE(m_sut->setZorder());
+
+    // Value should still be pending, so that it can be applied when the sink is set up
+    EXPECT_EQ(getPlayerContext()->pendingZorderForVideo, kZorder);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldFailToSetZorderIfPropertyDoesntExist)
+{
+    modifyContext([&](GenericPlayerContext &context) { context.pendingZorderForVideo = kZorder; });
+
+    expectGetAVSink(kVideoSinkStr, m_realElement);
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq(kZorderStr))).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement));
+    EXPECT_FALSE(m_sut->setZorder());
+
+    EXPECT_FALSE(getPlayerContext()->pendingZorderForVideo.has_value());
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldSetZorder)
+{
+    modifyContext([&](GenericPlayerContext &context) { context.pendingZorderForVideo = kZorder; });
+
+    expectGetAVSink(kVideoSinkStr, m_realElement);
+
+    GParamSpec gParamSpec{};
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq(kZorderStr))).WillOnce(Return(&gParamSpec));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetFloatStub(m_realElement, StrEq(kZorderStr), kZorder));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement));
+    EXPECT_TRUE(m_sut->setZorder());
+
+    EXPECT_FALSE(getPlayerContext()->pendingZorderForVideo.has_value());
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldFailToSetLowLatencyIfSinkIsNull)

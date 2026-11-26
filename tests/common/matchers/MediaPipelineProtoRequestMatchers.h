@@ -380,6 +380,14 @@ MATCHER_P2(setReportDecodeErrorsRequestMatcher, sessionId, sourceId, "")
     return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
 }
 
+MATCHER_P3(setZorderRequestMatcher, sessionId, sourceId, zorder, "")
+{
+    const ::firebolt::rialto::SetZorderRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetZorderRequest *>(arg);
+    return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId) &&
+           (kRequest->zorder() == zorder);
+}
+
 MATCHER_P2(getQueuedFramesRequestMatcher, sessionId, sourceId, "")
 {
     const ::firebolt::rialto::GetQueuedFramesRequest *kRequest =

@@ -415,6 +415,26 @@ TEST_F(MediaPipelineServiceTests, shouldSetReportDecodeErrors)
     setReportDecodeErrorsShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToSetZorderForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    setZorderShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetZorder)
+{
+    initSession();
+    mediaPipelineWillFailToSetZorder();
+    setZorderShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldSetZorder)
+{
+    initSession();
+    mediaPipelineWillSetZorder();
+    setZorderShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldGetQueuedFrames)
 {
     initSession();

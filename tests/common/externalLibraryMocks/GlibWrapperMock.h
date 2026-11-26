@@ -76,6 +76,12 @@ public:
                 gint val = va_arg(args, gint);
                 gObjectSetIntStub(object, kProperty, val);
             }
+            else if (g_strcmp0(kProperty, "zorder") == 0)
+            {
+                // float varargs are promoted to double
+                gfloat val = static_cast<gfloat>(va_arg(args, gdouble));
+                gObjectSetFloatStub(object, kProperty, val);
+            }
             else if (g_strcmp0(kProperty, "audio-fade") == 0)
             {
                 const gchar *val = va_arg(args, const gchar *);
@@ -97,6 +103,7 @@ public:
     MOCK_METHOD(void, gObjectSetStrStub, (gpointer object, const gchar *first_property_name, const gchar *val));
     MOCK_METHOD(void, gObjectSetBoolStub, (gpointer object, const gchar *first_property_name, gboolean val));
     MOCK_METHOD(void, gObjectSetIntStub, (gpointer object, const gchar *first_property_name, gint val));
+    MOCK_METHOD(void, gObjectSetFloatStub, (gpointer object, const gchar *first_property_name, gfloat val));
     void gObjectGet(gpointer object, const gchar *first_property_name, ...) override
     {
         va_list args;
