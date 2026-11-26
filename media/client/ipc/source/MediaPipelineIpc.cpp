@@ -1694,9 +1694,9 @@ bool MediaPipelineIpc::createSession(const VideoRequirements &videoRequirements)
 
 void MediaPipelineIpc::destroySession()
 {
-    if (!reattachChannelIfRequired())
+    if (!isChannelConnected())
     {
-        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        RIALTO_CLIENT_LOG_WARN("Ipc channel disconnected, session will not be destroyed on the server");
         return;
     }
 

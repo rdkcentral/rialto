@@ -148,7 +148,7 @@ TEST_F(RialtoClientCreateMediaKeysIpcTest, DestructorChannelDisconnected)
     createMediaKeysIpc();
 
     /* destroy media keys */
-    expectIpcApiCallDisconnected();
+    expectIpcApiCallSkippedDisconnected();
     expectUnsubscribeEvents();
 
     m_mediaKeysIpc.reset();
