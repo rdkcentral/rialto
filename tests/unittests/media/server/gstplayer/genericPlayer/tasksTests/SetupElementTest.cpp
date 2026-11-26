@@ -282,12 +282,6 @@ TEST_F(SetupElementTest, shouldReportAutoAudioSinkChildRemoved)
     triggerAutoAudioSinkChildRemovedCallback();
 }
 
-TEST_F(SetupElementTest, shouldSetupTextTrackSink)
-{
-    shouldSetupTextTrackSink();
-    triggerSetupElement();
-}
-
 TEST_F(SetupElementTest, shouldSetupBaseParse)
 {
     shouldSetupBaseParse();

@@ -60,7 +60,7 @@ struct _GstRialtoTextTrackSink
 
 struct _GstRialtoTextTrackSinkClass
 {
-    GstBaseSink parentClass;
+    GstBaseSinkClass parentClass;
 };
 
 G_END_DECLS
@@ -385,6 +385,11 @@ gst_rialto_text_track_sink_change_state(GstElement *element, GstStateChange tran
 
     switch (transition)
     {
+    case GST_STATE_CHANGE_READY_TO_PAUSED:
+    {
+        gst_base_sink_set_sync(GST_BASE_SINK(element), FALSE);
+        break;
+    }
     case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
     {
         if (textTrackSink->priv->m_textTrackSession && !textTrackSink->priv->m_textTrackSession->play())

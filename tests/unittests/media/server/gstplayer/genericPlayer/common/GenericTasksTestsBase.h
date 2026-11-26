@@ -140,7 +140,6 @@ protected:
     void shouldRemoveAutoAudioSinkChildCallback();
     void triggerAutoVideoSinkChildRemovedCallback();
     void triggerAutoAudioSinkChildRemovedCallback();
-    void shouldSetupTextTrackSink();
     void shouldSetupVideoDecoderForTextTrack();
     void shouldSetupVideoDecoderForTextTrackWesterosSinkWithDecoder();
     void shouldSetupVideoDecoderForTextTrackWesterosSinkWithoutDecoder();
