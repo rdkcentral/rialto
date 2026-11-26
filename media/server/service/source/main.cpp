@@ -20,7 +20,6 @@
 #include <cstring>
 #include <google/protobuf/service.h>
 
-#include "ConsoleLogForwarding.h"
 #include "IApplicationSessionServer.h"
 #include "IGstInitialiser.h"
 #include "RialtoServerLogging.h"
@@ -29,8 +28,6 @@
 
 int main(int argc, char *argv[])
 {
-    auto consoleLogForwarding{std::make_unique<firebolt::rialto::server::service::ConsoleLogForwarding>()};
-
     const char kSrcRev[] = SRCREV;
     const char kTags[] = TAGS;
 
@@ -65,8 +62,6 @@ int main(int argc, char *argv[])
     RIALTO_SERVER_LOG_INFO("Calling ShutdownProtobufLibrary");
     google::protobuf::ShutdownProtobufLibrary();
 #endif
-
-    consoleLogForwarding.reset();
 
     return EXIT_SUCCESS;
 }
