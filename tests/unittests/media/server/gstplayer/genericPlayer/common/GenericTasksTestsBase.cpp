@@ -621,7 +621,6 @@ void GenericTasksTestsBase::expectSetupAudioDecoderElement()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
 
@@ -650,7 +649,6 @@ void GenericTasksTestsBase::expectSetupVideoParserElement()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
 
@@ -688,7 +686,6 @@ void GenericTasksTestsBase::expectSetupBaseParseElement()
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
 
@@ -726,7 +723,6 @@ void GenericTasksTestsBase::shouldSetupVideoSinkElementOnly()
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     expectSetupVideoSinkElement();
 }
@@ -737,7 +733,6 @@ void GenericTasksTestsBase::shouldSetupVideoDecoderElementOnly()
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     expectSetupVideoDecoderElement();
 }
@@ -748,7 +743,6 @@ void GenericTasksTestsBase::shouldSetupVideoDecoderElementWithFirstVideoFrameCal
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     expectSetupVideoDecoderElementWithFirstVideoFrameCallback();
 }
@@ -760,7 +754,6 @@ void GenericTasksTestsBase::shouldSetupVideoElementWithPendingGeometry()
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     // This is the extra EXPECT caused by setting pendingGeometry...
     EXPECT_CALL(testContext->m_gstPlayer, setVideoSinkRectangle());
@@ -774,7 +767,6 @@ void GenericTasksTestsBase::shouldSetupVideoElementWithFallbackGeometry()
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     EXPECT_CALL(testContext->m_gstPlayer, setVideoSinkRectangle());
     expectSetupVideoSinkElement();
@@ -790,7 +782,6 @@ void GenericTasksTestsBase::shouldSetupVideoElementWithApiGeometryAndFallback()
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     EXPECT_CALL(testContext->m_gstPlayer, setVideoSinkRectangle());
     expectSetupVideoSinkElement();
@@ -804,7 +795,6 @@ void GenericTasksTestsBase::shouldSetupVideoElementWithoutFallbackAfterApiCall()
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     expectSetupVideoSinkElement();
 }
@@ -821,7 +811,6 @@ void GenericTasksTestsBase::shouldSetupVideoElementWithPendingImmediateOutput()
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     // This is the extra EXPECT caused by setting pendingImmediateOutputForVideo...
     EXPECT_CALL(testContext->m_gstPlayer, setImmediateOutput());
@@ -838,7 +827,6 @@ void GenericTasksTestsBase::shouldSetupAudioSinkElementWithPendingLowLatency()
     EXPECT_CALL(testContext->m_gstPlayer, setLowLatency());
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     expectSetupAudioSinkElement();
 }
@@ -852,7 +840,6 @@ void GenericTasksTestsBase::shouldSetupAudioSinkElementWithPendingLowLatencyAudi
     EXPECT_CALL(testContext->m_gstPlayer, setLowLatencyAudioSink());
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     expectSetupAudioSinkElement();
 }
@@ -877,7 +864,6 @@ void GenericTasksTestsBase::shouldSetupAudioSinkElementWithPendingSync()
     EXPECT_CALL(testContext->m_gstPlayer, setSync());
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     expectSetupAudioSinkElement();
 }
@@ -960,7 +946,6 @@ void GenericTasksTestsBase::shouldSetupVideoSinkElementWithPendingRenderFrame()
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
 
     // This is the extra EXPECT caused by setting pendingRenderFrame...
@@ -975,7 +960,6 @@ void GenericTasksTestsBase::shouldSetupVideoSinkElementWithPendingShowVideoWindo
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
 
     // This is the extra EXPECT caused by setting pendingShowVideoWindow...
@@ -1055,7 +1039,6 @@ void GenericTasksTestsBase::shouldSetupVideoElementAutoVideoSink()
         .WillOnce(Return(kAutoVideoSinkTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper,
                 gSignalConnect(G_OBJECT(testContext->m_element), StrEq("child-added"), _, &testContext->m_gstPlayer))
@@ -1108,7 +1091,6 @@ void GenericTasksTestsBase::shouldSetupAudioElementAutoAudioSink()
     EXPECT_CALL(*testContext->m_gstWrapper, gstIteratorFree(&testContext->m_iterator));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     expectSetupAudioSinkElement();
 }
@@ -1119,7 +1101,6 @@ void GenericTasksTestsBase::shouldSetupAudioSinkElementOnly()
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     expectSetupAudioSinkElement();
 }
@@ -1139,7 +1120,6 @@ void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithFirstAudioFrameCal
 
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
 
@@ -1197,7 +1177,6 @@ void GenericTasksTestsBase::shouldSetupAudioSinkElementWithFirstAudioFrameProbe(
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
 
@@ -3924,21 +3903,6 @@ void GenericTasksTestsBase::triggerSetUseBuffering()
     EXPECT_EQ(testContext->m_context.pendingUseBuffering, kUseBuffering);
 }
 
-void GenericTasksTestsBase::shouldSetupTextTrackSink()
-{
-    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
-        .WillOnce(Return(kElementTypeName.c_str()));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(TRUE));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetBoolStub(G_OBJECT(testContext->m_element), StrEq("sync"), FALSE));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstElementFactoryListIsType(testContext->m_elementFactory, _))
-        .WillRepeatedly(Return(FALSE));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(_));
-}
-
 void GenericTasksTestsBase::shouldSetupVideoDecoderForTextTrack()
 {
     testContext->m_context.subtitleSink = testContext->m_element;
@@ -3946,7 +3910,6 @@ void GenericTasksTestsBase::shouldSetupVideoDecoderForTextTrack()
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
     EXPECT_CALL(*testContext->m_gstWrapper,
                 gstElementFactoryListIsType(testContext->m_elementFactory,
@@ -3971,7 +3934,6 @@ void GenericTasksTestsBase::shouldSetupVideoDecoderForTextTrackWesterosSinkWithD
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
     EXPECT_CALL(*testContext->m_gstWrapper,
                 gstElementFactoryListIsType(testContext->m_elementFactory,
@@ -4002,7 +3964,6 @@ void GenericTasksTestsBase::shouldSetupVideoDecoderForTextTrackWesterosSinkWitho
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
     EXPECT_CALL(*testContext->m_gstWrapper,
                 gstElementFactoryListIsType(testContext->m_elementFactory,
