@@ -1477,6 +1477,10 @@ void MediaPipelineServerInternal::notifyPlaybackState(PlaybackState state)
     auto task = [&, state]()
     {
         m_currentPlaybackState = state;
+        if (PlaybackState::SEEK_DONE == state)
+        {
+            m_activeRequests->clear();
+        }
         if (m_mediaPipelineClient)
         {
             m_mediaPipelineClient->notifyPlaybackState(state);
@@ -1511,6 +1515,12 @@ bool MediaPipelineServerInternal::notifyNeedMediaData(MediaSourceType mediaSourc
 
 bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType mediaSourceType)
 {
+    if (m_activeRequests->hasRequest(mediaSourceType))
+    {
+        RIALTO_SERVER_LOG_MIL("NeedMediaData not sent for %s - request already pending",
+                              common::convertMediaSourceType(mediaSourceType));
+        return true;
+    }
     m_needMediaDataTimers.erase(mediaSourceType);
     m_shmBuffer->clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
     const auto kSourceIter = m_attachedSources.find(mediaSourceType);
@@ -1559,6 +1569,12 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataWithDelay(MediaSourceType m
 
 bool MediaPipelineServerInternal::notifyNeedMediaDataWithDelayInternal(MediaSourceType mediaSourceType)
 {
+    if (m_activeRequests->hasRequest(mediaSourceType))
+    {
+        RIALTO_SERVER_LOG_MIL("NeedMediaData not scheduled for %s - request already pending",
+                              common::convertMediaSourceType(mediaSourceType));
+        return true;
+    }
     m_needMediaDataTimers.erase(mediaSourceType);
     m_shmBuffer->clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
     const auto kSourceIter = m_attachedSources.find(mediaSourceType);
@@ -1735,6 +1751,7 @@ void MediaPipelineServerInternal::notifySourceFlushed(MediaSourceType mediaSourc
                                        common::convertMediaSourceType(mediaSourceType));
                 return;
             }
+            m_activeRequests->erase(mediaSourceType);
             m_mediaPipelineClient->notifySourceFlushed(kSourceIter->second);
             RIALTO_SERVER_LOG_DEBUG("%s source flushed", common::convertMediaSourceType(mediaSourceType));
         }
