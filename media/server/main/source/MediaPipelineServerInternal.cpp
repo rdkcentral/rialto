@@ -257,21 +257,22 @@ bool MediaPipelineServerInternal::attachSourceInternal(const std::unique_ptr<Med
         return false;
     }
 
-    m_gstPlayer->attachSource(source);
-
     const auto kSourceIter = m_attachedSources.find(source->getType());
-    if (m_attachedSources.cend() == kSourceIter)
-    {
-        source->setId(generateSourceId());
-        RIALTO_SERVER_LOG_DEBUG("New ID generated for MediaSourceType: %s: %d",
-                                common::convertMediaSourceType(source->getType()), source->getId());
-        m_attachedSources.emplace(source->getType(), source->getId());
-    }
-    else
+    if (m_attachedSources.cend() != kSourceIter)
     {
         RIALTO_SERVER_LOG_WARN("SourceType '%s' already attached", common::convertMediaSourceType(source->getType()));
         return false;
     }
+
+    if (!m_gstPlayer->attachSource(source))
+    {
+        return false;
+    }
+
+    source->setId(generateSourceId());
+    RIALTO_SERVER_LOG_DEBUG("New ID generated for MediaSourceType: %s: %d",
+                            common::convertMediaSourceType(source->getType()), source->getId());
+    m_attachedSources.emplace(source->getType(), source->getId());
 
     return true;
 }

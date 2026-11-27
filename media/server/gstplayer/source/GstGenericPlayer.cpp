@@ -359,6 +359,7 @@ GstGenericPlayer::~GstGenericPlayer()
 {
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is destructed.");
     m_gstDispatcherThread.reset();
+    cancelSubtitleClockResyncTimer(true);
 
     try
     {
@@ -460,6 +461,7 @@ void GstGenericPlayer::termPipeline()
 
     clearAudioFirstFrameFallbackProbe();
     stopNotifyPlaybackInfoTimer();
+    stopSubtitleClockResyncTimer();
 
     for (auto &elem : m_context.streamInfo)
     {
@@ -552,12 +554,23 @@ void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElemen
     }
 }
 
-void GstGenericPlayer::attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &attachedSource)
+bool GstGenericPlayer::attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &attachedSource)
 {
-    if (m_workerThread)
+    if (!m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createAttachSource(m_context, *this, attachedSource));
+        return false;
     }
+
+    if ((attachedSource->getType() == MediaSourceType::SUBTITLE) &&
+        (!m_context.pipeline ||
+         !m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_context.pipeline), "text-sink")))
+    {
+        RIALTO_SERVER_LOG_ERROR("Pipeline does not expose 'text-sink' property, subtitle source cannot be attached");
+        return false;
+    }
+
+    m_workerThread->enqueueTask(m_taskFactory->createAttachSource(m_context, *this, attachedSource));
+    return true;
 }
 
 void GstGenericPlayer::removeSource(const MediaSourceType &mediaSourceType)
@@ -2779,16 +2792,26 @@ void GstGenericPlayer::stopNotifyPlaybackInfoTimer()
 
 void GstGenericPlayer::startSubtitleClockResyncTimer()
 {
+    auto state = m_subtitleClockResyncTimerState;
+    std::lock_guard<std::mutex> lock{state->mutex};
+    if (state->isShuttingDown)
+    {
+        return;
+    }
+
     if (m_subtitleClockResyncTimer && m_subtitleClockResyncTimer->isActive())
     {
         return;
     }
 
+    state->isActive = true;
+    const auto generation = ++state->generation;
     m_subtitleClockResyncTimer = m_timerFactory->createTimer(
         kSubtitleClockResyncInterval,
-        [this]()
+        [this, state = std::move(state), generation]()
         {
-            if (m_workerThread)
+            std::lock_guard<std::mutex> callbackLock{state->mutex};
+            if (state->isActive && !state->isShuttingDown && state->generation == generation && m_workerThread)
             {
                 m_workerThread->enqueueTask(m_taskFactory->createSynchroniseSubtitleClock(m_context, *this));
             }
@@ -2798,9 +2821,23 @@ void GstGenericPlayer::startSubtitleClockResyncTimer()
 
 void GstGenericPlayer::stopSubtitleClockResyncTimer()
 {
-    if (m_subtitleClockResyncTimer && m_subtitleClockResyncTimer->isActive())
+    cancelSubtitleClockResyncTimer(false);
+}
+
+void GstGenericPlayer::cancelSubtitleClockResyncTimer(bool shuttingDown)
+{
+    const auto state = m_subtitleClockResyncTimerState;
+    std::lock_guard<std::mutex> lock{state->mutex};
+    state->isActive = false;
+    ++state->generation;
+    state->isShuttingDown = state->isShuttingDown || shuttingDown;
+
+    if (m_subtitleClockResyncTimer)
     {
-        m_subtitleClockResyncTimer->cancel();
+        if (m_subtitleClockResyncTimer->isActive())
+        {
+            m_subtitleClockResyncTimer->cancel();
+        }
         m_subtitleClockResyncTimer.reset();
     }
 }

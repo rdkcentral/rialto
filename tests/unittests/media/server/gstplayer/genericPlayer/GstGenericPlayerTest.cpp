@@ -25,7 +25,14 @@
 #include "MatchersGenericPlayer.h"
 #include "MediaSourceUtil.h"
 #include "PlayerTaskMock.h"
+#include "Timer.h"
 #include "TimerMock.h"
+#include <atomic>
+#include <chrono>
+#include <condition_variable>
+#include <future>
+#include <mutex>
+#include <thread>
 
 using testing::_;
 using testing::ByMove;
@@ -33,13 +40,94 @@ using testing::DoAll;
 using testing::Invoke;
 using testing::Ref;
 using testing::Return;
+using testing::SaveArg;
 using testing::SetArgumentPointee;
 using testing::StrEq;
+
+namespace
+{
+constexpr std::chrono::milliseconds kRuntimeTimerInterval{100};
+
+class ObservedTimer : public firebolt::rialto::common::ITimer
+{
+public:
+    ObservedTimer(std::unique_ptr<firebolt::rialto::common::ITimer> timer,
+                  std::shared_ptr<std::atomic<unsigned int>> cancelCount)
+        : m_timer{std::move(timer)}, m_cancelCount{std::move(cancelCount)}
+    {
+    }
+
+    void cancel() override
+    {
+        m_timer->cancel();
+        ++(*m_cancelCount);
+    }
+
+    bool isActive() const override { return m_timer->isActive(); }
+
+private:
+    std::unique_ptr<firebolt::rialto::common::ITimer> m_timer;
+    std::shared_ptr<std::atomic<unsigned int>> m_cancelCount;
+};
+
+class AcceleratedTimerFactory : public firebolt::rialto::common::ITimerFactory
+{
+public:
+    unsigned int cancelCount() const { return m_cancelCount->load(); }
+
+    std::unique_ptr<firebolt::rialto::common::ITimer>
+    createTimer(const std::chrono::milliseconds &, const std::function<void()> &callback,
+                firebolt::rialto::common::TimerType timerType) const override
+    {
+        return std::make_unique<ObservedTimer>(m_timerFactory.createTimer(kRuntimeTimerInterval, callback, timerType),
+                                               m_cancelCount);
+    }
+
+private:
+    firebolt::rialto::common::TimerFactory m_timerFactory;
+    std::shared_ptr<std::atomic<unsigned int>> m_cancelCount{std::make_shared<std::atomic<unsigned int>>(0)};
+};
+
+class CallbackPlayerTask : public IPlayerTask
+{
+public:
+    explicit CallbackPlayerTask(std::function<void()> callback) : m_callback{std::move(callback)} {}
+
+    void execute() const override { m_callback(); }
+
+private:
+    std::function<void()> m_callback;
+};
+
+class PlayerShutdownGuard
+{
+public:
+    explicit PlayerShutdownGuard(std::function<void()> shutdown) : m_shutdown{std::move(shutdown)} {}
+    ~PlayerShutdownGuard() { run(); }
+
+    PlayerShutdownGuard(const PlayerShutdownGuard &) = delete;
+    PlayerShutdownGuard &operator=(const PlayerShutdownGuard &) = delete;
+
+    void run()
+    {
+        if (m_shutdown)
+        {
+            auto shutdown = std::move(m_shutdown);
+            shutdown();
+        }
+    }
+
+private:
+    std::function<void()> m_shutdown;
+};
+} // namespace
 
 class GstGenericPlayerTest : public GstGenericPlayerTestCommon
 {
 protected:
     std::unique_ptr<IGstGenericPlayer> m_sut;
+    std::shared_ptr<firebolt::rialto::common::ITimerFactory> m_playerTimerFactory;
+    bool m_useRealWorker{false};
     VideoRequirements m_videoReq = {kMinPrimaryVideoWidth, kMinPrimaryVideoHeight};
     bool m_isLive{false};
     GstElement *m_pipeline;
@@ -49,15 +137,23 @@ protected:
     GstElement *m_element;
     GParamSpec m_prop{};
 
-    GstGenericPlayerTest()
+    explicit GstGenericPlayerTest(bool useRealWorker = false,
+                                  std::shared_ptr<firebolt::rialto::common::ITimerFactory> timerFactory = nullptr)
+        : m_useRealWorker{useRealWorker}
     {
-        gstPlayerWillBeCreated();
+        gstPlayerWillBeCreated(m_useRealWorker);
+        m_playerTimerFactory = timerFactory;
+        if (!m_playerTimerFactory)
+        {
+            m_playerTimerFactory = m_timerFactoryMock;
+        }
         m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
                                                    m_videoReq, m_isLive, m_gstWrapperMock, m_glibWrapperMock,
                                                    m_rdkGstreamerUtilsWrapperMock, m_gstInitialiserMock,
                                                    std::move(m_flushWatcher), m_gstSrcFactoryMock,
-                                                   m_gstProfilerFactoryMock, m_timerFactoryMock, std::move(m_taskFactory),
-                                                   std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
+                                                   m_gstProfilerFactoryMock, m_playerTimerFactory,
+                                                   std::move(m_taskFactory), std::move(workerThreadFactory),
+                                                   std::move(gstDispatcherThreadFactory),
                                                    m_gstProtectionMetadataFactoryMock);
         m_element = fakeElement();
     }
@@ -65,8 +161,11 @@ protected:
     ~GstGenericPlayerTest() override
     {
         gst_object_unref(m_element);
-        gstPlayerWillBeDestroyed();
-        m_sut.reset();
+        if (m_sut)
+        {
+            gstPlayerWillBeDestroyed(m_useRealWorker);
+            m_sut.reset();
+        }
     }
 
     void getContext(const std::function<void(GenericPlayerContext &)> &fun)
@@ -135,6 +234,238 @@ protected:
     }
 };
 
+class GstGenericPlayerRealTimerTest : public GstGenericPlayerTest
+{
+protected:
+    GstGenericPlayerRealTimerTest() : GstGenericPlayerTest{true, std::make_shared<AcceleratedTimerFactory>()} {}
+};
+
+TEST_F(GstGenericPlayerTest, shouldIgnoreSubtitleClockResyncCallbackAfterShutdown)
+{
+    std::function<void()> timerCallback;
+    auto timer = std::make_unique<StrictMock<TimerMock>>();
+    auto *timerMock = timer.get();
+    EXPECT_CALL(*m_timerFactoryMock,
+                createTimer(std::chrono::milliseconds{10000}, _, firebolt::rialto::common::TimerType::PERIODIC))
+        .WillOnce(DoAll(SaveArg<1>(&timerCallback), Return(ByMove(std::move(timer)))));
+
+    auto *player = dynamic_cast<IGstGenericPlayerPrivate *>(m_sut.get());
+    ASSERT_NE(nullptr, player);
+    player->startSubtitleClockResyncTimer();
+
+    EXPECT_CALL(*timerMock, isActive()).WillOnce(Return(true));
+    EXPECT_CALL(*timerMock, cancel());
+    gstPlayerWillBeDestroyed();
+    EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
+        .WillOnce(Invoke(
+            [player](std::unique_ptr<IPlayerTask> &&task)
+            {
+                player->startSubtitleClockResyncTimer();
+                task->execute();
+            }));
+
+    m_sut.reset();
+
+    ASSERT_TRUE(timerCallback);
+    std::thread lateTimerCallback{timerCallback};
+    lateTimerCallback.join();
+}
+
+TEST_F(GstGenericPlayerTest, shouldWaitForInFlightSubtitleClockResyncCallbackBeforeShutdown)
+{
+    std::function<void()> timerCallback;
+    auto timer = std::make_unique<StrictMock<TimerMock>>();
+    auto *timerMock = timer.get();
+    EXPECT_CALL(*m_timerFactoryMock,
+                createTimer(std::chrono::milliseconds{10000}, _, firebolt::rialto::common::TimerType::PERIODIC))
+        .WillOnce(DoAll(SaveArg<1>(&timerCallback), Return(ByMove(std::move(timer)))));
+
+    auto *player = dynamic_cast<IGstGenericPlayerPrivate *>(m_sut.get());
+    ASSERT_NE(nullptr, player);
+    player->startSubtitleClockResyncTimer();
+
+    std::unique_ptr<IPlayerTask> synchroniseTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*synchroniseTask), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSynchroniseSubtitleClock(_, Ref(*player)))
+        .WillOnce(Return(ByMove(std::move(synchroniseTask))));
+
+    std::promise<void> callbackEnqueueStarted;
+    auto callbackEnqueueStartedFuture = callbackEnqueueStarted.get_future();
+    std::promise<void> releaseCallback;
+    auto releaseCallbackFuture = releaseCallback.get_future();
+    std::promise<void> timerCancelCalled;
+    auto timerCancelCalledFuture = timerCancelCalled.get_future();
+    EXPECT_CALL(*timerMock, isActive()).WillOnce(Return(true));
+    EXPECT_CALL(*timerMock, cancel()).WillOnce(Invoke([&timerCancelCalled]() { timerCancelCalled.set_value(); }));
+
+    gstPlayerWillBeDestroyed();
+    std::atomic<unsigned int> enqueueCount{0};
+    EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
+        .Times(2)
+        .WillRepeatedly(Invoke(
+            [&callbackEnqueueStarted, &releaseCallbackFuture, &enqueueCount](std::unique_ptr<IPlayerTask> &&task)
+            {
+                if (enqueueCount.fetch_add(1) == 0)
+                {
+                    callbackEnqueueStarted.set_value();
+                    releaseCallbackFuture.wait();
+                }
+                task->execute();
+            }));
+
+    std::thread timerCallbackThread{timerCallback};
+    const auto callbackStatus = callbackEnqueueStartedFuture.wait_for(std::chrono::seconds{1});
+    if (callbackStatus != std::future_status::ready)
+    {
+        releaseCallback.set_value();
+        timerCallbackThread.join();
+        gstPlayerWillBeDestroyed();
+        m_sut.reset();
+        FAIL() << "Timer callback did not reach task enqueue";
+        return;
+    }
+
+    std::promise<void> destructionStarted;
+    auto destructionStartedFuture = destructionStarted.get_future();
+    std::thread destructionThread{[this, &destructionStarted]()
+                                  {
+                                      destructionStarted.set_value();
+                                      m_sut.reset();
+                                  }};
+    destructionStartedFuture.wait();
+    const auto cancelStatus = timerCancelCalledFuture.wait_for(std::chrono::milliseconds{100});
+
+    releaseCallback.set_value();
+    timerCallbackThread.join();
+    destructionThread.join();
+
+    EXPECT_EQ(std::future_status::timeout, cancelStatus);
+}
+
+TEST_F(GstGenericPlayerTest, shouldIgnoreSubtitleClockResyncCallbackFromStoppedTimerAfterRestart)
+{
+    std::function<void()> stoppedTimerCallback;
+    std::function<void()> restartedTimerCallback;
+    auto stoppedTimer = std::make_unique<StrictMock<TimerMock>>();
+    auto *stoppedTimerMock = stoppedTimer.get();
+    auto restartedTimer = std::make_unique<StrictMock<TimerMock>>();
+    auto *restartedTimerMock = restartedTimer.get();
+    EXPECT_CALL(*m_timerFactoryMock,
+                createTimer(std::chrono::milliseconds{10000}, _, firebolt::rialto::common::TimerType::PERIODIC))
+        .WillOnce(
+            [&stoppedTimerCallback, timer = std::move(stoppedTimer)](auto, auto callback, auto) mutable
+            {
+                stoppedTimerCallback = std::move(callback);
+                return std::move(timer);
+            })
+        .WillOnce(
+            [&restartedTimerCallback, timer = std::move(restartedTimer)](auto, auto callback, auto) mutable
+            {
+                restartedTimerCallback = std::move(callback);
+                return std::move(timer);
+            });
+
+    auto *player = dynamic_cast<IGstGenericPlayerPrivate *>(m_sut.get());
+    ASSERT_NE(nullptr, player);
+    player->startSubtitleClockResyncTimer();
+
+    EXPECT_CALL(*stoppedTimerMock, isActive()).WillOnce(Return(true));
+    EXPECT_CALL(*stoppedTimerMock, cancel());
+    EXPECT_CALL(m_workerThreadMock, enqueueTask(_)).Times(0);
+    player->stopSubtitleClockResyncTimer();
+    ASSERT_TRUE(stoppedTimerCallback);
+    stoppedTimerCallback();
+
+    player->startSubtitleClockResyncTimer();
+    ASSERT_TRUE(restartedTimerCallback);
+    stoppedTimerCallback();
+
+    EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(&m_workerThreadMock));
+    std::unique_ptr<IPlayerTask> synchroniseTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*synchroniseTask), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSynchroniseSubtitleClock(_, Ref(*player)))
+        .WillOnce(Return(ByMove(std::move(synchroniseTask))));
+    EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
+        .Times(2)
+        .WillRepeatedly(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
+    restartedTimerCallback();
+
+    EXPECT_CALL(*restartedTimerMock, isActive()).WillOnce(Return(true));
+    EXPECT_CALL(*restartedTimerMock, cancel());
+    gstPlayerWillBeDestroyed();
+    m_sut.reset();
+}
+
+TEST_F(GstGenericPlayerRealTimerTest, shouldStopRestartAndShutdownRealSubtitleClockTimer)
+{
+    auto *player = dynamic_cast<IGstGenericPlayerPrivate *>(m_sut.get());
+    ASSERT_NE(nullptr, player);
+    const auto *timerFactory = dynamic_cast<const AcceleratedTimerFactory *>(m_playerTimerFactory.get());
+    ASSERT_NE(nullptr, timerFactory);
+
+    std::mutex synchroniseMutex;
+    std::condition_variable synchroniseCondition;
+    unsigned int synchroniseCount{0};
+    std::promise<void> workerBarrier;
+    auto workerBarrierFuture = workerBarrier.get_future();
+    PlayerShutdownGuard shutdownGuard{[this]()
+                                      {
+                                          if (m_sut)
+                                          {
+                                              gstPlayerWillBeDestroyed(true);
+                                              m_sut.reset();
+                                          }
+                                      }};
+    EXPECT_CALL(m_taskFactoryMock, createSynchroniseSubtitleClock(_, Ref(*player)))
+        .WillRepeatedly(Invoke(
+            [&synchroniseMutex, &synchroniseCondition,
+             &synchroniseCount](GenericPlayerContext &, IGstGenericPlayerPrivate &) -> std::unique_ptr<IPlayerTask>
+            {
+                return std::make_unique<CallbackPlayerTask>(
+                    [&synchroniseMutex, &synchroniseCondition, &synchroniseCount]()
+                    {
+                        std::lock_guard<std::mutex> lock{synchroniseMutex};
+                        ++synchroniseCount;
+                        synchroniseCondition.notify_all();
+                    });
+            }));
+
+    const auto waitForMoreSynchronisations =
+        [&synchroniseMutex, &synchroniseCondition, &synchroniseCount](unsigned int previousCount,
+                                                                      std::chrono::milliseconds timeout)
+    {
+        std::unique_lock<std::mutex> lock{synchroniseMutex};
+        return synchroniseCondition.wait_for(lock, timeout, [&synchroniseCount, previousCount]()
+                                             { return synchroniseCount > previousCount; });
+    };
+
+    player->startSubtitleClockResyncTimer();
+    ASSERT_TRUE(waitForMoreSynchronisations(0, std::chrono::seconds{2}));
+
+    player->stopSubtitleClockResyncTimer();
+    EXPECT_EQ(1u, timerFactory->cancelCount());
+    EXPECT_CALL(m_taskFactoryMock, createSetVolume(_, _, _, _, _))
+        .WillOnce(
+            Invoke([&workerBarrier](GenericPlayerContext &, IGstGenericPlayerPrivate &, double, uint32_t,
+                                    firebolt::rialto::EaseType) -> std::unique_ptr<IPlayerTask>
+                   { return std::make_unique<CallbackPlayerTask>([&workerBarrier]() { workerBarrier.set_value(); }); }));
+    m_sut->setVolume(0.0, 0, firebolt::rialto::EaseType{});
+    ASSERT_EQ(std::future_status::ready, workerBarrierFuture.wait_for(std::chrono::seconds{2}));
+
+    unsigned int stoppedCount;
+    {
+        std::lock_guard<std::mutex> lock{synchroniseMutex};
+        stoppedCount = synchroniseCount;
+    }
+
+    player->startSubtitleClockResyncTimer();
+    ASSERT_TRUE(waitForMoreSynchronisations(stoppedCount, std::chrono::seconds{2}));
+    EXPECT_EQ(1u, timerFactory->cancelCount());
+
+    shutdownGuard.run();
+    EXPECT_EQ(2u, timerFactory->cancelCount());
+}
+
 TEST_F(GstGenericPlayerTest, shouldAttachSource)
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
@@ -144,7 +475,20 @@ TEST_F(GstGenericPlayerTest, shouldAttachSource)
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createAttachSource(_, _, Ref(source))).WillOnce(Return(ByMove(std::move(task))));
 
-    m_sut->attachSource(source);
+    EXPECT_TRUE(m_sut->attachSource(source));
+}
+
+TEST_F(GstGenericPlayerTest, shouldRejectSubtitleSourceWhenTextSinkPropertyIsMissing)
+{
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceSubtitle>("application/ttml+xml", "SERVICE1");
+
+    EXPECT_CALL(*m_glibWrapperMock,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(&this->GstGenericPlayerTestCommon::m_pipeline),
+                                         StrEq("text-sink")))
+        .WillOnce(Return(nullptr));
+
+    EXPECT_FALSE(m_sut->attachSource(source));
 }
 
 TEST_F(GstGenericPlayerTest, shouldRemoveSource)

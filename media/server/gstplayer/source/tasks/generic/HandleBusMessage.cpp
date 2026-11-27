@@ -137,6 +137,10 @@ void HandleBusMessage::execute() const
             case GST_STATE_READY:
             {
                 m_player.stopNotifyPlaybackInfoTimer();
+                if (m_player.hasSourceType(MediaSourceType::SUBTITLE))
+                {
+                    m_player.stopSubtitleClockResyncTimer();
+                }
                 break;
             }
             }
@@ -156,6 +160,10 @@ void HandleBusMessage::execute() const
         if (m_context.pipeline && GST_MESSAGE_SRC(m_message) == GST_OBJECT(m_context.pipeline))
         {
             RIALTO_SERVER_LOG_MIL("End of stream reached.");
+            if (m_player.hasSourceType(MediaSourceType::SUBTITLE))
+            {
+                m_player.stopSubtitleClockResyncTimer();
+            }
             if (!m_context.eosNotified && m_gstPlayerClient)
             {
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::END_OF_STREAM);
@@ -225,6 +233,10 @@ void HandleBusMessage::execute() const
                                    "%d: %s "
                                    "(%s).",
                                    GST_OBJECT_NAME(GST_MESSAGE_SRC(m_message)), err->code, err->message, debug);
+            if (m_player.hasSourceType(MediaSourceType::SUBTITLE))
+            {
+                m_player.stopSubtitleClockResyncTimer();
+            }
             if (!m_context.eosNotified && m_gstPlayerClient)
             {
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::END_OF_STREAM);

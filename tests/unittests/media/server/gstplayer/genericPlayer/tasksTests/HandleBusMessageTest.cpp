@@ -132,6 +132,8 @@ TEST_F(HandleBusMessageTest, shouldNotHandleMessageEosWhenEosAlreadyNotified)
     m_context.eosNotified = true;
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_EOS;
+    EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(true));
+    EXPECT_CALL(m_gstPlayer, stopSubtitleClockResyncTimer());
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
     EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
     EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
@@ -180,6 +182,8 @@ TEST_F(HandleBusMessageTest, shouldHandleEosMessage)
 {
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_EOS;
+    EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(true));
+    EXPECT_CALL(m_gstPlayer, stopSubtitleClockResyncTimer());
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::END_OF_STREAM));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
     EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
@@ -767,6 +771,8 @@ TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageWhenEosAllSources)
     EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
     EXPECT_CALL(*m_gstWrapper, gstMessageParseError(&m_message, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
+    EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(true));
+    EXPECT_CALL(m_gstPlayer, stopSubtitleClockResyncTimer());
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::END_OF_STREAM));
     expectFreeErrorMessage();
 
@@ -796,6 +802,8 @@ TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageWhenEosAllSourcesAndE
     EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
     EXPECT_CALL(*m_gstWrapper, gstMessageParseError(&m_message, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
+    EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(true));
+    EXPECT_CALL(m_gstPlayer, stopSubtitleClockResyncTimer());
     expectFreeErrorMessage();
 
     firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
@@ -976,4 +984,103 @@ TEST_F(HandleBusMessageTest, shouldHandleApplicationMessageForAudioOutputProtect
 
     gst_message_unref(message);
     g_object_unref(decryptor);
+}
+
+/**
+ * Test HandleBusMessage stops the subtitle clock resync timer when pipeline reaches READY
+ * and a subtitle source is attached.
+ */
+TEST_F(HandleBusMessageTest, shouldStopSubtitleClockResyncTimerOnStateChangedToReady)
+{
+    GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
+    GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_STATE_CHANGED;
+    GstState oldState = GST_STATE_PLAYING;
+    GstState newState = GST_STATE_READY;
+    GstState pending = GST_STATE_VOID_PENDING;
+
+    EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
+        .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+    EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(1).WillRepeatedly(Return("Playing"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Ready"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
+    EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
+    EXPECT_CALL(m_gstPlayer, stopNotifyPlaybackInfoTimer());
+    EXPECT_CALL(m_gstPlayer, stopSubtitleClockResyncTimer());
+    EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
+    task.execute();
+}
+
+/**
+ * Test HandleBusMessage stops the subtitle clock resync timer on PAUSED when a subtitle
+ * source is attached.
+ */
+TEST_F(HandleBusMessageTest, shouldStopSubtitleClockResyncTimerOnStateChangedToPausedWithSubtitle)
+{
+    GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
+    GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_STATE_CHANGED;
+    GstState oldState = GST_STATE_PLAYING;
+    GstState newState = GST_STATE_PAUSED;
+    GstState pending = GST_STATE_VOID_PENDING;
+
+    EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
+        .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+    EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(1).WillRepeatedly(Return("Playing"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Paused"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
+    EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
+    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::PAUSED));
+    EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
+    EXPECT_CALL(m_gstPlayer, startNotifyPlaybackInfoTimer());
+    EXPECT_CALL(m_gstPlayer, stopSubtitleClockResyncTimer());
+    EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
+    task.execute();
+}
+
+/**
+ * Test HandleBusMessage starts the subtitle clock resync timer on PLAYING when a subtitle
+ * source is attached.
+ */
+TEST_F(HandleBusMessageTest, shouldStartSubtitleClockResyncTimerOnStateChangedToPlayingWithSubtitle)
+{
+    m_context.isPlaying = false;
+    GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
+    GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_STATE_CHANGED;
+    GstState oldState = GST_STATE_READY;
+    GstState newState = GST_STATE_PLAYING;
+    GstState pending = GST_STATE_VOID_PENDING;
+
+    EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
+        .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+    EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(1).WillRepeatedly(Return("Ready"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Playing"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
+    EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
+    EXPECT_CALL(m_gstPlayer, startPositionReportingAndCheckAudioUnderflowTimer());
+    EXPECT_CALL(m_gstPlayer, startSubtitleClockResyncTimer());
+    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::PLAYING));
+    EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
+    task.execute();
+
+    EXPECT_TRUE(m_context.isPlaying);
 }
