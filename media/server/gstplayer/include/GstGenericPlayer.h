@@ -309,6 +309,15 @@ private:
     GstElement *getSinkChildIfAutoAudioSink(GstElement *sink) const;
 
     /**
+     * @brief Queries the playback position from the sink of the given media source type.
+     *
+     * @param[in] mediaSourceType : The media source type of the sink to query.
+     *
+     * @retval The position reported by the sink, or -1 if the sink or position is unavailable.
+     */
+    int64_t getSinkPosition(const MediaSourceType &mediaSourceType);
+
+    /**
      * @brief Gets the decoder element for source type.
      *
      * @param[in] mediaSourceType : the source type to obtain the decoder for

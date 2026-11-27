@@ -705,7 +705,21 @@ void GstGenericPlayer::notifyPlaybackInfo()
     {
         getVolume(info.volume);
     }
+    info.videoPosition = getSinkPosition(MediaSourceType::VIDEO);
+    info.audioPosition = getSinkPosition(MediaSourceType::AUDIO);
     m_gstPlayerClient->notifyPlaybackInfo(info);
+}
+
+int64_t GstGenericPlayer::getSinkPosition(const MediaSourceType &mediaSourceType)
+{
+    GstElement *sink{getSink(mediaSourceType)};
+    if (!sink)
+    {
+        return -1;
+    }
+    const int64_t kPosition{getPosition(sink)};
+    m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+    return kPosition;
 }
 
 GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
@@ -2091,7 +2105,7 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
     m_gstWrapper->gstStateUnlock(element);
 
     gint64 position = -1;
-    if (!m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position))
+    if (!m_gstWrapper->gstElementQueryPosition(element, GST_FORMAT_TIME, &position))
     {
         RIALTO_SERVER_LOG_WARN("Failed to query position");
         return -1;

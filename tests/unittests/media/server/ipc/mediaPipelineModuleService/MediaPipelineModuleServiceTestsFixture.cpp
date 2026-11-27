@@ -53,6 +53,8 @@ const std::shared_ptr<firebolt::rialto::CodecData> kCodecData{std::make_shared<f
 const std::string kUrl{"https://example.url.com"};
 const std::string kTextTrackIdentifier{"CC1"};
 constexpr int64_t kPosition{2000000000};
+constexpr int64_t kVideoPosition{2000000001};
+constexpr int64_t kAudioPosition{1999999999};
 constexpr std::uint32_t kRequestId{2};
 const firebolt::rialto::MediaSourceStatus kMediaSourceStatus{firebolt::rialto::MediaSourceStatus::CODEC_CHANGED};
 constexpr std::uint32_t kNumFrames{1};
@@ -239,7 +241,9 @@ MATCHER_P(PlaybackInfoEventMatcher, kExpectedPlaybackInfo, "")
     std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> event =
         std::dynamic_pointer_cast<firebolt::rialto::PlaybackInfoEvent>(arg);
     return (kExpectedPlaybackInfo.currentPosition == event->current_position() &&
-            kExpectedPlaybackInfo.volume == event->volume());
+            kExpectedPlaybackInfo.volume == event->volume() &&
+            kExpectedPlaybackInfo.videoPosition == event->video_position() &&
+            kExpectedPlaybackInfo.audioPosition == event->audio_position());
 }
 
 MediaPipelineModuleServiceTests::MediaPipelineModuleServiceTests()
@@ -1065,7 +1069,8 @@ void MediaPipelineModuleServiceTests::mediaClientWillSendSourceFlushedEvent()
 
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackInfoEvent()
 {
-    EXPECT_CALL(*m_clientMock, sendEvent(PlaybackInfoEventMatcher(firebolt::rialto::PlaybackInfo{kPosition, kVolume})));
+    EXPECT_CALL(*m_clientMock, sendEvent(PlaybackInfoEventMatcher(
+                                   firebolt::rialto::PlaybackInfo{kPosition, kVolume, kVideoPosition, kAudioPosition})));
 }
 
 void MediaPipelineModuleServiceTests::sendClientConnected()
@@ -1883,7 +1888,8 @@ void MediaPipelineModuleServiceTests::sendSourceFlushedEvent()
 void MediaPipelineModuleServiceTests::sendPlaybackInfoEvent()
 {
     ASSERT_TRUE(m_mediaPipelineClient);
-    m_mediaPipelineClient->notifyPlaybackInfo(firebolt::rialto::PlaybackInfo{kPosition, kVolume});
+    m_mediaPipelineClient->notifyPlaybackInfo(
+        firebolt::rialto::PlaybackInfo{kPosition, kVolume, kVideoPosition, kAudioPosition});
 }
 
 void MediaPipelineModuleServiceTests::expectRequestSuccess()

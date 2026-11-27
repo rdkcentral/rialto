@@ -117,7 +117,9 @@ TEST_F(RialtoClientMediaPipelineCallbackTest, PlaybackInfo)
 {
     int64_t position = 1234;
     double volume = 0.75;
-    PlaybackInfo playbackInfo{position, volume};
+    int64_t videoPosition = 1235;
+    int64_t audioPosition = 1233;
+    PlaybackInfo playbackInfo{position, volume, videoPosition, audioPosition};
 
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackInfo(playbackInfoMatcher(playbackInfo)));
 

@@ -144,6 +144,8 @@ void MediaPipelineModuleStub::notifyPlaybackInfo(int sessionId, const firebolt::
     event->set_session_id(sessionId);
     event->set_current_position(playbackInfo.currentPosition);
     event->set_volume(playbackInfo.volume);
+    event->set_video_position(playbackInfo.videoPosition);
+    event->set_audio_position(playbackInfo.audioPosition);
     getClient()->sendEvent(event);
 }
 } // namespace firebolt::rialto::client::ct

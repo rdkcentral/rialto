@@ -102,6 +102,11 @@ void MediaPipelineTest::gstPlayerWillBeCreated()
     EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_))
         .Times(AtLeast(0))
         .WillRepeatedly(Return(GST_STATE_CHANGE_SUCCESS));
+    // Sink positions (PlaybackInfo) are not verified here. Pipeline position expectation below takes precedence.
+    EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
+        .Times(AtLeast(0))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _)).Times(AtLeast(0));
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(&m_pipeline, GST_FORMAT_TIME, _))
         .Times(AtLeast(0))
         .WillRepeatedly(Invoke(

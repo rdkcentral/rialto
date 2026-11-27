@@ -230,7 +230,32 @@ TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyPlaybackInfo)
 {
     constexpr int64_t kPosition{1234};
     constexpr double kVolume{0.75};
-    constexpr PlaybackInfo kPlaybackInfo{kPosition, kVolume};
+    constexpr int64_t kVideoPosition{1235};
+    constexpr int64_t kAudioPosition{1233};
+    constexpr PlaybackInfo kPlaybackInfo{kPosition, kVolume, kVideoPosition, kAudioPosition};
+
+    auto playbackInfoEvent = std::make_shared<firebolt::rialto::PlaybackInfoEvent>();
+    playbackInfoEvent->set_session_id(m_sessionId);
+    playbackInfoEvent->set_current_position(kPosition);
+    playbackInfoEvent->set_volume(kVolume);
+    playbackInfoEvent->set_video_position(kVideoPosition);
+    playbackInfoEvent->set_audio_position(kAudioPosition);
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+    EXPECT_CALL(*m_clientMock, notifyPlaybackInfo(playbackInfoMatcher(kPlaybackInfo)));
+
+    m_playbackInfoCb(playbackInfoEvent);
+}
+
+/**
+ * Test that a playback info notification without sink positions (e.g. from an older server) is forwarded to the client
+ * with sink positions marked as unavailable.
+ */
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyPlaybackInfoWithoutSinkPositions)
+{
+    constexpr int64_t kPosition{1234};
+    constexpr double kVolume{0.75};
+    constexpr PlaybackInfo kPlaybackInfo{kPosition, kVolume, -1, -1};
 
     auto playbackInfoEvent = std::make_shared<firebolt::rialto::PlaybackInfoEvent>();
     playbackInfoEvent->set_session_id(m_sessionId);

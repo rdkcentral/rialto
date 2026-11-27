@@ -84,7 +84,9 @@ const std::string kFrameStepOnPrerollStr{"frame-step-on-preroll"};
 constexpr bool kShowVideoWindow{true};
 constexpr gint64 kPosition{123};
 constexpr double kVolume{0.5};
-constexpr firebolt::rialto::PlaybackInfo kPlaybackInfo{kPosition, kVolume};
+constexpr gint64 kVideoPosition{121};
+constexpr gint64 kAudioPosition{119};
+constexpr firebolt::rialto::PlaybackInfo kPlaybackInfo{kPosition, kVolume, kVideoPosition, kAudioPosition};
 constexpr bool kIsLive{false};
 } // namespace
 
@@ -100,7 +102,8 @@ namespace firebolt::rialto
 {
 bool operator==(const PlaybackInfo &lhs, const PlaybackInfo &rhs)
 {
-    return lhs.currentPosition == rhs.currentPosition && lhs.volume == rhs.volume;
+    return lhs.currentPosition == rhs.currentPosition && lhs.volume == rhs.volume &&
+           lhs.videoPosition == rhs.videoPosition && lhs.audioPosition == rhs.audioPosition;
 }
 } // namespace firebolt::rialto
 
@@ -110,6 +113,7 @@ protected:
     std::unique_ptr<IGstGenericPlayerPrivate> m_sut;
 
     GstElement *m_realElement;
+    GstElement *m_realAudioSink;
     GstElement m_element{};
     GParamSpec m_rectangleSpec{};
     GParamSpec m_showVideoWindowSpec{};
@@ -126,10 +130,12 @@ protected:
                                                    std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
                                                    m_gstProtectionMetadataFactoryMock);
         m_realElement = initRealElement();
+        m_realAudioSink = initRealElement();
     }
 
     ~GstGenericPlayerPrivateTest() override
     {
+        gst_object_unref(m_realAudioSink);
         gst_object_unref(m_realElement);
         gstPlayerWillBeDestroyed();
         m_sut.reset();
@@ -216,23 +222,69 @@ protected:
         return saveContext;
     }
 
-    void willNotifyPlaybackInfo()
+    void expectElementPosition(GstElement *element, gint64 position)
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).WillOnce(Return());
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).WillOnce(Return(GST_STATE_PLAYING));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
-        EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).WillOnce(Return());
-        EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
+        EXPECT_CALL(*m_gstWrapperMock, gstStateLock(element)).WillOnce(Return());
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(element)).WillOnce(Return(GST_STATE_PLAYING));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(element)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+        EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(element)).WillOnce(Return());
+        EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(element, GST_FORMAT_TIME, _))
             .WillOnce(Invoke(
-                [&](GstElement *element, GstFormat format, gint64 *cur)
+                [position](GstElement *element, GstFormat format, gint64 *cur)
                 {
-                    *cur = kPosition;
+                    *cur = position;
                     return TRUE;
                 }));
+    }
 
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kAudioSinkStr), _)).Times(1);
+    void expectElementPrerolling(GstElement *element)
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstStateLock(element)).WillOnce(Return());
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(element)).WillRepeatedly(Return(GST_STATE_PAUSED));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(element)).WillRepeatedly(Return(GST_STATE_CHANGE_ASYNC));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateNext(element)).WillRepeatedly(Return(GST_STATE_PAUSED));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(_)).WillRepeatedly(Return("NotImportant"));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementStateChangeReturnGetName(_)).WillRepeatedly(Return("NotImportant"));
+        EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(element)).WillOnce(Return());
+    }
+
+    void expectElementPositionQueryFailure(GstElement *element)
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstStateLock(element)).WillOnce(Return());
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(element)).WillOnce(Return(GST_STATE_PLAYING));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(element)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+        EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(element)).WillOnce(Return());
+        EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(element, GST_FORMAT_TIME, _)).WillOnce(Return(FALSE));
+    }
+
+    // The audio sink is fetched twice when audio fade is disabled (volume and audio position) and once otherwise
+    void willGetAVSinks(int audioSinkGetCount)
+    {
+        expectGetSink(kVideoSinkStr, m_realElement);
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kAudioSinkStr), _))
+            .Times(audioSinkGetCount)
+            .WillRepeatedly(Invoke(
+                [this](gpointer object, const gchar *first_property_name, void *element)
+                {
+                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                    *elementPtr = m_realAudioSink;
+                }));
+        // Both sinks are real elements of the same type
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement)))
+            .Times(audioSinkGetCount + 1)
+            .WillRepeatedly(Return(kElementTypeName.c_str()));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realAudioSink)).Times(audioSinkGetCount);
+    }
+
+    void willNotifyPlaybackInfo()
+    {
+        expectElementPosition(&m_pipeline, kPosition);
+        willGetAVSinks(2);
         EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR))
             .WillOnce(Return(kVolume));
+        expectElementPosition(m_realElement, kVideoPosition);
+        expectElementPosition(m_realAudioSink, kAudioPosition);
 
         EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(kPlaybackInfo));
     }
@@ -245,19 +297,23 @@ protected:
                 context.audioFadeEnabled = true;
                 context.audioFadeVolume = kVolume;
             });
-        EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).WillOnce(Return());
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).WillOnce(Return(GST_STATE_PLAYING));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
-        EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).WillOnce(Return());
-        EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
-            .WillOnce(Invoke(
-                [&](GstElement *element, GstFormat format, gint64 *cur)
-                {
-                    *cur = kPosition;
-                    return TRUE;
-                }));
+        expectElementPosition(&m_pipeline, kPosition);
+        willGetAVSinks(1);
+        expectElementPosition(m_realElement, kVideoPosition);
+        expectElementPosition(m_realAudioSink, kAudioPosition);
 
         EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(kPlaybackInfo));
+    }
+
+    void startPlaybackInfoTimer()
+    {
+        std::unique_ptr<common::ITimer> playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
+        EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), isActive()).WillOnce(Return(true));
+        EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), cancel());
+        EXPECT_CALL(*m_timerFactoryMock, createTimer(kPlaybackInfoTimerMs, _, common::TimerType::PERIODIC))
+            .WillOnce(Return(ByMove(std::move(playbackInfoTimerMock))));
+
+        m_sut->startNotifyPlaybackInfoTimer();
     }
 };
 
@@ -2057,6 +2113,43 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotifyPlaybackInfoWithAudioFade)
         .WillOnce(Return(ByMove(std::move(playbackInfoTimerMock))));
 
     m_sut->startNotifyPlaybackInfoTimer();
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotifyPlaybackInfoWithoutSinkPositionsWhenSinksAreNotAvailable)
+{
+    expectElementPosition(&m_pipeline, kPosition);
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kVideoSinkStr), _));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kAudioSinkStr), _)).Times(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR)).WillOnce(Return(kVolume));
+    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(firebolt::rialto::PlaybackInfo{kPosition, kVolume, -1, -1}));
+
+    startPlaybackInfoTimer();
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotifyPlaybackInfoWithoutVideoPositionWhenVideoSinkIsPrerolling)
+{
+    expectElementPosition(&m_pipeline, kPosition);
+    willGetAVSinks(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR)).WillOnce(Return(kVolume));
+    expectElementPrerolling(m_realElement);
+    expectElementPosition(m_realAudioSink, kAudioPosition);
+    EXPECT_CALL(m_gstPlayerClient,
+                notifyPlaybackInfo(firebolt::rialto::PlaybackInfo{kPosition, kVolume, -1, kAudioPosition}));
+
+    startPlaybackInfoTimer();
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotifyPlaybackInfoWithoutAudioPositionWhenAudioSinkQueryFails)
+{
+    expectElementPosition(&m_pipeline, kPosition);
+    willGetAVSinks(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR)).WillOnce(Return(kVolume));
+    expectElementPosition(m_realElement, kVideoPosition);
+    expectElementPositionQueryFailure(m_realAudioSink);
+    EXPECT_CALL(m_gstPlayerClient,
+                notifyPlaybackInfo(firebolt::rialto::PlaybackInfo{kPosition, kVolume, kVideoPosition, -1}));
+
+    startPlaybackInfoTimer();
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotStartPositionReportingTimerWhenItIsActive)
