@@ -1045,7 +1045,6 @@ message SetLogLevelsEvent {
  * @param volume            The current volume.
  * @param video_position    The current playback position reported by the video sink. -1 if unavailable.
  * @param audio_position    The current playback position reported by the audio sink. -1 if unavailable.
- * @param video_pts         The current video PTS reported by the video sink, in 90 kHz ticks. -1 if unavailable.
  *
  */
 message PlaybackInfoEvent {
@@ -1054,7 +1053,6 @@ message PlaybackInfoEvent {
     optional double volume = 3 [default = 1.0];
     optional int64 video_position = 4 [default = -1];
     optional int64 audio_position = 5 [default = -1];
-    optional int64 video_pts = 6 [default = -1];
 }
 
 /**

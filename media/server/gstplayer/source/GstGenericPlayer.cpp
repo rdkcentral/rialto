@@ -707,7 +707,6 @@ void GstGenericPlayer::notifyPlaybackInfo()
     }
     info.videoPosition = getSinkPosition(MediaSourceType::VIDEO);
     info.audioPosition = getSinkPosition(MediaSourceType::AUDIO);
-    info.videoPts = getSinkPts(MediaSourceType::VIDEO, "video-pts");
     m_gstPlayerClient->notifyPlaybackInfo(info);
 }
 
@@ -721,27 +720,6 @@ int64_t GstGenericPlayer::getSinkPosition(const MediaSourceType &mediaSourceType
     const int64_t kPosition{getPosition(sink)};
     m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
     return kPosition;
-}
-
-int64_t GstGenericPlayer::getSinkPts(const MediaSourceType &mediaSourceType, const char *propertyName) const
-{
-    int64_t pts{-1};
-    GstElement *sink{getSink(mediaSourceType)};
-    if (!sink)
-    {
-        return pts;
-    }
-
-    GParamSpec *paramSpec{m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), propertyName)};
-    if (paramSpec && G_TYPE_INT64 == G_PARAM_SPEC_VALUE_TYPE(paramSpec))
-    {
-        gint64 value{-1};
-        m_glibWrapper->gObjectGet(sink, propertyName, &value, nullptr);
-        pts = static_cast<int64_t>(value);
-    }
-
-    m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
-    return pts;
 }
 
 GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
