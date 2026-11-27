@@ -276,18 +276,18 @@ MediaKeyErrorStatus MediaKeysServerInternal::generateRequestInternal(int32_t key
     return status;
 }
 
-MediaKeyErrorStatus MediaKeysServerInternal::loadSession(int32_t keySessionId)
+MediaKeyErrorStatus MediaKeysServerInternal::loadSession(int32_t keySessionId, const std::string &cdmKeySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status;
-    auto task = [&]() { status = loadSessionInternal(keySessionId); };
+    auto task = [&]() { status = loadSessionInternal(keySessionId, cdmKeySessionId); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return status;
 }
 
-MediaKeyErrorStatus MediaKeysServerInternal::loadSessionInternal(int32_t keySessionId)
+MediaKeyErrorStatus MediaKeysServerInternal::loadSessionInternal(int32_t keySessionId, const std::string &cdmKeySessionId)
 {
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
@@ -296,7 +296,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::loadSessionInternal(int32_t keySess
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second->loadSession();
+    MediaKeyErrorStatus status = sessionIter->second->loadSession(cdmKeySessionId);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to load the session %d", keySessionId);
