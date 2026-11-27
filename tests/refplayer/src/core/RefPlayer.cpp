@@ -92,7 +92,7 @@ RefPlayer::RefPlayer(Dependencies dependencies)
     : m_logger(std::make_shared<Logger>()), m_bus(std::make_shared<EventBus>())
 {
     m_state = std::make_shared<PlayerStateMachine>(m_bus, m_logger);
-    m_position = std::make_shared<PositionTracker>(m_bus, m_options.progressIntervalMs);
+    m_position = std::make_shared<PositionTracker>(m_bus, m_logger, m_options.progressIntervalMs);
     m_feeder = std::make_shared<MediaFeeder>(m_logger);
     m_sources = std::make_shared<SourceManager>(m_logger, std::move(dependencies.source));
     m_session = std::make_unique<RialtoSession>(m_logger, [this](firebolt::rialto::ApplicationState state) {
@@ -457,6 +457,7 @@ void RefPlayer::doLoad(const std::string &url, bool autoplay)
         failLoad("IMediaPipeline::allSourcesAttached() returned false");
         return;
     }
+    m_position->onDurationFallback(m_sources->tracks().durationNs());
     m_state->setState(PlayerState::Prepared, "all sources attached");
 
     if (autoplay)

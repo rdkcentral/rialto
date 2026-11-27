@@ -25,7 +25,22 @@ enum class Codec
     Av1,
     Aac,
     Opus,
-    Eac3
+    Eac3,
+    Mp3,
+    Flac,
+    Pcm
+};
+
+enum class PcmFormat
+{
+    None,
+    S8,
+    S16LE,
+    S16BE,
+    S24LE,
+    S24BE,
+    S32LE,
+    S32BE
 };
 
 struct VideoTrack
@@ -42,6 +57,8 @@ struct AudioTrack
     std::vector<Sample> samples;
     std::vector<uint8_t> codecData;
     Codec codec{Codec::Aac};
+    std::vector<std::vector<uint8_t>> streamHeader; // FLAC
+    PcmFormat pcmFormat{PcmFormat::None};           // PCM
     int32_t sampleRate{0};
     int32_t channels{0};
 };

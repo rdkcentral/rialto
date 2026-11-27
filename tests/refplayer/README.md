@@ -2,7 +2,7 @@
 
 A playback library over the public Rialto client API (`IControl`, `IMediaPipeline`), with an AAMP-compatible JavaScript binding for the WPE WebProcess and a command-line front-end for debugging outside a browser.
 
-It was built to the phase-1 component design, `REFERENCE_PLAYER_COMPONENT_DESIGN.md` one level up. Phase 1 plays local non-fragmented MP4 files over MSE: H.264, H.265, VP9 or AV1 video, and AAC, Opus or E-AC-3 audio. Phases 2 to 5 are declared in the API and answer `NotSupported` until they are implemented.
+It was built to the phase-1 component design, `REFERENCE_PLAYER_COMPONENT_DESIGN.md` one level up. Phase 1 plays local non-fragmented MP4 files over MSE: H.264, H.265, VP9 or AV1 video, and AAC, MP3, Opus, E-AC-3, FLAC or integer PCM audio. Phases 2 to 5 are declared in the API and answer `NotSupported` until they are implemented.
 
 ## Layout
 
@@ -20,7 +20,7 @@ It was built to the phase-1 component design, `REFERENCE_PLAYER_COMPONENT_DESIGN
 ## Threading and lifetime rules
 
 - **Control calls** (`load`, `play`, `pause`, `stop`, `seek`) validate what they can, enqueue on the command worker, and return. Completion and failure are events.
-- **Getters** (`positionMs`, `durationMs`, `state`) read cached atomics and never touch Rialto.
+- **Getters** (`positionMs`, `durationMs`, `state`) read cached atomics and never touch Rialto. `durationMs` comes from Rialto's `notifyDuration`; when the server sends none, the library uses the length of the parsed media at PREPARED and logs a warning. A later `notifyDuration` replaces it.
 - **State** moves only from Rialto callbacks, except for the states the worker owns (INITIALIZING, PREPARING, PREPARED, STOPPING, RELEASED, IDLE). Callbacks are dropped while INITIALIZING, so a stale PLAYING from the pipeline being replaced cannot land.
 - **Teardown order** is fixed: join the feeder, remove the sources, release the pipeline, and keep the control registration.
 - **JavaScriptCore** is touched only on the JS thread. Library events hop there with `g_idle_add_full`. Finalize only reads the private pointer.
@@ -90,8 +90,8 @@ Its format is a consumed interface for the test app's tune-time panel. Change it
 
 The pipeline contract checks run on the pipeline that is playing the media, not on a separate one. The library exposes it through `IRefPlayer::runOnPipeline()`, which runs the task on the command worker, so it cannot overlap load, stop or teardown. The CLI loads without autoplay and runs two groups:
 
-- **Before play (at PREPARED):** `setSyncOff` (documented as valid only before PLAYING) and `setSourcePosition`.
-- **While PLAYING:** low latency, sync, mute and stream sync mode (on the audio source, and put back afterwards), volume, buffering limit, use-buffering, duration, and a position that has to advance. Text track and subtitle offset are skipped because the media has no subtitle source; mute and stream sync mode are skipped for media without audio.
+- **Before play (at PREPARED):** `setSyncOff` (documented as valid only before PLAYING), `setSourcePosition`, and `renderFrame` (renders the prerolled frame while paused).
+- **While PLAYING:** low latency, sync, mute and stream sync mode (on the audio source, and put back afterwards), volume, the video sink controls and statistics (`setImmediateOutput` with read-back and put back, `setReportDecodeErrors` set and put back, `getStats` with a rendered count above zero, and `getQueuedFrames`, logged), buffering limit, use-buffering, duration, and a position that has to advance. Text track and subtitle offset are skipped because the media has no subtitle source; mute and stream sync mode are skipped for media without audio, and the video sink group for media without video.
 
 Capability, web audio and logging checks do not involve the player's pipeline and run after them. Every group runs even when an earlier one fails.
 
@@ -102,7 +102,7 @@ rialto_reference_player --negative-runs            # contract checks only, no pl
 
 | Option | Default | Meaning |
 |--------|---------|---------|
-| `--url <url>` | none | Media URL. A local `file://` `.mp4` (H.264, H.265, VP9 or AV1, with optional AAC, Opus or E-AC-3) is demuxed and fed over MSE. Without it, only the checks that do not need a player run; the pipeline checks are skipped |
+| `--url <url>` | none | Media URL. A local `file://` `.mp4` (H.264, H.265, VP9 or AV1, with optional AAC, MP3, Opus, E-AC-3, FLAC or PCM audio) is demuxed and fed over MSE. Without it, only the checks that do not need a player run; the pipeline checks are skipped |
 | `--mime <mime>` | `video/mp4` | MIME type for the capability probes. Phase 1 plays only `video/mp4`, so playback ignores this value |
 | `--live` | off | CLI only: do not wait for end of stream after PLAYING. The library loads as non-live in phase 1 |
 | `--web-audio` | off | Create an `IWebAudioPlayer` and validate the PCM API |

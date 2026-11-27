@@ -18,6 +18,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <set>
 #include <string>
 #include <thread>
@@ -133,11 +134,28 @@ struct CodecData
     CodecDataType type{CodecDataType::UNDEFINED};
 };
 
+enum class Format
+{
+    S8, U8, S16LE, S16BE, U16LE, U16BE, S24_32LE, S24_32BE, U24_32LE, U24_32BE, S32LE, S32BE, U32LE, U32BE,
+    S24LE, S24BE, U24LE, U24BE, S20LE, S20BE, U20LE, U20BE, S18LE, S18BE, U18LE, U18BE, F32LE, F32BE, F64LE, F64BE
+};
+
+enum class Layout
+{
+    INTERLEAVED,
+    NON_INTERLEAVED
+};
+
 struct AudioConfig
 {
     uint32_t numberOfChannels{0};
     uint32_t sampleRate{0};
     std::vector<uint8_t> codecSpecificConfig;
+    std::optional<Format> format;
+    std::optional<Layout> layout;
+    std::optional<uint64_t> channelMask;
+    std::vector<std::vector<uint8_t>> streamHeader;
+    std::optional<bool> framed;
 };
 
 struct MediaPlayerShmInfo
@@ -343,6 +361,12 @@ public:
     virtual AddSegmentStatus addSegment(uint32_t needDataRequestId,
                                         const std::unique_ptr<MediaSegment> &segment) = 0;
     virtual bool haveData(MediaSourceStatus status, uint32_t needDataRequestId) = 0;
+    virtual bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
+    virtual bool setImmediateOutput(int32_t sourceId, bool immediateOutput) = 0;
+    virtual bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) = 0;
+    virtual bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) = 0;
+    virtual bool getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames) = 0;
+    virtual bool renderFrame() = 0;
 };
 
 // Test-visible counters for the scripted server. Mock mode only.
@@ -373,6 +397,11 @@ struct MockAttachedSource
     uint32_t channels{0};
     uint32_t sampleRate{0};
     std::vector<uint8_t> audioConfigData;
+    std::vector<std::vector<uint8_t>> streamHeader;
+    std::optional<Format> pcmFormat;
+    std::optional<Layout> layout;
+    std::optional<uint64_t> channelMask;
+    std::optional<bool> framed;
 };
 inline std::mutex g_mockAttachedMutex;
 inline std::vector<MockAttachedSource> g_mockAttachedSources;
@@ -440,6 +469,11 @@ public:
                 record.channels = audio->getAudioConfig().numberOfChannels;
                 record.sampleRate = audio->getAudioConfig().sampleRate;
                 record.audioConfigData = audio->getAudioConfig().codecSpecificConfig;
+                record.streamHeader = audio->getAudioConfig().streamHeader;
+                record.pcmFormat = audio->getAudioConfig().format;
+                record.layout = audio->getAudioConfig().layout;
+                record.channelMask = audio->getAudioConfig().channelMask;
+                record.framed = audio->getAudioConfig().framed;
             }
             std::lock_guard<std::mutex> attachedLock(g_mockAttachedMutex);
             g_mockAttachedSources.push_back(std::move(record));
@@ -567,6 +601,64 @@ public:
     bool getUseBuffering(bool &useBuffering) override { useBuffering = true; return true; }
     bool getDuration(int64_t &duration) override { duration = 10000000000LL; return true; }
 
+    // Every segment the scripted server accepted counts as a rendered frame.
+    bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override
+    {
+        if (!hasSource(sourceId))
+        {
+            return false;
+        }
+        renderedFrames = static_cast<uint64_t>(g_mockPipelineCounters.segmentsAccepted.load());
+        droppedFrames = 0;
+        return true;
+    }
+
+    bool setImmediateOutput(int32_t sourceId, bool immediateOutput) override
+    {
+        if (!hasSource(sourceId))
+        {
+            return false;
+        }
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_immediateOutput[sourceId] = immediateOutput;
+        return true;
+    }
+
+    bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override
+    {
+        if (!hasSource(sourceId))
+        {
+            return false;
+        }
+        std::lock_guard<std::mutex> lock(m_mutex);
+        const auto it = m_immediateOutput.find(sourceId);
+        immediateOutput = it != m_immediateOutput.end() && it->second;
+        return true;
+    }
+
+    bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) override
+    {
+        if (!hasSource(sourceId))
+        {
+            return false;
+        }
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_reportDecodeErrors[sourceId] = reportDecodeErrors;
+        return true;
+    }
+
+    bool getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames) override
+    {
+        if (!hasSource(sourceId))
+        {
+            return false;
+        }
+        queuedFrames = 0;
+        return true;
+    }
+
+    bool renderFrame() override { return true; }
+
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &segment) override
     {
         (void)needDataRequestId;
@@ -608,6 +700,12 @@ public:
 
 private:
     using Job = std::function<void(IMediaPipelineClient &)>;
+
+    bool hasSource(int32_t sourceId)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return std::find(m_sourceIds.begin(), m_sourceIds.end(), sourceId) != m_sourceIds.end();
+    }
 
     void requestData(IMediaPipelineClient &client, int32_t sourceId)
     {
@@ -671,6 +769,8 @@ private:
     bool m_shutdown{false};
     double m_volume{0.5};
     std::map<int32_t, bool> m_mute;
+    std::map<int32_t, bool> m_immediateOutput;
+    std::map<int32_t, bool> m_reportDecodeErrors;
     int32_t m_nextSourceId{0};
     uint32_t m_nextRequestId{0};
     std::map<uint32_t, int32_t> m_requestSource;

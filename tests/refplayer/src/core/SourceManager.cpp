@@ -47,6 +47,27 @@ VideoProfile videoProfile(demux::Codec codec)
     }
 }
 
+rialto::Format toRialtoFormat(demux::PcmFormat format)
+{
+    switch (format)
+    {
+    case demux::PcmFormat::S8:
+        return rialto::Format::S8;
+    case demux::PcmFormat::S16BE:
+        return rialto::Format::S16BE;
+    case demux::PcmFormat::S24LE:
+        return rialto::Format::S24LE;
+    case demux::PcmFormat::S24BE:
+        return rialto::Format::S24BE;
+    case demux::PcmFormat::S32LE:
+        return rialto::Format::S32LE;
+    case demux::PcmFormat::S32BE:
+        return rialto::Format::S32BE;
+    default:
+        return rialto::Format::S16LE;
+    }
+}
+
 AudioProfile audioProfile(demux::Codec codec)
 {
     switch (codec)
@@ -55,6 +76,12 @@ AudioProfile audioProfile(demux::Codec codec)
         return {"Opus", "audio/x-opus", rialto::StreamFormat::UNDEFINED, false};
     case demux::Codec::Eac3:
         return {"E-AC-3", "audio/x-eac3", rialto::StreamFormat::UNDEFINED, false};
+    case demux::Codec::Mp3:
+        return {"MP3", "audio/mp3", rialto::StreamFormat::UNDEFINED, false};
+    case demux::Codec::Flac:
+        return {"FLAC", "audio/x-flac", rialto::StreamFormat::UNDEFINED, false};
+    case demux::Codec::Pcm:
+        return {"PCM", "audio/x-raw", rialto::StreamFormat::UNDEFINED, false};
     default:
         return {"AAC", "audio/mp4", rialto::StreamFormat::RAW, true};
     }
@@ -125,7 +152,7 @@ bool SourceManager::open(const std::string &url, const std::string &mimeType, st
     }
     else
     {
-        m_logger->info("No supported audio track (AAC, Opus or E-AC-3) found; continuing video-only");
+        m_logger->info("No supported audio track (AAC, MP3, Opus, E-AC-3, FLAC or PCM) found; continuing video-only");
     }
 
     m_tracks = std::move(model);
@@ -162,10 +189,24 @@ bool SourceManager::attach(firebolt::rialto::IMediaPipeline &pipeline)
         audioConfig.numberOfChannels = static_cast<uint32_t>(m_tracks.audio.channels);
         audioConfig.sampleRate = static_cast<uint32_t>(m_tracks.audio.sampleRate);
         // AAC keeps its AudioSpecificConfig here as before, and Opus reads its OpusHead from here.
-        // E-AC-3 needs no codec data.
+        // The other codecs have no codec data in the track, so this stays empty for them.
         if (m_tracks.audio.codec != demux::Codec::Eac3)
         {
             audioConfig.codecSpecificConfig = m_tracks.audio.codecData;
+        }
+        if (m_tracks.audio.codec == demux::Codec::Flac)
+        {
+            audioConfig.streamHeader = m_tracks.audio.streamHeader;
+            audioConfig.framed = true; // each MP4 sample is one whole FLAC frame
+        }
+        else if (m_tracks.audio.codec == demux::Codec::Pcm)
+        {
+            audioConfig.format = toRialtoFormat(m_tracks.audio.pcmFormat);
+            audioConfig.layout = rialto::Layout::INTERLEAVED;
+            if (m_tracks.audio.channels > 2)
+            {
+                audioConfig.channelMask = 0; // unpositioned; raw caps with more than two channels need a mask
+            }
         }
 
         // The Rialto server only puts codec_data and stream-format on the audio caps from these

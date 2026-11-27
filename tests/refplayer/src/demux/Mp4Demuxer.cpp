@@ -720,7 +720,236 @@ bool eac3FromDec3(const uint8_t *dec3, size_t size, int32_t &channels, int32_t &
     return true;
 }
 
-// Reads an audio track (AAC, Opus or E-AC-3) and its codec data from an MP4 'trak'.
+// Returns the objectTypeIndication of the DecoderConfigDescriptor in an 'esds' payload (the bytes after
+// its FullBox header), or -1. MP3 in MP4 is an 'mp4a' entry whose object type is 0x6B or 0x69.
+int esdsObjectType(const std::vector<uint8_t> &d, size_t begin, size_t end)
+{
+    size_t pos = begin;
+    size_t length = 0;
+    if (pos >= end || d[pos++] != 0x03 || !readDescriptorLength(d, pos, end, length) || length < 3 ||
+        length > end - pos)
+    {
+        return -1;
+    }
+    const size_t esEnd = pos + length;
+    const uint8_t flags = d[pos + 2];
+    pos += 3;
+    if (flags & 0x80) pos += 2;
+    if (flags & 0x40)
+    {
+        if (pos >= esEnd) return -1;
+        pos += 1 + d[pos];
+    }
+    if (flags & 0x20) pos += 2;
+    if (pos >= esEnd || d[pos++] != 0x04 || !readDescriptorLength(d, pos, esEnd, length) || length < 1 ||
+        length > esEnd - pos)
+    {
+        return -1;
+    }
+    return d[pos];
+}
+
+// Reads a 'dfLa' payload: a FullBox header, then FLAC metadata blocks with STREAMINFO first. Builds the
+// stream header list GStreamer expects, and takes the channels and sample rate from STREAMINFO, because
+// the sample entry's 16-bit rate field cannot hold rates above 65535 Hz.
+bool flacFromDfLa(const uint8_t *dfla, size_t size, std::vector<std::vector<uint8_t>> &headers, int32_t &channels,
+                  int32_t &sampleRate)
+{
+    constexpr size_t kBlockHeaderBytes = 4;
+    constexpr size_t kStreamInfoBytes = 34;
+    if (size < 4 + kBlockHeaderBytes + kStreamInfoBytes || dfla[0] != 0)
+    {
+        return false;
+    }
+    headers.assign(1, std::vector<uint8_t>{'f', 'L', 'a', 'C'});
+    size_t pos = 4;
+    bool last = false;
+    bool first = true;
+    while (!last)
+    {
+        if (size - pos < kBlockHeaderBytes)
+        {
+            return false;
+        }
+        const uint8_t type = dfla[pos] & 0x7F;
+        last = (dfla[pos] & 0x80) != 0;
+        const size_t length = (static_cast<size_t>(dfla[pos + 1]) << 16) | (static_cast<size_t>(dfla[pos + 2]) << 8) |
+                              dfla[pos + 3];
+        if (length > size - pos - kBlockHeaderBytes)
+        {
+            return false;
+        }
+        if (first)
+        {
+            if (type != 0 || length != kStreamInfoBytes)
+            {
+                return false;
+            }
+            const uint8_t *info = dfla + pos + kBlockHeaderBytes;
+            sampleRate = static_cast<int32_t>((static_cast<uint32_t>(info[10]) << 12) |
+                                              (static_cast<uint32_t>(info[11]) << 4) | (info[12] >> 4));
+            channels = ((info[12] >> 1) & 0x7) + 1;
+            first = false;
+        }
+        headers.emplace_back(dfla + pos, dfla + pos + kBlockHeaderBytes + length);
+        pos += kBlockHeaderBytes + length;
+    }
+    return sampleRate > 0;
+}
+
+bool isPcmEntry(uint32_t entryType)
+{
+    return entryType == fourcc("sowt") || entryType == fourcc("twos") || entryType == fourcc("ipcm");
+}
+
+// Maps an integer PCM sample entry to its sample layout. 'sowt' is 16-bit little-endian, 'twos' is big-endian,
+// and 'ipcm' states its endianness and size in a 'pcmC' box.
+bool pcmFormatOf(const std::vector<uint8_t> &d, uint32_t entryType, uint16_t sampleBits, size_t childBegin,
+                 size_t entryEnd, PcmFormat &format)
+{
+    bool littleEndian = false;
+    uint16_t bits = sampleBits;
+    if (entryType == fourcc("sowt"))
+    {
+        littleEndian = true;
+    }
+    else if (entryType == fourcc("ipcm"))
+    {
+        size_t pcmB = 0, pcmE = 0;
+        if (!findBox(d, childBegin, entryEnd, fourcc("pcmC"), pcmB, pcmE) || pcmE - pcmB < 6)
+        {
+            return false;
+        }
+        littleEndian = (d[pcmB + 4] & 0x1) != 0;
+        bits = d[pcmB + 5];
+    }
+    switch (bits)
+    {
+    case 8:
+        // Signed 8-bit exists in 'twos'; 'sowt' and 'ipcm' do not define it.
+        format = PcmFormat::S8;
+        return entryType == fourcc("twos");
+    case 16:
+        format = littleEndian ? PcmFormat::S16LE : PcmFormat::S16BE;
+        return true;
+    case 24:
+        format = littleEndian ? PcmFormat::S24LE : PcmFormat::S24BE;
+        return entryType != fourcc("sowt");
+    case 32:
+        format = littleEndian ? PcmFormat::S32LE : PcmFormat::S32BE;
+        return entryType != fourcc("sowt");
+    default:
+        return false;
+    }
+}
+
+// PCM has one MP4 sample per frame, so the general sample table would hold millions of entries. This one
+// emits a sample per run of whole frames of about this many bytes instead.
+constexpr size_t kPcmSampleBytes = 4096;
+
+bool parsePcmSampleTable(const std::vector<uint8_t> &d, size_t stblB, size_t stblE, uint32_t timescale,
+                         uint32_t frameBytes, std::vector<Sample> &samples)
+{
+    size_t p = 0, e = 0;
+    if (frameBytes == 0 || !findBox(d, stblB, stblE, fourcc("stsz"), p, e))
+    {
+        return false;
+    }
+    Reader stsz{d, p, e};
+    stsz.skip(4);
+    const uint32_t constantSize = stsz.u32();
+    const uint32_t frameCount = stsz.u32();
+    if (!stsz.ok || constantSize != frameBytes || frameCount == 0)
+    {
+        return false;
+    }
+
+    if (!findBox(d, stblB, stblE, fourcc("stsc"), p, e))
+    {
+        return false;
+    }
+    Reader stsc{d, p, e};
+    stsc.skip(4);
+    const uint32_t stscCount = stsc.u32();
+    if (!stsc.ok || stscCount == 0 || stscCount > stsc.remaining() / 12)
+    {
+        return false;
+    }
+    struct ChunkRun
+    {
+        uint32_t firstChunk;
+        uint32_t framesPerChunk;
+    };
+    std::vector<ChunkRun> runs(stscCount);
+    for (auto &run : runs)
+    {
+        run.firstChunk = stsc.u32();
+        run.framesPerChunk = stsc.u32();
+        stsc.skip(4); // sample_description_index
+    }
+
+    std::vector<uint64_t> chunkOffsets;
+    if (findBox(d, stblB, stblE, fourcc("stco"), p, e))
+    {
+        Reader stco{d, p, e};
+        stco.skip(4);
+        const uint32_t count = stco.u32();
+        if (!stco.ok || count > stco.remaining() / 4)
+        {
+            return false;
+        }
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            chunkOffsets.push_back(stco.u32());
+        }
+    }
+    else if (findBox(d, stblB, stblE, fourcc("co64"), p, e))
+    {
+        Reader co64{d, p, e};
+        co64.skip(4);
+        const uint32_t count = co64.u32();
+        if (!co64.ok || count > co64.remaining() / 8)
+        {
+            return false;
+        }
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            chunkOffsets.push_back(co64.u64());
+        }
+    }
+    else
+    {
+        return false;
+    }
+
+    const uint32_t framesPerSample = std::max<uint32_t>(1, static_cast<uint32_t>(kPcmSampleBytes / frameBytes));
+    uint64_t framesDone = 0;
+    size_t run = 0;
+    for (size_t chunk = 0; chunk < chunkOffsets.size() && framesDone < frameCount; ++chunk)
+    {
+        while (run + 1 < runs.size() && runs[run + 1].firstChunk <= chunk + 1)
+        {
+            ++run;
+        }
+        uint64_t inChunk = 0;
+        while (inChunk < runs[run].framesPerChunk && framesDone < frameCount)
+        {
+            const uint64_t frames = std::min<uint64_t>({framesPerSample, runs[run].framesPerChunk - inChunk,
+                                                        frameCount - framesDone});
+            Sample sample;
+            sample.offset = chunkOffsets[chunk] + inChunk * frameBytes;
+            sample.size = static_cast<uint32_t>(frames * frameBytes);
+            sample.ptsNs = ticksToNs(static_cast<int64_t>(framesDone), timescale);
+            sample.durationNs = ticksToNs(static_cast<int64_t>(framesDone + frames), timescale) - sample.ptsNs;
+            samples.push_back(sample);
+            inChunk += frames;
+            framesDone += frames;
+        }
+    }
+    return framesDone == frameCount;
+}
+
+// Reads an audio track (AAC, MP3, Opus, E-AC-3, FLAC or PCM) and its codec data from an MP4 'trak'.
 bool parseAudioTrack(const std::vector<uint8_t> &d, size_t trakBegin, size_t trakEnd, AudioTrack &out)
 {
     size_t p = 0, e = 0, mdiaB = 0, mdiaE = 0;
@@ -751,20 +980,66 @@ bool parseAudioTrack(const std::vector<uint8_t> &d, size_t trakBegin, size_t tra
     const bool isAac = entryType == fourcc("mp4a");
     const bool isOpus = entryType == fourcc("Opus");
     const bool isEac3 = entryType == fourcc("ec-3");
-    if (!stsd.ok || !(isAac || isOpus || isEac3)) return false;
+    const bool isFlac = entryType == fourcc("fLaC");
+    const bool isLegacyMp3 = entryType == fourcc(".mp3");
+    const bool isPcm = isPcmEntry(entryType);
+    if (!stsd.ok || !(isAac || isOpus || isEac3 || isFlac || isLegacyMp3 || isPcm)) return false;
     const size_t entryPayload = stsd.pos;
-    if (entrySize < 8 + 28 || entryPayload - 8 + entrySize > e || be16(&d[entryPayload + 8]) != 0) return false;
+    if (entrySize < 8 + 28 || entryPayload - 8 + entrySize > e) return false;
+    // Only integer PCM accepts a version 1 entry. QuickTime's 'sowt' and 'twos' then carry 16 more bytes.
+    const uint16_t entryVersion = be16(&d[entryPayload + 8]);
+    if (entryVersion != 0 && !(isPcm && entryVersion == 1)) return false;
     const size_t entryEnd = entryPayload - 8 + entrySize;
+    size_t childBegin = entryPayload + 28;
+    if (entryVersion == 1 && entryType != fourcc("ipcm"))
+    {
+        childBegin += 16;
+        if (childBegin > entryEnd) return false;
+    }
     out.channels = be16(&d[entryPayload + 16]);
     out.sampleRate = static_cast<int32_t>(be32(&d[entryPayload + 24]) >> 16);
 
     if (isAac)
     {
         size_t esdsB = 0, esdsE = 0;
-        if (!findBox(d, entryPayload + 28, entryEnd, fourcc("esds"), esdsB, esdsE) || esdsE - esdsB < 4 ||
-            !findAudioSpecificConfig(d, esdsB + 4, esdsE, 0, out.codecData) ||
-            out.channels <= 0 || out.sampleRate <= 0) return false;
-        out.codec = Codec::Aac;
+        if (!findBox(d, entryPayload + 28, entryEnd, fourcc("esds"), esdsB, esdsE) || esdsE - esdsB < 4) return false;
+        const int objectType = esdsObjectType(d, esdsB + 4, esdsE);
+        if (objectType == 0x6B || objectType == 0x69)
+        {
+            if (out.channels <= 0 || out.sampleRate <= 0) return false;
+            out.codec = Codec::Mp3;
+        }
+        else
+        {
+            if (!findAudioSpecificConfig(d, esdsB + 4, esdsE, 0, out.codecData) ||
+                out.channels <= 0 || out.sampleRate <= 0) return false;
+            out.codec = Codec::Aac;
+        }
+    }
+    else if (isLegacyMp3)
+    {
+        if (out.channels <= 0 || out.sampleRate <= 0) return false;
+        out.codec = Codec::Mp3;
+    }
+    else if (isFlac)
+    {
+        size_t dflaB = 0, dflaE = 0;
+        if (!findBox(d, entryPayload + 28, entryEnd, fourcc("dfLa"), dflaB, dflaE) ||
+            !flacFromDfLa(&d[dflaB], dflaE - dflaB, out.streamHeader, out.channels, out.sampleRate)) return false;
+        out.codec = Codec::Flac;
+    }
+    else if (isPcm)
+    {
+        const uint16_t sampleBits = be16(&d[entryPayload + 18]);
+        if (out.channels <= 0 || out.sampleRate <= 0 ||
+            !pcmFormatOf(d, entryType, sampleBits, childBegin, entryEnd, out.pcmFormat)) return false;
+        const uint32_t bytesPerSample = out.pcmFormat == PcmFormat::S8    ? 1
+                                        : (out.pcmFormat == PcmFormat::S16LE || out.pcmFormat == PcmFormat::S16BE) ? 2
+                                        : (out.pcmFormat == PcmFormat::S24LE || out.pcmFormat == PcmFormat::S24BE) ? 3
+                                                                                                                   : 4;
+        out.codec = Codec::Pcm;
+        return parsePcmSampleTable(d, stblB, stblE, timescale, static_cast<uint32_t>(out.channels) * bytesPerSample,
+                                   out.samples);
     }
     else if (isOpus)
     {

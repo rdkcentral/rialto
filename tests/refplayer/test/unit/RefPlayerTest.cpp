@@ -419,10 +419,22 @@ void testRunOnPipelineUsesLivePipeline()
         bool sync = false;
         CHECK(pipeline.setSync(true)); // the real, live pipeline object answers
         CHECK(pipeline.getSync(sync));
+        bool immediate = false;
+        uint64_t rendered = 0;
+        uint64_t dropped = 0;
+        uint32_t queued = 0;
+        CHECK(pipeline.setImmediateOutput(sources.videoSourceId, true));
+        CHECK(pipeline.getImmediateOutput(sources.videoSourceId, immediate) && immediate);
+        CHECK(pipeline.setReportDecodeErrors(sources.videoSourceId, true));
+        CHECK(pipeline.getStats(sources.videoSourceId, rendered, dropped));
+        CHECK(pipeline.getQueuedFrames(sources.videoSourceId, queued));
+        CHECK(pipeline.renderFrame());
+        CHECK(!pipeline.getStats(sources.videoSourceId + 100, rendered, dropped)); // unknown source
         CHECK(sources.videoSourceId != 0);
         CHECK(sources.audioSourceId == 0); // the fake media has no audio
     };
 
+    CHECK(player.durationMs() == 0);
     CHECK(player.runOnPipeline(task, timeout) == Result::InvalidState); // not initialized
     CHECK(player.initialize(options()) == Result::Ok);
     CHECK(player.runOnPipeline(task, timeout) == Result::InvalidState); // nothing loaded yet
@@ -433,6 +445,8 @@ void testRunOnPipelineUsesLivePipeline()
     CHECK(waitFor([&] { return player.state() == PlayerState::Playing; }));
     CHECK(player.runOnPipeline(task, timeout) == Result::Ok);
     CHECK(ran == 1);
+    // The mock server sends no duration, so it comes from the demuxer: 40 samples of 33 ms.
+    CHECK(player.durationMs() == 1320);
 
     CHECK(player.stop() == Result::Ok);
     CHECK(waitFor([&] { return player.state() == PlayerState::Idle; }));
@@ -500,24 +514,34 @@ Bytes visualEntry(const char (&type)[5], const Bytes &configBox)
 }
 
 // Audio sample entry (version 0): 28-byte header, then the codec configuration box.
-Bytes audioEntry(const char (&type)[5], uint16_t channels, uint32_t rate, const Bytes &configBox)
+Bytes audioEntry(const char (&type)[5], uint16_t channels, uint32_t rate, const Bytes &configBox,
+                 uint16_t sampleBits = 16, bool quickTimeV1 = false)
 {
     Bytes payload(8, 0);
-    put32(payload, 0); // version, revision
-    put32(payload, 0); // vendor
+    put16(payload, quickTimeV1 ? 1 : 0); // version
+    put16(payload, 0);                   // revision
+    put32(payload, 0);                   // vendor
     put16(payload, channels);
-    put16(payload, 16);
+    put16(payload, sampleBits);
     put32(payload, 0);
     put32(payload, rate << 16);
+    if (quickTimeV1)
+    {
+        payload.resize(payload.size() + 16, 0); // samples per packet, bytes per packet, frame, sample
+    }
     return box(type, cat({payload, configBox}));
 }
 
-Bytes aacEsds(const Bytes &asc)
+// An esds box. With no AudioSpecificConfig the decoder config has no DecoderSpecificInfo, as MP3 has none.
+Bytes aacEsds(const Bytes &asc, uint8_t objectType = 0x40)
 {
-    Bytes decoderConfig = {0x40, 0x15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    decoderConfig.push_back(0x05);
-    decoderConfig.push_back(static_cast<uint8_t>(asc.size()));
-    decoderConfig.insert(decoderConfig.end(), asc.begin(), asc.end());
+    Bytes decoderConfig = {objectType, 0x15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    if (!asc.empty())
+    {
+        decoderConfig.push_back(0x05);
+        decoderConfig.push_back(static_cast<uint8_t>(asc.size()));
+        decoderConfig.insert(decoderConfig.end(), asc.begin(), asc.end());
+    }
     Bytes es = {0, 1, 0, 0x04, static_cast<uint8_t>(decoderConfig.size())};
     es.insert(es.end(), decoderConfig.begin(), decoderConfig.end());
     Bytes body = {0x03, static_cast<uint8_t>(es.size())};
@@ -525,23 +549,24 @@ Bytes aacEsds(const Bytes &asc)
     return box("esds", fullBoxPayload(body));
 }
 
-// One track holding a single 100-byte sample.
-Bytes trak(const char (&handler)[5], const Bytes &sampleEntry)
+// One track. By default it holds a single 100-byte sample. PCM tracks use one sample per frame.
+Bytes trak(const char (&handler)[5], const Bytes &sampleEntry, uint32_t sampleSize = 100, uint32_t sampleCount = 1,
+           uint32_t samplesPerChunk = 1, uint32_t timescale = 1000, uint32_t sampleDelta = 1000)
 {
     Bytes hdlrBody(4, 0);
     hdlrBody.insert(hdlrBody.end(), handler, handler + 4);
     hdlrBody.resize(hdlrBody.size() + 12, 0);
     Bytes mdhdBody(8, 0);
-    put32(mdhdBody, 1000);
-    put32(mdhdBody, 1000);
+    put32(mdhdBody, timescale);
+    put32(mdhdBody, timescale);
     put32(mdhdBody, 0);
     Bytes stsdBody;
     put32(stsdBody, 1);
     stsdBody.insert(stsdBody.end(), sampleEntry.begin(), sampleEntry.end());
     Bytes stts, stsz, stsc, stco;
-    put32(stts, 1); put32(stts, 1); put32(stts, 1000);
-    put32(stsz, 100); put32(stsz, 1);
-    put32(stsc, 1); put32(stsc, 1); put32(stsc, 1); put32(stsc, 1);
+    put32(stts, 1); put32(stts, sampleCount); put32(stts, sampleDelta);
+    put32(stsz, sampleSize); put32(stsz, sampleCount);
+    put32(stsc, 1); put32(stsc, 1); put32(stsc, samplesPerChunk); put32(stsc, 1);
     put32(stco, 1); put32(stco, 4096);
     const Bytes stbl = box("stbl", cat({box("stsd", fullBoxPayload(stsdBody)), box("stts", fullBoxPayload(stts)),
                                         box("stsz", fullBoxPayload(stsz)), box("stsc", fullBoxPayload(stsc)),
@@ -676,6 +701,154 @@ void testMp4AudioCodecs()
     mp4::Tracks noConfig;
     CHECK(parseMp4(mp4Of({video, trak("soun", audioEntry("ec-3", 2, 48000, Bytes()))}), noConfig, error));
     CHECK(!noConfig.hasAudio);
+}
+
+// MP3 in MP4 is an mp4a entry with an MPEG audio object type, or a legacy ".mp3" entry. AAC must stay AAC.
+void testMp4Mp3Audio()
+{
+    const Bytes video = videoTrack("avc1", "avcC", kAvcC);
+    std::string error;
+
+    for (const uint8_t objectType : {0x6B, 0x69})
+    {
+        mp4::Tracks tracks;
+        CHECK(parseMp4(mp4Of({video, trak("soun", audioEntry("mp4a", 2, 44100, aacEsds(Bytes(), objectType)))}),
+                       tracks, error));
+        CHECK(tracks.hasAudio && tracks.audio.codec == mp4::Codec::Mp3);
+        CHECK(tracks.audio.codecData.empty());
+        CHECK(tracks.audio.channels == 2 && tracks.audio.sampleRate == 44100);
+        CHECK(tracks.audio.samples.size() == 1);
+    }
+
+    mp4::Tracks legacy;
+    CHECK(parseMp4(mp4Of({video, trak("soun", audioEntry(".mp3", 1, 32000, Bytes()))}), legacy, error));
+    CHECK(legacy.hasAudio && legacy.audio.codec == mp4::Codec::Mp3 && legacy.audio.channels == 1);
+
+    // An mp4a entry with an AudioSpecificConfig is still AAC.
+    mp4::Tracks aac;
+    CHECK(parseMp4(mp4Of({video, aacTrack()}), aac, error));
+    CHECK(aac.audio.codec == mp4::Codec::Aac && aac.audio.codecData == kAsc);
+
+    // An mp4a entry that is neither MP3 nor has a config is dropped, as before.
+    mp4::Tracks neither;
+    CHECK(parseMp4(mp4Of({video, trak("soun", audioEntry("mp4a", 2, 44100, aacEsds(Bytes(), 0x40)))}), neither,
+                   error));
+    CHECK(!neither.hasAudio);
+}
+
+// FLAC: dfLa becomes the stream header list, and STREAMINFO overrides the sample entry's channels and rate.
+void testMp4FlacAudio()
+{
+    const Bytes video = videoTrack("avc1", "avcC", kAvcC);
+    std::string error;
+
+    // STREAMINFO: block sizes, frame sizes, 44100 Hz, 2 channels, 16 bits, 0 total samples, zero MD5.
+    Bytes info = {0x10, 0, 0x10, 0, 0, 0, 0, 0, 0, 0, 0x0A, 0xC4, 0x42, 0xF0, 0, 0, 0, 0};
+    info.resize(34, 0);
+    const Bytes comment = {1, 2, 3, 4};
+    const Bytes streamInfoBlockLast = cat({Bytes{0x80, 0, 0, 34}, info});
+    const Bytes streamInfoBlock = cat({Bytes{0x00, 0, 0, 34}, info});
+    const Bytes commentBlock = cat({Bytes{0x84, 0, 0, 4}, comment});
+
+    mp4::Tracks single;
+    CHECK(parseMp4(mp4Of({video, trak("soun", audioEntry("fLaC", 6, 0, box("dfLa", fullBoxPayload(streamInfoBlockLast))))}),
+                   single, error));
+    CHECK(single.hasAudio && single.audio.codec == mp4::Codec::Flac);
+    CHECK(single.audio.channels == 2 && single.audio.sampleRate == 44100);
+    CHECK(single.audio.streamHeader.size() == 2);
+    if (single.audio.streamHeader.size() == 2)
+    {
+        CHECK(single.audio.streamHeader[0] == (Bytes{'f', 'L', 'a', 'C'}));
+        CHECK(single.audio.streamHeader[1] == streamInfoBlockLast);
+    }
+    CHECK(single.audio.codecData.empty());
+
+    mp4::Tracks multi;
+    CHECK(parseMp4(mp4Of({video, trak("soun", audioEntry("fLaC", 2, 44100,
+                                                         box("dfLa", fullBoxPayload(cat({streamInfoBlock, commentBlock})))))}),
+                   multi, error));
+    CHECK(multi.audio.streamHeader.size() == 3);
+    if (multi.audio.streamHeader.size() == 3)
+    {
+        CHECK(multi.audio.streamHeader[1] == streamInfoBlock && multi.audio.streamHeader[2] == commentBlock);
+    }
+
+    // No dfLa, a first block that is not STREAMINFO, or a block that overruns the box: no audio, video plays.
+    const Bytes wrongFirst = cat({Bytes{0x84, 0, 0, 34}, info});
+    const Bytes overrun = cat({Bytes{0x80, 0, 0, 60}, info});
+    for (const Bytes &config : {Bytes(), box("dfLa", fullBoxPayload(wrongFirst)), box("dfLa", fullBoxPayload(overrun))})
+    {
+        mp4::Tracks broken;
+        CHECK(parseMp4(mp4Of({video, trak("soun", audioEntry("fLaC", 2, 44100, config))}), broken, error));
+        CHECK(!broken.hasAudio);
+    }
+}
+
+// PCM: the sample format comes from the entry type, and one-frame MP4 samples are grouped into larger ones.
+void testMp4PcmAudio()
+{
+    const Bytes video = videoTrack("avc1", "avcC", kAvcC);
+    std::string error;
+    constexpr uint32_t kFrames = 3000;
+
+    struct Case
+    {
+        Bytes entry;
+        mp4::PcmFormat format;
+        uint32_t frameBytes;
+    };
+    const Bytes pcmcLe16 = box("pcmC", Bytes{0, 0, 0, 0, 1, 16});
+    const Bytes pcmcBe24 = box("pcmC", Bytes{0, 0, 0, 0, 0, 24});
+    const std::vector<Case> cases = {
+        {audioEntry("sowt", 2, 48000, Bytes(), 16), mp4::PcmFormat::S16LE, 4},
+        {audioEntry("twos", 2, 48000, Bytes(), 16), mp4::PcmFormat::S16BE, 4},
+        {audioEntry("twos", 2, 48000, Bytes(), 24), mp4::PcmFormat::S24BE, 6},
+        {audioEntry("twos", 2, 48000, Bytes(), 32), mp4::PcmFormat::S32BE, 8},
+        {audioEntry("twos", 1, 48000, Bytes(), 8), mp4::PcmFormat::S8, 1},
+        {audioEntry("ipcm", 2, 48000, pcmcLe16, 16), mp4::PcmFormat::S16LE, 4},
+        {audioEntry("ipcm", 2, 48000, pcmcBe24, 24), mp4::PcmFormat::S24BE, 6},
+        {audioEntry("sowt", 2, 48000, Bytes(), 16, true), mp4::PcmFormat::S16LE, 4}, // QuickTime version 1
+    };
+    for (const auto &c : cases)
+    {
+        mp4::Tracks tracks;
+        CHECK(parseMp4(mp4Of({video, trak("soun", c.entry, c.frameBytes, kFrames, kFrames, 48000, 1)}), tracks,
+                       error));
+        CHECK(tracks.hasAudio && tracks.audio.codec == mp4::Codec::Pcm && tracks.audio.pcmFormat == c.format);
+        CHECK(tracks.audio.codecData.empty());
+
+        // Samples are whole frames of at most 4096 bytes (at least one frame), cover every frame once, are
+        // contiguous from the chunk offset, and time runs on with no gaps.
+        uint64_t bytes = 0;
+        int64_t expectedPts = 0;
+        bool shapeOk = !tracks.audio.samples.empty();
+        for (const auto &sample : tracks.audio.samples)
+        {
+            shapeOk = shapeOk && sample.size % c.frameBytes == 0 && sample.size > 0 &&
+                      (sample.size <= 4096 || sample.size == c.frameBytes) && sample.offset == 4096 + bytes &&
+                      sample.ptsNs == expectedPts;
+            bytes += sample.size;
+            expectedPts += sample.durationNs;
+        }
+        CHECK(shapeOk);
+        CHECK(bytes == static_cast<uint64_t>(kFrames) * c.frameBytes);
+        CHECK(expectedPts == 62500000); // 3000 frames at 48 kHz
+        CHECK(tracks.audio.samples.size() < 40); // not one sample per frame
+    }
+
+    // A frame size in stsz that disagrees with the entry, an unsupported size, and a missing pcmC are dropped.
+    mp4::Tracks wrongSize;
+    CHECK(parseMp4(mp4Of({video, trak("soun", audioEntry("sowt", 2, 48000, Bytes()), 100, 10, 10, 48000, 1)}),
+                   wrongSize, error));
+    CHECK(!wrongSize.hasAudio);
+    mp4::Tracks odd;
+    CHECK(parseMp4(mp4Of({video, trak("soun", audioEntry("twos", 2, 48000, Bytes(), 12), 3, 10, 10, 48000, 1)}), odd,
+                   error));
+    CHECK(!odd.hasAudio);
+    mp4::Tracks noPcmc;
+    CHECK(parseMp4(mp4Of({video, trak("soun", audioEntry("ipcm", 2, 48000, Bytes()), 4, 10, 10, 48000, 1)}), noPcmc,
+                   error));
+    CHECK(!noPcmc.hasAudio);
 }
 
 // The codecs that worked before keep their tracks when a file also holds a newer codec.
@@ -832,12 +1005,54 @@ void testSourceDescriptionPerCodec()
         CHECK(eac3[1].audioConfigData.empty() && eac3[1].capsCodecData.empty());
         CHECK(eac3[1].channels == 2 && eac3[1].sampleRate == 48000);
     }
+
+    const auto mp3 = attachModel(modelOf(Codec::H264, kAvcC, true, Codec::Mp3));
+    CHECK(mp3.size() == 2);
+    if (mp3.size() == 2)
+    {
+        CHECK(mp3[1].mimeType == "audio/mp3" && mp3[1].format == rialto::StreamFormat::UNDEFINED);
+        CHECK(mp3[1].audioConfigData.empty() && mp3[1].capsCodecData.empty() && mp3[1].streamHeader.empty());
+        CHECK(!mp3[1].framed.has_value() && !mp3[1].pcmFormat.has_value());
+        CHECK(mp3[1].channels == 2 && mp3[1].sampleRate == 48000);
+    }
+
+    auto flacModel = modelOf(Codec::H264, kAvcC, true, Codec::Flac);
+    flacModel.audio.streamHeader = {{'f', 'L', 'a', 'C'}, {0x80, 0, 0, 1, 7}};
+    const auto flac = attachModel(flacModel);
+    CHECK(flac.size() == 2);
+    if (flac.size() == 2)
+    {
+        CHECK(flac[1].mimeType == "audio/x-flac" && flac[1].streamHeader == flacModel.audio.streamHeader);
+        CHECK(flac[1].framed.has_value() && *flac[1].framed);
+        CHECK(flac[1].capsCodecData.empty() && !flac[1].pcmFormat.has_value());
+    }
+
+    auto pcmModel = modelOf(Codec::H264, kAvcC, true, Codec::Pcm);
+    pcmModel.audio.pcmFormat = rialto_refplayer::demux::PcmFormat::S24BE;
+    const auto pcm = attachModel(pcmModel);
+    CHECK(pcm.size() == 2);
+    if (pcm.size() == 2)
+    {
+        CHECK(pcm[1].mimeType == "audio/x-raw" && pcm[1].format == rialto::StreamFormat::UNDEFINED);
+        CHECK(pcm[1].pcmFormat.has_value() && *pcm[1].pcmFormat == rialto::Format::S24BE);
+        CHECK(pcm[1].layout.has_value() && *pcm[1].layout == rialto::Layout::INTERLEAVED);
+        CHECK(!pcm[1].channelMask.has_value() && !pcm[1].framed.has_value()); // stereo needs no channel mask
+        CHECK(pcm[1].channels == 2 && pcm[1].sampleRate == 48000);
+    }
+    pcmModel.audio.channels = 6;
+    pcmModel.audio.pcmFormat = rialto_refplayer::demux::PcmFormat::S16LE;
+    const auto pcm6 = attachModel(pcmModel);
+    CHECK(pcm6.size() == 2 && pcm6[1].channels == 6 && pcm6[1].channelMask.has_value() && *pcm6[1].channelMask == 0);
+    CHECK(pcm6.size() == 2 && pcm6[1].pcmFormat.has_value() && *pcm6[1].pcmFormat == rialto::Format::S16LE);
 }
 
 int main()
 {
     testMp4VideoCodecs();
     testMp4AudioCodecs();
+    testMp4Mp3Audio();
+    testMp4FlacAudio();
+    testMp4PcmAudio();
     testMp4PrefersLegacyCodecs();
     testSourceDescriptionPerCodec();
     testPlayPauseSeekStopReleases();

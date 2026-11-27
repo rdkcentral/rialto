@@ -39,10 +39,41 @@ Codec toCodec(reference_player::mp4_demuxer::Codec codec)
         return Codec::Opus;
     case Parsed::Eac3:
         return Codec::Eac3;
+    case Parsed::Mp3:
+        return Codec::Mp3;
+    case Parsed::Flac:
+        return Codec::Flac;
+    case Parsed::Pcm:
+        return Codec::Pcm;
     case Parsed::Unknown:
         break;
     }
     return Codec::Unknown;
+}
+
+PcmFormat toPcmFormat(reference_player::mp4_demuxer::PcmFormat format)
+{
+    using Parsed = reference_player::mp4_demuxer::PcmFormat;
+    switch (format)
+    {
+    case Parsed::S8:
+        return PcmFormat::S8;
+    case Parsed::S16LE:
+        return PcmFormat::S16LE;
+    case Parsed::S16BE:
+        return PcmFormat::S16BE;
+    case Parsed::S24LE:
+        return PcmFormat::S24LE;
+    case Parsed::S24BE:
+        return PcmFormat::S24BE;
+    case Parsed::S32LE:
+        return PcmFormat::S32LE;
+    case Parsed::S32BE:
+        return PcmFormat::S32BE;
+    case Parsed::None:
+        break;
+    }
+    return PcmFormat::None;
 }
 
 // Adapts the MP4 parser's own track types to the library's track model.
@@ -70,6 +101,8 @@ public:
             model.audio.samples = toSamples(std::move(tracks.audio.samples));
             model.audio.codecData = std::move(tracks.audio.codecData);
             model.audio.codec = toCodec(tracks.audio.codec);
+            model.audio.streamHeader = std::move(tracks.audio.streamHeader);
+            model.audio.pcmFormat = toPcmFormat(tracks.audio.pcmFormat);
             model.audio.sampleRate = tracks.audio.sampleRate;
             model.audio.channels = tracks.audio.channels;
         }

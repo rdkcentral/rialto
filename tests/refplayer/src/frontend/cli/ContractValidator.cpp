@@ -83,6 +83,51 @@ private:
     bool m_passed{true};
 };
 
+// Video sink controls and statistics, all on the video source.
+void validateVideoSink(PipelineChecks &checks, firebolt::rialto::IMediaPipeline &pipeline, int32_t videoSourceId)
+{
+    if (videoSourceId == 0)
+    {
+        checks.skip("video sink controls and statistics", "the media has no video source");
+        return;
+    }
+
+    // Immediate output is set, read back, and put back so playback keeps its normal timing.
+    checks.call("setImmediateOutput(true)", pipeline.setImmediateOutput(videoSourceId, true));
+    bool immediateOutput = false;
+    const auto getImmediateOutput = [&](bool &v) { return pipeline.getImmediateOutput(videoSourceId, v); };
+    if (checks.call("getImmediateOutput()", readUntil(immediateOutput, getImmediateOutput, [](bool v) { return v; })))
+    {
+        checks.expect("immediate output", boolText(immediateOutput), "true", immediateOutput);
+    }
+    checks.call("setImmediateOutput(false)", pipeline.setImmediateOutput(videoSourceId, false));
+    if (checks.call("getImmediateOutput()", readUntil(immediateOutput, getImmediateOutput, [](bool v) { return !v; })))
+    {
+        checks.expect("immediate output", boolText(immediateOutput), "false", !immediateOutput);
+    }
+
+    // There is no getter for this property, so only the calls are checked. It is turned off again afterwards.
+    checks.call("setReportDecodeErrors(true)", pipeline.setReportDecodeErrors(videoSourceId, true));
+    checks.call("setReportDecodeErrors(false)", pipeline.setReportDecodeErrors(videoSourceId, false));
+
+    // Frames are being presented, so the rendered count has to be above zero. Dropped and queued frames
+    // depend on the stream and the decoder, so they are logged and not judged.
+    uint64_t renderedFrames = 0;
+    uint64_t droppedFrames = 0;
+    const auto getStats = [&](uint64_t &v) { return pipeline.getStats(videoSourceId, v, droppedFrames); };
+    if (checks.call("getStats()", readUntil(renderedFrames, getStats, [](uint64_t v) { return v > 0U; })))
+    {
+        cliLog("[pipeline] stats: renderedFrames=" + std::to_string(renderedFrames) +
+               ", droppedFrames=" + std::to_string(droppedFrames));
+        checks.expect("rendered frames", std::to_string(renderedFrames), "> 0", renderedFrames > 0U);
+    }
+    uint32_t queuedFrames = 0U;
+    if (checks.call("getQueuedFrames()", pipeline.getQueuedFrames(videoSourceId, queuedFrames)))
+    {
+        cliLog("[pipeline] queuedFrames=" + std::to_string(queuedFrames));
+    }
+}
+
 } // namespace
 
 bool validatePipelineBeforePlay(firebolt::rialto::IMediaPipeline &pipeline,
@@ -91,8 +136,11 @@ bool validatePipelineBeforePlay(firebolt::rialto::IMediaPipeline &pipeline,
     PipelineChecks checks;
     // Sync off is documented as "must be set before the pipeline is PLAYING".
     checks.call("setSyncOff(false)", pipeline.setSyncOff(false));
-    // Position 0 is the start the stream has anyway, so it does not move the media.
-    checks.call("setSourcePosition()", pipeline.setSourcePosition(sources.videoSourceId, 0, false, 1.0, 0ULL));
+    // Position 0 is the start the stream has anyway. A stop position of 0 would end the video segment at 0 and clip every frame.
+    checks.call("setSourcePosition()", pipeline.setSourcePosition(sources.videoSourceId, 0, false, 1.0,
+                                                                  firebolt::rialto::kUndefinedPosition));
+    // The pipeline is prerolled and paused at PREPARED, so this is where a frame can be rendered without playing.
+    checks.call("renderFrame()", pipeline.renderFrame());
     return checks.passed();
 }
 
@@ -166,6 +214,8 @@ bool validatePipelineWhilePlaying(firebolt::rialto::IMediaPipeline &pipeline,
                       std::fabs(volume - targetVolume) <= kVolumeTolerance);
     }
 
+    validateVideoSink(checks, pipeline, sources.videoSourceId);
+
     checks.skip("text track identifier and subtitle offset", "the media has no subtitle source");
 
     checks.call("setBufferingLimit()", pipeline.setBufferingLimit(kBufferingLimitMs));
@@ -188,19 +238,6 @@ bool validatePipelineWhilePlaying(firebolt::rialto::IMediaPipeline &pipeline,
         checks.expect("use buffering", boolText(useBuffering), "true", useBuffering);
     }
 
-    int64_t durationNs = 0;
-    const bool hasDuration = readUntil(
-        durationNs, [&](int64_t &v) { return pipeline.getDuration(v); }, [](int64_t v) { return v > 0; });
-    if (hasDuration)
-    {
-        cliLog("[pipeline] getDuration() returned true");
-        checks.expect("duration", std::to_string(durationNs) + " ns", "> 0", durationNs > 0);
-    }
-    else
-    {
-        // Pushed samples carry no total length, so the pipeline may have nothing to report.
-        checks.skip("getDuration()", "the pipeline reported no duration");
-    }
     int64_t firstPositionNs = 0;
     if (checks.call("getPosition()", pipeline.getPosition(firstPositionNs)))
     {
