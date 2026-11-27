@@ -1,0 +1,12 @@
+/* GNU ld version script for libRialtoPlayerJSBindings.so.
+ * Exports exactly the two entry points the injected-bundle hook dlsym()s. Everything else,
+ * including any JavaScriptCore or library symbol that leaks through, stays local. AAMP's
+ * bindings load into the same WebProcess, so an extra exported symbol is a collision risk.
+ */
+{
+    global:
+        RialtoPlayer_LoadJS;
+        RialtoPlayer_UnloadJS;
+    local:
+        *;
+};
