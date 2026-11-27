@@ -1069,7 +1069,8 @@ void MediaPipelineModuleServiceTests::mediaClientWillSendSourceFlushedEvent()
 
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackInfoEvent()
 {
-    EXPECT_CALL(*m_clientMock, sendEvent(PlaybackInfoEventMatcher(firebolt::rialto::PlaybackInfo{kPosition, kVolume, kVideoPosition, kAudioPosition})));
+    EXPECT_CALL(*m_clientMock, sendEvent(PlaybackInfoEventMatcher(
+                                   firebolt::rialto::PlaybackInfo{kPosition, kVolume, kVideoPosition, kAudioPosition})));
 }
 
 void MediaPipelineModuleServiceTests::sendClientConnected()
@@ -1887,7 +1888,8 @@ void MediaPipelineModuleServiceTests::sendSourceFlushedEvent()
 void MediaPipelineModuleServiceTests::sendPlaybackInfoEvent()
 {
     ASSERT_TRUE(m_mediaPipelineClient);
-    m_mediaPipelineClient->notifyPlaybackInfo(firebolt::rialto::PlaybackInfo{kPosition, kVolume, kVideoPosition, kAudioPosition});
+    m_mediaPipelineClient->notifyPlaybackInfo(
+        firebolt::rialto::PlaybackInfo{kPosition, kVolume, kVideoPosition, kAudioPosition});
 }
 
 void MediaPipelineModuleServiceTests::expectRequestSuccess()
