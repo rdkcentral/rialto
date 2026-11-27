@@ -102,7 +102,9 @@ TEST_F(PositionUpdatesTest, positionUpdates)
 
     // Step 4: Notify playback info
     constexpr double kVolume{0.8};
-    constexpr firebolt::rialto::PlaybackInfo kPlaybackInfo{kPosition, kVolume};
+    constexpr int64_t kVideoPosition{11};
+    constexpr int64_t kAudioPosition{9};
+    constexpr firebolt::rialto::PlaybackInfo kPlaybackInfo{kPosition, kVolume, kVideoPosition, kAudioPosition};
     MediaPipelineTestMethods::shouldNotifyPlaybackInfo(kPlaybackInfo);
     MediaPipelineTestMethods::sendNotifyPlaybackInfo(kPlaybackInfo);
 }
