@@ -82,6 +82,12 @@ public:
     {
         // The playback info timer also gets the video sink (to query its position) while paused or playing, so the
         // number of video sink lookups is not deterministic.
+        // The video-sink expectation is installed last, so that a concurrent timer callback can't get m_videoSink before
+        // the expectations for the calls made on it are in place.
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink)))
+            .Times(AtLeast(1))
+            .WillRepeatedly(Return(kElementTypeName.c_str()));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink)).Times(AtLeast(1));
         EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _))
             .Times(AtLeast(1))
             .WillRepeatedly(Invoke(
@@ -90,10 +96,6 @@ public:
                     GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
                     *elementPtr = m_videoSink;
                 }));
-        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink)))
-            .Times(AtLeast(1))
-            .WillRepeatedly(Return(kElementTypeName.c_str()));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink)).Times(AtLeast(1));
     }
 
     void willGetStats()
