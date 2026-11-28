@@ -19,8 +19,11 @@
 
 #include <cstring>
 #include <google/protobuf/service.h>
+#include <systemd/sd-journal.h>
+#include <syslog.h>
+#include <unistd.h>
+#include <cerrno>
 
-#include "ConsoleLogForwarding.h"
 #include "IApplicationSessionServer.h"
 #include "IGstInitialiser.h"
 #include "RialtoServerLogging.h"
@@ -29,10 +32,36 @@
 
 int main(int argc, char *argv[])
 {
-    auto consoleLogForwarding{std::make_unique<firebolt::rialto::server::service::ConsoleLogForwarding>()};
-
     const char kSrcRev[] = SRCREV;
     const char kTags[] = TAGS;
+
+    const int outFd = sd_journal_stream_fd("RialtoServer", LOG_INFO, 0);
+    if(outFd >= 0)
+    {
+        if(dup2(outFd, STDOUT_FILENO) < 0)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to redirect stdout: %s", std::strerror(errno));
+        }
+        close(outFd);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create journal stdout stream: %s", std::strerror(-outFd));
+    }
+
+    const int errFd = sd_journal_stream_fd("RialtoServer", LOG_ERR, 0);
+    if(errFd >= 0)
+    {
+        if(dup2(errFd, STDERR_FILENO) < 0)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to redirect stderr: %s", std::strerror(errno));
+        }
+        close(errFd);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create journal stderr stream: %s", std::strerror(-errFd));
+    }
 
     if (std::strlen(kSrcRev) > 0)
     {
@@ -65,8 +94,6 @@ int main(int argc, char *argv[])
     RIALTO_SERVER_LOG_INFO("Calling ShutdownProtobufLibrary");
     google::protobuf::ShutdownProtobufLibrary();
 #endif
-
-    consoleLogForwarding.reset();
 
     return EXIT_SUCCESS;
 }
